@@ -150,13 +150,13 @@ public class MigrationTest extends RestSupport {
 
     // Test begin then cancel
     Logger.getLogger(getClass()).info("  begin/cancel");
-    refsetService.beginMigration(refset1.getId(), "SNOMEDCT", "20150731 ",
+    refsetService.beginMigration(refset1.getId(), "en-edition", "20150731",
         adminAuthToken);
     refsetService.cancelMigration(refset1.getId(), adminAuthToken);
 
     // Begin migration
     Logger.getLogger(getClass()).info("  begin/resume/finish");
-    refsetService.beginMigration(refset1.getId(), "SNOMEDCT", "20150731",
+    refsetService.beginMigration(refset1.getId(), "en-edition", "20150731",
         adminAuthToken);
     refsetService.resumeMigration(refset1.getId(), adminAuthToken);
     refsetService.finishMigration(refset1.getId(), adminAuthToken);
@@ -190,7 +190,7 @@ public class MigrationTest extends RestSupport {
 
     // Begin migration
     Refset julyStagedRefset =
-        refsetService.beginMigration(janRefset.getId(), "SNOMEDCT",
+        refsetService.beginMigration(janRefset.getId(), "en-edition",
             "20150731", adminAuthToken);
     Logger.getLogger(getClass()).info("  staged = " + julyStagedRefset);
 
@@ -288,7 +288,7 @@ public class MigrationTest extends RestSupport {
 
     // Begin migration to 20150731
     Refset julyStagedRefset =
-        refsetService.beginMigration(janRefset.getId(), "SNOMEDCT",
+        refsetService.beginMigration(janRefset.getId(), "en-edition",
             "20150731", adminAuthToken);
     Logger.getLogger(getClass()).info("  staged = " + julyStagedRefset);
 
@@ -407,7 +407,7 @@ public class MigrationTest extends RestSupport {
     refset.setProject(project);
     refset.setPublishable(true);
     refset.setPublished(true);
-    refset.setTerminology("SNOMEDCT");
+    refset.setTerminology("en-edition");
     refset.setTerminologyId(refsetId);
     // This is an opportunity to use "branch"
     refset.setVersion("20150131");

@@ -404,7 +404,7 @@ public class TranslationJpa extends AbstractComponent implements Translation {
   @FieldBridge(impl = LongBridge.class)
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   public Long getProjectId() {
-    return (project != null) ? project.getId() : 0;
+    return (project != null) ? project.getId() : 0L;
   }
 
   /**

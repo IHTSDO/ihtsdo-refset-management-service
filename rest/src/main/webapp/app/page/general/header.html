@@ -13,8 +13,7 @@
         </td>
         <td style="width: 70%">
           <span class="header-footer-title" title="${project.version}">
-            ${deploy.title}            
-          </span>
+            ${deploy.title} </span>
         </td>
         <td style="text-align: right;">
           <div class="nobreak">
@@ -27,9 +26,10 @@
             </span>
             <!-- Help icon -->
             &nbsp;
-            <span class="header-footer-text header-footer-link"
-              ng-click="window.open('${help.url}','_blank');">
-              <i title="Help" class="noul material-icons md-18">help</i>
+            <span class="header-footer-text header-footer-link">
+              <a href="${help.url}" target="_blank">
+                <i title="Help" class="noul material-icons md-18">help</i>
+              </a>
             </span>
           </div>
         </td>

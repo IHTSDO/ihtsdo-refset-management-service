@@ -26,10 +26,6 @@ a:hover {
 	border: 1px solid red;
 }
 
-.intro-text {
-	max-width: 450px;
-}
-
 .login-field {
 	margin: 5px;
 }

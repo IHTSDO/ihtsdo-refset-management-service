@@ -133,6 +133,17 @@ public interface TerminologyHandler extends Configurable {
     String version, PfsParameter pfs) throws Exception;
 
   /**
+   * Get modules.
+   *
+   * @param terminology the terminology
+   * @param version the version
+   * @return the concept list
+   * @throws Exception the exception
+   */
+  public List<Concept> getModules(String terminology, String version)
+    throws Exception;
+
+  /**
    * Assign names.
    *
    * @return true, if successful

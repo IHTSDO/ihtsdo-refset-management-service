@@ -62,6 +62,11 @@ tsApp.controller('DirectoryCtrl', [
       count : 0
     };
 
+    // Check if user is logged in (for showing intro page)
+    $scope.isLoggedIn = function() {
+      return securityService.isLoggedIn();
+    }
+
     // Get $scope.projects
     $scope.getProjects = function() {
 
@@ -108,8 +113,8 @@ tsApp.controller('DirectoryCtrl', [
       // Success
       function(data) {
         $scope.metadata.versions[terminology] = [];
-        for (var i = 0; i < data.translations.length; i++) {
-          $scope.metadata.versions[terminology].push(data.translations[i].version);
+        for (var i = 0; i < data.terminologies.length; i++) {
+          $scope.metadata.versions[terminology].push(data.terminologies[i].version);
         }
       });
     };

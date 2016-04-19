@@ -346,6 +346,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
       case REASSIGN:
         // No need to set the author again because we've removed reference to
         // the reviewer
+        record.setForAuthoring(false);
         refset.setWorkflowStatus(WorkflowStatus.EDITING_IN_PROGRESS);
         break;
 
@@ -731,6 +732,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
       case REASSIGN:
         // No need to set the author again because we've removed reference to
         // the reviewer
+        record.setForAuthoring(true);
         concept.setWorkflowStatus(WorkflowStatus.EDITING_IN_PROGRESS);
         break;
 
@@ -822,7 +824,8 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
   public ConceptList findAvailableEditingConcepts(Translation translation,
     PfsParameter pfs, WorkflowService service) throws Exception {
 
-    // Cleanse PFS parameter to turn "concept" fields into concept refset member fields
+    // Cleanse PFS parameter to turn "concept" fields into concept refset member
+    // fields
     final PfsParameter localPfs =
         pfs == null ? new PfsParameterJpa() : new PfsParameterJpa(pfs);
     if (localPfs.getSortField() != null

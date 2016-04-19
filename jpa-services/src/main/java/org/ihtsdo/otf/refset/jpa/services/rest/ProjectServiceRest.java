@@ -171,7 +171,8 @@ public interface ProjectServiceRest {
    * @return the terminology editions
    * @throws Exception the exception
    */
-  public TerminologyList getTerminologyEditions(String authToken) throws Exception;
+  public TerminologyList getTerminologyEditions(String authToken)
+    throws Exception;
 
   /**
    * Returns the terminology versions.
@@ -254,6 +255,18 @@ public interface ProjectServiceRest {
    */
   public DescriptionTypeList getStandardDescriptionTypes(String terminology,
     String version, String authToken) throws Exception;
+
+  /**
+   * Returns the modules.
+   *
+   * @param terminology the terminology
+   * @param version the version
+   * @param authToken the auth token
+   * @return the modules
+   * @throws Exception the exception
+   */
+  public ConceptList getModules(String terminology, String version,
+    String authToken) throws Exception;
 
   /**
    * Returns the log.

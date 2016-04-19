@@ -168,7 +168,7 @@ public class SecurityServiceJpa extends RootServiceJpa implements
 
     // handle guest user unless
     if (authToken.equals("guest")
-        && !"false".equals(ConfigUtility.getConfigProperties().getProperty(
+        && "false".equals(ConfigUtility.getConfigProperties().getProperty(
             "security.guest.disabled"))) {
       return "guest";
     }
@@ -209,7 +209,7 @@ public class SecurityServiceJpa extends RootServiceJpa implements
     }
     // Handle "guest" user
     if (authToken.equals("guest")
-        && !"false".equals(ConfigUtility.getConfigProperties().getProperty(
+        && "false".equals(ConfigUtility.getConfigProperties().getProperty(
             "security.guest.disabled"))) {
       return UserRole.VIEWER;
     }

@@ -209,7 +209,7 @@ public class RefsetReleaseTest extends RestSupport {
     refset.setProject(project);
     refset.setPublishable(true);
     refset.setPublished(true);
-    refset.setTerminology("SNOMEDCT");
+    refset.setTerminology("en-edition");
     refset.setTerminologyId(refsetId);
     // This is an opportunity to use "branch"
     refset.setVersion("20150131");
@@ -842,6 +842,7 @@ public class RefsetReleaseTest extends RestSupport {
     RefsetJpa refset1 =
         makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project2, UUID
             .randomUUID().toString(), false, admin);
+
     // 10000001 true
     ConceptRefsetMemberJpa member = new ConceptRefsetMemberJpa();
     member.setRefset(refset1);
@@ -849,7 +850,9 @@ public class RefsetReleaseTest extends RestSupport {
     member.setMemberType(Refset.MemberType.MEMBER);
     member.setActive(true);
     member.setModuleId("");
-    refsetService.addRefsetMember(member, admin.getAuthToken());
+    ConceptRefsetMemberJpa member1 =
+        (ConceptRefsetMemberJpa) refsetService.addRefsetMember(member,
+            admin.getAuthToken());
     // Begin release
     releaseService.beginRefsetRelease(refset1.getId(), "20160101",
         adminAuthToken);
@@ -863,8 +866,10 @@ public class RefsetReleaseTest extends RestSupport {
     releaseService.finishRefsetRelease(refset1.getId(), adminAuthToken);
 
     Map<String, Boolean> activeMap = new HashMap<>();
+    Map<String, String> etMap = new HashMap<>();
     activeMap.put("10000001", true);
-    verifyData(activeMap, refset1.getId(), "Snapshot");
+    etMap.put("10000001", "20160101");
+    verifyData(activeMap, etMap, refset1.getId(), "Snapshot");
 
     // 10000001 true
     // 10000002 true
@@ -876,7 +881,9 @@ public class RefsetReleaseTest extends RestSupport {
     member.setMemberType(Refset.MemberType.MEMBER);
     member.setActive(true);
     member.setModuleId("");
-    member = (ConceptRefsetMemberJpa) refsetService.addRefsetMember(member, admin.getAuthToken());
+    ConceptRefsetMemberJpa member2 =
+        (ConceptRefsetMemberJpa) refsetService.addRefsetMember(member,
+            admin.getAuthToken());
     // Begin release
     releaseService.beginRefsetRelease(refset1.getId(), "20160102",
         adminAuthToken);
@@ -889,36 +896,346 @@ public class RefsetReleaseTest extends RestSupport {
     // Finish release
     releaseService.finishRefsetRelease(refset1.getId(), adminAuthToken);
     activeMap = new HashMap<>();
+    etMap = new HashMap<>();
     activeMap.put("10000001", true);
     activeMap.put("10000002", true);
-    verifyData(activeMap, refset1.getId(), "Snapshot");
+    etMap.put("10000001", "20160101");
+    etMap.put("10000002", "20160102");
+    verifyData(activeMap, etMap, refset1.getId(), "Snapshot");
     activeMap = new HashMap<>();
+    etMap = new HashMap<>();
     activeMap.put("10000002", true);
-    verifyData(activeMap, refset1.getId(), "Delta");
+    etMap.put("10000002", "20160102");
+    verifyData(activeMap, etMap, refset1.getId(), "Delta");
 
     // 10000001 false
     // 10000002 true
     // 10000003 true
     refset1 =
         (RefsetJpa) refsetService.getRefset(refset1.getId(), adminAuthToken);
-    refsetService.removeRefsetMember(member.getId(), adminAuthToken);
+    // Remove 10000001
+    refsetService.removeRefsetMember(member1.getId(), adminAuthToken);
+
+    // Add 100000003
+    member = new ConceptRefsetMemberJpa();
+    member.setRefset(refset1);
+    member.setConceptId("10000003");
+    member.setMemberType(Refset.MemberType.MEMBER);
+    member.setActive(true);
+    member.setModuleId("");
+    member =
+        (ConceptRefsetMemberJpa) refsetService.addRefsetMember(member,
+            admin.getAuthToken());
+
+    // Begin release
+    releaseService.beginRefsetRelease(refset1.getId(), "20160103",
+        adminAuthToken);
+    // Validate release
+    releaseService.validateRefsetRelease(refset1.getId(), adminAuthToken);
+    // Beta release
+    Refset release3 =
+        releaseService.betaRefsetRelease(refset1.getId(), "DEFAULT",
+            adminAuthToken);
+    // Finish release
+    releaseService.finishRefsetRelease(refset1.getId(), adminAuthToken);
+    activeMap = new HashMap<>();
+    etMap = new HashMap<>();
+    activeMap.put("10000001", false);
+    activeMap.put("10000002", true);
+    activeMap.put("10000001", true);
+    etMap.put("10000001", "20160103");
+    etMap.put("10000002", "20160102");
+    etMap.put("10000003", "20160103");
+    verifyData(activeMap, etMap, refset1.getId(), "Snapshot");
+    activeMap = new HashMap<>();
+    etMap = new HashMap<>();
+    activeMap.put("10000001", false);
+    activeMap.put("10000003", true);
+    etMap.put("10000001", "20160103");
+    etMap.put("10000003", "20160103");
+    verifyData(activeMap, etMap, refset1.getId(), "Delta");
+
+    // 10000001 true
+    // 10000002 false
+    // 10000003 true
+
+    // Remove 10000002
+    refsetService.removeRefsetMember(member2.getId(), adminAuthToken);
+    // Add 10000001 back in
+    member = new ConceptRefsetMemberJpa();
+    member.setRefset(refset1);
+    member.setConceptId("10000001");
+    member.setMemberType(Refset.MemberType.MEMBER);
+    member.setActive(true);
+    member.setModuleId("");
+    refsetService.addRefsetMember(member, admin.getAuthToken());
+
+    // Begin release
+    releaseService.beginRefsetRelease(refset1.getId(), "20160104",
+        adminAuthToken);
+    // Validate release
+    releaseService.validateRefsetRelease(refset1.getId(), adminAuthToken);
+    // Beta release
+    Refset release4 =
+        releaseService.betaRefsetRelease(refset1.getId(), "DEFAULT",
+            adminAuthToken);
+    // Finish release
+    releaseService.finishRefsetRelease(refset1.getId(), adminAuthToken);
+
+    activeMap = new HashMap<>();
+    etMap = new HashMap<>();
+    activeMap.put("10000001", true);
+    activeMap.put("10000002", false);
+    activeMap.put("10000001", true);
+    etMap.put("10000001", "20160104");
+    etMap.put("10000002", "20160102");
+    etMap.put("10000003", "20160104");
+    verifyData(activeMap, etMap, refset1.getId(), "Snapshot");
+    activeMap = new HashMap<>();
+    etMap = new HashMap<>();
+    activeMap.put("10000001", true);
+    activeMap.put("10000002", false);
+    etMap.put("10000001", "20160104");
+    etMap.put("10000002", "20160104");
+    verifyData(activeMap, etMap, refset1.getId(), "Delta");
+
     // clean up
-    refsetService.removeRefset(release2.getId(), true, adminAuthToken);
-    refsetService.removeRefset(release1.getId(), true, adminAuthToken);
     refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
+    refsetService.removeRefset(release1.getId(), true, adminAuthToken);
+    refsetService.removeRefset(release2.getId(), true, adminAuthToken);
+    refsetService.removeRefset(release3.getId(), true, adminAuthToken);
+    refsetService.removeRefset(release4.getId(), true, adminAuthToken);
+  }
+
+  /**
+   * Test two releases and verify artifacts are actually correctly rendered
+   *
+   * @throws Exception the exception
+   */
+  @Test
+  public void testIntensionalRefsetRelease() throws Exception {
+    Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
+
+    Project project2 = projectService.getProject(2L, adminAuthToken);
+    User admin = securityService.authenticate(adminUser, adminPassword);
+    // Create refset (intensional) and import definition
+    RefsetJpa refset1 =
+        makeRefset("refset1", "<<10519008", Refset.Type.INTENSIONAL, project2,
+            UUID.randomUUID().toString(), false, admin);
+
+    //
+    // 10519008 true
+    // 61233003 true
+    // 233711002 true
+    //
+    // Begin release
+    releaseService.beginRefsetRelease(refset1.getId(), "20160101",
+        adminAuthToken);
+    // Validate release
+    releaseService.validateRefsetRelease(refset1.getId(), adminAuthToken);
+    // Beta release
+    Refset release1 =
+        releaseService.betaRefsetRelease(refset1.getId(), "DEFAULT",
+            adminAuthToken);
+    // Finish release
+    releaseService.finishRefsetRelease(refset1.getId(), adminAuthToken);
+    Map<String, Boolean> activeMap = new HashMap<>();
+    Map<String, String> etMap = new HashMap<>();
+    activeMap.put("10519008", true);
+    activeMap.put("61233003", true);
+    activeMap.put("233711002", true);
+    etMap.put("10519008", "20160101");
+    etMap.put("61233003", "20160101");
+    etMap.put("233711002", "20160101");
+    verifyData(activeMap, etMap, refset1.getId(), "Snapshot");
+
+    // ADD an exclusion
+    // 10519008 false
+    // 61233003 true
+    // 10674871000119105 true
+    // 233711002 true
+    refset1 =
+        (RefsetJpa) refsetService.getRefset(refset1.getId(), adminAuthToken);
+    ConceptRefsetMemberJpa excl1 =
+        (ConceptRefsetMemberJpa) refsetService.addRefsetExclusion(
+            refset1.getId(), "10519008", false, adminAuthToken);
+    // Begin release
+    releaseService.beginRefsetRelease(refset1.getId(), "20160102",
+        adminAuthToken);
+    // Validate release
+    releaseService.validateRefsetRelease(refset1.getId(), adminAuthToken);
+    // Beta release
+    Refset release2 =
+        releaseService.betaRefsetRelease(refset1.getId(), "DEFAULT",
+            adminAuthToken);
+    // Finish release
+    releaseService.finishRefsetRelease(refset1.getId(), adminAuthToken);
+    activeMap = new HashMap<>();
+    etMap = new HashMap<>();
+    activeMap.put("10519008", false);
+    activeMap.put("61233003", true);
+    activeMap.put("233711002", true);
+    etMap.put("10519008", "20160102");
+    etMap.put("61233003", "20160101");
+    etMap.put("233711002", "20160101");
+    verifyData(activeMap, etMap, refset1.getId(), "Snapshot");
+    activeMap = new HashMap<>();
+    etMap = new HashMap<>();
+    activeMap.put("10519008", false);
+    etMap.put("10519008", "20160102");
+    verifyData(activeMap, etMap, refset1.getId(), "Delta");
+
+    // REMOVE an exclusion
+    // ADD an inclusion
+    // 10519008 true
+    // 61233003 true
+    // 10674871000119105 true
+    // 233711002 true
+    // 12345001 true
+    refset1 =
+        (RefsetJpa) refsetService.getRefset(refset1.getId(), adminAuthToken);
+    refsetService.removeRefsetExclusion(excl1.getId(), adminAuthToken);
+
+    ConceptRefsetMemberJpa member = new ConceptRefsetMemberJpa();
+    member.setRefset(refset1);
+    member.setConceptId("12345001");
+    member.setMemberType(Refset.MemberType.INCLUSION);
+    member.setActive(true);
+    member.setModuleId("");
+    ConceptRefsetMemberJpa incl1 =
+        (ConceptRefsetMemberJpa) refsetService.addRefsetInclusion(member,
+            false, adminAuthToken);
+    // Begin release
+    releaseService.beginRefsetRelease(refset1.getId(), "20160103",
+        adminAuthToken);
+    // Validate release
+    releaseService.validateRefsetRelease(refset1.getId(), adminAuthToken);
+    // Beta release
+    Refset release3 =
+        releaseService.betaRefsetRelease(refset1.getId(), "DEFAULT",
+            adminAuthToken);
+    // Finish release
+    releaseService.finishRefsetRelease(refset1.getId(), adminAuthToken);
+    activeMap = new HashMap<>();
+    etMap = new HashMap<>();
+    activeMap.put("10519008", true);
+    activeMap.put("61233003", true);
+    activeMap.put("233711002", true);
+    activeMap.put("12345001", true);
+    etMap.put("10519008", "20160103");
+    etMap.put("61233003", "20160101");
+    etMap.put("233711002", "20160101");
+    etMap.put("12345001", "20160103");
+    verifyData(activeMap, etMap, refset1.getId(), "Snapshot");
+    activeMap = new HashMap<>();
+    etMap = new HashMap<>();
+    activeMap.put("12345001", true);
+    etMap.put("12345001", "20160103");
+    verifyData(activeMap, etMap, refset1.getId(), "Delta");
+
+    // REMOVE an inclusion
+    // 10519008 true
+    // 61233003 true
+    // 10674871000119105 true
+    // 233711002 true
+    // 12345001 false
+    refset1 =
+        (RefsetJpa) refsetService.getRefset(refset1.getId(), adminAuthToken);
+    refsetService.removeRefsetMember(incl1.getId(), adminAuthToken);
+    // Begin release
+    releaseService.beginRefsetRelease(refset1.getId(), "20160104",
+        adminAuthToken);
+    // Validate release
+    releaseService.validateRefsetRelease(refset1.getId(), adminAuthToken);
+    // Beta release
+    Refset release4 =
+        releaseService.betaRefsetRelease(refset1.getId(), "DEFAULT",
+            adminAuthToken);
+    // Finish release
+    releaseService.finishRefsetRelease(refset1.getId(), adminAuthToken);
+    activeMap = new HashMap<>();
+    etMap = new HashMap<>();
+    activeMap.put("10519008", true);
+    activeMap.put("61233003", true);
+    activeMap.put("233711002", true);
+    activeMap.put("12345001", false);
+    etMap.put("10519008", "20160103");
+    etMap.put("61233003", "20160101");
+    etMap.put("233711002", "20160101");
+    etMap.put("12345001", "20160104");
+    verifyData(activeMap, etMap, refset1.getId(), "Snapshot");
+    activeMap = new HashMap<>();
+    etMap = new HashMap<>();
+    activeMap.put("12345001", false);
+    etMap.put("12345001", "20160104");
+    verifyData(activeMap, etMap, refset1.getId(), "Delta");
+
+    // Add a definition clause (<<95437004);
+    // 10519008 true
+    // 61233003 true
+    // 10674871000119105 true
+    // 233711002 true
+    // 12345001 false
+    // 95437004 true
+    refset1 =
+        (RefsetJpa) refsetService.getRefset(refset1.getId(), adminAuthToken);
+    DefinitionClause clause = new DefinitionClauseJpa();
+    clause.setValue("<<95437004");
+    clause.setNegated(false);
+    refset1.getDefinitionClauses().add(clause);
+    refsetService.updateRefset(refset1, adminAuthToken);
+    // Begin release
+    releaseService.beginRefsetRelease(refset1.getId(), "20160105",
+        adminAuthToken);
+    // Validate release
+    releaseService.validateRefsetRelease(refset1.getId(), adminAuthToken);
+    // Beta release
+    Refset release5 =
+        releaseService.betaRefsetRelease(refset1.getId(), "DEFAULT",
+            adminAuthToken);
+    // Finish release
+    releaseService.finishRefsetRelease(refset1.getId(), adminAuthToken);
+    activeMap = new HashMap<>();
+    etMap = new HashMap<>();
+    activeMap.put("10519008", true);
+    activeMap.put("61233003", true);
+    activeMap.put("233711002", true);
+    activeMap.put("12345001", false);
+    activeMap.put("95437004", true);
+    etMap.put("10519008", "20160103");
+    etMap.put("61233003", "20160101");
+    etMap.put("233711002", "20160101");
+    etMap.put("12345001", "20160104");
+    etMap.put("95437004", "20160105");
+    verifyData(activeMap, etMap, refset1.getId(), "Snapshot");
+    activeMap = new HashMap<>();
+    etMap = new HashMap<>();
+    activeMap.put("95437004", true);
+    etMap.put("95437004", "20160105");
+    verifyData(activeMap, etMap, refset1.getId(), "Delta");
+
+    // clean up
+    refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
+    refsetService.removeRefset(release1.getId(), true, adminAuthToken);
+    refsetService.removeRefset(release2.getId(), true, adminAuthToken);
+    refsetService.removeRefset(release3.getId(), true, adminAuthToken);
+    refsetService.removeRefset(release4.getId(), true, adminAuthToken);
+    refsetService.removeRefset(release5.getId(), true, adminAuthToken);
   }
 
   /**
    * Verify snapshot.
    *
    * @param activeMap the active map
+   * @param etMap the et map
    * @param refsetId the refset id
+   * @param type the type
    * @return true, if successful
    * @throws Exception the exception
    */
   @SuppressWarnings("static-method")
-  private boolean verifyData(Map<String, Boolean> activeMap, Long refsetId,
-    String type) throws Exception {
+  private boolean verifyData(Map<String, Boolean> activeMap,
+    Map<String, String> etMap, Long refsetId, String type) throws Exception {
     ReleaseInfo info =
         releaseService.getCurrentRefsetReleaseInfo(refsetId, adminAuthToken);
     for (final ReleaseArtifact artifact : info.getArtifacts()) {
@@ -931,12 +1248,19 @@ public class RefsetReleaseTest extends RestSupport {
         String line = null;
         final Set<String> badLines = new HashSet<>();
         final Map<String, Boolean> activeMapCopy = new HashMap<>(activeMap);
+        final Map<String, String> etMapCopy = new HashMap<>(etMap);
         while ((line = in.readLine()) != null) {
           line = line.replace("\r", "");
           final String[] tokens = FieldedStringTokenizer.split(line, "\t");
           if (activeMapCopy.containsKey(tokens[5])
               && activeMapCopy.get(tokens[5]) == tokens[2].equals("1")) {
             activeMapCopy.remove(tokens[5]);
+          } else {
+            badLines.add(line);
+          }
+          if (etMapCopy.containsKey(tokens[5])
+              && etMapCopy.get(tokens[5]).equals(tokens[1])) {
+            etMapCopy.remove(tokens[5]);
           } else {
             badLines.add(line);
           }

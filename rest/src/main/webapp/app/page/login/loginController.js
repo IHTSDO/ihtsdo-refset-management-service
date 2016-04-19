@@ -14,9 +14,10 @@ tsApp.controller('LoginCtrl', [
 
     // Clear user info
     securityService.clearUser();
-
+    console.debug("user = ", securityService.getUser());
     // Declare the user
     $scope.user = securityService.getUser();
+    console.debug("user = ", $scope.user);
 
     // Login function
     $scope.login = function(name, password) {

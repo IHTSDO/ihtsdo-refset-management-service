@@ -84,8 +84,8 @@ public class PerformTranslationBetaAlgorithm extends TranslationServiceJpa
     ReleaseInfoList releaseInfoList =
         findTranslationReleasesForQuery(translation.getId(), null, null);
     if (releaseInfoList.getCount() != 1) {
-      throw new LocalException(
-          "Cannot find release info for translation " + translation.getId());
+      throw new LocalException("Cannot find release info for translation "
+          + translation.getId());
     }
     releaseInfo = releaseInfoList.getObjects().get(0);
     if (releaseInfo == null || !releaseInfo.isPlanned()
@@ -93,8 +93,8 @@ public class PerformTranslationBetaAlgorithm extends TranslationServiceJpa
       throw new LocalException("translation release is not ready to validate "
           + translation.getId());
     if (translation.isStaged())
-      throw new LocalException(
-          "translation workflowstatus is staged for " + translation.getId());
+      throw new LocalException("translation workflowstatus is staged for "
+          + translation.getId());
   }
 
   /* see superclass */
@@ -104,8 +104,9 @@ public class PerformTranslationBetaAlgorithm extends TranslationServiceJpa
     translation.setLastModifiedBy(userName);
 
     // Stage the translation
-    stagedTranslation = stageTranslation(translation,
-        Translation.StagingType.BETA, releaseInfo.getEffectiveTime());
+    stagedTranslation =
+        stageTranslation(translation, Translation.StagingType.BETA,
+            releaseInfo.getEffectiveTime());
 
     // Reread in case a commit was used
     releaseInfo = getReleaseInfo(releaseInfo.getId());
@@ -156,17 +157,17 @@ public class PerformTranslationBetaAlgorithm extends TranslationServiceJpa
     artifact.setReleaseInfo(stageReleaseInfo);
     artifact.setIoHandlerId(ioHandlerId);
     artifact.setData(ByteStreams.toByteArray(inputStream));
-    artifact.setName(
-        handler.getBetaFileName(translation.getProject().getNamespace(),
-            "ActiveSnapshot", releaseInfo.getName()));
+    artifact.setName(handler.getBetaFileName(translation.getProject()
+        .getNamespace(), "ActiveSnapshot", releaseInfo.getName()));
     artifact.setTimestamp(new Date());
     artifact.setLastModified(new Date());
     artifact.setLastModifiedBy(userName);
     stageReleaseInfo.getArtifacts().add(artifact);
 
     // Generate the delta release artifact and add it
-    releaseInfo = getCurrentTranslationReleaseInfo(
-        translation.getTerminologyId(), translation.getProject().getId());
+    releaseInfo =
+        getCurrentTranslationReleaseInfo(translation.getTerminologyId(),
+            translation.getProject().getId());
 
     if (releaseInfo != null) {
       // Get descriptions/languages from last time
@@ -223,8 +224,8 @@ public class PerformTranslationBetaAlgorithm extends TranslationServiceJpa
 
         // changed
         if (oldDescriptionMap.containsKey(description.getTerminologyId())
-            && !description.equals(
-                oldDescriptionMap.get(description.getTerminologyId()))) {
+            && !description.equals(oldDescriptionMap.get(description
+                .getTerminologyId()))) {
           description.setActive(true);
           description.setEffectiveTime(stageReleaseInfo.getEffectiveTime());
           deltaDescriptions.add(description);
@@ -269,15 +270,15 @@ public class PerformTranslationBetaAlgorithm extends TranslationServiceJpa
       }
 
       // Export
-      inputStream = handler.exportDelta(stagedTranslation, deltaDescriptions,
-          deltaMembers);
+      inputStream =
+          handler.exportDelta(stagedTranslation, deltaDescriptions,
+              deltaMembers);
       artifact = new ReleaseArtifactJpa();
       artifact.setReleaseInfo(stageReleaseInfo);
       artifact.setIoHandlerId(ioHandlerId);
       artifact.setData(ByteStreams.toByteArray(inputStream));
-      artifact.setName(
-          handler.getBetaFileName(stagedTranslation.getProject().getNamespace(),
-              "Delta", stageReleaseInfo.getName()));
+      artifact.setName(handler.getBetaFileName(stagedTranslation.getProject()
+          .getNamespace(), "Delta", stageReleaseInfo.getName()));
       artifact.setTimestamp(new Date());
       artifact.setLastModified(new Date());
       artifact.setLastModifiedBy(userName);

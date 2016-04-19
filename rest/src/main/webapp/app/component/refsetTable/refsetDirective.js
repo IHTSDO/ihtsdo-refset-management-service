@@ -1564,8 +1564,37 @@ tsApp
                     });
                   }
 
-                  // else
-                  if (action == 'REASSIGN') {
+                  // else reassign
+                  else if (action == 'REASSIGN') {
+                    workflowService.performWorkflowAction($scope.project.id, refset.id,
+                      $scope.user.userName, 'AUTHOR', 'REASSIGN').then(
+                    // success - reassign
+                    function(data) {
+                      // Add a note as well
+                      if ($scope.note) {
+                        refsetService.addRefsetNote(refset.id, $scope.note).then(
+                        // Success - add note
+                        function(data) {
+                          $uibModalInstance.close(refset);
+                        },
+                        // Error - remove note
+                        function(data) {
+                          handleError($scope.errors, data);
+                        });
+                      }
+                      // close dialog if no note
+                      else {
+                        $uibModalInstance.close(refset);
+                      }
+                    },
+                    // Error - reassign
+                    function(data) {
+                      handleError($scope.errors, data);
+                    });
+                  }
+
+                  // else unassign, then reassign
+                  else if (action == 'UNASSIGN-REASSIGN') {
                     workflowService.performWorkflowAction($scope.project.id, refset.id,
                       $scope.user.userName, $scope.role, 'UNASSIGN').then(
                       // Success - unassign
@@ -2317,7 +2346,8 @@ tsApp
                 $scope.pageSize = 5;
                 $scope.paging = paging;
                 $scope.metadata = metadata;
-                $scope.versions = metadata.versions[metadata.terminologies[0].terminology].sort().reverse();
+                $scope.versions = metadata.versions[metadata.terminologies[0].terminology].sort()
+                  .reverse();
                 $scope.errors = [];
                 $scope.statusTypes = [ 'Active', 'Retired' ];
                 $scope.pagedStagedInclusions = [];

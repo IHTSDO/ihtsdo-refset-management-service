@@ -30,8 +30,10 @@ tsApp
             return '';
           }
 
-          // Add a * to the filter if set and doesn't contain a ':' indicating filter search
-          if (!wildcardFlag && query.indexOf("(") == -1 && query.indexOf(":") == -1 && query.indexOf("\"") == -1) {
+          // Add a * to the filter if set and doesn't contain a ':' indicating
+          // filter search
+          if (!wildcardFlag && query.indexOf("(") == -1 && query.indexOf(":") == -1
+            && query.indexOf("\"") == -1) {
             var query2 = query.concat('*');
             return encodeURIComponent(query2);
           }

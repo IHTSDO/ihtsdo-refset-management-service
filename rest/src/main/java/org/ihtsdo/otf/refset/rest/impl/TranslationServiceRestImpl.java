@@ -33,6 +33,7 @@ import org.ihtsdo.otf.refset.MemoryEntry;
 import org.ihtsdo.otf.refset.Note;
 import org.ihtsdo.otf.refset.PhraseMemory;
 import org.ihtsdo.otf.refset.Refset;
+import org.ihtsdo.otf.refset.ReleaseInfo;
 import org.ihtsdo.otf.refset.SpellingDictionary;
 import org.ihtsdo.otf.refset.StagedTranslationChange;
 import org.ihtsdo.otf.refset.Translation;
@@ -60,6 +61,7 @@ import org.ihtsdo.otf.refset.jpa.helpers.IoHandlerInfoListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.LanguageDescriptionTypeListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.TranslationListJpa;
+import org.ihtsdo.otf.refset.jpa.services.ReleaseServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.TranslationServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.WorkflowServiceJpa;
@@ -71,6 +73,7 @@ import org.ihtsdo.otf.refset.rf2.LanguageDescriptionType;
 import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.LanguageDescriptionTypeJpa;
+import org.ihtsdo.otf.refset.services.ReleaseService;
 import org.ihtsdo.otf.refset.services.SecurityService;
 import org.ihtsdo.otf.refset.services.TranslationService;
 import org.ihtsdo.otf.refset.services.WorkflowService;
@@ -409,7 +412,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       }
 
       // If cascade is true, remove any tracking records associated with this
-      // translation
+      // translation as well as any release infos
       if (cascade) {
         final WorkflowService workflowService = new WorkflowServiceJpa();
         try {
@@ -425,6 +428,22 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
           throw e;
         } finally {
           workflowService.close();
+        }
+
+        // Remove release infos
+        final ReleaseService releaseService = new ReleaseServiceJpa();
+        try {
+          // Find and remove any release infos for this translation
+          for (final ReleaseInfo info : translationService
+              .findTranslationReleasesForQuery(translationId, null, null)
+              .getObjects()) {
+            releaseService.removeReleaseInfo(info.getId());
+          }
+
+        } catch (Exception e) {
+          throw e;
+        } finally {
+          releaseService.close();
         }
       }
       // Create service and configure transaction scope
@@ -993,8 +1012,13 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     translationService.setTransactionPerOperation(false);
     translationService.beginTransaction();
     try {
+      if (concept.getTranslation() == null) {
+        throw new Exception("Concept does not have a valid translation "
+            + concept.getId());
+      }
       // Load translation
-      Translation translation = concept.getTranslation();
+      Translation translation =
+          translationService.getTranslation(concept.getTranslation().getId());
       if (translation == null) {
         throw new Exception("Concept does not have a valid translation "
             + concept.getId());
@@ -1021,24 +1045,36 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       final Concept newConcept = translationService.addConcept(concept);
 
       // Add descriptions
-      for (final Description description : concept.getDescriptions()) {
+      List<Description> descriptions =
+          new ArrayList<>(concept.getDescriptions());
+      concept.getDescriptions().clear();
+      for (final Description description : descriptions) {
+
         description.setConcept(newConcept);
         description.setLastModifiedBy(userName);
         final Description newDescription =
             translationService.addDescription(description);
         newConcept.getDescriptions().add(newDescription);
+
         // Add language refset entries
-        for (final LanguageRefsetMember member : description
-            .getLanguageRefsetMembers()) {
-          member.setDescriptionId(newDescription.getTerminologyId());
+        List<LanguageRefsetMember> languages =
+            new ArrayList<>(description.getLanguageRefsetMembers());
+        description.getLanguageRefsetMembers().clear();
+        for (final LanguageRefsetMember member : languages) {
+          member.setDescriptionId(description.getTerminologyId());
           member.setLastModifiedBy(userName);
           translationService.addLanguageRefsetMember(member,
               translation.getTerminology());
-          description.getLanguageRefsetMembers().add(member);
+          newDescription.getLanguageRefsetMembers().add(member);
         }
+        newDescription.setLastModifiedBy(userName);
+        translationService.updateDescription(newDescription);
+
       }
+      // Update concept now that has descriptions (needed for @IndexedEmbedded)
       newConcept.setLastModifiedBy(userName);
       translationService.updateConcept(newConcept);
+
       addLogEntry(translationService, userName, "ADD concept", translation
           .getProject().getId(), translation.getId(),
           newConcept.getTerminologyId() + ": " + newConcept.getName());
@@ -1166,9 +1202,10 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
             desc.setLanguageRefsetMembers(oldDesc.getLanguageRefsetMembers());
             if (!desc.equals(oldDesc)) {
               desc.setEffectiveTime(null);
+              desc.setLastModifiedBy(userName);
+              desc.setConcept(concept);
+              translationService.updateDescription(desc);
             }
-            desc.setLastModifiedBy(userName);
-            translationService.updateDescription(desc);
             // found a match, move to the next one
             found = true;
             break;

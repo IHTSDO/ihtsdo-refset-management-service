@@ -517,7 +517,7 @@ tsApp.service('projectService', [
 
       // Get projects
       gpService.increment();
-      $http.get(projectUrl + 'terminology/' + terminology + '/descriptiontypes?version=' + version)
+      $http.get(projectUrl + 'descriptiontypes?terminology=' + terminology + '&version=' + version)
         .then(
         // success
         function(response) {
@@ -530,6 +530,28 @@ tsApp.service('projectService', [
           gpService.decrement();
           deferred.reject(response.data);
         });
+      return deferred.promise;
+    };
+
+    // Get modules
+    this.getModules = function(terminology, version) {
+      console.debug('getModules', terminology, version);
+      var deferred = $q.defer();
+
+      // Get projects
+      gpService.increment();
+      $http.get(projectUrl + 'modules?terminology=' + terminology + '&version=' + version).then(
+      // success
+      function(response) {
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
       return deferred.promise;
     };
 
@@ -556,7 +578,7 @@ tsApp.service('projectService', [
         });
       return deferred.promise;
     };
-    
+
     // assign user to project
     this.getReplacementConcepts = function(conceptId, terminology, version) {
       console.debug('getReplacementConcepts');
@@ -565,9 +587,8 @@ tsApp.service('projectService', [
       // Assign user to project
       gpService.increment();
       $http.get(
-        projectUrl + 'concept/replacements'
-        + '?conceptId=' + conceptId + '&terminology=' + terminology
-        + '&version=' + version).then(
+        projectUrl + 'concept/replacements' + '?conceptId=' + conceptId + '&terminology='
+          + terminology + '&version=' + version).then(
       // success
       function(response) {
         console.debug('  project = ', response.data);

@@ -80,7 +80,7 @@ public class ProjectServiceRestRoleCheckTest extends ProjectTestSupport {
 
     project.setDescription("Sample");
     project.setName("Sample");
-    project.setTerminology("SNOMEDCT");
+    project.setTerminology("en-edition");
     project.setVersion("latest");
 
     try {
@@ -147,7 +147,7 @@ public class ProjectServiceRestRoleCheckTest extends ProjectTestSupport {
 
     // Retrieve projects via a number of valid queries with values in DB
     ProjectList projects = projectService
-        .findProjectsForQuery("terminology:SNOMEDCT", null, adminAuthToken);
+        .findProjectsForQuery("terminology:en-edition", null, adminAuthToken);
     assertTrue(projects.getCount() > 0);
 
     projects = projectService.findProjectsForQuery("organization:IHTSDO", null,
@@ -231,7 +231,7 @@ public class ProjectServiceRestRoleCheckTest extends ProjectTestSupport {
 
     /* Test Accessing Project Description Types */
     DescriptionTypeList types = projectService
-        .getStandardDescriptionTypes("SNOMEDCT", "2016-01-31", adminAuthToken);
+        .getStandardDescriptionTypes("en-edition", "2016-01-31", adminAuthToken);
     assertTrue(types.getCount() > 3);
 
     // verify FSN returned

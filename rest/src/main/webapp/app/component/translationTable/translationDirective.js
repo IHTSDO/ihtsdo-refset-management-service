@@ -345,11 +345,11 @@ tsApp
                   pfs.queryRestriction = $scope.paging['assigned'].filter;
                   workflowService.findAllAssignedConcepts($scope.project.id, translation.id, pfs)
                     .then(
-                      // Success
-                      function(data) {
-                        translation.assigned = data.records;
-                        translation.assigned.totalCount = data.totalCount;
-                      });
+                    // Success
+                    function(data) {
+                      translation.assigned = data.records;
+                      translation.assigned.totalCount = data.totalCount;
+                    });
 
                 } else {
                   window.alert('Unexpected role attempting to get available concepts');
@@ -534,14 +534,14 @@ tsApp
               };
 
               // Unassign the specified concept
-              $scope.unassign = function(concept) {
+              $scope.unassign = function(concept, userName) {
                 if (!concept) {
                   return;
                 }
 
                 workflowService.performTranslationWorkflowAction($scope.project.id,
-                  $scope.selected.translation.id, $scope.user.userName, $scope.projects.role,
-                  'UNASSIGN', concept).then(
+                  $scope.selected.translation.id, userName, $scope.projects.role, 'UNASSIGN',
+                  concept).then(
                 // Success
                 function(data) {
                   translationService.fireTranslationChanged($scope.selected.translation);
@@ -1260,7 +1260,37 @@ tsApp
                   }
 
                   // else, reassign
-                  if (action == 'REASSIGN') {
+                  else if (action == 'REASSIGN') {
+                    workflowService.performTranslationWorkflowAction($scope.project.id,
+                      translation.id, $scope.user.userName, 'AUTHOR', 'REASSIGN', $scope.concept)
+                      .then(
+                        // Success - reassign
+                        function(data) {
+                          if ($scope.note) {
+                            translationService.addTranslationConceptNote(translation.id,
+                              concept.id, $scope.note).then(
+                            // Success - add note
+                            function(data) {
+                              $uibModalInstance.close(translation);
+                            },
+                            // Error - add note
+                            function(data) {
+                              handleError($scope.errors, data);
+                            });
+                          }
+                          // close dialog if no note
+                          else {
+                            $uibModalInstance.close(translation);
+                          }
+                        },
+                        // Error - reassign
+                        function(data) {
+                          handleError($scope.errors, data);
+                        });
+                  }
+
+                  // else, unassign, then reassign
+                  else if (action == 'UNASSIGN-REASSIGN') {
 
                     workflowService
                       .performTranslationWorkflowAction($scope.project.id, translation.id,
@@ -1701,9 +1731,10 @@ tsApp
                 $scope.project = project;
                 $scope.user = user;
                 $scope.role = role;
-                // Save this so we can set the workflow status and it shows up immediately
+                // Save this so we can set the workflow status and it shows up
+                // immediately
                 $scope.concept = concept;
-                
+
                 // Data structure for case significance - we just need the
                 // id/name
                 $scope.caseSignificanceTypes = [];
@@ -2153,7 +2184,8 @@ tsApp
                         .then(
                           // Success
                           function(data) {
-                            // Set the workflow status in the assigned concepts list
+                            // Set the workflow status in the assigned concepts
+                            // list
                             $scope.concept.workflowStatus = data.concept.workflowStatus;
                             // Special case:
                             // If "FINISH", mark again as 'finish'
@@ -2163,7 +2195,8 @@ tsApp
                                 concept).then(
                               // Success
                               function(data) {
-                                // Set the workflow status in the assigned concepts list
+                                // Set the workflow status in the assigned
+                                // concepts list
                                 $scope.concept.workflowStatus = data.concept.workflowStatus;
                                 $uibModalInstance.close(action);
                               },

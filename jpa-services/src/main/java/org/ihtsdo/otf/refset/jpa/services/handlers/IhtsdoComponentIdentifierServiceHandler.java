@@ -149,10 +149,7 @@ public class IhtsdoComponentIdentifierServiceHandler implements
       }
       tried = true;
     }
-    throw new LocalException(
-        "There was an unexpected failure of the identifier service."
-            + " It may be due to an incorrect or unsupported namespace id. "
-            + failedException.getMessage());
+    throw new LocalException(failedException.getMessage());
   }
 
   /* see superclass */
@@ -292,7 +289,7 @@ public class IhtsdoComponentIdentifierServiceHandler implements
    */
   private String getTerminologyId(String namespace, String partitionId,
     String authToken) throws Exception {
-    // Make a webservice call to SnowOwl
+    // Make a webservice call to CIS
     Client client = ClientBuilder.newClient();
     WebTarget target = client.target(url + "/sct/generate?token=" + authToken);
     String postData =
