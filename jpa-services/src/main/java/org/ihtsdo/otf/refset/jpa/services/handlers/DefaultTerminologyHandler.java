@@ -5,7 +5,6 @@ package org.ihtsdo.otf.refset.jpa.services.handlers;
 
 import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -1109,8 +1108,8 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
 
   /* see superclass */
   @Override
-  public boolean assignNames() {
-    return assignNames;
+  public boolean assignNames() throws Exception {
+    return ConfigUtility.isAssignNames();
   }
 
   /* see superclass */

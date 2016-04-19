@@ -132,16 +132,21 @@ public class PerformTranslationBetaAlgorithm extends TranslationServiceJpa
     for (final Concept concept : stagedTranslation.getConcepts()) {
       conceptIds.add(concept.getId());
     }
+
+    // Clear staged translation concept references
+    stagedTranslation = getTranslation(stagedTranslation.getId());
+
     // Now from detached list, go back and reread concepts one at a time
     // Lazy initialize to gather all data
     // THEN send to export process
-    final List<Concept> exportConcepts = new ArrayList<>();
+    final List<Concept> exportConcepts = new ArrayList<>(10000);
     for (final Long id : conceptIds) {
       final Concept exportConcept = getConcept(id);
       // Detach object by copying it
       final Concept copy = new ConceptJpa(exportConcept, true);
       exportConcepts.add(copy);
     }
+
     // Generate the snapshot release artifact and add it
     final ExportTranslationHandler handler =
         getExportTranslationHandler(ioHandlerId);
@@ -164,7 +169,6 @@ public class PerformTranslationBetaAlgorithm extends TranslationServiceJpa
         translation.getTerminologyId(), translation.getProject().getId());
 
     if (releaseInfo != null) {
-      System.out.println("start delta");
       // Get descriptions/languages from last time
       final Map<String, Description> oldDescriptionMap = new HashMap<>();
       final Map<String, LanguageRefsetMember> oldMemberMap = new HashMap<>();

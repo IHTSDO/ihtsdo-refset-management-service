@@ -136,8 +136,9 @@ public interface TerminologyHandler extends Configurable {
    * Assign names.
    *
    * @return true, if successful
+   * @throws Exception the exception
    */
-  public boolean assignNames();
+  public boolean assignNames() throws Exception;
 
   /**
    * Returns the standard description types.
@@ -178,8 +179,8 @@ public interface TerminologyHandler extends Configurable {
    * @return the concept parents
    * @throws Exception the exception
    */
-  public ConceptList getConceptParents(String terminologyId,
-    String terminology, String version) throws Exception;
+  public ConceptList getConceptParents(String terminologyId, String terminology,
+    String version) throws Exception;
 
   /**
    * Returns the concept children.

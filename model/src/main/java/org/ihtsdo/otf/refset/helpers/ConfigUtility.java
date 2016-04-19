@@ -72,20 +72,20 @@ public class ConfigUtility {
   public final static String DEFAULT = "DEFAULT";
 
   /** The date format. */
-  public final static FastDateFormat DATE_FORMAT = FastDateFormat
-      .getInstance("yyyyMMdd");
+  public final static FastDateFormat DATE_FORMAT =
+      FastDateFormat.getInstance("yyyyMMdd");
 
   /** The Constant DATE_FORMAT2. */
-  public final static FastDateFormat DATE_FORMAT2 = FastDateFormat
-      .getInstance("yyyy_MM_dd");
+  public final static FastDateFormat DATE_FORMAT2 =
+      FastDateFormat.getInstance("yyyy_MM_dd");
 
   /** The Constant DATE_FORMAT3. */
-  public final static FastDateFormat DATE_FORMAT3 = FastDateFormat
-      .getInstance("yyyy");
-  
-  /**  The Constant DATE_FORMAT4. */
-  public final static FastDateFormat DATE_FORMAT4 = FastDateFormat
-      .getInstance("yyyy-MM-dd hh:mm:ss");
+  public final static FastDateFormat DATE_FORMAT3 =
+      FastDateFormat.getInstance("yyyy");
+
+  /** The Constant DATE_FORMAT4. */
+  public final static FastDateFormat DATE_FORMAT4 =
+      FastDateFormat.getInstance("yyyy-MM-dd hh:mm:ss");
 
   /** The config. */
   public static Properties config = null;
@@ -94,8 +94,8 @@ public class ConfigUtility {
   private static Transformer transformer;
 
   /** The date format. */
-  public final static FastDateFormat format = FastDateFormat
-      .getInstance("yyyyMMdd");
+  public final static FastDateFormat format =
+      FastDateFormat.getInstance("yyyyMMdd");
 
   static {
     try {
@@ -103,8 +103,8 @@ public class ConfigUtility {
       transformer = factory.newTransformer();
       // Indent output.
       transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-      transformer.setOutputProperty(
-          "{http://xml.apache.org/xslt}indent-amount", "4");
+      transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount",
+          "4");
       // Skip XML declaration header.
       transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
     } catch (TransformerConfigurationException e) {
@@ -125,9 +125,8 @@ public class ConfigUtility {
     try {
       // Attempt to logout to verify service is up (this works like a "ping").
       Client client = ClientBuilder.newClient();
-      WebTarget target =
-          client.target(config.getProperty("base.url")
-              + "/security/logout/dummy");
+      WebTarget target = client
+          .target(config.getProperty("base.url") + "/security/logout/dummy");
 
       Response response = target.request(MediaType.APPLICATION_JSON).get();
       if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -168,23 +167,21 @@ public class ConfigUtility {
           label = candidateLabel;
         }
       } else {
-        Logger.getLogger(ConfigUtility.class.getName()).info(
-            "  label.prop resource cannot be found, using default");
+        Logger.getLogger(ConfigUtility.class.getName())
+            .info("  label.prop resource cannot be found, using default");
 
       }
-      Logger.getLogger(ConfigUtility.class.getName()).info(
-          "  refset.config.label = " + label);
+      Logger.getLogger(ConfigUtility.class.getName())
+          .info("  refset.config.label = " + label);
 
       // Now get the properties from the corresponding setting
       // This is a complicated mechanism to support multiple simulataneous
       // installations within the same container (e.g. tomcat).
       // Default setups do not require this.
-      String configFileName =
-          System.getProperty("refset.config"
-              + (label.isEmpty() ? "" : "." + label));
-      Logger.getLogger(ConfigUtility.class.getName()).info(
-          "  refset.config" + (label.isEmpty() ? "" : "." + label) + " = "
-              + configFileName);
+      String configFileName = System
+          .getProperty("refset.config" + (label.isEmpty() ? "" : "." + label));
+      Logger.getLogger(ConfigUtility.class.getName()).info("  refset.config"
+          + (label.isEmpty() ? "" : "." + label) + " = " + configFileName);
       config = new Properties();
       FileReader in = new FileReader(new File(configFileName));
       config.load(in);
@@ -263,12 +260,10 @@ public class ConfigUtility {
     for (Object key : config.keySet()) {
       // Find properties like "metadata.service.handler.SNOMED.class"
       if (key.toString().startsWith(property + "." + handlerName + ".")) {
-        String shortKey =
-            key.toString().substring(
-                (property + "." + handlerName + ".").length());
-        Logger.getLogger(ConfigUtility.class).info(
-            " property " + shortKey + " = "
-                + config.getProperty(key.toString()));
+        String shortKey = key.toString()
+            .substring((property + "." + handlerName + ".").length());
+        Logger.getLogger(ConfigUtility.class).info(" property " + shortKey
+            + " = " + config.getProperty(key.toString()));
         handlerProperties.put(shortKey, config.getProperty(key.toString()));
       }
     }
@@ -323,8 +318,8 @@ public class ConfigUtility {
   @SuppressWarnings("resource")
   public static Object getGraphForFile(File file, Class<?> graphClass)
     throws FileNotFoundException, JAXBException {
-    return getGraphForString(new Scanner(file, "UTF-8").useDelimiter("\\A")
-        .next(), graphClass);
+    return getGraphForString(
+        new Scanner(file, "UTF-8").useDelimiter("\\A").next(), graphClass);
   }
 
   /**
@@ -339,8 +334,8 @@ public class ConfigUtility {
   @SuppressWarnings("resource")
   public static Object getGraphForStream(InputStream in, Class<?> graphClass)
     throws FileNotFoundException, JAXBException {
-    return getGraphForString(new Scanner(in, "UTF-8").useDelimiter("\\A")
-        .next(), graphClass);
+    return getGraphForString(
+        new Scanner(in, "UTF-8").useDelimiter("\\A").next(), graphClass);
   }
 
   /**
@@ -425,8 +420,8 @@ public class ConfigUtility {
    * @throws TransformerException the transformer exception
    * @throws ParserConfigurationException the parser configuration exception
    */
-  public static String getStringForNode(Node root) throws TransformerException,
-    ParserConfigurationException {
+  public static String getStringForNode(Node root)
+    throws TransformerException, ParserConfigurationException {
     DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
     DocumentBuilder builder = factory.newDocumentBuilder();
     Document document = builder.newDocument();
@@ -602,7 +597,8 @@ public class ConfigUtility {
     msg.setFrom(new InternetAddress(from));
     String[] recipientsArray = recipients.split(";");
     for (String recipient : recipientsArray) {
-      msg.addRecipient(Message.RecipientType.TO, new InternetAddress(recipient));
+      msg.addRecipient(Message.RecipientType.TO,
+          new InternetAddress(recipient));
     }
     Transport.send(msg);
   }
@@ -649,9 +645,8 @@ public class ConfigUtility {
   public static <T> void reflectionSort(List<T> classes, Class<T> clazz,
     String sortField) throws Exception {
 
-    final Method getMethod =
-        clazz.getMethod("get" + sortField.substring(0, 1).toUpperCase()
-            + sortField.substring(1));
+    final Method getMethod = clazz.getMethod("get"
+        + sortField.substring(0, 1).toUpperCase() + sortField.substring(1));
     if (getMethod.getReturnType().isAssignableFrom(Comparable.class)) {
       throw new Exception("Referenced sort field is not comparable");
     }
@@ -769,6 +764,22 @@ public class ConfigUtility {
    */
   public static boolean isBackgroundLookup() throws Exception {
     String property = getConfigProperties().getProperty("lookup.background");
+    boolean background = true;
+    if (property != null && property.equals("false")) {
+      background = false;
+    }
+    return background;
+  }
+
+  /**
+   * Indicates whether or not assign names is the case.
+   *
+   * @return <code>true</code> if so, <code>false</code> otherwise
+   * @throws Exception the exception
+   */
+  public static boolean isAssignNames() throws Exception {
+    String property = getConfigProperties()
+        .getProperty("terminology.handler.DEFAULT.assignNames");
     boolean background = true;
     if (property != null && property.equals("false")) {
       background = false;

@@ -1012,8 +1012,8 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
 
   /* see superclass */
   @Override
-  public boolean assignNames() {
-    return assignNames;
+  public boolean assignNames() throws Exception {
+    return ConfigUtility.isAssignNames();
   }
 
   /* see superclass */

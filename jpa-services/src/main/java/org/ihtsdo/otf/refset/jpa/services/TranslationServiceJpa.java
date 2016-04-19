@@ -1003,7 +1003,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa
       // Add descriptions
       for (final Description originDescription : originConcept
           .getDescriptions()) {
-        Description description = new DescriptionJpa(originDescription, false);
+        final Description description = new DescriptionJpa(originDescription, false);
         description.setId(null);
         if (description.getEffectiveTime() == null) {
           description.setEffectiveTime(effectiveTime);
@@ -1015,7 +1015,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa
         // Add language refset entries
         for (final LanguageRefsetMember originMember : originDescription
             .getLanguageRefsetMembers()) {
-          LanguageRefsetMember member =
+          final LanguageRefsetMember member =
               new LanguageRefsetMemberJpa(originMember);
           member.setId(null);
           if (member.getEffectiveTime() == null) {
