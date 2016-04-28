@@ -470,7 +470,9 @@
             <td>
               <b>External Url</b>
             </td>
-            <td>{{selected.refset.externalUrl}}</td>
+            <td>
+              <a href="{{selected.refset.externalUrl}}">{{selected.refset.externalUrl}}</a>
+            </td>
           </tr>
           <tr ng-show="refsetReleaseInfo && !refsetReleaseInfo.planned">
             <td ng-show="refsetReleaseInfo.published">
