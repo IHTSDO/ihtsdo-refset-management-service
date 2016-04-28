@@ -373,7 +373,6 @@ tsApp.directive('conceptInfo', [
           // Gets $scope.data.memberTypes
           // Only operates if $scope.data.refset exists
           $scope.getMemberTypes = function() {
-            console.debug("get member types", $scope.data.refset, $scope.value);
             // skip if refset not set
             if (!$scope.data.refset) {
               $scope.disableMemberTypes = true;

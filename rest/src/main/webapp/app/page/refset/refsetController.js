@@ -163,12 +163,13 @@ tsApp
             $scope.metadata.refsetTypes = data.strings;
           });
         };
-
+        
         // Get $scope.metadata.terminologies, also loads
         // versions for the first edition in the list
         $scope.getTerminologyEditions = function() {
           projectService.getTerminologyEditions().then(function(data) {
             $scope.metadata.terminologies = data.terminologies;
+            utilService.setTerminologies(data.terminologies);
             // Look up all versions
             for (var i = 0; i < data.terminologies.length; i++) {
               $scope.getTerminologyVersions(data.terminologies[i].terminology);

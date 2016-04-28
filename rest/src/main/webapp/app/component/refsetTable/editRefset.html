@@ -10,7 +10,7 @@
           <b><span ng-show="action == 'Clone'">Clone to </span>Project:</b>
         </td>
         <td>
-          <select ng-model="refset.project" 
+          <select ng-model="refset.project"
             ng-change="projectSelected(refset.project)"
             ng-options="item.name.concat(' (',item.id,')') for item in projects.data">
           </select>
@@ -56,8 +56,15 @@
           <b>Module Id</b>
         </td>
         <td>
-          <input ng-model="refset.moduleId" size="25"
-            placeholder="e.g. 900000000000207008" />
+          <input style="width: 252px" ng-model="refset.moduleId"
+            list="moduleList" placeholder="e.g. 900000000000207008" />
+          <datalist id="moduleList">
+            <option ng-repeat="module in modules | orderBy:'terminologyId'"
+              value="{{module.terminologyId}}">{{module.name}}</option>
+          </datalist>
+          <button class="btn btn-xs btn-warning" ng-show="refset.moduleId"
+            ng-click="refset.moduleId=''">Clear</button>
+          &nbsp;&nbsp;
           <span flag-icon obj="refset"></span>
         </td>
       </tr>
@@ -91,6 +98,7 @@
         </td>
         <td>
           <select ng-model="refset.version"
+            ng-change="versionSelected(refset.version)"
             ng-options="item for item in versions"></select>
         </td>
       </tr>

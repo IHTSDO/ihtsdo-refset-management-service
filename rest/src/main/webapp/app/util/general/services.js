@@ -15,6 +15,8 @@ tsApp
           expand : false
         };
 
+        this.terminologies = [];
+
         // tinymce options
         this.tinymceOptions = {
           menubar : false,
@@ -175,6 +177,23 @@ tsApp
             day = '0' + day;
           }
           return year + month + day;
+        };
+
+        // Set terminologies list
+        this.setTerminologies = function(lterminologies) {
+          this.terminologies = lterminologies;
+        };
+
+        // Return the name for a terminology
+        this.getTerminologyName = function(terminology) {
+          if (this.terminologies) {
+            for (var i = 0; i < this.terminologies.length; i++) {
+              if (terminology === this.terminologies[i].terminology) {
+                return this.terminologies[i].name;
+              }
+            }
+          }
+          return "unknown terminology";
         };
 
         // Table sorting mechanism

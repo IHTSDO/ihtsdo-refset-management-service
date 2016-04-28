@@ -53,16 +53,17 @@ tsApp
 
         // Metadata for refsets, projects, etc.
         $scope.metadata = {
-          terminologies : []
+          terminologies : [],
+          versions : {}
         };
-        
+
         $scope.userPreferences = {
           moduleId : $scope.user.userPreferences.moduleId,
           namespace : $scope.user.userPreferences.namespace,
           organization : $scope.user.userPreferences.organization,
           exclusionClause : $scope.user.userPreferences.exclusionClause,
           feedbackEmail : $scope.user.userPreferences.feedbackEmail
-        }
+        };
         $scope.moduleIdChanged = false;
         $scope.namespaceChanged = false;
         $scope.organizationChanged = false;
@@ -239,8 +240,23 @@ tsApp
         $scope.getTerminologyEditions = function() {
           projectService.getTerminologyEditions().then(function(data) {
             $scope.metadata.terminologies = data.terminologies;
+            utilService.setTerminologies(data.terminologies);
+            // Look up all versions
+            for (var i = 0; i < data.terminologies.length; i++) {
+              $scope.getTerminologyVersions(data.terminologies[i].terminology);
+            }
           });
 
+        };
+
+        // Get $scope.metadata.versions
+        $scope.getTerminologyVersions = function(terminology) {
+          projectService.getTerminologyVersions(terminology).then(function(data) {
+            $scope.metadata.versions[terminology] = [];
+            for (var i = 0; i < data.terminologies.length; i++) {
+              $scope.metadata.versions[terminology].push(data.terminologies[i].version);
+            }
+          });
         };
 
         // Sets the selected project
@@ -280,7 +296,6 @@ tsApp
             .then(
               // Successs
               function(data) {
-                console.debug("DATA", data);
                 // if refsets, stop
                 if (data.refsets.length > 0) {
                   alert('The project has refsets attached. The refsets for this project must be removed'
@@ -336,10 +351,10 @@ tsApp
             $scope.user.userPreferences.feedbackEmail = value;
             $scope.feedbackEmailChanged = false;
           }
-          
+
           $scope.saveUserPreferences();
         };
-        
+
         // Save the user preferences
         $scope.saveUserPreferences = function() {
           securityService.updateUserPreferences($scope.user.userPreferences).then(
@@ -349,7 +364,7 @@ tsApp
             $scope.getPagedAvailableLdt();
           });
         };
-        
+
         // indicate that a user preference value has changed
         $scope.setChanged = function(item) {
           if (item == 'moduleId') {
@@ -361,9 +376,9 @@ tsApp
           } else if (item == 'exclusionClause') {
             $scope.exclusionClauseChanged = true;
           } else if (item == 'feedbackEmail') {
-            $scope.feedbackEmailChanged = true; 
+            $scope.feedbackEmailChanged = true;
           }
-        }
+        };
 
         // Get $scope.languageDescriptionTypes
         $scope.getLanguageDescriptionTypes = function() {
@@ -436,10 +451,8 @@ tsApp
           // end at index -11 because we can't move the last one down
           for (var i = 0; i < $scope.user.userPreferences.languageDescriptionTypes.length - 1; i++) {
             if ($scope.isEquivalent(ldt, $scope.user.userPreferences.languageDescriptionTypes[i])) {
-              console.debug(' ldt 1 = ', $scope.user.userPreferences.languageDescriptionTypes);
               $scope.user.userPreferences.languageDescriptionTypes.splice(i, 2,
                 $scope.user.userPreferences.languageDescriptionTypes[i + 1], ldt);
-              console.debug(' ldt 2 = ', $scope.user.userPreferences.languageDescriptionTypes);
               break;
             }
           }
@@ -573,6 +586,7 @@ tsApp
           $scope.metadata = metadata;
           $scope.user = user;
           $scope.validationChecks = validationChecks;
+          $scope.modules = [];
           $scope.availableChecks = [];
           $scope.selectedChecks = [];
           $scope.errors = [];
@@ -585,6 +599,27 @@ tsApp
               $scope.availableChecks.push($scope.validationChecks[i].value);
             }
           }
+
+          // Get $scope.modules
+          $scope.getModules = function() {
+            projectService.getModules($scope.project.terminology,
+              $scope.metadata.versions[$scope.project.terminology][0]).then(
+            // Success
+            function(data) {
+              $scope.modules = data.concepts;
+            });
+          };
+
+          // Initialize modules if terminology/version set
+          if ($scope.project.terminology) {
+            $scope.getModules();
+          }
+
+          // Handle terminology selected
+          $scope.terminologySelected = function(terminology) {
+            $scope.versions = $scope.metadata.versions[terminology].sort().reverse();
+            $scope.getModules();
+          };
 
           // move a check from unselected to selected
           $scope.selectValidationCheck = function(check) {
@@ -694,6 +729,7 @@ tsApp
           $scope.project = project;
           $scope.metadata = metadata;
           $scope.validationChecks = validationChecks;
+          $scope.modules = [];
           $scope.availableChecks = [];
           $scope.selectedChecks = [];
           $scope.errors = [];
@@ -705,6 +741,27 @@ tsApp
               $scope.availableChecks.push($scope.validationChecks[i].value);
             }
           }
+
+          // Get $scope.modules
+          $scope.getModules = function() {
+            projectService.getModules($scope.project.terminology,
+              $scope.metadata.versions[$scope.project.terminology][0]).then(
+            // Success
+            function(data) {
+              $scope.modules = data.concepts;
+            });
+          };
+
+          // Initialize modules if terminology/version set
+          if ($scope.project.terminology) {
+            $scope.getModules();
+          }
+
+          // Handle terminology selected
+          $scope.terminologySelected = function(terminology) {
+            $scope.versions = $scope.metadata.versions[terminology].sort().reverse();
+            $scope.getModules();
+          };
 
           $scope.selectValidationCheck = function(check) {
             $scope.selectedChecks.push(check);

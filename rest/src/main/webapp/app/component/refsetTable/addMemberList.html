@@ -10,8 +10,8 @@
       </tr>
       <tr>
         <td>
-          <textarea rows="8" cols="40" ng-model="memberIdList"></textarea>
-
+          <textarea rows="8" cols="45" ng-model="memberIdList"></textarea>
+          <p>Use comma or whitespace delimited numeric identifiers.</p>
         </td>
       </tr>
       <tr ng-show="hasResults()">
@@ -114,10 +114,14 @@
   </div>
 
   <div class="modal-footer">
-    <button class="btn btn-primary" ng-disabled="!memberIdList || hasResults()"
-      ng-click="includeMembers();">Include</button>
-    <button class="btn btn-primary" ng-disabled="!memberIdList || hasResults()"
-      ng-click="excludeMembers();">Exclude</button>
+    <button ng-show="refset.type == 'EXTENSIONAL'" class="btn btn-primary"
+      ng-disabled="!memberIdList || hasResults()" ng-click="includeMembers();">Add</button>
+    <button ng-show="refset.type == 'EXTENSIONAL'" class="btn btn-primary"
+      ng-disabled="!memberIdList || hasResults()" ng-click="excludeMembers();">Remove</button>
+    <button ng-show="refset.type == 'INTENSIONAL'" class="btn btn-primary"
+      ng-disabled="!memberIdList || hasResults()" ng-click="includeMembers();">Include</button>
+    <button ng-show="refset.type == 'INTENSIONAL'" class="btn btn-primary"
+      ng-disabled="!memberIdList || hasResults()" ng-click="excludeMembers();">Exclude</button>
     <button ng-show="!hasResults()" class="btn btn-warning" ng-click="cancel()">Cancel</button>
     <button ng-show="hasResults()" class="btn btn-warning" ng-click="close()">Close</button>
   </div>

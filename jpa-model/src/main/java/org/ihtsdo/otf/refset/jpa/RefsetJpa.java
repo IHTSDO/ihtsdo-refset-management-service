@@ -649,7 +649,8 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   }
 
   /**
-   * Wraps the clause in parens if there are role restrictions.
+   * Wraps the clause in parens if there are role restrictions or compound
+   * clauses.
    *
    * @param clause the clause
    * @param groupSize the group size
@@ -662,6 +663,15 @@ public class RefsetJpa extends AbstractComponent implements Refset {
         (clause.matches(".*\\d\\s*:\\s*\\d.*") ||
         // e.g. .. 19829001 |abc| : 116676008 ...
         clause.matches(".*\\|\\s*:\\s*\\d.*"))) {
+      return "(" + clause + ")";
+    }
+    if (clause.matches(".* AND .*")) {
+      return "(" + clause + ")";
+    }
+    if (clause.matches(".* OR .*")) {
+      return "(" + clause + ")";
+    }
+    if (clause.matches(".* MINUS .*")) {
       return "(" + clause + ")";
     }
     return clause;

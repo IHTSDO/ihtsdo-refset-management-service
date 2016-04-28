@@ -49,7 +49,7 @@ tsApp
         $scope.metadata = {
           importHandlers : [],
           exportHandlers : [],
-          workflowPaths : []
+          workflowPaths : [],
         };
 
         // Stats containers for refset-table sections
@@ -59,7 +59,7 @@ tsApp
         $scope.release = {
           count : 0
         };
-        
+
         // Get $scope.projects
         $scope.getProjects = function() {
 
@@ -168,6 +168,17 @@ tsApp
           });
         };
 
+        // Get $scope.metadata.terminologies, also loads
+        // versions for the first edition in the list
+        $scope.getTerminologyEditions = function() {
+          projectService.getTerminologyEditions().then(
+          // Success
+          function(data) {
+            utilService.setTerminologies(data.terminologies);
+          });
+
+        };
+
         // Set the current accordion
         $scope.setAccordion = function(data) {
           utilService.clearError();
@@ -191,6 +202,7 @@ tsApp
 
         // Initialize
         $scope.getProjects();
+        $scope.getTerminologyEditions();
         // Initialize some metadata first time
         $scope.getIOHandlers();
         $scope.getWorkflowPaths();

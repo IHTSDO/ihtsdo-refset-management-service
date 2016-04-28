@@ -99,6 +99,7 @@ tsApp.controller('DirectoryCtrl', [
       // Success
       function(data) {
         $scope.metadata.terminologies = data.terminologies;
+        utilService.setTerminologies(data.terminologies);
         // Look up all versions
         for (var i = 0; i < data.terminologies.length; i++) {
           $scope.getTerminologyVersions(data.terminologies[i].terminology);

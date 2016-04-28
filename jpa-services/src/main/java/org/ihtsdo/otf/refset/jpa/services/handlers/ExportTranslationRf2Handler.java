@@ -299,8 +299,9 @@ public class ExportTranslationRf2Handler implements ExportTranslationHandler {
    */
   @Override
   public String getBetaFileName(String namespace, String type, String version) {
-    return "xder2_translation_" + type + "_" + namespace + "_" + version
-        + getFileTypeFilter();
+    return "xder2_translation_" + type + "_"
+        + (namespace == null || namespace.isEmpty() ? "INT" : namespace) + "_"
+        + version + getFileTypeFilter();
   }
 
 }

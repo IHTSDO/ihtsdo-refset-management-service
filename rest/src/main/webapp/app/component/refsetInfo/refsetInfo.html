@@ -39,11 +39,7 @@
       <td>
         <b>Terminology</b>
       </td>
-      <td>{{refset.terminology}} {{refset.version}}</td>
-    </tr>
-    <tr ng-show="form == 'long'">
-      <td>Version</td>
-      <td>{{refset.version}}</td>
+      <td>{{getTerminologyName(refset.terminology)}} {{refset.version}}</td>
     </tr>
     <tr ng-show="form == 'long' && refset.type == 'INTENSIONAL'">
       <td>

@@ -288,7 +288,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
     Logger.getLogger(getClass()).info("Refset Service - find refsets " + query);
     int[] totalCt = new int[1];
     // NOTE: this method ignores provisional refsets
-    int origStartIndex = pfs.getStartIndex();
+    int origStartIndex = pfs == null ? -1 : pfs.getStartIndex();
     if (pfs != null && pfs.getLatestOnly()) {
       pfs.setStartIndex(-1);
     }

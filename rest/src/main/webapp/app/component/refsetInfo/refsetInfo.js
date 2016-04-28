@@ -17,6 +17,10 @@ tsApp.directive('refsetInfo', [ '$uibModal', 'utilService', function($uibModal, 
 
       };
 
+      // Get the name for a terminology
+      $scope.getTerminologyName = function() {
+        return utilService.getTerminologyName($scope.refset.terminology);
+      };
       // end
     } ]
   };

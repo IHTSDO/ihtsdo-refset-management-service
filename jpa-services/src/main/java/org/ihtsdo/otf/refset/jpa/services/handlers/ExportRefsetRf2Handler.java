@@ -48,9 +48,9 @@ public class ExportRefsetRf2Handler implements ExportRefsetHandler {
   @Override
   public String getBetaFileName(String namespace, String type, String version) {
     // Use "INT" for the namespace if null
-    return "xder2_sRefset_Simple" + type + "_"
-        + (namespace == null ? "INT" : namespace) + "_" + version
-        + getFileTypeFilter();
+    return "xder2_Refset_Simple" + type + "_"
+        + (namespace == null || namespace.isEmpty() ? "INT" : namespace) + "_"
+        + version + getFileTypeFilter();
   }
 
   /* see superclass */
@@ -69,8 +69,9 @@ public class ExportRefsetRf2Handler implements ExportRefsetHandler {
   @Override
   public InputStream exportMembers(Refset refset,
     List<ConceptRefsetMember> members) throws Exception {
-    Logger.getLogger(getClass()).info("Export refset members with names - "
-        + refset.getTerminologyId() + ", " + refset.getName());
+    Logger.getLogger(getClass()).info(
+        "Export refset members with names - " + refset.getTerminologyId()
+            + ", " + refset.getName());
 
     // Write a header
     // Obtain members for refset,
@@ -90,8 +91,8 @@ public class ExportRefsetRf2Handler implements ExportRefsetHandler {
       Logger.getLogger(getClass()).debug("  member = " + member);
 
       // Skip exclusions
-      if (EnumSet.of(Refset.MemberType.EXCLUSION)
-          .contains(member.getMemberType())) {
+      if (EnumSet.of(Refset.MemberType.EXCLUSION).contains(
+          member.getMemberType())) {
         continue;
       }
       sb.append(member.getTerminologyId()).append("\t");
@@ -114,8 +115,8 @@ public class ExportRefsetRf2Handler implements ExportRefsetHandler {
   /* see superclass */
   @Override
   public InputStream exportDefinition(Refset refset) throws Exception {
-    Logger.getLogger(getClass()).info
-        ("Export refset definition - " + refset.getTerminologyId() + ", "
+    Logger.getLogger(getClass()).info(
+        "Export refset definition - " + refset.getTerminologyId() + ", "
             + refset.getName() + ", " + refset.getDefinitionClauses());
 
     // Write RF2 refset definition pattern to an input stream

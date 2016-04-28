@@ -45,13 +45,7 @@
       <td>
         <b>Terminology</b>
       </td>
-      <td>{{translation.terminology}}</td>
-    </tr>
-    <tr ng-show="form == 'long'">
-      <td>
-        <b>Version</b>
-      </td>
-      <td>{{translation.version}}</td>
+      <td>{{getTerminologyName(translation.terminology)}} {{translation.version}}</td>
     </tr>
   </tbody>
 </table>

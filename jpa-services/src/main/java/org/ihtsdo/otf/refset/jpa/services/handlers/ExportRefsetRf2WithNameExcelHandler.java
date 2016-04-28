@@ -32,7 +32,7 @@ public class ExportRefsetRf2WithNameExcelHandler
   /* see superclass */
   @Override
   public String getName() {
-    return "Export RF2 .xls";
+    return "Export RF2 .xls with name";
   }
 
 }

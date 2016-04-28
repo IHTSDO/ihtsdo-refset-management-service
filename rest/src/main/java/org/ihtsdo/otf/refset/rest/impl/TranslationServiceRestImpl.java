@@ -300,6 +300,29 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
           authorizeProject(translationService, translation.getProjectId(),
               securityService, authToken, "add translation", UserRole.AUTHOR);
 
+      // Check preconditions
+      // No translation with same terminologyId, name, description, project id,
+      // provisional, effectiveTime
+      // Hard to enforce with primary key because effectiveTime can be null
+      if (translation.getTerminologyId() != null) {
+        final TranslationList existingTranslations =
+            translationService.findTranslationsForQuery("terminologyId:"
+                + translation.getTerminologyId(), null);
+        for (final Translation translation2 : existingTranslations.getObjects()) {
+          if ((translation.getTerminologyId() + translation.getName()
+              + translation.getDescription() + translation.getProjectId()
+              + translation.isProvisional() + translation.getEffectiveTime())
+              .equals((translation2.getTerminologyId() + translation2.getName()
+                  + translation2.getDescription()
+                  + translation2.getProject().getId()
+                  + translation2.isProvisional() + translation2
+                  .getEffectiveTime()))) {
+            throw new LocalException(
+                "A translation with this refset, name, and description already exists in the project");
+          }
+        }
+      }
+
       // Add translation
       translation.setLastModifiedBy(userName);
       final Translation newTranslation =
@@ -349,6 +372,33 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       final String userName =
           authorizeProject(translationService, translation.getProjectId(),
               securityService, authToken, "update translation", UserRole.AUTHOR);
+      // Check preconditions
+      // No translation with same terminologyId, name, description, project id,
+      // provisional, effectiveTime
+      // Hard to enforce with primary key because effectiveTime can be null
+      if (translation.getTerminologyId() != null) {
+        final TranslationList existingTranslations =
+            translationService.findTranslationsForQuery("terminologyId:"
+                + translation.getTerminologyId()
+                + " AND NOT workflowStatus:PUBLISHED"
+                + " AND NOT workflowStatus:BETA", null);
+        for (final Translation translation2 : existingTranslations.getObjects()) {
+          if (!translation.getId().equals(translation2.getId())
+              && (translation.getTerminologyId() + translation.getName()
+                  + translation.getDescription() + translation.getProjectId()
+                  + translation.isProvisional() + translation
+                    .getEffectiveTime()).equals((translation2
+                  .getTerminologyId()
+                  + translation2.getName()
+                  + translation2.getDescription()
+                  + translation2.getProject().getId()
+                  + translation2.isProvisional() + translation2
+                  .getEffectiveTime()))) {
+            throw new LocalException(
+                "A translation with this refset, name, and description already exists in the project");
+          }
+        }
+      }
 
       // Update translation
       translation.setLastModifiedBy(userName);

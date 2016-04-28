@@ -70,7 +70,7 @@
               ng-click="setSortField('translation','moduleId')">
               Module
               <span ng-bind="getSortIndicator('translation','moduleId')"></span>
-            </span> <span ng-show="projects.role == 'ADMIN'">
+            </span> <span ng-show="projects.role == 'ADMIN' || value == 'RELEASE'">
               /
               <span ng-click="setSortField('translation','workflowStatus')">
                 Status</span>
@@ -115,7 +115,7 @@
               {{getTranslationOrganization(translation)}}
             </span>
             <span ng-show="value != 'PUBLISHED' && value != 'BETA'">
-              <span ng-show="projects.role == 'ADMIN'">
+              <span ng-show="projects.role == 'ADMIN' || value == 'RELEASE'">
                 <br />{{translation.workflowStatus}}
               </span>
             </span>
@@ -169,7 +169,7 @@
               <br />
               <button class="btn btn-xs btn-warning"
                 confirm="Are you sure you want to cancel the release process?"
-                ng-click="cancelAction(translation)"
+                ng-click="cancelAction(translation); $event.stopPropagation()"
                 title="Click to cancel release process">Cancel Release</button>
             </span>
 
@@ -226,7 +226,7 @@
               <br />
               <button class="btn btn-xs btn-warning"
                 confirm="Are you sure you want to cancel the release?"
-                ng-click="cancelActionForStaged(translation)"
+                ng-click="cancelActionForStaged(translation);$event.stopPropagation()"
                 title="Click to cancel release process">Cancel Release</button>
             </span>
           </td>
@@ -319,13 +319,8 @@
             <td>
               <b>Terminology</b>
             </td>
-            <td>{{selected.translation.terminology}}</td>
-          </tr>
-          <tr>
-            <td>
-              <b>Version</b>
-            </td>
-            <td>{{selected.translation.version}}</td>
+            <td>{{getTerminologyName(selected.translation.terminology)}}
+              {{selected.translation.version}}</td>
           </tr>
           <tr
             ng-show="selected.translation.workflowStatus != 'BETA' && selected.translation.workflowStatus != 'PUBLISHED'">
@@ -486,7 +481,7 @@
 
     <span ng-show="selected.translation.available.totalCount == 0"
       style="display: block;" class="alert alert-warning">No available
-      concepts.</span>
+      concepts for {{projects.role}}.</span>
     <table ng-show="selected.translation.available.totalCount > 0" class="table">
       <thead>
         <tr>
@@ -608,7 +603,7 @@
 
     <span ng-show="selected.translation.assigned.totalCount == 0"
       style="display: block;" class="alert alert-warning">No assigned
-      concepts.</span>
+      concepts for {{projects.role}}.</span>
     <table ng-show="selected.translation.assigned.totalCount > 0" class="table">
       <thead>
         <tr>
@@ -631,7 +626,7 @@
                 Status</span>
               <span ng-bind="getSortIndicator('assigned','workflowStatus')"></span>
             </span></th>
-          <th class="col-md-2 col-xs-2">Actions <i
+          <th class="col-md-2 col-xs-2">Actions <!--  Unassign all --> <i
               ng-show="selected.translation.assigned.totalCount > 0"
               confirm="Are you sure you want to unassign this concept ({{concept.terminologyId}}, {{concept.name}})"
               ng-click="unassignAll();" title="Unassign all"
@@ -742,24 +737,12 @@
   <!-- R3C1 -->
   <div class="col-md-6 col-xs-12">
 
-    <div class="col-md-12 col-xs-12" ng-show="selected.concept">
-      <!-- Selected Concept Detail -->
-      <span
-        ng-show="!selected.concept && selected.translation.concepts.length > 0"
-        class="alert alert-warning">Select a concept to see details</span>
-      <div concept-info data="selected"></div>
-    </div>
-    <!-- End R3C1 -->
-  </div>
-
-  <!-- R3C2 -->
-  <div class="col-md-6 col-xs-12">
-
     <!-- Translation Concepts -->
     <div class="col-md-12 col-xs-12"></div>
 
     <h4 ng-show="selected.translation">
-      Translation Concepts
+      <span ng-show="value != 'EDITING'">Translation Concepts</span>
+      <span ng-show="value == 'EDITING'">Finished Concepts</span>
       <span ng-show="selected.translation.concepts.totalCount>0">
         ({{selected.translation.concepts.totalCount}})</span>
 
@@ -781,7 +764,11 @@
     <span
       ng-show="selected.translation && !paging['concept'].filter && selected.translation.concepts.totalCount == 0">
       <br />
-      <span class="alert alert-warning">Translation has no concepts</span>
+      <span class="alert alert-warning">
+        Translation has no
+        <span ng-show="value == 'EDITING'">publication ready</span>
+        concepts
+      </span>
     </span>
 
     <div
@@ -893,6 +880,20 @@
         <br />No translation concepts matching filter
       </span>
 
+    </div>
+
+    <!-- End R3C1 -->
+  </div>
+
+  <!-- R3C2 -->
+  <div class="col-md-6 col-xs-12">
+
+    <div class="col-md-12 col-xs-12" ng-show="selected.concept">
+      <!-- Selected Concept Detail -->
+      <span
+        ng-show="!selected.concept && selected.translation.concepts.length > 0"
+        class="alert alert-warning">Select a concept to see details</span>
+      <div concept-info data="selected"></div>
     </div>
 
     <!-- EndR3C2 -->

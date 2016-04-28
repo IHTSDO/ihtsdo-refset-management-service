@@ -72,7 +72,7 @@
               ng-click="setSortField('refset','moduleId')">
               Module
               <span ng-bind="getSortIndicator('refset','moduleId')"></span>
-            </span> <span ng-show="projects.role == 'ADMIN'">
+            </span> <span ng-show="projects.role == 'ADMIN' || value == 'RELEASED'">
               /
               <span ng-click="setSortField('refset','workflowStatus')">
                 Status</span>
@@ -115,7 +115,7 @@
             <!-- Mobile friendly line-break -->
             <br class="visible-xs-inline" /> {{refset.organization}}
             <span ng-show="value != 'PUBLISHED' && value != 'BETA'">
-              <span ng-show="projects.role == 'ADMIN'">
+              <span ng-show="projects.role == 'ADMIN' || value == 'RELEASE'">
                 <br />{{refset.workflowStatus}}
               </span>
             </span>
@@ -142,9 +142,22 @@
               confirm="Are you sure you want to remove the refset ({{refset.name}})?"
               ng-click="removeRefset(refset); $event.stopPropagation()"
               class="noul material-icons md-18">delete</i>
-            <i
+
+            <!-- Assign as non-admin -->
+            <i ng-show="projects.role != 'ADMIN'"
               ng-click="openAssignRefsetModal(refset,'ASSIGN'); $event.stopPropagation()"
               title="Assign" class="noul material-icons md-18">assignment_ind</i>
+
+            <!-- Assign as admin -->
+            <i
+              ng-show="projects.role == 'ADMIN' && refset.workflowStatus == 'NEW'"
+              ng-click="openAssignRefsetModal(refset,'ASSIGN','AUTHOR'); $event.stopPropagation()"
+              title="Assign" class="noul material-icons md-18">assignment_ind</i>
+            <i
+              ng-show="projects.role == 'ADMIN' && refset.workflowStatus != 'NEW'"
+              ng-click="openAssignRefsetModal(refset,'ASSIGN','REVIEWER'); $event.stopPropagation()"
+              title="Assign" class="noul material-icons md-18">assignment_ind</i>
+
 
             <!-- As author/reviewer, reassign back to author -->
             <i
@@ -259,6 +272,10 @@
           <td class="nobreak" ng-show="value == 'RELEASE'">
 
             <i
+              ng-show="refset.workflowStatus != 'PUBLISHED' && refset.workflowStatus != 'BETA'"
+              ng-click="openEditRefsetModal(refset); $event.stopPropagation()"
+              title="Edit" class="noul material-icons md-18">edit</i>
+            <i
               confirm="Are you sure you want to remove the refset ({{refset.name}})?"
               ng-show="!refset.staged && !refset.inPublicationProcess && (refset.workflowStatus == 'PUBLISHED' || refset.workflowStatus == 'READY_FOR_PUBLICATION')"
               ng-click="removeRefset(refset); $event.stopPropagation()"
@@ -292,13 +309,13 @@
                         refset.inPublicationProcess">
               <br />
               <button class="btn btn-xs btn-warning" ng-disabled="cancelling"
-                ng-click="cancelAction(refset)"
+                ng-click="cancelAction(refset); $event.stopPropagation()"
                 title="Click to cancel release process">Cancel Release</button>
             </span>
             <span ng-show="refset.workflowStatus == 'BETA'">
               <br />
               <button class="btn btn-xs btn-warning" ng-disabled="cancelling"
-                ng-click="cancelActionForStaged(refset)"
+                ng-click="cancelActionForStaged(refset); $event.stopPropagation()"
                 title="Click to cancel release process">Cancel Release</button>
             </span>
           </td>
@@ -389,7 +406,8 @@
               <b>Terminology</b>
             </td>
             <td>
-              {{selected.refset.terminology}} {{selected.refset.version}}
+              {{getTerminologyName(selected.refset.terminology)}}
+              {{selected.refset.version}}
 
 
               <i
@@ -403,12 +421,6 @@
                 title="Resume migration" class="noul material-icons md-18">play_arrow</i>
 
             </td>
-          </tr>
-          <tr>
-            <td>
-              <b>Version</b>
-            </td>
-            <td>{{selected.refset.version}}</td>
           </tr>
           <tr ng-show="selected.refset.type == 'INTENSIONAL'">
             <td>
@@ -525,14 +537,6 @@
   <!-- R2C1 -->
   <div class="col-md-6 col-xs-12">
 
-    <div ng-show="selected.member" concept-info data="selected" value="value"
-      role="projects.role" handle-workflow="handleWorkflow(selected.refset)"></div>
-
-    <!-- End R2C1 -->
-  </div>
-
-  <!-- R2C2 -->
-  <div class="col-md-6 col-xs-12">
 
     <div class="col-md-12 col-xs-12">
       <h4 ng-show="selected.refset">
@@ -541,6 +545,10 @@
           ({{selected.refset.members.totalCount}})</span>
 
         <span style="float: right;">
+          <i ng-show="projects.role == 'ADMIN'"
+            uib-tooltip="Switch to AUTHOR or REVIWER for more actions"
+            tooltip-placement="left-top" class="md-grey material-icons md-18">info</i>
+
           <!-- Export -->
           <i
             ng-click="openImportExportModal(selected.refset, 'Export', 'Refset Members'); "
@@ -727,6 +735,16 @@
 
       </div>
     </div>
+    <!-- End R2C1 -->
+  </div>
+
+  <!-- R2C2 -->
+  <div class="col-md-6 col-xs-12">
+
+
+    <div ng-show="selected.member" concept-info data="selected" value="value"
+      role="projects.role" handle-workflow="handleWorkflow(selected.refset)"></div>
+
 
     <!-- End R2C2 -->
   </div>

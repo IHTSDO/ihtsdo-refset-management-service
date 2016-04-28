@@ -75,7 +75,7 @@ public class DefaultValidationCheck extends AbstractValidationCheck {
         && refset.getMembers().size() > 0) {
       result.addError("Only external refsets should have members");
     }
-
+    
     return result;
   }
 

@@ -18,7 +18,7 @@ import javax.ws.rs.core.Response.Status.Family;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.helpers.LocalException;
-import org.ihtsdo.otf.refset.jpa.TranslationJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.RandomString;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.rf2.Description;
@@ -26,7 +26,6 @@ import org.ihtsdo.otf.refset.rf2.DescriptionType;
 import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
 import org.ihtsdo.otf.refset.rf2.ModuleDependencyRefsetMember;
 import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefsetMember;
-import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.refset.services.handlers.IdentifierAssignmentHandler;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -212,14 +211,17 @@ public class IhtsdoComponentIdentifierServiceHandler implements
         && !refset.getTerminologyId().isEmpty()) {
       return refset.getTerminologyId();
     }
-    // Reuse concept logic
-    Concept concept = new ConceptJpa();
-    Translation translation = new TranslationJpa();
-    concept.setTranslation(translation);
-    translation.setRefset(refset);
-    translation.setProject(refset.getProject());
 
-    return getTerminologyId(concept);
+    // Reuse concept logic - for now instead assign a temporary id.
+    // it can be set to the correct id later
+    // Concept concept = new ConceptJpa();
+    // Translation translation = new TranslationJpa();
+    // concept.setTranslation(translation);
+    // translation.setRefset(refset);
+    // translation.setProject(refset.getProject());
+    // return getTerminologyId(concept);
+    return "TMP-" + new RandomString(6).nextString();
+
   }
 
   /* see superclass */

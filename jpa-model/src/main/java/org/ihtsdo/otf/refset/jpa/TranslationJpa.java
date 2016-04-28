@@ -659,5 +659,4 @@ public class TranslationJpa extends AbstractComponent implements Translation {
     this.phraseMemory = phraseMemory;
   }
 
-
 }

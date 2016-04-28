@@ -480,6 +480,171 @@ public class RefsetJpaUnitTest extends ModelUnitSupport {
         "((< 19829001 : 116676008 = 79654002) OR <<409623005) MINUS <<304527002",
         refset.computeDefinition());
 
+    //
+    // Now, test compound clauses (containing AND, OR, or MINUS) - wrap with
+    // parens.
+    // < 65801008|Excision (procedure)| AND < 118673008|Procedure on digestive
+    // system (procedure)|
+    // OR
+    // < 233604007|Pneumonia (disorder)| MINUS << 64667001|Interstitial
+    // pneumonia (disorder)|
+    //
+    // => (a) OR (b)
+    refset.getDefinitionClauses().clear();
+    project.setExclusionClause(null);
+    String a =
+        "< 65801008|Excision (procedure)| AND < 118673008|Procedure on digestive system (procedure)|";
+    String b =
+        "< 233604007|Pneumonia (disorder)| MINUS << 64667001|Interstitial pneumonia (disorder)|";
+    clause1 = new DefinitionClauseJpa();
+    clause1.setValue(a);
+    clause1.setNegated(false);
+    clause2 = new DefinitionClauseJpa();
+    clause2.setValue(b);
+    clause2.setNegated(false);
+    refset.getDefinitionClauses().add(clause1);
+    refset.getDefinitionClauses().add(clause2);
+    assertEquals("(" + a + ") OR (" + b + ")", refset.computeDefinition());
+
+    //
+    // Now, test compound clauses (containing AND, OR, or MINUS) - wrap with
+    // parens.
+    // < 65801008|Excision (procedure)| AND < 118673008|Procedure on digestive
+    // system (procedure)|
+    // MINUS
+    // < 233604007|Pneumonia (disorder)| MINUS << 64667001|Interstitial
+    // pneumonia (disorder)|
+    //
+    // => (a) minus (b)
+    refset.getDefinitionClauses().clear();
+    project.setExclusionClause(null);
+    a =
+        "< 65801008|Excision (procedure)| AND < 118673008|Procedure on digestive system (procedure)|";
+    b =
+        "< 233604007|Pneumonia (disorder)| MINUS << 64667001|Interstitial pneumonia (disorder)|";
+    clause1 = new DefinitionClauseJpa();
+    clause1.setValue(a);
+    clause1.setNegated(false);
+    clause2 = new DefinitionClauseJpa();
+    clause2.setValue(b);
+    clause2.setNegated(true);
+    refset.getDefinitionClauses().add(clause1);
+    refset.getDefinitionClauses().add(clause2);
+    assertEquals("(" + a + ") MINUS (" + b + ")", refset.computeDefinition());
+
+    //
+    // Now, test compound clauses (containing AND, OR, or MINUS) - wrap with
+    // parens.
+    // 65801008
+    // < 65801008|Excision (procedure)| AND < 118673008|Procedure on digestive
+    // system (procedure)|
+    // < 233604007|Pneumonia (disorder)| MINUS << 64667001|Interstitial
+    // pneumonia (disorder)|
+    //
+    // => a or (b) or (c)
+    refset.getDefinitionClauses().clear();
+    project.setExclusionClause(null);
+    a = "65801008";
+    b =
+        "< 65801008|Excision (procedure)| AND < 118673008|Procedure on digestive system (procedure)|";
+    String c =
+        "< 233604007|Pneumonia (disorder)| MINUS << 64667001|Interstitial pneumonia (disorder)|";
+    clause1 = new DefinitionClauseJpa();
+    clause1.setValue(a);
+    clause1.setNegated(false);
+    clause2 = new DefinitionClauseJpa();
+    clause2.setValue(b);
+    clause2.setNegated(false);
+    clause3 = new DefinitionClauseJpa();
+    clause3.setValue(c);
+    clause3.setNegated(false);
+    refset.getDefinitionClauses().add(clause1);
+    refset.getDefinitionClauses().add(clause2);
+    refset.getDefinitionClauses().add(clause3);
+
+    assertEquals(a + " OR (" + b + ") OR (" + c + ")",
+        refset.computeDefinition());
+
+    //
+    // Now, test compound clauses (containing AND, OR, or MINUS) - wrap with
+    // parens.
+    // 65801008
+    // < 65801008|Excision (procedure)| AND < 118673008|Procedure on digestive
+    // system (procedure)|
+    // MINUS
+    // < 233604007|Pneumonia (disorder)| MINUS << 64667001|Interstitial
+    // pneumonia (disorder)|
+    // 233604007
+    //
+    // => (a or (b)) minus ((c) or d)
+    refset.getDefinitionClauses().clear();
+    project.setExclusionClause(null);
+    a = "65801008";
+    b =
+        "< 65801008|Excision (procedure)| AND < 118673008|Procedure on digestive system (procedure)|";
+    c =
+        "< 233604007|Pneumonia (disorder)| MINUS << 64667001|Interstitial pneumonia (disorder)|";
+    String d = "233604007";
+    clause1 = new DefinitionClauseJpa();
+    clause1.setValue(a);
+    clause1.setNegated(false);
+    clause2 = new DefinitionClauseJpa();
+    clause2.setValue(b);
+    clause2.setNegated(false);
+    clause3 = new DefinitionClauseJpa();
+    clause3.setValue(c);
+    clause3.setNegated(true);
+    clause4 = new DefinitionClauseJpa();
+    clause4.setValue(d);
+    clause4.setNegated(true);
+    refset.getDefinitionClauses().add(clause1);
+    refset.getDefinitionClauses().add(clause2);
+    refset.getDefinitionClauses().add(clause3);
+    refset.getDefinitionClauses().add(clause4);
+    assertEquals("(" + a + " OR (" + b + ")) MINUS ((" + c + ") OR " + d + ")",
+        refset.computeDefinition()); // TODO: test
+
+    //
+    // Now, test compound clauses (containing AND, OR, or MINUS) - wrap with
+    // parens.
+    // < 65801008|Excision (procedure)| AND < 118673008|Procedure on digestive
+    // system (procedure)|
+    // < 65801008|Excision (procedure)| AND < 118673008|Procedure on digestive
+    // system (procedure)|
+    // MINUS
+    // < 233604007|Pneumonia (disorder)| MINUS << 64667001|Interstitial
+    // pneumonia (disorder)|
+    // < 233604007|Pneumonia (disorder)| MINUS << 64667001|Interstitial
+    // pneumonia (disorder)|
+    //
+    // => ((a) or (b)) minus ((c) or (d))
+    refset.getDefinitionClauses().clear();
+    project.setExclusionClause(null);
+    a =
+        "< 65801008|Excision (procedure)| AND < 118673008|Procedure on digestive system (procedure)|";
+    b = a;
+    c =
+        "< 233604007|Pneumonia (disorder)| MINUS << 64667001|Interstitial pneumonia (disorder)|";
+    d = c;
+    clause1 = new DefinitionClauseJpa();
+    clause1.setValue(a);
+    clause1.setNegated(false);
+    clause2 = new DefinitionClauseJpa();
+    clause2.setValue(b);
+    clause2.setNegated(false);
+    clause3 = new DefinitionClauseJpa();
+    clause3.setValue(c);
+    clause3.setNegated(true);
+    clause4 = new DefinitionClauseJpa();
+    clause4.setValue(d);
+    clause4.setNegated(true);
+    refset.getDefinitionClauses().add(clause1);
+    refset.getDefinitionClauses().add(clause2);
+    refset.getDefinitionClauses().add(clause3);
+    refset.getDefinitionClauses().add(clause4);
+    assertEquals("((" + a + ") OR (" + b + ")) MINUS ((" + c + ") OR (" + d
+        + "))", refset.computeDefinition()); // TODO: test
+
   }
 
   /**

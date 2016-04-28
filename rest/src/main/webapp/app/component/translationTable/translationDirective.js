@@ -131,12 +131,14 @@ tsApp
               $scope.getRefsets = function() {
                 var pfs = {
                   startIndex : -1,
-                  maxResults : 100,
+                  maxResults : 10,
                   sortField : null,
                   queryRestriction : null
                 };
-                // Get refsets for project
-                refsetService.findRefsetsForQuery('projectId:' + $scope.project.id, pfs).then(
+                // Get refsets for project - but not published or beta
+                refsetService.findRefsetsForQuery(
+                  'projectId:' + $scope.project.id
+                    + ' AND NOT workflowStatus:PUBLISHED AND NOT workflowStatus:BETA', pfs).then(
                   function(data) {
                     $scope.refsets = data.refsets;
                   });
@@ -404,6 +406,15 @@ tsApp
               $scope.toShortDate = function(lastModified) {
                 return utilService.toShortDate(lastModified);
 
+              };
+
+              // Get the name for a terminology
+              $scope.getTerminologyName = function() {
+                if ($scope.selected.translation) {
+                  return utilService.getTerminologyName($scope.selected.translation.terminology);
+                } else {
+                  return "unknown translation terminology";
+                }
               };
 
               // Table sorting mechanism
@@ -749,9 +760,9 @@ tsApp
               };
 
               // cancelling a release given the staged translation
-              $scope.cancelActionForStaged = function(stagedTranslation) {
-                if (stagedTranslation.workflowStatus == 'BETA') {
-                  translationService.getOriginForStagedTranslation(stagedTranslation.id).then(
+              $scope.cancelActionForStaged = function(translation) {
+                if (translation.workflowStatus == 'BETA') {
+                  translationService.getOriginForStagedTranslation(translation.id).then(
                   // Success
                   function(data) {
                     $scope.originId = data;
@@ -975,6 +986,11 @@ tsApp
                   projectId : project.id
                 };
 
+                // Get the name for a terminology
+                $scope.getTerminologyName = function() {
+                  return utilService.getTerminologyName($scope.translation.terminology);
+                };
+
                 $scope.selectRefset = function(refset) {
                   $scope.translation.moduleId = refset.moduleId;
                   $scope.translation.terminology = refset.terminology;
@@ -1094,6 +1110,11 @@ tsApp
                     break;
                   }
                 }
+
+                // Get the name for a terminology
+                $scope.getTerminologyName = function() {
+                  return utilService.getTerminologyName($scope.translation.terminology);
+                };
 
                 // Update translation
                 $scope.submitTranslation = function(translation) {
@@ -1606,13 +1627,6 @@ tsApp
                     } else {
                       alert('SHOULD NEVER HAPPEN: ' + data);
                     }
-
-                    console.debug("index: ", index);
-                    console.debug("assigned.length: ", $scope.selected.translation.assigned.length);
-                    console.debug("assigned.totalCount: ",
-                      $scope.selected.translation.assigned.totalCount);
-                    console.debug("searchAgain: ", searchAgain);
-                    console.debug("nextIndex: ", nextIndex);
 
                     // Search, then open the concept modal
                     if (searchAgain) {
@@ -2545,9 +2559,9 @@ tsApp
               };
 
               // Open release process modal given staged translation
-              $scope.openReleaseProcessModalForStaged = function(stagedTranslation) {
+              $scope.openReleaseProcessModalForStaged = function(translation) {
 
-                translationService.getOriginForStagedTranslation(stagedTranslation.id).then(
+                translationService.getOriginForStagedTranslation(translation.id).then(
                 // Success
                 function(data) {
                   $scope.originId = data;
@@ -2589,6 +2603,7 @@ tsApp
                   });
                 }
 
+                // Begin release
                 $scope.beginTranslationRelease = function(translation) {
 
                   releaseService.beginTranslationRelease(translation.id,
@@ -2605,6 +2620,7 @@ tsApp
 
                 };
 
+                // Validate release
                 $scope.validateTranslationRelease = function(translation) {
 
                   releaseService.validateTranslationRelease(translation.id).then(
@@ -2619,15 +2635,15 @@ tsApp
                   });
                 };
 
+                // Initiate BETA
                 $scope.betaTranslationRelease = function(translation) {
+                  $scope.validationResult = null;
 
                   releaseService
                     .betaTranslationRelease(translation.id, $scope.selectedIoHandler.id).then(
                     // Success
                     function(data) {
                       $scope.stagedTranslation = data;
-                      $uibModalInstance.close($scope.stagedTranslation);
-                      alert('The BETA translation has been added .');
                     },
                     // Error
                     function(data) {
@@ -2635,6 +2651,7 @@ tsApp
                     });
                 };
 
+                // Finish release
                 $scope.finishTranslationRelease = function(translation) {
 
                   releaseService.finishTranslationRelease(translation.id,
@@ -2654,9 +2671,8 @@ tsApp
                   releaseService.cancelTranslationRelease($scope.translation.id).then(
                   // Success
                   function() {
-                    translationService.fireTranslationChanged($scope.translation);
+                    $uibModalInstance.close($scope.translation);
                   });
-                  $uibModalInstance.dismiss('cancel');
                 };
 
                 // Close modal

@@ -186,6 +186,38 @@ public class BrowserTerminologyHandlerTest extends JpaSupport {
                 + "OR <<409623005 | Respiratory insufficiency (disorder) |) MINUS <<304527002",
             "en-edition", "20160131", pfs);
 
+    // Test more complicated cases
+    // < 65801008|Excision (procedure)| AND < 118673008|Procedure on digestive
+    // system (procedure)| OR < 233604007|Pneumonia (disorder)| MINUS <<
+    // 64667001|Interstitial pneumonia (disorder)|
+    service
+        .getTerminologyHandler()
+        .resolveExpression(
+            "(< 65801008|Excision (procedure)| AND < 118673008|Procedure on digestive system (procedure)|) "
+                + "OR (< 233604007|Pneumonia (disorder)| MINUS << 64667001|Interstitial pneumonia (disorder)|)",
+            "en-edition", "20160131", pfs);
+
+    // Complex
+    String a =
+        "< 65801008|Excision (procedure)| AND < 118673008|Procedure on digestive system (procedure)|";
+    String b =
+        "< 233604007|Pneumonia (disorder)| MINUS << 64667001|Interstitial pneumonia (disorder)|";
+    service.getTerminologyHandler().resolveExpression(
+        "((" + a + ") OR (" + a + ")) MINUS ((" + b + ") OR (" + b + "))",
+        "en-edition", "20160131", pfs);
+
+    service.getTerminologyHandler().resolveExpression(
+        "(65801008 OR (" + a + ")) MINUS ((" + b + ") OR (" + b + "))",
+        "en-edition", "20160131", pfs);
+
+    service.getTerminologyHandler().resolveExpression(
+        "(65801008 OR (" + a + ")) MINUS ((" + b + ") OR 233604007)",
+        "en-edition", "20160131", pfs);
+
+    service.getTerminologyHandler().resolveExpression(
+        "65801008 OR (" + a + ") OR (" + b + ") OR 233604007", "en-edition",
+        "20160131", pfs);
+
     service.close();
   }
 

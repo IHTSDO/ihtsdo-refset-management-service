@@ -281,6 +281,26 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
           authorizeProject(refsetService, refset.getProjectId(),
               securityService, authToken, "add refset", UserRole.AUTHOR);
 
+      // Check preconditions
+      // No refset with same terminologyId, project id, provisional,
+      // effectiveTime
+      // Hard to enforce with primary key because effectiveTime can be null
+      if (refset.getTerminologyId() != null) {
+        final RefsetList existingRefsets =
+            refsetService.findRefsetsForQuery(
+                "terminologyId:" + refset.getTerminologyId(), null);
+        for (final Refset refset2 : existingRefsets.getObjects()) {
+          if ((refset.getTerminologyId() + refset.getProjectId()
+              + refset.isProvisional() + refset.getEffectiveTime())
+              .equals((refset2.getTerminologyId()
+                  + refset2.getProject().getId() + refset2.isProvisional() + refset2
+                  .getEffectiveTime()))) {
+            throw new LocalException(
+                "A refset with this terminology id already exists in the project");
+          }
+        }
+      }
+
       // Add refset - if the project is invalid, this will fail
       refset.setLastModifiedBy(userName);
       final Refset newRefset = refsetService.addRefset(refset);
@@ -454,6 +474,29 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
           authorizeProject(translationService, refset.getProject().getId(),
               securityService, authToken, "update refset", UserRole.AUTHOR);
 
+      // Check preconditions
+      // No refset with same terminologyId, project id, provisional,
+      // effectiveTime
+      // Hard to enforce with primary key because effectiveTime can be null
+      if (refset.getTerminologyId() != null) {
+        final RefsetList existingRefsets =
+            translationService.findRefsetsForQuery(
+                "terminologyId:" + refset.getTerminologyId()
+                    + " AND NOT workflowStatus:PUBLISHED"
+                    + " AND NOT workflowStatus:BETA", null);
+        for (final Refset refset2 : existingRefsets.getObjects()) {
+          if (!refset.getId().equals(refset2.getId())
+              && (refset.getTerminologyId() + refset.getProjectId()
+                  + refset.isProvisional() + refset.getEffectiveTime())
+                  .equals((refset2.getTerminologyId()
+                      + refset2.getProject().getId() + refset2.isProvisional() + refset2
+                      .getEffectiveTime()))) {
+            throw new LocalException(
+                "A refset with this terminology id already exists in the project");
+          }
+        }
+      }
+
       // get previously saved definition clauses & project
       Refset previousRefset = translationService.getRefset(refset.getId());
       String previousClauses = previousRefset.getDefinitionClauses().toString();
@@ -467,6 +510,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
                 + previousProject.getId(), new PfsParameterJpa());
         for (Translation translation : projectTranslations.getObjects()) {
           translation.setProject(refset.getProject());
+          translation.setTerminologyId(refset.getTerminologyId());
+          translation.setTerminology(refset.getTerminology());
+          translation.setVersion(refset.getVersion());
           translation.setLastModifiedBy(userName);
           translationService.updateTranslation(translation);
         }
@@ -474,7 +520,10 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
       // Update refset
       refset.setLastModifiedBy(userName);
+      // allow ID to be changed
+      translationService.setAssignIdentifiersFlag(false);
       translationService.updateRefset(refset);
+      translationService.setAssignIdentifiersFlag(true);
 
       addLogEntry(translationService, userName, "UPDATE refset", refset
           .getProject().getId(), refset.getId(), refset.getTerminologyId()
@@ -852,8 +901,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
       final String userName =
           authorizeProject(refsetService, refset.getProject().getId(),
-              securityService, authToken, "add new member",
-              UserRole.AUTHOR);
+              securityService, authToken, "add new member", UserRole.AUTHOR);
 
       // Look up concept name and active
       if (member.getConceptName() == null) {

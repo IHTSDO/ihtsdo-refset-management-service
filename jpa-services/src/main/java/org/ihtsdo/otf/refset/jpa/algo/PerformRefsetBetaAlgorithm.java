@@ -5,7 +5,6 @@ package org.ihtsdo.otf.refset.jpa.algo;
 
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -124,8 +123,8 @@ public class PerformRefsetBetaAlgorithm extends RefsetServiceJpa implements
     artifact.setData(ByteStreams.toByteArray(inputStream));
     artifact.setName(handler.getBetaFileName(stagedRefset.getProject()
         .getNamespace(), "ActiveSnapshot", releaseInfo.getName()));
-    artifact.setTimestamp(new Date());
-    artifact.setLastModified(new Date());
+    artifact.setTimestamp(releaseInfo.getEffectiveTime());
+    artifact.setLastModified(releaseInfo.getEffectiveTime());
     artifact.setLastModifiedBy(userName);
 
     // Add it to the staged release info
@@ -199,8 +198,8 @@ public class PerformRefsetBetaAlgorithm extends RefsetServiceJpa implements
       artifact.setData(ByteStreams.toByteArray(inputStream));
       artifact.setName(handler.getBetaFileName(refset.getProject().getNamespace(),
           "Delta", releaseInfo.getName()));
-      artifact.setTimestamp(new Date());
-      artifact.setLastModified(new Date());
+      artifact.setTimestamp(releaseInfo.getEffectiveTime());
+      artifact.setLastModified(releaseInfo.getEffectiveTime());
       artifact.setLastModifiedBy(userName);
 
       // Add it to the staged release info

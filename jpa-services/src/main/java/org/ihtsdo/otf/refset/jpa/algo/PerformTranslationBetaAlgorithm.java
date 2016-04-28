@@ -5,7 +5,6 @@ package org.ihtsdo.otf.refset.jpa.algo;
 
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -159,8 +158,8 @@ public class PerformTranslationBetaAlgorithm extends TranslationServiceJpa
     artifact.setData(ByteStreams.toByteArray(inputStream));
     artifact.setName(handler.getBetaFileName(translation.getProject()
         .getNamespace(), "ActiveSnapshot", releaseInfo.getName()));
-    artifact.setTimestamp(new Date());
-    artifact.setLastModified(new Date());
+    artifact.setTimestamp(releaseInfo.getEffectiveTime());
+    artifact.setLastModified(releaseInfo.getEffectiveTime());
     artifact.setLastModifiedBy(userName);
     stageReleaseInfo.getArtifacts().add(artifact);
 
@@ -279,8 +278,8 @@ public class PerformTranslationBetaAlgorithm extends TranslationServiceJpa
       artifact.setData(ByteStreams.toByteArray(inputStream));
       artifact.setName(handler.getBetaFileName(stagedTranslation.getProject()
           .getNamespace(), "Delta", stageReleaseInfo.getName()));
-      artifact.setTimestamp(new Date());
-      artifact.setLastModified(new Date());
+      artifact.setTimestamp(releaseInfo.getEffectiveTime());
+      artifact.setLastModified(releaseInfo.getEffectiveTime());
       artifact.setLastModifiedBy(userName);
       stageReleaseInfo.getArtifacts().add(artifact);
     }

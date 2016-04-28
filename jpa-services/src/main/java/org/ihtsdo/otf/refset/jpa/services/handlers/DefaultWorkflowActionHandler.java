@@ -346,7 +346,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
       case REASSIGN:
         // No need to set the author again because we've removed reference to
         // the reviewer
-        record.setForAuthoring(false);
+        record.setForAuthoring(true);
         refset.setWorkflowStatus(WorkflowStatus.EDITING_IN_PROGRESS);
         break;
 
@@ -516,15 +516,14 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
         break;
 
       case REASSIGN:
-        // record must exist and a review "assigned" state must be present
-        // and it must be reassigned to an author
+        // record has been unassigned from reviewer and is in EDITING_DONE
+        // Should be set back to EDITING_IN_PROGRESS
         flag =
             projectRole == UserRole.AUTHOR
                 && record != null
-                && EnumSet.of(WorkflowStatus.REVIEW_NEW,
-                    WorkflowStatus.REVIEW_IN_PROGRESS,
-                    WorkflowStatus.REVIEW_DONE).contains(
+                && EnumSet.of(WorkflowStatus.EDITING_DONE).contains(
                     concept.getWorkflowStatus());
+
         break;
       case SAVE:
         // dependent on project role

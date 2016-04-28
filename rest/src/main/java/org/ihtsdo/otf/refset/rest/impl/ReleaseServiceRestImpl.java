@@ -190,10 +190,6 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl
         throw new Exception("Invalid refset id " + refsetId);
       }
 
-      if (refset.getMembers() == null || refset.getMembers().size() == 0) {
-        throw new LocalException("Refset " + refset.getTerminologyId()
-            + " has no members to release.");
-      }
 
       // Authorize the call
       final String userName =

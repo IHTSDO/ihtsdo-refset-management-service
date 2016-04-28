@@ -3,25 +3,29 @@
 </div>
 
 <div class="modal-body">
-  <span
-    ng-show="translation.inPublicationProcess && !validationResult && translation.stagingType != 'BETA'"
-    class="alert alert-warning">Release of {{releaseInfo.name}} has been
-    started.</span>
+  <div
+    ng-show="translation.inPublicationProcess && !validationResult && translation.stagingType != 'BETA' && stagedTranslation.workflowStatus != 'BETA'"
+    class="alert alert-success">Release of {{releaseInfo.name}} has been
+    started.</div>
 
-  <span
+  <div
     ng-show="validationResult && translation.stagingType != 'BETA' &&
     validationResult.warnings.length == 0 &&
     validationResult.errors.length == 0"
     class="alert alert-success">Validation passed with no errors or
-    warnings.</span>
+    warnings.</div>
 
   <div
     ng-show="translation.stagingType == 'BETA' || stagedTranslation.workflowStatus == 'BETA'"
-    class="alert alert-warning">The BETA release can be viewed in the
-    "Releases" section.</div>
+    class="alert alert-success">BETA release is complete and can be viewed
+    in the "Releases" section.</div>
   <div
     ng-show="translation.stagingType == 'BETA' || stagedTranslation.workflowStatus == 'BETA'"
-    class="alert alert-warning">Click 'Finish' to complete the release.</div>
+    class="alert alert-success">
+    Click "Finish" to finalize publication. <br>
+    <br>Click "Close" to review the BETA release (the release can be
+    resumed from the RELEASES section).
+  </div>
 
   <div ng-show="validationResult && translation.stagingType != 'BETA'">
     <h4 ng-show="validationResult.warnings.length > 0">Warnings</h4>
@@ -118,8 +122,10 @@
           <div class="alert alert-danger alert-error">
             {{errors[0]}}
             <div style="display: inline; float: right;">
-              <i ng-show="errors[1]" title="{{error.expand ? 'Show' : 'Hide'}} long eror"
-                class="noul material-icons md-18" ng-click="error.expand = !error.expand;">attach_file</i>
+              <i ng-show="errors[1]"
+                title="{{error.expand ? 'Show' : 'Hide'}} long eror"
+                class="noul material-icons md-18"
+                ng-click="error.expand = !error.expand;">attach_file</i>
             </div>
             <p ng-show="errors[1] && error.expand">
               <br />{{errors[1]}}
