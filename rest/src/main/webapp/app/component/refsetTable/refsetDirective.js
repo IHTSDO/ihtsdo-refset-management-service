@@ -1087,6 +1087,9 @@ tsApp
                     metadata : function() {
                       return $scope.metadata;
                     },
+                    filters : function() {
+                      return $scope.filters;
+                    },
                     projects : function() {
                       return $scope.projects;
                     }
@@ -1102,13 +1105,14 @@ tsApp
               };
 
               // Clone Refset controller
-              var CloneRefsetModalCtrl = function($scope, $uibModalInstance, refset, metadata,
-                projects) {
+              var CloneRefsetModalCtrl = function($scope, $uibModalInstance, refset, filters,
+                metadata, projects) {
                 console.debug('Entered clone refset modal control', refset, projects);
 
                 $scope.action = 'Clone';
                 $scope.projects = projects;
                 $scope.metadata = metadata;
+                $scope.filters = filters;
                 $scope.versions = metadata.versions[refset.terminology].sort().reverse();
                 // Copy refset and clear terminology id
                 $scope.refset = JSON.parse(JSON.stringify(refset));
@@ -1941,6 +1945,9 @@ tsApp
                     metadata : function() {
                       return $scope.metadata;
                     },
+                    filters : function() {
+                      return $scope.filters;
+                    },
                     project : function() {
                       return $scope.project;
                     },
@@ -1958,13 +1965,14 @@ tsApp
               };
 
               // Add Refset controller
-              var AddRefsetModalCtrl = function($scope, $uibModalInstance, metadata, project,
-                projects) {
+              var AddRefsetModalCtrl = function($scope, $uibModalInstance, metadata, filters,
+                project, projects) {
                 console.debug('Entered add refset modal control', metadata);
 
                 $scope.action = 'Add';
                 $scope.definition = null;
                 $scope.metadata = metadata;
+                $scope.filters = filters;
                 $scope.project = project;
                 $scope.projects = projects;
                 $scope.versions = metadata.versions[$scope.project.terminology].sort().reverse();
@@ -2098,6 +2106,9 @@ tsApp
                     metadata : function() {
                       return $scope.metadata;
                     },
+                    filters : function() {
+                      return $scope.filters;
+                    },
                     project : function() {
                       return $scope.project;
                     },
@@ -2117,11 +2128,12 @@ tsApp
 
               // Edit refset controller
               var EditRefsetModalCtrl = function($scope, $uibModalInstance, refset, metadata,
-                project, projects) {
+                filters, project, projects) {
                 console.debug('Entered edit refset modal control');
 
                 $scope.action = 'Edit';
                 $scope.refset = refset;
+                $scope.filters = filters;
                 $scope.project = project;
                 $scope.refset.project = project;
                 $scope.projects = projects;

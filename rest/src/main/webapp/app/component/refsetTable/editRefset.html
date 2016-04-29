@@ -107,7 +107,13 @@
           <b>Domain</b>
         </td>
         <td>
-          <input type="text" ng-model="refset.domain" size="40" />
+          <input type="text" ng-model="refset.domain" size="40"
+            list="filterList" />
+          <datalist id="filterList">
+            <option ng-if="filter.key=='domain'"
+              ng-repeat="filter in filters | orderBy:'key'"
+              value="{{filter.value}}">{{filter.value}}</option>
+          </datalist>
         </td>
       </tr>
       <tr>
