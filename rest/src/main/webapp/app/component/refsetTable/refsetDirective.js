@@ -1259,10 +1259,12 @@ tsApp
 
                 $scope.refset = refset;
                 $scope.ioHandlers = [];
-                // Skip "with name" handlers
-                // IHTSDO-specific, may be able make this more data driven
+                
+                // Skip "with name" handlers if user is not logged in
+                // IHTSDO-specific, may be able make this more data driven             
                 for (var i = 0; i < ioHandlers.length; i++) {
-                  if (ioHandlers[i].name.toLowerCase().indexOf('with name') != -1) {
+                  if (!securityService.isLoggedIn() &&
+                    ioHandlers[i].name.toLowerCase().indexOf('with name') != -1) {
                     continue;
                   }
                   $scope.ioHandlers.push(ioHandlers[i]);

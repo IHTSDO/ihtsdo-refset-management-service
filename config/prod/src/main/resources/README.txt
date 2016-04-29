@@ -1,41 +1,90 @@
-# note these settings
-# > javax.persistence.jdbc.password=otfpwd
-# > workflow.action.handler.DEFAULT.path=DEFAULT
-# > identifier.assignment.handler.DEFAULT.userName=bcarlsen
-# > identifier.assignment.handler.DEFAULT.password=Sn0m3dCT
-# > security.handler.DEFAULT.users.admin=admin,admin1,admin2,admin3
-# > security.handler.DEFAULT.users.viewer=guest,guest1,author1,reviewer1,guest2,author2,reviewer2,guest3,author3,reviewer3
-# > mail.smtp.user=***REMOVED***
-# > mail.smtp.password=1H7D50Sn0m3d
-# >  mail.smtp.host=auth.smtp.1and1.co.uk
-# > mail.smtp.starttls.enable=true
-# > mail.smtp.auth=true
-# > mail.smtp.to=***REMOVED***
-cp config/config.properties config/config-load.properties
-# may need to be done by root:
-cp config.properties /var/lib/tomcat7/conf
+PROD REFSET SERVER SETUP
+
+1. Use AF starting point (mysql, Tomcat, java, mvn installed)
+
+2. Install software (as root)
+  emacs: apt-get install emacs
+  git: apt-get install emacs
+
+3. Edit /etc/default/tomcat7 - set memory and -Drefset.config in JAVA_OPTS
+
+JAVA_OPTS="-Djava.awt.headless=true -Xmx3000m -XX:+UseConcMarkSweepGC -Drefset.config=/var/lib/tomcat7/conf/config.properties"
+
+4. Follow "DIRECTORY AND PROJECT SETUP" shown below
+
+5. Copy config file to a location that is accessible by tomcat and link back (as root)
+
+sudo su - root
+mv /home/ihtsdo/refset/config/config.properties /var/lib/tomcat7/conf/config.properties
 chmod a+rw /var/lib/tomcat7/conf/config.properties
-# edit config.properties (use ims security)
-# edit config-load.properties (use default security)
+cd /home/ihtsdo/refset/config/
+ln -s /var/lib/tomcat7/conf/config.properties
 
-# run load script (after creating DB)
+6. Create the database - N/A - "refset" db already created
+
+7. Configure MYSQL - ./etc/mysql/my.cnf  (restart mysql when finished)
+
+max_allowed_packet      = 100M
+innodb_file_per_table
+
+8. Download initial prod data and indexes, load prod data
+
+cd ~/refset/data
+wget https://s3.amazonaws.com/wci1/IHTSDO/refset-indexes.zip
+wget https://s3.amazonaws.com/wci1/IHTSDO/refset-sql.zip
+unzip refset-sql.zip
+mysql -urefset -p refset < refset.sql
+
+8. Prepare indexes (as root)
+
+sudo su - root
+cd /var/lib/tomcat7
+mkdir indexes
+cd indexes
+unzip /home/ihtsdo/refset/data/refset-indexes.zip -d .
+mv indexes refset
+chown -R tomcat7:tomcat7 /var/lib/tomcat7/indexes/refset
+chmod -R 777 /var/lib/tomcat7/indexes/refset
+
+9. Make sure the /tmp/tomcat7-tomcat7-tmp is owned by tomcat7 user (for file uploads)
+
+sudo su - root
+chmod a+rw /tmp/tomcat7-tomcat7-tmp
+
+10. nginx configuration
+
+see /etc/nginx/sites-enabled/refset.ihtsdotools.org
+
+11. See the REDEPLOY instructions below
+
+
+DIRECTORY AND PROJECT SETUP
+
+1. Create space and pull code
+
+mkdir ~/refset
 cd ~/refset
-echo "CREATE database refsetdb CHARACTER SET utf8 default collate utf8_unicode_ci;" | mysqlotf
-bin/load.csh
+mkdir config data
+git clone https://git.ihtsdotools.org/ihtsdo/ihtsdo-refset-management-service.git code
 
-# Check QA after the load
-cd ~/refset/code/admin/qa
-mvn install -PDatabase -Drun.config.refset=/home/ec2-tomcat/refset/config/config-load.properties
+2. Build code with proper config
 
+cd ~/refset/code
+git pull
+mvn -Dconfig.artifactId=refset-config-prod clean install
 
-# edit /etc/tomcat7/tomcat7.conf file
-# add a -Drun.config.refset property to the JAVA_OPTS property setting that points
-# to the /home/ec2-tomcat/refset/config/config.properties file
+3. Unpack and edit config
 
-REINDEX INSTRUCTIONS
+cd ~/refset
+unzip ~/refset/code/config/prod/target/refset*.zip -d config
 
-cd ~/refset/code/admin
-mvn install -PReindex -Drefset.config/home/ihtsdo/refset/config/config-load.properties >&! mvn.log &
+# edit ~/refset/config/config.properties
+#  *  javax.persistence.jdbc.url=jdbc:mysql://127.0.0.1:3306/refset?useUnicode=true&characterEncoding=UTF-8&rewriteBatchedStatements=true&useLocalSessionState=true
+#  *  javax.persistence.jdbc.username=*******
+#  *  javax.persistence.jdbc.password=*******
+#  *  hibernate.search.default.indexBase=/var/lib/tomcat7/indexes/refset
+#  *  identifier.assignment.handler.DEFAULT.userName=refset-prod
+#  *  identifier.assignment.handler.DEFAULT.password=********
 
 
 REDEPLOY INSTRUCTIONS
@@ -44,15 +93,6 @@ REDEPLOY INSTRUCTIONS
 cd ~/refset/code
 git pull
 mvn -Dconfig.artifactId=refset-config-prod clean install
-
-# If there were database/schema changes, reload sample data (run as ihtsdo)
-cd ~/refset/bin
-./load.csh
-
-# If there were database/schema changes, but the db needs to be kept intact, and index permissions
-cd /home/ihtsdo/refset/code/admin
-mvn -PUpdatedb install -Drefset.config=/home/ihtsdo/refset/config/config-load.properties
-chmod -R 777 /var/lib/tomcat7/indexes/refset/*
 
 
 # run as root:
@@ -64,11 +104,6 @@ service tomcat7 stop
 /bin/cp -f /home/ihtsdo/refset/code/rest/target/refset-rest*war /var/lib/tomcat7/webapps/refset-rest.war
 service tomcat7 start
 chmod -R 777 /tmp/tomcat7-tomcat7-tmp
-chown -R tomcat7 /var/lib/tomcat7/indexes/refset/*
-chmod -R 777 /var/lib/tomcat7/indexes/refset/*
+chown -R tomcat7:tomcat7 /var/lib/tomcat7/indexes/refset
+chmod -R 777 /var/lib/tomcat7/indexes/refset
 
-## REMEMBER that config.properties is a link to /var/lib/tomcat7/conf/config.properties
-
-# to watch queries
-mysql> set global general_log = 1;
-% tail -f /var/lib/mysql/refset.log
