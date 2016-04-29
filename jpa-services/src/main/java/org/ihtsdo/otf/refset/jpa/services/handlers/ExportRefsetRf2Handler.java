@@ -114,7 +114,9 @@ public class ExportRefsetRf2Handler implements ExportRefsetHandler {
 
   /* see superclass */
   @Override
-  public InputStream exportDefinition(Refset refset) throws Exception {
+  public InputStream exportDefinition(Refset refset,
+    List<ConceptRefsetMember> inclusions, List<ConceptRefsetMember> exclusions)
+    throws Exception {
     Logger.getLogger(getClass()).info(
         "Export refset definition - " + refset.getTerminologyId() + ", "
             + refset.getName() + ", " + refset.getDefinitionClauses());
@@ -142,7 +144,7 @@ public class ExportRefsetRf2Handler implements ExportRefsetHandler {
     sb.append(refset.getTerminologyId()).append("\t");
     // fake id for now
     sb.append(refset.getTerminologyId()).append("\t");
-    sb.append(refset.computeDefinition()).append("\t");
+    sb.append(refset.computeDefinition(inclusions, exclusions)).append("\t");
     sb.append("\r\n");
 
     return new ByteArrayInputStream(sb.toString().getBytes("UTF-8"));

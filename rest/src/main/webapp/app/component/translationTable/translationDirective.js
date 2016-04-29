@@ -1010,9 +1010,9 @@ tsApp
                   projectId : project.id
                 };
 
-                // Get the name for a terminology
-                $scope.getTerminologyName = function() {
-                  return utilService.getTerminologyName($scope.translation.terminology);
+                // Return the name for a terminology
+                $scope.getTerminologyName = function(terminology) {
+                  return $scope.metadata.terminologyNames[terminology];
                 };
 
                 $scope.selectRefset = function(refset) {
@@ -1135,9 +1135,9 @@ tsApp
                   }
                 }
 
-                // Get the name for a terminology
-                $scope.getTerminologyName = function() {
-                  return utilService.getTerminologyName($scope.translation.terminology);
+                // Return the name for a terminology
+                $scope.getTerminologyName = function(terminology) {
+                  return $scope.metadata.terminologyNames[terminology];
                 };
 
                 // Update translation

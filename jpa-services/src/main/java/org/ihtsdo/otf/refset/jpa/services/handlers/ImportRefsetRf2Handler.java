@@ -239,9 +239,12 @@ public class ImportRefsetRf2Handler implements ImportRefsetHandler {
   private String trimClause(String clause) {
     // Strip leading parens
     String retval =
-        clause.replace("^\\s*\\(\\s*", "").replace("^\\s*\\(\\s*", "");
+        clause.replaceFirst("^\\s*\\(\\s*", "")
+            .replaceFirst("^\\s*\\(\\s*", "").replaceFirst("^\\s*\\(\\s*", "");
     // Strip trailing parens
-    retval = retval.replace("^\\s*\\)\\s*", "").replace("^\\s*\\)\\s*", "");
+    retval =
+        retval.replaceFirst("\\s*\\)\\s*$", "")
+            .replaceFirst("\\s*\\)\\s*$", "").replaceFirst("\\s*\\)\\s*$", "");
     return retval.trim();
   }
 

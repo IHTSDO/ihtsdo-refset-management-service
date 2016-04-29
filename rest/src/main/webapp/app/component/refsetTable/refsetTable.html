@@ -507,31 +507,41 @@
               <b>Definition</b>
             </td>
             <td>
+
+              <!-- For ADMIN -->
+              <i ng-show="projects.role == 'ADMIN'"
+                uib-tooltip="Switch to AUTHOR or REVIWER for more actions"
+                tooltip-placement="left-top"
+                class="md-grey material-icons md-18">info</i>
+
               <!-- edit/view/optimize definition -->
               <i ng-show="value != 'ASSIGNED'"
                 ng-click="openDefinitionClausesModal(selected.refset, value);$event.stopPropagation()"
                 title="View definition, assign refset to edit"
                 class="noul material-icons md-18">list</i>
-              <i ng-show="value == 'ASSIGNED'"
+              <i ng-show="value == 'ASSIGNED' && projects.role != 'ADMIN'"
                 ng-click="openDefinitionClausesModal(selected.refset, value);$event.stopPropagation()"
                 title="Edit definition" class="noul material-icons md-18">edit</i>
-              <i ng-show="value == 'ASSIGNED'"
+              <i ng-show="value == 'ASSIGNED' && projects.role != 'ADMIN'"
                 confirm="Remove redundant definition clauses, and invalid inclusions/exclusions."
                 ng-click="optimizeDefinition(selected.refset);$event.stopPropagation()"
                 title="Optimize definition" class="noul material-icons md-18">compare_arrows</i>
+
               <!-- Export -->
               <i
                 ng-click="openImportExportModal(selected.refset, 'Export', 'Definition');$event.stopPropagation()"
                 title="Export definition" class="noul material-icons md-18">file_download</i>
               <!-- Import -->
-              <i ng-show="value == 'ASSIGNED'"
+              <i ng-show="value == 'ASSIGNED' && projects.role != 'ADMIN'"
                 confirm="The refset already has a definition, importing will override it. Do you want to continue?"
                 confirm-if="selected.refset.definitionClauses.length>0"
                 ng-click="openImportExportModal(selected.refset, 'Import', 'Definition');$event.stopPropagation()"
                 title="Import definition" class="noul material-icons md-18">file_upload</i>
-              <i ng-show="value == 'AVAILABLE'"
+              <i ng-show="value == 'AVAILABLE' && projects.role != 'ADMIN'"
                 title="To import a definition, assign the refset"
                 class="md-grey material-icons md-18">file_upload</i>
+
+
               <div style="max-height: 200px; overflow-y: scroll;">
                 <table class="table">
                   <tbody>

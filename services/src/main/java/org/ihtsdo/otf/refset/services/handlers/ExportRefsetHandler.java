@@ -70,9 +70,13 @@ public interface ExportRefsetHandler extends Configurable {
    * Import definition.
    *
    * @param refset the refset
+   * @param inclusions the inclusions
+   * @param exclusions the exclusions
    * @return the string
    * @throws Exception the exception
    */
-  public InputStream exportDefinition(Refset refset) throws Exception;
+  public InputStream exportDefinition(Refset refset,
+    List<ConceptRefsetMember> inclusions, List<ConceptRefsetMember> exclusions)
+    throws Exception;
 
 }

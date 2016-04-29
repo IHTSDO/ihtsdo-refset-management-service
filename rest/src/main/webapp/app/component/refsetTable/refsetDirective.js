@@ -849,6 +849,14 @@ tsApp
                       $scope.errors[0] = 'Duplicate definition clause';
                       return;
                     }
+                    if ($scope.newClauses[i].value.indexOf("MINUS") != -1) {
+                      $scope.errors[0] = 'Definition clause may not contain MINUS';
+                      return;
+                    }
+                    if ($scope.newClauses[i].value.indexOf(" OR ") != -1) {
+                      $scope.errors[0] = 'Definition clause may not contain OR';
+                      return;
+                    }
                   }
                   refsetService
                     .isExpressionValid(clause.value, refset.terminology, refset.version)
@@ -2573,9 +2581,9 @@ tsApp
                   });
                 }
 
-                // Get the name for a terminology
-                $scope.getTerminologyName = function() {
-                  return utilService.getTerminologyName($scope.refset.terminology);
+                // Return the name for a terminology
+                $scope.getTerminologyName = function(terminology) {
+                  return $scope.metadata.terminologyNames[terminology];
                 };
 
                 // Table sorting mechanism

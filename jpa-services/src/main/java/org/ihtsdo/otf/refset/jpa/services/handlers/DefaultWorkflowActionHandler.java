@@ -222,9 +222,9 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
 
     if (!flag) {
       result.addError("Invalid action for refset workflow status: "
-          + (user != null ? user.getUserName() : "") + ", " + action + ", "
-          + (refset != null ? refset.getWorkflowStatus() : "") + ", "
-          + (record != null ? record.getId() : ""));
+          + (user != null ? user.getUserName() : "") + "," + projectRole + ", "
+          + action + ", " + (refset != null ? refset.getWorkflowStatus() : "")
+          + ", " + (record != null ? record.getId() : ""));
     }
 
     return result;
@@ -592,9 +592,9 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
 
     if (!flag) {
       result.addError("Invalid action for translation workflow status: "
-          + user.getUserName() + ", " + action + ", "
-          + concept.getTerminologyId() + ", " + concept.getWorkflowStatus()
-          + ", " + translation.getId());
+          + (user == null ? "" : user.getUserName()) + ", " + projectRole
+          + ", " + action + ", " + concept.getTerminologyId() + ", "
+          + concept.getWorkflowStatus() + ", " + translation.getId());
     }
 
     return result;

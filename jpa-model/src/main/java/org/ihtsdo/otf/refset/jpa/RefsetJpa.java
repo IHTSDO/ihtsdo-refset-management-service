@@ -593,10 +593,28 @@ public class RefsetJpa extends AbstractComponent implements Refset {
 
   /* see superclass */
   @Override
-  // Eventaully this needs to be expressed in the standard expression syntax
-  public String computeDefinition() {
+  public String computeDefinition(List<ConceptRefsetMember> inclusions,
+    List<ConceptRefsetMember> exclusions) {
+
+    // Start with inclusions/exclusions
     List<DefinitionClause> positiveClauses = new ArrayList<>();
+    if (inclusions != null) {
+      for (final ConceptRefsetMember member : inclusions) {
+        final DefinitionClause clause = new DefinitionClauseJpa();
+        clause.setValue(member.getConceptId());
+        positiveClauses.add(clause);
+      }
+    }
     List<DefinitionClause> negativeClauses = new ArrayList<>();
+    if (exclusions != null) {
+      for (final ConceptRefsetMember member : exclusions) {
+        final DefinitionClause clause = new DefinitionClauseJpa();
+        clause.setValue(member.getConceptId());
+        clause.setNegated(true);
+        negativeClauses.add(clause);
+      }
+    }
+
     for (DefinitionClause clause : definitionClauses) {
       if (clause.isNegated()) {
         negativeClauses.add(clause);

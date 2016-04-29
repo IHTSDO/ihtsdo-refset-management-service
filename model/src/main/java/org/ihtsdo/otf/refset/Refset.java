@@ -427,9 +427,12 @@ public interface Refset extends Component, Searchable {
   /**
    * Compute definition.
    *
+   * @param inclusions the inclusions
+   * @param exclusions the exclusions
    * @return the string
    */
-  public String computeDefinition();
+  public String computeDefinition(List<ConceptRefsetMember> inclusions,
+    List<ConceptRefsetMember> exclusions);
 
   /**
    * Compute expression by considering the project exclusion clause.
