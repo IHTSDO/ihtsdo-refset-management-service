@@ -29,6 +29,7 @@ import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.IoHandlerInfoList;
+import org.ihtsdo.otf.refset.helpers.KeyValuePairList;
 import org.ihtsdo.otf.refset.helpers.KeyValuesMap;
 import org.ihtsdo.otf.refset.helpers.LanguageDescriptionTypeList;
 import org.ihtsdo.otf.refset.helpers.StringList;
@@ -679,8 +680,8 @@ public class TranslationClientRest extends RootClientRest implements
     Client client = ClientBuilder.newClient();
     WebTarget target =
         client.target(config.getProperty("base.url")
-            + "/translation/memory/copy?fromTranslationId="
-            + fromTranslationId + "&toTranslationId=" + toTranslationId);
+            + "/translation/memory/copy?fromTranslationId=" + fromTranslationId
+            + "&toTranslationId=" + toTranslationId);
 
     Response response =
         target.request(MediaType.APPLICATION_XML)
@@ -705,8 +706,7 @@ public class TranslationClientRest extends RootClientRest implements
     Client client = ClientBuilder.newClient();
     WebTarget target =
         client.target(config.getProperty("base.url") + "/translation/"
-            + "/memory/add?" + "translationId=" + translationId
-            + "&name="
+            + "/memory/add?" + "translationId=" + translationId + "&name="
             + URLEncoder.encode(name, "UTF-8").replaceAll("\\+", "%20"));
     Response response =
         target.request(MediaType.APPLICATION_XML)
@@ -871,8 +871,7 @@ public class TranslationClientRest extends RootClientRest implements
 
     WebTarget target =
         client.target(config.getProperty("base.url")
-            + "/translation/memory/import" + "?translationId="
-            + translationId);
+            + "/translation/memory/import" + "?translationId=" + translationId);
 
     Response response =
         target.request(MediaType.APPLICATION_XML)
@@ -896,8 +895,7 @@ public class TranslationClientRest extends RootClientRest implements
     Client client = ClientBuilder.newClient();
     WebTarget target =
         client.target(config.getProperty("base.url")
-            + "/translation/memory/export" + "?translationId="
-            + translationId);
+            + "/translation/memory/export" + "?translationId=" + translationId);
     Response response =
         target.request(MediaType.APPLICATION_OCTET_STREAM)
             .header("Authorization", authToken).get();
@@ -1384,8 +1382,8 @@ public class TranslationClientRest extends RootClientRest implements
 
     WebTarget target =
         client.target(config.getProperty("base.url")
-            + "/translation/memory/suggest?translationId="
-            + translationId + "&name="
+            + "/translation/memory/suggest?translationId=" + translationId
+            + "&name="
             + URLEncoder.encode(name, "UTF-8").replaceAll("\\+", "%20"));
 
     Response response =
@@ -1579,5 +1577,40 @@ public class TranslationClientRest extends RootClientRest implements
     // converting to object
 
     return originId;
+  }
+
+  /* see superclass */
+  @Override
+  public KeyValuePairList getFieldFilters(Long projectId,
+    String workflowStatus, String authToken) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Translation Client - filters - " + projectId);
+
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client
+            .target(config.getProperty("base.url")
+                + "/translation/filters"
+                + (projectId == null ? "?" : "?projectId=" + projectId + "&")
+                + (workflowStatus == null ? "" : "workflowStatus="
+                    + workflowStatus));
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).get();
+
+    if (response.getStatus() == 204) {
+      return null;
+    }
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+
+    // converting to object
+    return (KeyValuePairList) ConfigUtility.getGraphForString(resultString,
+        KeyValuePairList.class);
   }
 }

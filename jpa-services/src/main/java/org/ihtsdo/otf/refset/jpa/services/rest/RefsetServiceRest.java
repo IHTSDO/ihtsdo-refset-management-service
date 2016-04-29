@@ -15,6 +15,7 @@ import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.helpers.IoHandlerInfoList;
+import org.ihtsdo.otf.refset.helpers.KeyValuePairList;
 import org.ihtsdo.otf.refset.helpers.RefsetList;
 import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
@@ -584,7 +585,6 @@ public interface RefsetServiceRest {
   public Long getOriginForStagedRefsetId(Long stagedRefsetId, String authToken)
     throws Exception;
 
-
   /**
    * Count expression.
    *
@@ -597,5 +597,28 @@ public interface RefsetServiceRest {
    */
   public Integer countExpression(String expression, String terminology,
     String version, String authToken) throws Exception;
+
+  /**
+   * Returns values for various refset fields that can be used as easy picklist
+   * filters. - field -> value e.g. "terminology" => "International Edition".
+   * Fields include
+   * 
+   * <pre>
+   *  1. Module id
+   *  2. Organization
+   *  3. Domain
+   *  4. Terminology
+   *  5. Type
+   * </pre>
+   *
+   * @param projectId the project id
+   * @param workflowStatus the workflow status, comma-separated list of workflow
+   *          status values to search on
+   * @param authToken the auth token
+   * @return the field list values
+   * @throws Exception the exception
+   */
+  public KeyValuePairList getFieldFilters(Long projectId,
+    String workflowStatus, String authToken) throws Exception;
 
 }

@@ -41,7 +41,10 @@ import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
+import org.ihtsdo.otf.refset.helpers.FieldedStringTokenizer;
 import org.ihtsdo.otf.refset.helpers.IoHandlerInfoList;
+import org.ihtsdo.otf.refset.helpers.KeyValuePair;
+import org.ihtsdo.otf.refset.helpers.KeyValuePairList;
 import org.ihtsdo.otf.refset.helpers.KeyValuesMap;
 import org.ihtsdo.otf.refset.helpers.LanguageDescriptionTypeList;
 import org.ihtsdo.otf.refset.helpers.LocalException;
@@ -3097,6 +3100,92 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       return stagedTranslationChange.getOriginTranslation().getId();
     } catch (Exception e) {
       handleException(e, "trying to get origin translation");
+      return null;
+    } finally {
+      translationService.close();
+      securityService.close();
+    }
+  }
+
+  /* see superclass */
+  @Override
+  @GET
+  @Path("/filters")
+  @ApiOperation(value = "Get field filters", notes = "Gets values used by various fields to make for easy filtering.", response = KeyValuePairList.class)
+  public KeyValuePairList getFieldFilters(
+    @ApiParam(value = "Project id, e.g. 3", required = true) @QueryParam("projectId") Long projectId,
+    @ApiParam(value = "WorkflowStatus, e.g. 'BETA'", required = true) @QueryParam("workflowStatus") String workflowStatus,
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info("RESTful call (Translation): filters");
+
+    final TranslationService translationService = new TranslationServiceJpa();
+    try {
+      authorizeApp(securityService, authToken, "get filters", UserRole.VIEWER);
+
+      final Map<String, Set<String>> map = new HashMap<>();
+      map.put("moduleId", new HashSet<String>());
+      map.put("organization", new HashSet<String>());
+      map.put("terminology", new HashSet<String>());
+      map.put("language", new HashSet<String>());
+
+      // Build query
+      String query = null;
+      String clause1 = "";
+      if (projectId != null) {
+        clause1 = "projectId:" + projectId;
+        query = clause1;
+      }
+      StringBuilder clause2 = new StringBuilder();
+      if (workflowStatus != null) {
+        clause2.append("(");
+        for (final String s : FieldedStringTokenizer.split(workflowStatus, ",")) {
+          if (clause2.length() > 1) {
+            clause2.append(" OR ");
+          }
+          clause2.append("workflowStatus:").append(s);
+        }
+        clause2.append(")");
+
+        if (query != null) {
+          query = query + " AND " + clause2;
+        } else {
+          query = clause2.toString();
+        }
+      }
+
+      // Run query
+      for (final Translation translation : translationService
+          .findTranslationsForQuery(query, null).getObjects()) {
+        if (translation.getModuleId() != null
+            && !translation.getModuleId().isEmpty()) {
+          map.get("moduleId").add(translation.getModuleId());
+        }
+        if (translation.getOrganization() != null
+            && !translation.getOrganization().isEmpty()) {
+          map.get("organization").add(translation.getOrganization());
+        }
+        if (translation.getTerminology() != null
+            && !translation.getTerminology().isEmpty()) {
+          map.get("terminology").add(translation.getTerminology());
+        }
+        if (translation.getLanguage() != null
+            && !translation.getLanguage().isEmpty()) {
+          map.get("language").add(translation.getLanguage());
+        }
+
+      }
+      // Sets for tracking values
+      final KeyValuePairList list = new KeyValuePairList();
+      for (final String key : map.keySet()) {
+        for (final String value : map.get(key)) {
+          final KeyValuePair pair = new KeyValuePair(key, value);
+          list.addKeyValuePair(pair);
+        }
+      }
+      return list;
+    } catch (Exception e) {
+      handleException(e, "trying to get filters");
       return null;
     } finally {
       translationService.close();

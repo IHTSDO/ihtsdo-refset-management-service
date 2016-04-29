@@ -314,4 +314,12 @@ public interface Translation extends Component, Searchable {
    */
   public boolean isLookupInProgress();
 
+
+  /**
+   * Returns the organization.
+   *
+   * @return the organization
+   */
+  public String getOrganization();
+
 }

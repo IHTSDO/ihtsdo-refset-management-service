@@ -12,8 +12,8 @@ tsApp
       'projectService',
       'refsetService',
       'workflowService',
-      function($scope, $http, $location, tabService, utilService,
-        securityService, projectService, refsetService, workflowService) {
+      function($scope, $http, $location, tabService, utilService, securityService, projectService,
+        refsetService, workflowService) {
         console.debug('configure RefsetCtrl');
 
         // Handle resetting tabs on 'back' button
@@ -48,7 +48,8 @@ tsApp
           versions : {},
           importHandlers : [],
           exportHandlers : [],
-          workflowPaths : []
+          workflowPaths : [],
+          terminologyNames : {}
         };
 
         // Stats containers for refset-table sections
@@ -72,28 +73,25 @@ tsApp
             sortField : 'name',
             queryRestriction : 'userAnyRole:' + $scope.user.userName
           };
-          projectService
-            .findProjectsAsList('', pfs)
-            .then(
-              function(data) {
-                $scope.projects.data = data.projects;
-                $scope.projects.totalCount = data.totalCount;
-                if ($scope.user.userPreferences.lastProjectId) {
-                  var found = false;
-                  for (var i = 0; i < data.projects.length; i++) {
-                    if (data.projects[i].id == $scope.user.userPreferences.lastProjectId) {
-                      $scope.setProject(data.projects[i]);
-                      found = true;
-                      break;
-                    }
-                  }
-                  if (!found) {
-                    $scope.setProject(data.projects[0]);
-                  }
-                } else {
-                  $scope.setProject(data.projects[0]);
+          projectService.findProjectsAsList('', pfs).then(function(data) {
+            $scope.projects.data = data.projects;
+            $scope.projects.totalCount = data.totalCount;
+            if ($scope.user.userPreferences.lastProjectId) {
+              var found = false;
+              for (var i = 0; i < data.projects.length; i++) {
+                if (data.projects[i].id == $scope.user.userPreferences.lastProjectId) {
+                  $scope.setProject(data.projects[i]);
+                  found = true;
+                  break;
                 }
-              });
+              }
+              if (!found) {
+                $scope.setProject(data.projects[0]);
+              }
+            } else {
+              $scope.setProject(data.projects[0]);
+            }
+          });
 
         };
 
@@ -140,8 +138,7 @@ tsApp
                   }
                 }
                 $scope.user.userPreferences.lastProjectRole = $scope.projects.role;
-                securityService
-                  .updateUserPreferences($scope.user.userPreferences);
+                securityService.updateUserPreferences($scope.user.userPreferences);
                 projectService.fireProjectChanged($scope.project);
               });
         };
@@ -163,31 +160,32 @@ tsApp
             $scope.metadata.refsetTypes = data.strings;
           });
         };
-        
+
         // Get $scope.metadata.terminologies, also loads
         // versions for the first edition in the list
         $scope.getTerminologyEditions = function() {
-          projectService.getTerminologyEditions().then(function(data) {
-            $scope.metadata.terminologies = data.terminologies;
-            utilService.setTerminologies(data.terminologies);
-            // Look up all versions
-            for (var i = 0; i < data.terminologies.length; i++) {
-              $scope.getTerminologyVersions(data.terminologies[i].terminology);
-            }
-          });
+          projectService
+            .getTerminologyEditions()
+            .then(
+              function(data) {
+                $scope.metadata.terminologies = data.terminologies;
+                // Look up all versions
+                for (var i = 0; i < data.terminologies.length; i++) {
+                  $scope.metadata.terminologyNames[data.terminologies[i].terminology] = data.terminologies[i].name;
+                  $scope.getTerminologyVersions(data.terminologies[i].terminology);
+                }
+              });
 
         };
 
         // Get $scope.metadata.versions
         $scope.getTerminologyVersions = function(terminology) {
-          projectService.getTerminologyVersions(terminology).then(
-            function(data) {
-              $scope.metadata.versions[terminology] = [];
-              for (var i = 0; i < data.terminologies.length; i++) {
-                $scope.metadata.versions[terminology]
-                  .push(data.terminologies[i].version);
-              }
-            });
+          projectService.getTerminologyVersions(terminology).then(function(data) {
+            $scope.metadata.versions[terminology] = [];
+            for (var i = 0; i < data.terminologies.length; i++) {
+              $scope.metadata.versions[terminology].push(data.terminologies[i].version);
+            }
+          });
         };
 
         // Get $scope.metadata.{import,export}Handlers
@@ -228,11 +226,10 @@ tsApp
           securityService.updateUserPreferences($scope.user.userPreferences);
         };
 
-        // Initialize
-        $scope.getProjects();
         // Initialize some metadata first time
-        $scope.getRefsetTypes();
         $scope.getTerminologyEditions();
+        $scope.getProjects();
+        $scope.getRefsetTypes();
         $scope.getIOHandlers();
         $scope.getWorkflowPaths();
 

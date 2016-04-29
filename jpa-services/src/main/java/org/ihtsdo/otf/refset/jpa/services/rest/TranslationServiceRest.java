@@ -16,6 +16,7 @@ import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.IoHandlerInfoList;
+import org.ihtsdo.otf.refset.helpers.KeyValuePairList;
 import org.ihtsdo.otf.refset.helpers.KeyValuesMap;
 import org.ihtsdo.otf.refset.helpers.LanguageDescriptionTypeList;
 import org.ihtsdo.otf.refset.helpers.StringList;
@@ -609,5 +610,25 @@ public interface TranslationServiceRest {
    */
   public Long getOriginForStagedTranslation(Long stagedTranslationId,
     String authToken) throws Exception;
+
+  /**
+   * Returns values for various translation fields that can be used as easy
+   * picklist filters. - field -> value e.g. "terminology" =>
+   * "International Edition". Fields include
+   * 
+   * <pre>
+   *  1. Module id
+   *  2. Terminology
+   *  3. Language
+   * </pre>
+   *
+   * @param projectId the project id
+   * @param workflowStatus the workflow status, comma-separated list of workflow status values to search on
+   * @param authToken the auth token
+   * @return the field list values
+   * @throws Exception the exception
+   */
+  public KeyValuePairList getFieldFilters(Long projectId, String workflowStatus, String authToken)
+    throws Exception;
 
 }

@@ -148,6 +148,10 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   @Column(nullable = false)
   private boolean revision = false;
 
+  /** The domain (content area). */
+  @Column(nullable = true)
+  private String domain;
+
   /**
    * The refset descriptors.
    * 
@@ -216,6 +220,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
     type = refset.getType();
     externalUrl = refset.getExternalUrl();
     namespace = refset.getNamespace();
+    domain = refset.getDomain();
     refsetDescriptorUuid = refset.getRefsetDescriptorUuid();
     forTranslation = refset.isForTranslation();
     inPublicationProcess = refset.isInPublicationProcess();
@@ -530,22 +535,19 @@ public class RefsetJpa extends AbstractComponent implements Refset {
     project.setId(projectId);
   }
 
-  /**
-   * Returns the organization. For JAXB.
-   *
-   * @return the organization
-   */
+  /* see superclass */
   @XmlElement
   @Fields({
       @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO),
       @Field(name = "organizationSort", index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   })
+  @Override
   public String getOrganization() {
     return (project != null) ? project.getOrganization() : "";
   }
 
   /**
-   * Sets the project id. For JAXB.
+   * Sets the organization.
    *
    * @param organization the organization
    */
@@ -764,6 +766,19 @@ public class RefsetJpa extends AbstractComponent implements Refset {
 
   /* see superclass */
   @Override
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  public String getDomain() {
+    return domain;
+  }
+
+  /* see superclass */
+  @Override
+  public void setDomain(String domain) {
+    this.domain = domain;
+  }
+
+  /* see superclass */
+  @Override
   public int hashCode() {
     final int prime = 31;
     int result = super.hashCode();
@@ -784,6 +799,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
     // not version
     result = prime * result + ((name == null) ? 0 : name.hashCode());
     result = prime * result + ((namespace == null) ? 0 : namespace.hashCode());
+    result = prime * result + ((domain == null) ? 0 : domain.hashCode());
     result = prime * result + ((project == null) ? 0 : project.hashCode());
     result = prime * result + ((type == null) ? 0 : type.hashCode());
 
@@ -841,6 +857,11 @@ public class RefsetJpa extends AbstractComponent implements Refset {
         return false;
     } else if (!namespace.equals(other.namespace))
       return false;
+    if (domain == null) {
+      if (other.domain != null)
+        return false;
+    } else if (!domain.equals(other.domain))
+      return false;
     if (project == null) {
       if (other.project != null)
         return false;
@@ -860,8 +881,8 @@ public class RefsetJpa extends AbstractComponent implements Refset {
         + type + ", definitionClauses=" + definitionClauses + ", externalUrl="
         + externalUrl + ", forTranslation=" + forTranslation
         + ", workflowStatus=" + workflowStatus + ", workflowPath="
-        + workflowPath + ", namespace=" + namespace + ", refsetDescriptorUuid="
-        + refsetDescriptorUuid + ", project="
+        + workflowPath + ", namespace=" + namespace + ", domain=" + domain
+        + ", refsetDescriptorUuid=" + refsetDescriptorUuid + ", project="
         + (project == null ? null : project.getId())
         + ", enabledFeedbackEvents=" + enabledFeedbackEvents
         + ", inPublicationProcess=" + inPublicationProcess

@@ -1312,5 +1312,28 @@ tsApp.service('refsetService', [
       });
       return deferred.promise;
     };
+
+    // get filters
+    this.getFilters = function(projectId, workflowStatus) {
+      console.debug('getFilters', projectId, workflowStatus);
+      // Setup deferred
+      var deferred = $q.defer();
+
+      $http.get(
+        refsetUrl + 'filters' + (projectId ? '?projectId=' + projectId + '&' : '?')
+          + (workflowStatus ? 'workflowStatus=' + workflowStatus : '')).then(
+      // success
+      function(response) {
+        console.debug('  output = ', response.data);
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    };
+
     // end
   } ]);

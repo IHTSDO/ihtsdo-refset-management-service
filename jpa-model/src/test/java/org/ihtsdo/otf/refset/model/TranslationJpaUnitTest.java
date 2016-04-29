@@ -213,6 +213,7 @@ public class TranslationJpaUnitTest extends ModelUnitSupport {
     tester.include("description");
     tester.include("userRoleMap");
     tester.include("userAnyRole");
+    tester.include("organization");
     assertTrue(tester.testAnalyzedIndexedFields());
 
     // Test non analyzed fields
@@ -232,6 +233,7 @@ public class TranslationJpaUnitTest extends ModelUnitSupport {
     tester.include("nameSort");
     tester.include("descriptionSort");
     tester.include("provisional");
+    tester.include("organizationSort");
 
     assertTrue(tester.testNotAnalyzedIndexedFields());
 

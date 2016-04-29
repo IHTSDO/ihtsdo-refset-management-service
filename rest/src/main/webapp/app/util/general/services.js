@@ -179,23 +179,6 @@ tsApp
           return year + month + day;
         };
 
-        // Set terminologies list
-        this.setTerminologies = function(lterminologies) {
-          this.terminologies = lterminologies;
-        };
-
-        // Return the name for a terminology
-        this.getTerminologyName = function(terminology) {
-          if (this.terminologies) {
-            for (var i = 0; i < this.terminologies.length; i++) {
-              if (terminology === this.terminologies[i].terminology) {
-                return this.terminologies[i].name;
-              }
-            }
-          }
-          return "unknown terminology";
-        };
-
         // Table sorting mechanism
         this.setSortField = function(table, field, paging) {
           console.debug("utilService set sort field", table, field, paging);

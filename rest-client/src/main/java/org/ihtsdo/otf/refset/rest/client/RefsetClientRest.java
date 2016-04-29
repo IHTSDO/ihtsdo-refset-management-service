@@ -28,6 +28,7 @@ import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.IoHandlerInfoList;
+import org.ihtsdo.otf.refset.helpers.KeyValuePairList;
 import org.ihtsdo.otf.refset.helpers.RefsetList;
 import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.jpa.MemberDiffReportJpa;
@@ -1521,5 +1522,39 @@ public class RefsetClientRest extends RootClientRest implements
 
   }
 
+  /* see superclass */
+  @Override
+  public KeyValuePairList getFieldFilters(Long projectId,
+    String workflowStatus, String authToken) throws Exception {
+    Logger.getLogger(getClass()).debug("Refset Client - filters " + projectId);
+
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client
+            .target(config.getProperty("base.url")
+                + "/refset/filters"
+                + (projectId == null ? "?" : "?projectId=" + projectId + "&")
+                + (workflowStatus == null ? "" : "workflowStatus="
+                    + workflowStatus));
+
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).get();
+
+    if (response.getStatus() == 204) {
+      return null;
+    }
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+
+    // converting to object
+    return (KeyValuePairList) ConfigUtility.getGraphForString(resultString,
+        KeyValuePairList.class);
+  }
 
 }

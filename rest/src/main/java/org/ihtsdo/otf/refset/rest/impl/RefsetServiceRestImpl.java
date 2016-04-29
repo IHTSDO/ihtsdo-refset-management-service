@@ -40,7 +40,10 @@ import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
+import org.ihtsdo.otf.refset.helpers.FieldedStringTokenizer;
 import org.ihtsdo.otf.refset.helpers.IoHandlerInfoList;
+import org.ihtsdo.otf.refset.helpers.KeyValuePair;
+import org.ihtsdo.otf.refset.helpers.KeyValuePairList;
 import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.RefsetList;
@@ -1459,7 +1462,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
   }
 
   /**
-   * Returns the old not new for migration.
+   * Gets the old not new for migration.
    *
    * @param refset the refset
    * @param refsetCopy the refset copy
@@ -1893,7 +1896,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @GET
   @Path("/diff/members")
-  @ApiOperation(value = "Return diff report", notes = "Returns a diff report indicating differences between two refsets for the specified report token", response = MemberDiffReportJpa.class)
+  @ApiOperation(value = "Get diff report", notes = "Gets a diff report indicating differences between two refsets for the specified report token", response = MemberDiffReportJpa.class)
   public MemberDiffReport getDiffReport(
     @ApiParam(value = "Report token", required = true) @QueryParam("reportToken") String reportToken,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
@@ -1930,7 +1933,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @POST
   @Path("/old/members")
-  @ApiOperation(value = "Return old regular members", notes = "Returns list of old members for the specified report token and query", response = ConceptRefsetMemberListJpa.class)
+  @ApiOperation(value = "Get old regular members", notes = "Gets list of old members for the specified report token and query", response = ConceptRefsetMemberListJpa.class)
   public ConceptRefsetMemberList getOldRegularMembers(
     @ApiParam(value = "Report token", required = true) @QueryParam("reportToken") String reportToken,
     @ApiParam(value = "Query", required = false) @QueryParam("query") String query,
@@ -1946,7 +1949,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     final RefsetService refsetService = new RefsetServiceJpa();
     try {
       // VIEWER access is fine, this is a read-only method
-      authorizeApp(securityService, authToken, "returns diff report",
+      authorizeApp(securityService, authToken, "get diff report",
           UserRole.VIEWER);
 
       final MemberDiffReport memberDiffReport =
@@ -1992,7 +1995,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @POST
   @Path("/new/members")
-  @ApiOperation(value = "Return new regular members", notes = "Returns list of new members for the specified report token and query", response = ConceptRefsetMemberListJpa.class)
+  @ApiOperation(value = "Get new regular members", notes = "Gets list of new members for the specified report token and query", response = ConceptRefsetMemberListJpa.class)
   public ConceptRefsetMemberList getNewRegularMembers(
     @ApiParam(value = "Report token", required = true) @QueryParam("reportToken") String reportToken,
     @ApiParam(value = "Query", required = false) @QueryParam("query") String query,
@@ -2008,7 +2011,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     final RefsetService refsetService = new RefsetServiceJpa();
     try {
       // VIEWER access is fine, this is a read-only method
-      authorizeApp(securityService, authToken, "returns diff report",
+      authorizeApp(securityService, authToken, "get diff report",
           UserRole.VIEWER);
 
       final MemberDiffReport memberDiffReport =
@@ -2232,7 +2235,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
   }
 
   /**
-   * Returns the terminology ids.
+   * Gets the terminology ids.
    *
    * @param concepts the concepts
    * @return the terminology ids
@@ -2306,7 +2309,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       change.setStagedRefset(refset);
       refsetService.addStagedRefsetChange(change);
 
-      // Return a validation result based on whether the refset has members
+      // Get a validation result based on whether the refset has members
       // already
       final ValidationResult result = new ValidationResultJpa();
       if (refset.getMembers().size() != 0) {
@@ -2415,7 +2418,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
       }
 
-      // Return a validation result based on whether the refset has members
+      // Get a validation result based on whether the refset has members
       // already - same as begin - new opportunity to confirm/reject
       final ValidationResult result = new ValidationResultJpa();
       if (refset.getMembers().size() != 0) {
@@ -2621,7 +2624,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @GET
   @Path("/types")
-  @ApiOperation(value = "Get refset types", notes = "Returns list of valid refset types", response = StringList.class)
+  @ApiOperation(value = "Get refset types", notes = "Gets list of valid refset types", response = StringList.class)
   public StringList getRefsetTypes(
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
@@ -2871,7 +2874,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
   @GET
   @Produces("text/plain")
   @Path("/lookup/status")
-  @ApiOperation(value = "Compares two refsets", notes = "Returns the percentage completed of the refset lookup process", response = Integer.class)
+  @ApiOperation(value = "Compares two refsets", notes = "Gets the percentage completed of the refset lookup process", response = Integer.class)
   public Integer getLookupProgress(
     @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
@@ -2907,7 +2910,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
   @Produces("text/plain")
   @Consumes("text/plain")
   @Path("/expression/count")
-  @ApiOperation(value = "Count expression", notes = "Returns the Returns the total count of items in the expression provided by the refset definition clauses.", response = Integer.class)
+  @ApiOperation(value = "Count expression", notes = "Gets the total count of items in the expression provided by the refset definition clauses.", response = Integer.class)
   public Integer countExpression(
     @ApiParam(value = "Expression, e.g. '<<58427002 | Antibiotic measurement (procedure) |'", required = true) String expression,
     @ApiParam(value = "Terminology, e.g. SNOMEDCT", required = true) @QueryParam("terminology") String terminology,
@@ -2975,7 +2978,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
   @Consumes("text/plain")
   @Produces("text/plain")
   @Path("/expression/valid")
-  @ApiOperation(value = "Indicates if an expression is valid", notes = "Returns true if the expression is valid, false otherwise", response = Boolean.class)
+  @ApiOperation(value = "Indicates if an expression is valid", notes = "Gets true if the expression is valid, false otherwise", response = Boolean.class)
   public Boolean isExpressionValid(
     @ApiParam(value = "Expression, e.g. '<<58427002 | Antibiotic measurement (procedure) |'", required = true) String expression,
     @ApiParam(value = "Terminology, e.g. SNOMEDCT", required = true) @QueryParam("terminology") String terminology,
@@ -3047,7 +3050,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
   @GET
   @Produces("text/plain")
   @Path("/origin")
-  @ApiOperation(value = "Returns the origin refset given a staged refset", notes = "Returns the origin refset id, given the staged refset id.", response = Long.class)
+  @ApiOperation(value = "Get origin refset given a staged refset", notes = "Gets the origin refset id, given the staged refset id.", response = Long.class)
   public Long getOriginForStagedRefsetId(
     @ApiParam(value = "Staged Refset id, e.g. 3", required = true) @QueryParam("stagedRefsetId") Long stagedRefsetId,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
@@ -3076,6 +3079,90 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       return stagedRefsetChange.getOriginRefset().getId();
     } catch (Exception e) {
       handleException(e, "trying to get origin refset");
+      return null;
+    } finally {
+      refsetService.close();
+      securityService.close();
+    }
+  }
+
+  /* see superclass */
+  @Override
+  @GET
+  @Path("/filters")
+  @ApiOperation(value = "Get field filters", notes = "Gets values used by various fields to make for easy filtering.", response = KeyValuePairList.class)
+  public KeyValuePairList getFieldFilters(
+    @ApiParam(value = "Project id, e.g. 3", required = true) @QueryParam("projectId") Long projectId,
+    @ApiParam(value = "WorkflowStatus, e.g. 'BETA'", required = true) @QueryParam("workflowStatus") String workflowStatus,
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info("RESTful call (Refset): filters");
+
+    final RefsetService refsetService = new RefsetServiceJpa();
+    try {
+      authorizeApp(securityService, authToken, "get filters", UserRole.VIEWER);
+
+      final Map<String, Set<String>> map = new HashMap<>();
+      map.put("moduleId", new HashSet<String>());
+      map.put("organization", new HashSet<String>());
+      map.put("terminology", new HashSet<String>());
+      map.put("domain", new HashSet<String>());
+
+      //  Build query
+      String query = null;
+      String clause1 = "";
+      if (projectId != null) {
+        clause1 = "projectId:" + projectId;
+        query = clause1;
+      }
+      StringBuilder clause2 = new StringBuilder();
+      if (workflowStatus != null) {
+        clause2.append("(");
+        for (final String s : FieldedStringTokenizer.split(workflowStatus, ",")) {
+          if (clause2.length() > 1) {
+            clause2.append(" OR ");
+          }
+          clause2.append("workflowStatus:").append(s);
+        }
+        clause2.append(")");
+
+        if (query != null) {
+          query = query + " AND " + clause2;
+        } else {
+          query = clause2.toString();
+        }
+      }
+
+      // Run query
+      for (final Refset refset : refsetService.findRefsetsForQuery(query, null)
+          .getObjects()) {
+        if (refset.getModuleId() != null && !refset.getModuleId().isEmpty()) {
+          map.get("moduleId").add(refset.getModuleId());
+        }
+        if (refset.getOrganization() != null
+            && !refset.getOrganization().isEmpty()) {
+          map.get("organization").add(refset.getOrganization());
+        }
+        if (refset.getTerminology() != null
+            && !refset.getTerminology().isEmpty()) {
+          map.get("terminology").add(refset.getTerminology());
+        }
+        if (refset.getDomain() != null && !refset.getDomain().isEmpty()) {
+          map.get("domain").add(refset.getDomain());
+        }
+
+      }
+      // Sets for tracking values
+      final KeyValuePairList list = new KeyValuePairList();
+      for (final String key : map.keySet()) {
+        for (final String value : map.get(key)) {
+          final KeyValuePair pair = new KeyValuePair(key, value);
+          list.addKeyValuePair(pair);
+        }
+      }
+      return list;
+    } catch (Exception e) {
+      handleException(e, "trying to get filters");
       return null;
     } finally {
       refsetService.close();

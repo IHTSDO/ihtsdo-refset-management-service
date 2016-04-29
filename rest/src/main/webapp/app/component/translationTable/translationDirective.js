@@ -51,6 +51,7 @@ tsApp
               $scope.translationReleaseInfo = null;
               $scope.project = null;
               $scope.refsets = [];
+              $scope.filters = [];
               $scope.showLatest = true;
 
               // Used for project admin to know what users are assigned to
@@ -59,6 +60,7 @@ tsApp
               $scope.conceptIdToReviewersMap = {};
 
               // Paging variables
+              $scope.visibleSize = 4;
               $scope.pageSize = 10;
               $scope.paging = {};
               $scope.paging['translation'] = {
@@ -112,12 +114,19 @@ tsApp
                 console.debug('on refset:projectChanged', data);
                 // Set project, refresh translation list
                 $scope.setProject(data);
+                $scope.getFilters();
               });
 
               // link to error handling
               function handleError(errors, error) {
                 utilService.handleDialogError(errors, error);
               }
+
+              // Indicates whether we are in a directory page section
+              var valueFlag = ($scope.value == 'PUBLISHED' || $scope.value == 'BETA');
+              $scope.isDirectory = function() {
+                return valueFlag;
+              };
 
               // Set $scope.project and reload
               // $scope.refsets
@@ -136,10 +145,13 @@ tsApp
                   queryRestriction : null
                 };
                 // Get refsets for project - but not published or beta
-                refsetService.findRefsetsForQuery(
-                  'projectId:' + $scope.project.id
-                    + ' AND NOT workflowStatus:PUBLISHED AND NOT workflowStatus:BETA', pfs).then(
-                  function(data) {
+                var query = ' AND NOT workflowStatus:PUBLISHED AND NOT workflowStatus:BETA';
+                if ($scope.isDirectory()) {
+                  query = ' AND (workflowStatus:PUBLISHED OR workflowStatus:BETA)';
+                }
+
+                refsetService.findRefsetsForQuery('projectId:' + $scope.project.id + query, pfs)
+                  .then(function(data) {
                     $scope.refsets = data.refsets;
                   });
               };
@@ -374,6 +386,20 @@ tsApp
 
               };
 
+              // Get $scope.filters
+              $scope.getFilters = function() {
+                var projectId = $scope.project ? $scope.project.id : null;
+                var workflowStatus = null;
+                if ($scope.value == 'PUBLISHED' || $scope.value == 'BETA') {
+                  workflowStatus = $scope.value;
+                }
+                translationService.getFilters(projectId, workflowStatus).then(
+                // Success
+                function(data) {
+                  $scope.filters = data.keyValuePairs;
+                });
+              };
+
               // Save user preferences
               $scope.saveUserPreferences = function() {
                 securityService.updateUserPreferences($scope.user.userPreferences).then(
@@ -408,13 +434,9 @@ tsApp
 
               };
 
-              // Get the name for a terminology
-              $scope.getTerminologyName = function() {
-                if ($scope.selected.translation) {
-                  return utilService.getTerminologyName($scope.selected.translation.terminology);
-                } else {
-                  return "unknown translation terminology";
-                }
+              // Return the name for a terminology
+              $scope.getTerminologyName = function(terminology) {
+                return $scope.metadata.terminologyNames[terminology];
               };
 
               // Table sorting mechanism
@@ -461,6 +483,7 @@ tsApp
                 // Look up details of concept
               };
 
+              // Look through refsets to get the translation organization
               $scope.getTranslationOrganization = function(translation) {
                 for (var i = 0; i < $scope.refsets.length; i++) {
                   if (translation.refsetId == $scope.refsets[i].id) {
@@ -735,11 +758,6 @@ tsApp
 
               };
 
-              // Initialize if project setting isn't used
-              if ($scope.value == 'BETA' || $scope.value == 'PUBLISHED') {
-                $scope.getTranslations();
-              }
-
               // Directive scoped method for cancelling a release
               $scope.cancelAction = function(translation) {
                 $scope.translation = translation;
@@ -774,6 +792,12 @@ tsApp
                   });
                 }
               };
+
+              // Initialize if project setting isn't used
+              if ($scope.value == 'BETA' || $scope.value == 'PUBLISHED') {
+                $scope.getTranslations();
+              }
+              $scope.getFilters();
 
               // 
               // MODALS

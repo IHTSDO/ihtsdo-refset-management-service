@@ -50,6 +50,7 @@ tsApp
           importHandlers : [],
           exportHandlers : [],
           workflowPaths : [],
+          terminologyNames : {}
         };
 
         // Stats containers for refset-table sections
@@ -171,12 +172,15 @@ tsApp
         // Get $scope.metadata.terminologies, also loads
         // versions for the first edition in the list
         $scope.getTerminologyEditions = function() {
-          projectService.getTerminologyEditions().then(
-          // Success
-          function(data) {
-            utilService.setTerminologies(data.terminologies);
-          });
-
+          projectService
+            .getTerminologyEditions()
+            .then(
+              // Success
+              function(data) {
+                for (var i = 0; i < data.terminologies.length; i++) {
+                  $scope.metadata.terminologyNames[data.terminologies[i].terminology] = data.terminologies[i].name;
+                }
+              });
         };
 
         // Set the current accordion
@@ -200,10 +204,9 @@ tsApp
           securityService.updateUserPreferences($scope.user.userPreferences);
         };
 
-        // Initialize
+        // Initialize some metadata first time
         $scope.getProjects();
         $scope.getTerminologyEditions();
-        // Initialize some metadata first time
         $scope.getIOHandlers();
         $scope.getWorkflowPaths();
 

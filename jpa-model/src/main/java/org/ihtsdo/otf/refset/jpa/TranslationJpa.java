@@ -546,6 +546,30 @@ public class TranslationJpa extends AbstractComponent implements Translation {
     this.version = version;
   }
 
+
+  /* see superclass */
+  @XmlElement
+  @Fields({
+      @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO),
+      @Field(name = "organizationSort", index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  })
+  @Override
+  public String getOrganization() {
+    return (project != null) ? project.getOrganization() : "";
+  }
+
+  /**
+   * Sets the organization.
+   *
+   * @param organization the organization
+   */
+  @SuppressWarnings("unused")
+  private void setOrganization(String organization) {
+    if (project == null) {
+      project = new ProjectJpa();
+    }
+    project.setOrganization(organization);
+  }
   /* see superclass */
   @Override
   public int hashCode() {

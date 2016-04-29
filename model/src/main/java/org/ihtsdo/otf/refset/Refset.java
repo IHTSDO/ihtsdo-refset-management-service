@@ -271,6 +271,13 @@ public interface Refset extends Component, Searchable {
   public void setTranslations(List<Translation> translations);
 
   /**
+   * Returns the organization.
+   *
+   * @return the organization
+   */
+  public String getOrganization();
+
+  /**
    * Returns the notes.
    *
    * @return the notes
@@ -462,4 +469,17 @@ public interface Refset extends Component, Searchable {
    */
   public boolean isRevision();
 
+  /**
+   * Returns the domain.
+   *
+   * @return the domain
+   */
+  public String getDomain();
+
+  /**
+   * Sets the domain.
+   *
+   * @param domain the domain
+   */
+  public void setDomain(String domain);
 }

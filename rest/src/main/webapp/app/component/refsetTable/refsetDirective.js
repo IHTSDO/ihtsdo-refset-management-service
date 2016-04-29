@@ -52,6 +52,7 @@ tsApp
               $scope.project = null;
               $scope.cancelling = null;
               $scope.showLatest = true;
+              $scope.filters = [];
 
               // Page metadata
               $scope.memberTypes = [ 'Member', 'Exclusion', 'Inclusion', 'Active', 'Retired' ];
@@ -62,6 +63,7 @@ tsApp
               $scope.refsetReviewersMap = {};
 
               // Paging variables
+              $scope.visibleSize = 4;
               $scope.pageSize = 10;
               $scope.paging = {};
               $scope.paging['refset'] = {
@@ -126,6 +128,7 @@ tsApp
               $scope.setProject = function(project) {
                 $scope.project = project;
                 $scope.getRefsets();
+                $scope.getFilters();
                 // $scope.projects.role already updated
               };
 
@@ -287,6 +290,20 @@ tsApp
                 }
               };
 
+              // Get $scope.filters
+              $scope.getFilters = function() {
+                var projectId = $scope.project ? $scope.project.id : null;
+                var workflowStatus = null;
+                if ($scope.value == 'PUBLISHED' || $scope.value == 'BETA') {
+                  workflowStatus = $scope.value;
+                }
+                refsetService.getFilters(projectId, workflowStatus).then(
+                // Success
+                function(data) {
+                  $scope.filters = data.keyValuePairs;
+                });
+              };
+
               // Get $scope.metadata.descriptionTypes
               $scope.getStandardDescriptionTypes = function(terminology, version) {
                 projectService.getStandardDescriptionTypes(terminology, version).then(
@@ -374,13 +391,15 @@ tsApp
 
               };
 
-              // Get the name for a terminology
-              $scope.getTerminologyName = function() {
-                if ($scope.selected.refset) {
-                  return utilService.getTerminologyName($scope.selected.refset.terminology);
-                } else {
-                  return "unknown refset terminology";
-                }
+              // Indicates whether we are in a directory page section
+              var valueFlag = ($scope.value == 'PUBLISHED' || $scope.value == 'BETA');
+              $scope.isDirectory = function() {
+                return valueFlag;
+              };
+
+              // Return the name for a terminology
+              $scope.getTerminologyName = function(terminology) {
+                return $scope.metadata.terminologyNames[terminology];
               };
 
               // Table sorting mechanism
@@ -700,6 +719,8 @@ tsApp
               if ($scope.value == 'BETA' || $scope.value == 'PUBLISHED') {
                 $scope.getRefsets();
               }
+
+              $scope.getFilters();
 
               //
               // MODALS

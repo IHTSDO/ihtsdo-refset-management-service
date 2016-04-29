@@ -562,20 +562,19 @@ tsApp.service('translationService', [
       // suggest translation
       gpService.increment();
       $http.get(
-        translationUrl + 'memory/suggest/' + translationId + '/' + encodeURIComponent(entry))
-        .then(
-        // success
-        function(response) {
-          console.debug('  suggest = ', response.data);
-          gpService.decrement();
-          deferred.resolve(response.data);
-        },
-        // error
-        function(response) {
-          utilService.handleError(response);
-          gpService.decrement();
-          deferred.reject(response.data);
-        });
+        translationUrl + 'memory/suggest/' + translationId + '/' + encodeURIComponent(entry)).then(
+      // success
+      function(response) {
+        console.debug('  suggest = ', response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
       return deferred.promise;
     };
 
@@ -655,8 +654,8 @@ tsApp.service('translationService', [
 
       gpService.increment();
       $http.get(
-        translationUrl + 'memory/copy?fromTranslationId=' + fromTranslationId
-          + '&toTranslationId=' + toTranslationId).then(
+        translationUrl + 'memory/copy?fromTranslationId=' + fromTranslationId + '&toTranslationId='
+          + toTranslationId).then(
       // success
       function(response) {
         console.debug('  copy ', response.data);
@@ -1257,6 +1256,29 @@ tsApp.service('translationService', [
       });
       return deferred.promise;
     };
+
+    // get filters
+    this.getFilters = function(projectId, workflowStatus) {
+      console.debug('getFilters',projectId,workflowStatus);
+      // Setup deferred
+      var deferred = $q.defer();
+
+      $http.get(
+        translationUrl + 'filters' + (projectId ? '?projectId=' + projectId + '&' : '?')
+          + (workflowStatus ? 'workflowStatus=' + workflowStatus : '')).then(
+      // success
+      function(response) {
+        console.debug('  output = ', response.data);
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    };
+
     // end
 
   } ]);
