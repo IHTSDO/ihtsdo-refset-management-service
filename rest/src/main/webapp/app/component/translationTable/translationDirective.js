@@ -423,6 +423,12 @@ tsApp
               };
 
               // Convert date to a string
+              $scope.toSimpleDate = function(lastModified) {
+                return utilService.toSimpleDate(lastModified);
+
+              };
+
+              // Convert date to a string
               $scope.toDate = function(lastModified) {
                 return utilService.toDate(lastModified);
 
