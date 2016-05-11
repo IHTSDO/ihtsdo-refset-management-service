@@ -519,6 +519,9 @@
                 ng-click="openDefinitionClausesModal(selected.refset, value);$event.stopPropagation()"
                 title="View definition, assign refset to edit"
                 class="noul material-icons md-18">list</i>
+              <i ng-show="value == 'AVAILABLE'"
+                title="Assign refset to edit definition"
+                class="md-grey material-icons md-18">edit</i>
               <i ng-show="value == 'ASSIGNED' && projects.role != 'ADMIN'"
                 ng-click="openDefinitionClausesModal(selected.refset, value);$event.stopPropagation()"
                 title="Edit definition" class="noul material-icons md-18">edit</i>
