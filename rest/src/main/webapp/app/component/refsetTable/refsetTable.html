@@ -548,7 +548,7 @@
               <div style="max-height: 200px; overflow-y: scroll;">
                 <table class="table">
                   <tbody>
-                    <tr ng-repeat="clause in selected.refset.definitionClauses">
+                    <tr ng-repeat="clause in getOrderedDefinitionClauses()">
                       <td>
                         <div definition-clause clause="clause"
                           allow-negation=true mode="view"></div>

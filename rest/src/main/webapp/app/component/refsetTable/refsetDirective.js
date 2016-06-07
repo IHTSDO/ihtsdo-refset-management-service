@@ -408,6 +408,14 @@ tsApp
                 return $scope.metadata.terminologyNames[terminology];
               };
 
+              // Get ordered definition clauses
+              $scope.getOrderedDefinitionClauses = function() {
+                if ($scope.selected.refset && $scope.selected.refset.definitionClauses) {
+                  return $scope.selected.refset.definitionClauses.sort(utilService
+                    .sort_by('negated'));
+                }
+              };
+
               // Table sorting mechanism
               $scope.setSortField = function(table, field, object) {
 
@@ -787,8 +795,9 @@ tsApp
 
                 // Get paged clauses (assume all are loaded)
                 $scope.getPagedClauses = function() {
-                  $scope.pagedClauses = utilService.getPagedArray($scope.newClauses,
-                    $scope.paging['clauses'], $scope.pageSize);
+                  $scope.pagedClauses = utilService.getPagedArray($scope.newClauses
+                    .sort(utilService.sort_by('negated')), $scope.paging['clauses'],
+                    $scope.pageSize);
                 };
 
                 // identify whether defintion has changed
@@ -2050,7 +2059,6 @@ tsApp
                   $scope.getModules();
                 };
 
-
                 // Assign refset id
                 $scope.assignRefsetTerminologyId = function(refset) {
                   refsetService.assignRefsetTerminologyId(project.id, refset).then(
@@ -2063,7 +2071,7 @@ tsApp
                     handleError($scope.errors, data);
                   });
                 };
-                
+
                 // Add refset
                 $scope.submitRefset = function(refset) {
 
@@ -2221,7 +2229,7 @@ tsApp
                     handleError($scope.errors, data);
                   });
                 };
-                
+
                 // Update refset
                 $scope.submitRefset = function(refset) {
 
