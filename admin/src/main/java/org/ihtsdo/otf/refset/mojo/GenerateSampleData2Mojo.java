@@ -80,6 +80,7 @@ import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
  * @goal sample-data2
  * @phase package
  */
+@Mojo( name = "sample-data2", defaultPhase = LifecyclePhase.PACKAGE )
 public class GenerateSampleData2Mojo extends AbstractMojo {
 
   /** The assign names. */

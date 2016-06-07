@@ -28,6 +28,7 @@ import org.ihtsdo.otf.refset.services.handlers.ExceptionHandler;
  * @goal qa-database
  * @phase package
  */
+@Mojo( name = "qa-database", defaultPhase = LifecyclePhase.PACKAGE)
 public class QaDatabase extends AbstractMojo {
 
   /**

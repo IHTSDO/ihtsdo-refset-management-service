@@ -40,6 +40,7 @@ import org.ihtsdo.otf.refset.services.SecurityService;
  * @goal load-uat-users
  * @phase package
  */
+@Mojo( name = "load-uat-users", defaultPhase = LifecyclePhase.PACKAGE)
 public class LoadUatUsersMojo extends AbstractMojo {
 
   /**

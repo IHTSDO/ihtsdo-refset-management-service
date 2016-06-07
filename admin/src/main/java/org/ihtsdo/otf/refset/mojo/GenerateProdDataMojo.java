@@ -74,6 +74,7 @@ import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
  * @goal prod-data
  * @phase package
  */
+@Mojo( name = "prod-data", defaultPhase = LifecyclePhase.PACKAGE )
 public class GenerateProdDataMojo extends AbstractMojo {
 
   /**

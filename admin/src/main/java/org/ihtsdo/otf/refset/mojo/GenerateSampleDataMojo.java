@@ -68,6 +68,7 @@ import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
  * @goal sample-data
  * @phase package
  */
+@Mojo( name = "sample-data",defaultPhase = LifecyclePhase.PACKAGE )
 public class GenerateSampleDataMojo extends AbstractMojo {
 
   /** The refset counter. */

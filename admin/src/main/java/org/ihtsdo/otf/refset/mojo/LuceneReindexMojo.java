@@ -22,6 +22,7 @@ import org.ihtsdo.otf.refset.services.SecurityService;
  * 
  * @phase package
  */
+@Mojo( name = "reindex", defaultPhase = LifecyclePhase.PACKAGE)
 public class LuceneReindexMojo extends AbstractMojo {
 
   /**
