@@ -12,6 +12,7 @@ import java.util.Properties;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 
+import org.apache.log4j.Logger;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -138,7 +139,7 @@ public class QaDatabase extends AbstractMojo {
       try {
         ExceptionHandler.handleException(e, "Error running QA Checks");
       } catch (Exception e1) {
-        e1.printStackTrace();
+        Logger.getLogger(getClass()).error("Unexpected exception", e);
         throw new MojoFailureException(e.getMessage());
       }
 

@@ -52,7 +52,8 @@ public class ExceptionHandler {
   public static void handleException(Exception e, String whatIsHappening,
     String userName) throws Exception {
 
-    e.printStackTrace();
+    Logger.getLogger(ExceptionHandler.class).error(e.getMessage(), e);
+
     if (e instanceof LocalException) {
       if (e.getMessage().contains("AuthToken does not have a valid userName.")) {
         throw new LocalException("AuthToken does not have a valid userName.");
@@ -114,9 +115,8 @@ public class ExceptionHandler {
             "Sending mail is disabled.");
       }
     } catch (Exception ex) {
-      ex.printStackTrace();
       Logger.getLogger(ExceptionHandler.class).error(
-          "Unable to handle exception");
+          "Unable to handle exception", ex);
     }
 
   }

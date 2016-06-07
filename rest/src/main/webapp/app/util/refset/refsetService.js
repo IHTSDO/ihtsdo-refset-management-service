@@ -1335,5 +1335,25 @@ tsApp.service('refsetService', [
       return deferred.promise;
     };
 
+    // assign refset terminology id
+    this.assignRefsetTerminologyId = function(projectId, refset) {
+      console.debug('assignRefsetTerminologyId', projectId, refset);
+      // Setup deferred
+      var deferred = $q.defer();
+
+      $http.post(refsetUrl + 'assign?projectId=' + projectId, refset).then(
+      // success
+      function(response) {
+        console.debug('  terminologyId = ', response.data);
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    };
+
     // end
   } ]);

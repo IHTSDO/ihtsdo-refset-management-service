@@ -65,7 +65,8 @@ public class WorkflowServiceJpa extends TranslationServiceJpa implements
             + " expected and does not exist.");
       }
     } catch (Exception e) {
-      e.printStackTrace();
+      Logger.getLogger(WorkflowServiceJpa.class).error(
+          "Failed to initialize workflow.action.handler - serious error", e);
       workflowHandlerMap = null;
     }
   }

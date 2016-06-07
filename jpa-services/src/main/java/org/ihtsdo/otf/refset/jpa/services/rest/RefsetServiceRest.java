@@ -621,4 +621,15 @@ public interface RefsetServiceRest {
   public KeyValuePairList getFieldFilters(Long projectId,
     String workflowStatus, String authToken) throws Exception;
 
+  /**
+   * Assign refset id.
+   *
+   * @param projectId the project id
+   * @param refset the refset
+   * @param authToken the auth token
+   * @return the string
+   * @throws Exception the exception
+   */
+  public String assignRefsetTerminologyId(Long projectId, RefsetJpa refset,
+    String authToken) throws Exception;
 }

@@ -23,6 +23,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 
+import org.apache.log4j.Logger;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.refset.User;
@@ -82,7 +83,7 @@ public class LoadUatUsersMojo extends AbstractMojo {
       service.close();
       getLog().info("Done ...");
     } catch (Exception e) {
-      e.printStackTrace();
+      Logger.getLogger(getClass()).error("Unexpected exception", e);
       throw new MojoFailureException("Unexpected exception:", e);
     }
   }

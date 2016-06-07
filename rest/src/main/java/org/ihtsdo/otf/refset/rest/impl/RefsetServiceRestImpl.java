@@ -54,6 +54,7 @@ import org.ihtsdo.otf.refset.jpa.MemberDiffReportJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetNoteJpa;
 import org.ihtsdo.otf.refset.jpa.StagedRefsetChangeJpa;
+import org.ihtsdo.otf.refset.jpa.TranslationJpa;
 import org.ihtsdo.otf.refset.jpa.ValidationResultJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptRefsetMemberListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.IoHandlerInfoListJpa;
@@ -67,6 +68,7 @@ import org.ihtsdo.otf.refset.jpa.services.WorkflowServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.RefsetServiceRest;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
+import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
 import org.ihtsdo.otf.refset.services.RefsetService;
 import org.ihtsdo.otf.refset.services.ReleaseService;
@@ -74,6 +76,7 @@ import org.ihtsdo.otf.refset.services.SecurityService;
 import org.ihtsdo.otf.refset.services.TranslationService;
 import org.ihtsdo.otf.refset.services.WorkflowService;
 import org.ihtsdo.otf.refset.services.handlers.ExportRefsetHandler;
+import org.ihtsdo.otf.refset.services.handlers.IdentifierAssignmentHandler;
 import org.ihtsdo.otf.refset.services.handlers.ImportRefsetHandler;
 import org.ihtsdo.otf.refset.services.handlers.TerminologyHandler;
 import org.ihtsdo.otf.refset.workflow.TrackingRecord;
@@ -648,7 +651,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
   @ApiOperation(value = "Clone refset", notes = "Adds the specified refset, which is a potentially modified copy of another refset", response = RefsetJpa.class)
   public Refset cloneRefset(
     @ApiParam(value = "Project id, e.g. 3", required = true) @QueryParam("projectId") Long projectId,
-    @ApiParam(value = "Refset , e.g. 347582394", required = false) RefsetJpa refset,
+    @ApiParam(value = "Refset POST data", required = false) RefsetJpa refset,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
@@ -3277,5 +3280,59 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       refsetService.close();
       securityService.close();
     }
+  }
+
+  /* see superclass */
+  @Override
+  @POST
+  @Produces("text/plain")
+  @Path("/assign")
+  @ApiOperation(value = "Assign a refset id", notes = "Assigns a concept identifier to the refset.", response = Long.class)
+  public String assignRefsetTerminologyId(
+    @ApiParam(value = "Project id, e.g. 3", required = true) @QueryParam("projectId") Long projectId,
+    @ApiParam(value = "Refset POST data", required = true) RefsetJpa refset,
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
+
+  throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful call (Refset): assign refset id " + projectId + ", " + refset);
+
+    final RefsetService refsetService = new RefsetServiceJpa();
+    try {
+      authorizeProject(refsetService, projectId, securityService, authToken,
+          "assign refset id", UserRole.AUTHOR);
+
+      // Check preconditions
+      if (refset.getNamespace() == null || refset.getNamespace().isEmpty()) {
+        throw new LocalException("Unable to assign refset id without namespace");
+      }
+
+      if (refset.getTerminology() == null || refset.getTerminology().isEmpty()) {
+        throw new LocalException(
+            "Unable to assign refset id without terminology");
+      }
+
+      // NOTE: this is very SNOMED-specific
+      final Concept concept = new ConceptJpa();
+      final Translation translation = new TranslationJpa();
+      concept.setTranslation(translation);
+      translation.setRefset(refset);
+      final IdentifierAssignmentHandler handler =
+          refsetService.getIdentifierAssignmentHandler(refset.getTerminology());
+      if (handler == null) {
+        throw new LocalException(
+            "Unable to find ID assignment handler for terminology "
+                + refset.getTerminology());
+      }
+
+      return handler.getTerminologyId(concept);
+
+    } catch (Exception e) {
+      handleException(e, "trying to assign refset id");
+    } finally {
+      refsetService.close();
+      securityService.close();
+    }
+    return null;
   }
 }

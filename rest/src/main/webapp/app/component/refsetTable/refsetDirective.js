@@ -1165,6 +1165,19 @@ tsApp
                   $scope.getModules();
                 };
 
+                // Assign refset id
+                $scope.assignRefsetTerminologyId = function(refset) {
+                  refsetService.assignRefsetTerminologyId(refset.projectId, refset).then(
+                  // success
+                  function(data) {
+                    refset.terminologyId = data;
+                  },
+                  // error
+                  function(data) {
+                    handleError($scope.errors, data);
+                  });
+                };
+
                 // Submit refset
                 $scope.submitRefset = function(refset) {
 
@@ -1265,12 +1278,12 @@ tsApp
 
                 $scope.refset = refset;
                 $scope.ioHandlers = [];
-                
+
                 // Skip "with name" handlers if user is not logged in
-                // IHTSDO-specific, may be able make this more data driven             
+                // IHTSDO-specific, may be able make this more data driven
                 for (var i = 0; i < ioHandlers.length; i++) {
-                  if (!securityService.isLoggedIn() &&
-                    ioHandlers[i].name.toLowerCase().indexOf('with name') != -1) {
+                  if (!securityService.isLoggedIn()
+                    && ioHandlers[i].name.toLowerCase().indexOf('with name') != -1) {
                     continue;
                   }
                   $scope.ioHandlers.push(ioHandlers[i]);
@@ -2037,6 +2050,21 @@ tsApp
                   $scope.getModules();
                 };
 
+
+                // Assign refset id
+                $scope.assignRefsetTerminologyId = function(refset) {
+                  refsetService.assignRefsetTerminologyId(project.id, refset).then(
+                  // success
+                  function(data) {
+                    refset.terminologyId = data;
+                  },
+                  // error
+                  function(data) {
+                    handleError($scope.errors, data);
+                  });
+                };
+                
+                // Add refset
                 $scope.submitRefset = function(refset) {
 
                   refset.projectId = project.id;
@@ -2181,7 +2209,20 @@ tsApp
                   $scope.getModules();
                 };
 
-                // Submit refset
+                // Assign refset id
+                $scope.assignRefsetTerminologyId = function(refset) {
+                  refsetService.assignRefsetTerminologyId(project.id, refset).then(
+                  // success
+                  function(data) {
+                    refset.terminologyId = data;
+                  },
+                  // error
+                  function(data) {
+                    handleError($scope.errors, data);
+                  });
+                };
+                
+                // Update refset
                 $scope.submitRefset = function(refset) {
 
                   refset.projectId = refset.project.id;

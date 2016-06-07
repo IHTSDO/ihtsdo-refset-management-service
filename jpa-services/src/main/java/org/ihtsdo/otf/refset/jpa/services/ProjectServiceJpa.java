@@ -59,7 +59,8 @@ public class ProjectServiceJpa extends RootServiceJpa implements ProjectService 
         terminologyHandler = handlerService;
       }
     } catch (Exception e) {
-      e.printStackTrace();
+      Logger.getLogger(ProjectServiceJpa.class).error(
+          "Failed to initialize terminology.handler - serious error", e);
       terminologyHandler = null;
     }
   }
@@ -82,7 +83,8 @@ public class ProjectServiceJpa extends RootServiceJpa implements ProjectService 
         workflowListeners.add(handlerService);
       }
     } catch (Exception e) {
-      e.printStackTrace();
+      Logger.getLogger(ProjectServiceJpa.class).error(
+          "Failed to initialize workflow.listener.handler - serious error", e);
       workflowListeners = null;
     }
   }
@@ -111,7 +113,8 @@ public class ProjectServiceJpa extends RootServiceJpa implements ProjectService 
             + ConfigUtility.DEFAULT + " expected and does not exist.");
       }
     } catch (Exception e) {
-      e.printStackTrace();
+      Logger.getLogger(ProjectServiceJpa.class).error(
+          "Failed to initialize identifier.assignment.handler - serious error", e);
       idHandlerMap = null;
     }
   }
@@ -246,13 +249,11 @@ public class ProjectServiceJpa extends RootServiceJpa implements ProjectService 
     }
   }
 
-
   /* see superclass */
   @Override
   public boolean isLastModifiedFlag() {
     return lastModifiedFlag;
   }
-
 
   /* see superclass */
   @Override
@@ -288,7 +289,6 @@ public class ProjectServiceJpa extends RootServiceJpa implements ProjectService 
   public void disableListeners() {
     listenersEnabled = false;
   }
-
 
   /* see superclass */
   @Override
