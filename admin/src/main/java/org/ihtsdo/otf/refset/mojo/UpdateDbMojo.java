@@ -7,8 +7,6 @@ import java.util.Properties;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugins.annotations.Mojo;
-import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.jpa.services.RootServiceJpa;
 
@@ -20,7 +18,6 @@ import org.ihtsdo.otf.refset.jpa.services.RootServiceJpa;
  * @goal updatedb
  * @phase package
  */
-@Mojo( name = "updatedb", defaultPhase = LifecyclePhase.PACKAGE)
 public class UpdateDbMojo extends AbstractMojo {
 
   /**

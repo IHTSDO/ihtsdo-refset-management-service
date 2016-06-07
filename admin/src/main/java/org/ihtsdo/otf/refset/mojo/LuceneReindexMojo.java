@@ -7,8 +7,6 @@ import java.util.Properties;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugins.annotations.Mojo;
-import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.refset.rest.client.ProjectClientRest;
@@ -24,7 +22,6 @@ import org.ihtsdo.otf.refset.services.SecurityService;
  * 
  * @phase package
  */
-@Mojo( name = "reindex", defaultPhase = LifecyclePhase.PACKAGE)
 public class LuceneReindexMojo extends AbstractMojo {
 
   /**
