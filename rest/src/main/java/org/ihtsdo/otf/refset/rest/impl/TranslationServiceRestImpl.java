@@ -2054,13 +2054,22 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
             "translation must have an associated phrase memory.");
       }
       // authorize the call
-      authorizeProject(translationService, translation.getProject().getId(),
-          securityService, authToken,
-          "remove all entries  from the phrase memory", UserRole.AUTHOR);
+      final String userName =
+          authorizeProject(translationService,
+              translation.getProject().getId(), securityService, authToken,
+              "remove all entries  from the phrase memory", UserRole.AUTHOR);
 
       for (final MemoryEntry memoryEntry : phraseMemory.getEntries()) {
         translationService.removeMemoryEntry(memoryEntry.getId());
       }
+
+      // Mark phrase memory as empty
+      if (!translation.isPhraseMemoryEmpty()) {
+        translation.setPhraseMemoryEmpty(true);
+        translation.setLastModifiedBy(userName);
+        translationService.updateTranslation(translation);
+      }
+
     } catch (Exception e) {
       handleException(e, "trying to remove all phrase memory entries");
     } finally {
