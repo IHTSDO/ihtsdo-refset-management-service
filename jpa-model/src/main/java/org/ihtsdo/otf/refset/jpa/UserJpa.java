@@ -26,8 +26,10 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
+import org.apache.lucene.analysis.core.WhitespaceAnalyzer;
 import org.hibernate.envers.Audited;
 import org.hibernate.search.annotations.Analyze;
+import org.hibernate.search.annotations.Analyzer;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.FieldBridge;
 import org.hibernate.search.annotations.Fields;
@@ -210,8 +212,8 @@ public class UserJpa implements User {
    */
   @XmlJavaTypeAdapter(ProjectRoleMapAdapter.class)
   @Fields({
-      @Field(bridge = @FieldBridge(impl = ProjectRoleBridge.class), index = Index.YES, analyze = Analyze.YES, store = Store.NO),
-      @Field(name = "projectAnyRole", bridge = @FieldBridge(impl = MapIdBridge.class), index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+      @Field(bridge = @FieldBridge(impl = ProjectRoleBridge.class), analyzer = @Analyzer(impl = WhitespaceAnalyzer.class), index = Index.YES, analyze = Analyze.YES, store = Store.NO),
+      @Field(name = "projectAnyRole", bridge = @FieldBridge(impl = MapIdBridge.class), analyzer = @Analyzer(impl = WhitespaceAnalyzer.class), index = Index.YES, analyze = Analyze.YES, store = Store.NO)
   })
   @Override
   public Map<Project, UserRole> getProjectRoleMap() {

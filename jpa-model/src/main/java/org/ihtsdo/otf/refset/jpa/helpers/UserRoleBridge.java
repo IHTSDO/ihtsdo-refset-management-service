@@ -11,7 +11,7 @@ import org.ihtsdo.otf.refset.UserRole;
 
 /**
  * Hibernate search field bridge for searching user/role combinations.
- * For example, "userRoleMap:user1ADMIN"
+ * For example, "userRoleMap:user1ADMIN user2AUTHOR"
  */
 public class UserRoleBridge implements StringBridge {
 
@@ -25,7 +25,7 @@ public class UserRoleBridge implements StringBridge {
       Map<User, UserRole> map = (Map<User, UserRole>) value;
       for(Map.Entry<User, UserRole> entry : map.entrySet()) {
         buf.append(entry.getKey().getUserName())
-        .append(entry.getValue().toString()).append(",");
+        .append(entry.getValue().toString()).append(" ");
       }
       return buf.toString();
     }

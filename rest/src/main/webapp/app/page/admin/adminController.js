@@ -819,6 +819,9 @@ tsApp
               user : function() {
                 return luser;
               },
+              applicationRole : function() {
+                return $scope.user.applicationRole;
+              },
               applicationRoles : function() {
                 return $scope.applicationRoles;
               }
@@ -834,9 +837,11 @@ tsApp
         };
 
         // Add user controller
-        var AddUserModalCtrl = function($scope, $uibModalInstance, user, applicationRoles) {
+        var AddUserModalCtrl = function($scope, $uibModalInstance, user, applicationRole,
+          applicationRoles) {
           $scope.action = 'Add';
           $scope.user = user;
+          $scope.applicationRole = applicationRole;
           $scope.applicationRoles = applicationRoles;
           $scope.errors = [];
 
@@ -876,6 +881,9 @@ tsApp
               user : function() {
                 return luser;
               },
+              applicationRole : function() {
+                return $scope.user.applicationRole;
+              },
               applicationRoles : function() {
                 return $scope.applicationRoles;
               }
@@ -890,11 +898,13 @@ tsApp
           });
         };
 
-        var EditUserModalCtrl = function($scope, $uibModalInstance, user, applicationRoles) {
+        var EditUserModalCtrl = function($scope, $uibModalInstance, user, applicationRole,
+          applicationRoles) {
 
           $scope.action = 'Edit';
           $scope.user = user;
           // copy data structure so it will be fresh each time modal is opened
+          $scope.applicationRole = applicationRole;
           $scope.applicationRoles = JSON.parse(JSON.stringify(applicationRoles));
           $scope.errors = [];
 
