@@ -169,24 +169,35 @@ public class PerformTranslationBetaAlgorithm extends TranslationServiceJpa
             translation.getProject().getId());
 
     if (releaseInfo != null) {
+
+      final String oldModuleId = releaseInfo.getTranslation().getModuleId();
+      final String newModuleId = translation.getModuleId();
+
       // Get descriptions/languages from last time
       final Map<String, Description> oldDescriptionMap = new HashMap<>();
       final Map<String, LanguageRefsetMember> oldMemberMap = new HashMap<>();
-      for (final Concept concept : releaseInfo.getTranslation().getConcepts()) {
-        for (final Description description : concept.getDescriptions()) {
-          oldDescriptionMap.put(description.getTerminologyId(),
-              new DescriptionJpa(description, false));
-          for (final LanguageRefsetMember member : description
-              .getLanguageRefsetMembers()) {
-            oldMemberMap.put(member.getTerminologyId(),
-                new LanguageRefsetMemberJpa(member));
+
+      // If the module ids don't match, every description/lang will be updated
+      if (oldModuleId.equals(newModuleId)) {
+        for (final Concept concept : releaseInfo.getTranslation().getConcepts()) {
+          for (final Description description : concept.getDescriptions()) {
+            oldDescriptionMap.put(description.getTerminologyId(),
+                new DescriptionJpa(description, false));
+            for (final LanguageRefsetMember member : description
+                .getLanguageRefsetMembers()) {
+              oldMemberMap.put(member.getTerminologyId(),
+                  new LanguageRefsetMemberJpa(member));
+            }
+            // clear languages to populate them later
+            description.getLanguageRefsetMembers().clear();
           }
-          // clear languages to populate them later
-          description.getLanguageRefsetMembers().clear();
+          // clear descriptions to populate them later
+          concept.getDescriptions().clear();
         }
-        // clear descriptions to populate them later
-        concept.getDescriptions().clear();
       }
+
+      // At this point the oldMemberMap will be empty if module ids were
+      // different. Thus each "new member" will get written to the release
 
       // Get descriptions/languages from this time
       Map<String, Description> newDescriptionMap = new HashMap<>();

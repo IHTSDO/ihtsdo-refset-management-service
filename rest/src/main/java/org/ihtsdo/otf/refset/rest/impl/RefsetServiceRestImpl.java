@@ -2426,7 +2426,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       final ValidationResult result = new ValidationResultJpa();
       if (refset.getMembers().size() != 0) {
         result
-            .addError("Refset already contains members, this operation will add more members");
+            .addError("Refset already contains members, this operation will add or update members");
       } else {
         return result;
       }
@@ -2604,12 +2604,15 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       }
 
       // Get a set of concept ids for current members
-      final Set<String> conceptIds = new HashSet<>();
+      final Map<String, ConceptRefsetMember> memberMap = new HashMap<>();
       for (final ConceptRefsetMember member : refset.getMembers()) {
-        conceptIds.add(member.getConceptId());
+        memberMap.put(member.getConceptId(), member);
       }
-      Logger.getLogger(getClass())
-          .info("  refset count = " + conceptIds.size());
+      Logger.getLogger(getClass()).info("  refset count = " + memberMap.size());
+
+      if (memberMap.size() == 0 && handler.isDeltaHandler()) {
+        throw new LocalException("A delta import handler should only be used if a refset already has members.");
+      }
 
       // Load members into memory and add to refset
       final List<ConceptRefsetMember> members =
@@ -2618,33 +2621,56 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       int objectCt = 0;
       for (final ConceptRefsetMember member : members) {
 
+        final ConceptRefsetMember origMember =
+            memberMap.get(member.getConceptId());
         // De-duplicate
-        if (conceptIds.contains(member.getConceptId())) {
+        if (!handler.isDeltaHandler() && origMember != null) {
           continue;
         }
-        ++objectCt;
-        member.setActive(true);
-        member.setId(null);
-        member.setPublishable(true);
-        member.setPublished(false);
-        member.setMemberType(Refset.MemberType.MEMBER);
 
-        // Initialize values to be overridden by lookupNames routine
-        member.setConceptActive(true);
-        member.setConceptName(TerminologyHandler.NAME_LOOKUP_IN_PROGRESS);
+        // Retire
+        else if (handler.isDeltaHandler() && origMember != null
+            && !member.isActive()) {
+          // If retired, remove from the refset
+          refsetService.removeMember(memberMap.get(member.getConceptId())
+              .getId());
+          memberMap.remove(member.getConceptId());
+        }
 
-        member.setLastModifiedBy(userName);
-        refsetService.addMember(member);
+        else if (handler.isDeltaHandler() && origMember != null
+            && member.isActive()) {
+          // Update the effectiveTime, moduleId
+          origMember.setEffectiveTime(member.getEffectiveTime());
+          origMember.setModuleId(member.getTerminologyId());
+          origMember.setLastModifiedBy(userName);
+          refsetService.updateMember(origMember);
+        }
+        // Otherwise, add it
+        else {
 
-        conceptIds.add(member.getConceptId());
-        if (objectCt % commitCt == 0) {
-          refsetService.commit();
-          refsetService.clear();
-          refsetService.beginTransaction();
+          ++objectCt;
+          member.setActive(true);
+          member.setId(null);
+          member.setPublishable(true);
+          member.setPublished(false);
+          member.setMemberType(Refset.MemberType.MEMBER);
+
+          // Initialize values to be overridden by lookupNames routine
+          member.setConceptActive(true);
+          member.setConceptName(TerminologyHandler.NAME_LOOKUP_IN_PROGRESS);
+
+          member.setLastModifiedBy(userName);
+          refsetService.addMember(member);
+
+          memberMap.put(member.getConceptId(), member);
+          if (objectCt % commitCt == 0) {
+            refsetService.commitClearBegin();
+          }
         }
       }
+      refsetService.commitClearBegin();
       Logger.getLogger(getClass()).info("  refset import count = " + objectCt);
-      Logger.getLogger(getClass()).info("  total = " + conceptIds.size());
+      Logger.getLogger(getClass()).info("  total = " + memberMap.size());
 
       // Remove the staged refset change and set staging type back to null
       refsetService.removeStagedRefsetChange(change.getId());
@@ -2655,12 +2681,15 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
         refset.setLookupInProgress(true);
       }
       refset.setLastModifiedBy(userName);
+      refset.setMembers(new ArrayList<ConceptRefsetMember>());
       refsetService.updateRefset(refset);
 
       // End transaction
-      addLogEntry(refsetService, userName, "FINISH IMPORT refset", refset
-          .getProject().getId(), refset.getId(), refset.getTerminologyId()
-          + ": " + refset.getName() + ", " + objectCt + " members imported");
+      addLogEntry(refsetService, userName,
+          "FINISH IMPORT " + (handler.isDeltaHandler() ? "DELTA " : "")
+              + "refset", refset.getProject().getId(), refset.getId(),
+          refset.getTerminologyId() + ": " + refset.getName() + ", " + objectCt
+              + " members imported");
       refsetService.commit();
 
       // With contents committed, can now lookup Names/Statuses of members

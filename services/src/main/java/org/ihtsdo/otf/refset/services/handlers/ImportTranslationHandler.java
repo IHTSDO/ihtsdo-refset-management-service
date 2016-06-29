@@ -25,6 +25,15 @@ import org.ihtsdo.otf.refset.rf2.Concept;
 public interface ImportTranslationHandler extends Configurable {
 
   /**
+   * Indicates whether or not this is a delta handler. If so, the import process
+   * will update concepts and descriptions rather than simply adding new ones.
+   *
+   *
+   * @return <code>true</code> if so, <code>false</code> otherwise
+   */
+  public boolean isDeltaHandler();
+
+  /**
    * Returns the file type filter.
    *
    * @return the file type filter

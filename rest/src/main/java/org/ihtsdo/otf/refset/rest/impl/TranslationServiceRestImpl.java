@@ -75,6 +75,7 @@ import org.ihtsdo.otf.refset.rf2.DescriptionType;
 import org.ihtsdo.otf.refset.rf2.LanguageDescriptionType;
 import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
+import org.ihtsdo.otf.refset.rf2.jpa.DescriptionJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.LanguageDescriptionTypeJpa;
 import org.ihtsdo.otf.refset.services.ReleaseService;
 import org.ihtsdo.otf.refset.services.SecurityService;
@@ -770,7 +771,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       final ValidationResult result = new ValidationResultJpa();
       if (translation.getConcepts().size() != 0) {
         result
-            .addError("Translation already contains concepts, this operation will add more concepts");
+            .addError("Translation already contains concepts, this operation will add or update concepts");
       } else {
         return result;
       }
@@ -898,75 +899,283 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
         throw new Exception("invalid handler id " + ioHandlerInfoId);
       }
 
-      // Get a set of concept ids for current translation concepts
-      final Set<String> conceptIds = new HashSet<>();
+      // Get copies of concepts for the current translation
+      final Map<String, Concept> conceptMap = new HashMap<>();
       for (final Concept concept : translation.getConcepts()) {
-        conceptIds.add(concept.getTerminologyId());
+        conceptMap.put(concept.getTerminologyId(), new ConceptJpa(concept,
+            false));
       }
       Logger.getLogger(getClass()).info(
-          "  translation count = " + conceptIds.size());
+          "  translation count = " + conceptMap.size());
+
+      // Only allow delta import if there is at least one concept
+      if (conceptMap.size() == 0 && handler.isDeltaHandler()) {
+        throw new LocalException(
+            "A delta import handler should only be used if a translation already has concepts/descriptions.");
+      }
 
       // Load concepts into memory and add to translation
       final List<Concept> concepts = handler.importConcepts(translation, in);
-      ValidationResult validationResult = handler.getValidationResults();
+      final ValidationResult validationResult = handler.getValidationResults();
 
       int objectCt = 0;
-      for (final Concept concept : concepts) {
 
-        // De-duplicate
-        if (conceptIds.contains(concept.getTerminologyId())) {
+      // Process concepts from import
+      for (final Concept concept : concepts) {
+        Logger.getLogger(getClass()).info(
+            "  concept = " + concept.getTerminologyId() + ", " + concept);
+
+        // See if the concept already exists
+        Concept origConcept = conceptMap.get(concept.getTerminologyId());
+
+        // De-duplicate (because added concepts are put into the map)
+        if (!handler.isDeltaHandler() && origConcept != null) {
+          Logger.getLogger(getClass()).info("    SKIP CONCEPT");
           continue;
         }
-        ++objectCt;
-        concept.setId(null);
-        concept.setPublishable(true);
-        concept.setPublished(false);
-        concept.setName(TerminologyHandler.NAME_LOOKUP_IN_PROGRESS);
-        concept.setActive(true);
-        concept.setTranslation(translation);
-        // Mark as ready for publication as they are imported and can be further
-        // worked on from there
-        concept.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
-        concept.setLastModifiedBy(userName);
-        translationService.addConcept(concept);
 
+        Logger.getLogger(getClass()).info(
+            "  concept descs = " + concept.getDescriptions());
+        // concept is always active, so no need to check
+        ++objectCt;
+
+        // Get orig descriptions - for a "new" concept there won't be any
+        final Map<String, Description> origDescMap = new HashMap<>();
+
+        // If orig concept exists, read its descriptions
+        if (origConcept != null) {
+          Logger.getLogger(getClass()).info(
+              "    orig concept = " + origConcept.getTerminologyId() + ", "
+                  + origConcept);
+          for (final Description desc : translationService.getConcept(
+              origConcept.getId()).getDescriptions()) {
+            final Description copy = new DescriptionJpa(desc, false);
+            origConcept.getDescriptions().add(copy);
+            origDescMap.put(desc.getTerminologyId(), copy);
+          }
+          Logger.getLogger(getClass()).info("  orig desc map = " + origDescMap);
+        }
+
+        // Otherwise add concept
+        else {
+          Logger.getLogger(getClass()).info("    ADD CONCEPT");
+          concept.setId(null);
+          concept.setPublishable(true);
+          concept.setPublished(false);
+          concept.setName(TerminologyHandler.NAME_LOOKUP_IN_PROGRESS);
+          concept.setActive(true);
+          concept.setTranslation(translation);
+          // Mark as ready for publication as they are imported and can be
+          // further worked on from there
+          concept.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
+          concept.setLastModifiedBy(userName);
+          // Make a copy to detach it, otherwise they share the same description
+          // lists
+          origConcept =
+              new ConceptJpa(translationService.addConcept(concept), false);
+          conceptMap.put(concept.getTerminologyId(), origConcept);
+          Logger.getLogger(getClass())
+              .info("      id = " + origConcept.getId());
+        }
+
+        // Process descriptions from import
         for (final Description description : concept.getDescriptions()) {
+
+          Logger.getLogger(getClass())
+              .info(
+                  "  desc = " + description.getTerminologyId() + ", "
+                      + description);
+
+          // Get original description
+          Description origDesc =
+              origDescMap.get(description.getTerminologyId());
+
+          // Skip descriptions already present for a non-delta handler
+          // (e.g. de-duplicate)
+          if (!handler.isDeltaHandler() && origDesc != null) {
+            Logger.getLogger(getClass()).info("    SKIP DESC");
+            continue;
+          }
+
+          // Get all members for current description
           final List<LanguageRefsetMember> members =
               description.getLanguageRefsetMembers();
-          description
-              .setLanguageRefsetMembers(new ArrayList<LanguageRefsetMember>());
-          for (final LanguageRefsetMember member : members) {
-            member.setId(null);
-            member.setPublishable(true);
-            member.setPublished(false);
-            member.setDescriptionId(description.getTerminologyId());
-            member.setLastModifiedBy(userName);
-            translationService.addLanguageRefsetMember(member,
-                translation.getTerminology());
-            description.getLanguageRefsetMembers().add(member);
-          }
-          description.setId(null);
-          description.setPublishable(true);
-          description.setPublished(false);
-          description.setConcept(concept);
-          description.setLastModifiedBy(userName);
-          translationService.addDescription(description);
-        }
-        concept.setLastModifiedBy(userName);
-        translationService.updateConcept(concept);
-        conceptIds.add(concept.getTerminologyId());
 
+          // Get orig language members
+          final Map<String, LanguageRefsetMember> origMemberMap =
+              new HashMap<>();
+
+          // If orig description exists, read its members
+          if (origDesc != null) {
+            Logger.getLogger(getClass()).info(
+                "    orig desc = " + origDesc.getTerminologyId() + ", "
+                    + origDesc);
+            for (final LanguageRefsetMember member : translationService
+                .getDescription(origDesc.getId()).getLanguageRefsetMembers()) {
+              origDesc.getLanguageRefsetMembers().add(member);
+              origMemberMap.put(member.getTerminologyId(), member);
+            }
+            Logger.getLogger(getClass()).info(
+                "    orig member map = " + origMemberMap);
+          }
+
+          // Otherwise, add the description
+          else {
+            // Otherwise, add it
+            Logger.getLogger(getClass()).info("    ADD DESC");
+            description.setId(null);
+            description.setPublishable(true);
+            description.setPublished(false);
+            description.setConcept(origConcept);
+            description.setLastModifiedBy(userName);
+            origConcept.getDescriptions().add(description);
+            // Copy the result to detach it - otherwise they share the same
+            // member list
+            origDesc =
+                new DescriptionJpa(
+                    translationService.addDescription(description), false);
+            Logger.getLogger(getClass()).info("      id = " + origDesc.getId());
+          }
+
+          // Wire concept
+          origDesc.setConcept(origConcept);
+
+          // determine whether members list changed (e.g. due to remove or add)
+          boolean membersChanged = false;
+
+          // Process language refset members from import
+          for (final LanguageRefsetMember member : members) {
+            Logger.getLogger(getClass()).info(
+                "    member = " + member.getTerminologyId() + ", " + member);
+
+            // Get original language member
+            LanguageRefsetMember origMember =
+                origMemberMap.get(member.getTerminologyId());
+
+            // If orig member exists, log it
+            if (origMember != null) {
+              Logger.getLogger(getClass()).info(
+                  "      orig member = " + origMember.getTerminologyId() + ", "
+                      + origMember);
+            }
+
+            // Otherwise, add language member
+            else {
+              // Otherwise, add it
+              Logger.getLogger(getClass()).info("      ADD MEMBER");
+              member.setId(null);
+              member.setPublishable(true);
+              member.setPublished(false);
+              member.setDescriptionId(origDesc.getTerminologyId());
+              member.setLastModifiedBy(userName);
+              translationService.addLanguageRefsetMember(member,
+                  translation.getTerminology());
+              origDesc.getLanguageRefsetMembers().add(member);
+              membersChanged = true;
+            }
+
+            // If delta handler and the description is to be removed
+            // Remove the corresponding language entry as well
+            if (handler.isDeltaHandler() && origDesc != null
+                && !description.isActive()) {
+              Logger.getLogger(getClass()).info("      REMOVE MEMBER 1");
+              translationService.removeLanguageRefsetMember(member.getId());
+              origDesc.getLanguageRefsetMembers().remove(member);
+              membersChanged = true;
+            }
+
+            // Retire
+            else if (handler.isDeltaHandler() && origMember != null
+                && !member.isActive()) {
+              Logger.getLogger(getClass()).info("      REMOVE MEMBER 2");
+              // If retired, remove from the refset
+              translationService.removeLanguageRefsetMember(origMemberMap.get(
+                  member.getTerminologyId()).getId());
+              origDesc.getLanguageRefsetMembers().remove(member);
+              membersChanged = true;
+            }
+
+            // Update if changed
+            else if (handler.isDeltaHandler() && origMember != null
+                && member.isActive()) {
+              Logger.getLogger(getClass()).info("      UPDATE MEMBER");
+              // Update the terminologyId, effectiveTime, moduleId
+              origMember.setAcceptabilityId(member.getAcceptabilityId());
+              origMember.setEffectiveTime(member.getEffectiveTime());
+              origMember.setModuleId(member.getTerminologyId());
+              origMember.setLastModifiedBy(userName);
+              translationService.updateLanguageRefsetMember(origMember,
+                  translation.getTerminology());
+            }
+
+          }
+
+          // Retire descriptions for delta handler
+          if (handler.isDeltaHandler() && origDesc != null
+              && !description.isActive()) {
+            Logger.getLogger(getClass()).info("    REMOVE DESC");
+            // If retired, remove from the concept
+            origConcept.getDescriptions().remove(origDesc);
+            translationService.removeDescription(description.getId());
+          }
+
+          // if members changed or description already existed, update
+          else if (membersChanged
+              || (handler.isDeltaHandler() && origDesc != null && description
+                  .isActive())) {
+            Logger.getLogger(getClass()).info("    UPDATE DESC");
+            // Update fields
+            origDesc.setCaseSignificanceId(description.getCaseSignificanceId());
+            origDesc.setLanguageCode(description.getLanguageCode());
+            origDesc.setLastModifiedBy(userName);
+            origDesc.setModuleId(description.getModuleId());
+            origDesc.setTypeId(description.getTypeId());
+            origDesc.setEffectiveTime(description.getEffectiveTime());
+
+            // Technically, these fields should yield new identity
+            if (!origDesc.getTerm().equals(description.getTerm())) {
+              throw new Exception(
+                  "Description term is not allowed to change without changing identity");
+            }
+            if (!origDesc.getTypeId().equals(description.getTypeId())) {
+              throw new Exception(
+                  "Description typeId is not allowed to change without changing identity");
+            }
+
+            // This will also pick up any cases of languages added or removed
+            translationService.updateDescription(origDesc);
+            // NOTE: this also just keeps any attached language entries
+          }
+
+        }
+
+        // If origConcept has no descriptions, remove it
+        if (origConcept.getDescriptions().size() == 0) {
+          Logger.getLogger(getClass()).info("  REMOVE CONCEPT");
+          translationService.removeConcept(origConcept.getId(), false);
+          conceptMap.remove(concept.getTerminologyId());
+
+        }
+
+        // otherwise update the orig concept (which for a new concept will be
+        // the new one)
+        else {
+          Logger.getLogger(getClass()).info("  UPDATE CONCEPT");
+          origConcept.setLastModifiedBy(userName);
+          translationService.updateConcept(origConcept);
+        }
+
+        // Commit every so often
         if (objectCt % commitCt == 0) {
-          translationService.commit();
-          translationService.clear();
-          translationService.beginTransaction();
+          translationService.commitClearBegin();
         }
 
       }
+      translationService.commitClearBegin();
 
       Logger.getLogger(getClass()).info(
           "  translation import count = " + objectCt);
-      Logger.getLogger(getClass()).info("  total = " + conceptIds.size());
+      Logger.getLogger(getClass()).info("  total = " + conceptMap.size());
 
       // Remove the staged translation change and set staging type back to null
       translationService.removeStagedTranslationChange(change.getId());

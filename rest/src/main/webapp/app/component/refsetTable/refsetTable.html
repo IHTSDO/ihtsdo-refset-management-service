@@ -820,9 +820,11 @@
           </tbody>
         </table>
         <span
-          ng-show="paging['member'].filter && selected.refset.members.totalCount == 0"
-          class="alert alert-warning">
-          <br />No refset members matching filter
+          ng-show="paging['member'].filter && selected.refset.members.totalCount == 0">
+          <br />
+          <span class="alert alert-warning">
+            No refset members matching filter
+          </span>
         </span>
 
       </div>

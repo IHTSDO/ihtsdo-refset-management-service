@@ -26,6 +26,14 @@ import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 public interface ImportRefsetHandler extends Configurable {
 
   /**
+   * Indicates whether or not this is a delta handler. If so, the import process
+   * will update members rather than simply adding new ones.
+   *
+   * @return <code>true</code> if so, <code>false</code> otherwise
+   */
+  public boolean isDeltaHandler();
+
+  /**
    * Returns the file type filter.
    *
    * @return the file type filter
@@ -60,7 +68,7 @@ public interface ImportRefsetHandler extends Configurable {
    */
   public List<DefinitionClause> importDefinition(Refset refset,
     InputStream content) throws Exception;
-  
+
   /**
    * Returns the validation results.
    *

@@ -102,7 +102,7 @@ public class ConceptJpa extends AbstractComponent implements Concept {
   /** The revision. */
   @Column(nullable = false)
   private boolean revision = false;
-  
+
   /**
    * Instantiates an empty {@link ConceptJpa}.
    */
@@ -302,7 +302,7 @@ public class ConceptJpa extends AbstractComponent implements Concept {
   public void setRevision(boolean revision) {
     this.revision = revision;
   }
-  
+
   /* see superclass */
   @Override
   public boolean equals(Object obj) {
@@ -356,7 +356,7 @@ public class ConceptJpa extends AbstractComponent implements Concept {
   /* see superclass */
   @Override
   public String toString() {
-    return "ConceptJpa [workflowStatus=" + workflowStatus
+    return "ConceptJpa [id=" + getId() + ", workflowStatus=" + workflowStatus
         + ", definitionStatusId=" + definitionStatusId + ", leaf=" + leaf
         + ", name=" + name + ", translation=" + translation + "]";
   }

@@ -120,8 +120,8 @@ public class LanguageRefsetMemberJpa extends AbstractRefsetMemberJpa implements
   /* see superclass */
   @Override
   public String toString() {
-    return "LanguageRefsetMemberJpa [descriptionId=" + descriptionId
-        + ", acceptabilityId=" + acceptabilityId + "]";
+    return "LanguageRefsetMemberJpa [id=" + getId() + ", descriptionId="
+        + descriptionId + ", acceptabilityId=" + acceptabilityId + "]";
   }
 
 }
