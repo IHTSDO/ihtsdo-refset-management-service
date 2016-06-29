@@ -289,8 +289,8 @@ public class PerformTranslationBetaAlgorithm extends TranslationServiceJpa
       artifact.setData(ByteStreams.toByteArray(inputStream));
       artifact.setName(handler.getBetaFileName(stagedTranslation.getProject()
           .getNamespace(), "Delta", stageReleaseInfo.getName()));
-      artifact.setTimestamp(releaseInfo.getEffectiveTime());
-      artifact.setLastModified(releaseInfo.getEffectiveTime());
+      artifact.setTimestamp(stageReleaseInfo.getEffectiveTime());
+      artifact.setLastModified(stageReleaseInfo.getEffectiveTime());
       artifact.setLastModifiedBy(userName);
       stageReleaseInfo.getArtifacts().add(artifact);
     }

@@ -139,7 +139,7 @@ public class PerformRefsetBetaAlgorithm extends RefsetServiceJpa implements
       final String oldModuleId = releaseInfo.getRefset().getModuleId();
       final String newModuleId = refset.getModuleId();
 
-      // If the module ids don't match, every member will be new.
+      // If the module ids don't match, every existing member will be new.
       final Map<String, ConceptRefsetMember> oldMemberMap = new HashMap<>();
       if (oldModuleId.equals(newModuleId)) {
         // Get members from last time
@@ -208,8 +208,8 @@ public class PerformRefsetBetaAlgorithm extends RefsetServiceJpa implements
       artifact.setData(ByteStreams.toByteArray(inputStream));
       artifact.setName(handler.getBetaFileName(refset.getProject()
           .getNamespace(), "Delta", stageReleaseInfo.getName()));
-      artifact.setTimestamp(releaseInfo.getEffectiveTime());
-      artifact.setLastModified(releaseInfo.getEffectiveTime());
+      artifact.setTimestamp(stageReleaseInfo.getEffectiveTime());
+      artifact.setLastModified(stageReleaseInfo.getEffectiveTime());
       artifact.setLastModifiedBy(userName);
 
       // Add it to the staged release info
