@@ -36,11 +36,11 @@ public class ImportRefsetRf1Handler implements ImportRefsetHandler {
 
   /** The id. */
   final String id = "id";
-  
-  /**  The validation result. */
+
+  /** The validation result. */
   ValidationResult validationResult = new ValidationResultJpa();
-  
-  /**  The ct. */
+
+  /** The ct. */
   private int ct = 0;
 
   /**
@@ -49,6 +49,12 @@ public class ImportRefsetRf1Handler implements ImportRefsetHandler {
    */
   public ImportRefsetRf1Handler() throws Exception {
     super();
+  }
+
+  /* see superclass */
+  @Override
+  public boolean isDeltaHandler() {
+    return false;
   }
 
   /* see superclass */
@@ -78,7 +84,7 @@ public class ImportRefsetRf1Handler implements ImportRefsetHandler {
     // initialize
     validationResult = new ValidationResultJpa();
     ct = 0;
-    
+
     // Read from input stream
     List<ConceptRefsetMember> list = new ArrayList<>();
     String line = "";
@@ -117,7 +123,7 @@ public class ImportRefsetRf1Handler implements ImportRefsetHandler {
       }
     }
     if (ct == 1) {
-      validationResult.addComment("1 member successfully loaded.");      
+      validationResult.addComment("1 member successfully loaded.");
     } else {
       validationResult.addComment(ct + " members successfully loaded.");
     }
@@ -129,8 +135,7 @@ public class ImportRefsetRf1Handler implements ImportRefsetHandler {
   @Override
   public List<DefinitionClause> importDefinition(Refset refset,
     InputStream content) throws Exception {
-    throw new LocalException(
-        "This handler only supports importing of members.");
+    throw new LocalException("This handler only supports importing of members.");
   }
 
   /* see superclass */

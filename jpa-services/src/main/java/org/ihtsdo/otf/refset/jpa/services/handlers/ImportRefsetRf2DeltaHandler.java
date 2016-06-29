@@ -28,7 +28,7 @@ import org.ihtsdo.otf.refset.services.helpers.PushBackReader;
 /**
  * Implementation of an algorithm to import a refset definition.
  */
-public class ImportRefsetRf2Handler implements ImportRefsetHandler {
+public class ImportRefsetRf2DeltaHandler implements ImportRefsetHandler {
 
   /** The request cancel flag. */
   boolean requestCancel = false;
@@ -42,25 +42,18 @@ public class ImportRefsetRf2Handler implements ImportRefsetHandler {
   /** The validation result. */
   ValidationResult validationResult = new ValidationResultJpa();
 
-  /** The ct. */
-  private int ct = 0;
-
-  /** The inactive ct. */
-  private int inactiveCt = 0;
-
   /**
-   * Instantiates an empty {@link ImportRefsetRf2DeltaHandler}.
+   * Instantiates an empty {@link ImportRefsetRf2Handler}.
    * @throws Exception if anything goes wrong
    */
-  public ImportRefsetRf2Handler() throws Exception {
+  public ImportRefsetRf2DeltaHandler() throws Exception {
     super();
-
   }
 
   /* see superclass */
   @Override
   public boolean isDeltaHandler() {
-    return false;
+    return true;
   }
 
   /* see superclass */
@@ -78,7 +71,7 @@ public class ImportRefsetRf2Handler implements ImportRefsetHandler {
   /* see superclass */
   @Override
   public String getName() {
-    return "Import RF2";
+    return "Import RF2 Delta";
   }
 
   /* see superclass */
@@ -89,8 +82,10 @@ public class ImportRefsetRf2Handler implements ImportRefsetHandler {
 
     // initialize
     validationResult = new ValidationResultJpa();
-    ct = 0;
-    inactiveCt = 0;
+
+    /** The inactive ct. */
+    int inactiveCt = 0;
+    int addedCt = 0;
 
     // Read from input stream
     List<ConceptRefsetMember> list = new ArrayList<>();
@@ -116,19 +111,36 @@ public class ImportRefsetRf2Handler implements ImportRefsetHandler {
       // skip header
       if (!fields[0].equals("id")) { // header
 
-        // Skip inactive entries
+        // Mark inactive
         if (fields[2].equals("0")) {
           inactiveCt++;
-          continue;
         }
 
         // Instantiate and populate members
         final ConceptRefsetMember member = new ConceptRefsetMemberJpa();
-        setCommonFields(member, refset);
-        // save original ids if refset matches
-        if (refset.getTerminologyId().equals(fields[4])) {
-          member.setTerminologyId(fields[0]);
+
+        // Look for a module id change
+        if (!refset.getModuleId().equals(fields[3])) {
+          pbr.close();
+          throw new LocalException(
+              "Module id has changed, make sure to update the refset module id first - "
+                  + fields[3]);
         }
+
+        // Look for a refset id change
+        if (!refset.getTerminologyId().equals(fields[4])) {
+          pbr.close();
+          throw new LocalException(
+              "Refset id has changed, must create a new refset for this delta - "
+                  + fields[4]);
+        }
+
+        setCommonFields(member, refset);
+        // Set the active field properly
+        member.setActive(fields[2].equals("1"));
+
+        // save original ids if refset matches
+        member.setTerminologyId(fields[0]);
         member.setConceptActive(true);
         member.setRefset(refset);
         member.setConceptId(fields[5]);
@@ -145,20 +157,23 @@ public class ImportRefsetRf2Handler implements ImportRefsetHandler {
 
         // Add member
         list.add(member);
-        ct++;
+        addedCt++;
         Logger.getLogger(getClass()).debug("  member = " + member);
       }
     }
-    if (ct == 1) {
-      validationResult.addComment("1 member successfully loaded.");
+
+    if (addedCt == 1) {
+      validationResult
+          .addComment("1 new member successfully loaded or updatd.");
     } else {
-      validationResult.addComment(ct + " members successfully loaded.");
+      validationResult.addComment(addedCt
+          + " new members successfully loaded or updated.");
     }
+
     if (inactiveCt == 1) {
-      validationResult.addWarning("1 inactive member was skipped.");
+      validationResult.addWarning("1 member was retired.");
     } else if (inactiveCt != 0) {
-      validationResult.addWarning(inactiveCt
-          + " inactive members were skipped.");
+      validationResult.addWarning(inactiveCt + " members were retired.");
     }
     pbr.close();
     return list;

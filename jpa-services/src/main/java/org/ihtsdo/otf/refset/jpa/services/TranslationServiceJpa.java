@@ -67,8 +67,8 @@ import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 /**
  * JPA enabled implementation of {@link TranslationService}.
  */
-public class TranslationServiceJpa extends RefsetServiceJpa
-    implements TranslationService {
+public class TranslationServiceJpa extends RefsetServiceJpa implements
+    TranslationService {
 
   /** The import handlers. */
   private static Map<String, ImportTranslationHandler> importTranslationHandlers =
@@ -130,8 +130,8 @@ public class TranslationServiceJpa extends RefsetServiceJpa
   /* see superclass */
   @Override
   public Translation getTranslation(Long id) throws Exception {
-    Logger.getLogger(getClass())
-        .debug("Translation Service - get translation " + id);
+    Logger.getLogger(getClass()).debug(
+        "Translation Service - get translation " + id);
     Translation translation = getHasLastModified(id, TranslationJpa.class);
     return translation;
   }
@@ -140,8 +140,9 @@ public class TranslationServiceJpa extends RefsetServiceJpa
   @Override
   public Translation getTranslation(String terminologyId, String terminology,
     String version) throws Exception {
-    Logger.getLogger(getClass()).debug("Translation Service - get translation "
-        + terminologyId + "/" + terminology + "/" + version);
+    Logger.getLogger(getClass()).debug(
+        "Translation Service - get translation " + terminologyId + "/"
+            + terminology + "/" + version);
     return getHasLastModified(terminologyId, terminology, version,
         TranslationJpa.class);
   }
@@ -149,15 +150,15 @@ public class TranslationServiceJpa extends RefsetServiceJpa
   /* see superclass */
   @Override
   public Translation addTranslation(Translation translation) throws Exception {
-    Logger.getLogger(getClass())
-        .debug("Translation Service - add translation " + translation);
+    Logger.getLogger(getClass()).debug(
+        "Translation Service - add translation " + translation);
     // Assign id
     IdentifierAssignmentHandler idHandler = null;
     if (assignIdentifiersFlag) {
       idHandler = getIdentifierAssignmentHandler(translation.getTerminology());
       if (idHandler == null) {
-        throw new Exception(
-            "Unable to find id handler for " + translation.getTerminology());
+        throw new Exception("Unable to find id handler for "
+            + translation.getTerminology());
       }
       final String id = idHandler.getTerminologyId(translation);
       translation.setTerminologyId(id);
@@ -181,8 +182,8 @@ public class TranslationServiceJpa extends RefsetServiceJpa
     // Inform listeners
     if (listenersEnabled) {
       for (final WorkflowListener listener : workflowListeners) {
-        listener.translationChanged(newTranslation,
-            WorkflowListener.Action.ADD);
+        listener
+            .translationChanged(newTranslation, WorkflowListener.Action.ADD);
       }
     }
     return newTranslation;
@@ -191,8 +192,8 @@ public class TranslationServiceJpa extends RefsetServiceJpa
   /* see superclass */
   @Override
   public void updateTranslation(Translation translation) throws Exception {
-    Logger.getLogger(getClass())
-        .debug("Translation Service - update translation " + translation);
+    Logger.getLogger(getClass()).debug(
+        "Translation Service - update translation " + translation);
 
     // Id assignment should not change
     final IdentifierAssignmentHandler idHandler =
@@ -200,8 +201,8 @@ public class TranslationServiceJpa extends RefsetServiceJpa
     if (assignIdentifiersFlag) {
       if (!idHandler.allowIdChangeOnUpdate()) {
         Translation translation2 = getTranslation(translation.getId());
-        if (!idHandler.getTerminologyId(translation)
-            .equals(idHandler.getTerminologyId(translation2))) {
+        if (!idHandler.getTerminologyId(translation).equals(
+            idHandler.getTerminologyId(translation2))) {
           throw new Exception(
               "Update cannot be used to change object identity.");
         }
@@ -216,8 +217,8 @@ public class TranslationServiceJpa extends RefsetServiceJpa
     // Inform listeners
     if (listenersEnabled) {
       for (final WorkflowListener listener : workflowListeners) {
-        listener.translationChanged(translation,
-            WorkflowListener.Action.UPDATE);
+        listener
+            .translationChanged(translation, WorkflowListener.Action.UPDATE);
       }
     }
   }
@@ -225,8 +226,8 @@ public class TranslationServiceJpa extends RefsetServiceJpa
   /* see superclass */
   @Override
   public void removeTranslation(Long id, boolean cascade) throws Exception {
-    Logger.getLogger(getClass())
-        .info("Translation Service - remove translation " + id);
+    Logger.getLogger(getClass()).info(
+        "Translation Service - remove translation " + id);
 
     // Manage transaction
     boolean origTpo = getTransactionPerOperation();
@@ -282,8 +283,8 @@ public class TranslationServiceJpa extends RefsetServiceJpa
 
     if (listenersEnabled) {
       for (final WorkflowListener listener : workflowListeners) {
-        listener.translationChanged(translation,
-            WorkflowListener.Action.REMOVE);
+        listener
+            .translationChanged(translation, WorkflowListener.Action.REMOVE);
       }
     }
   }
@@ -291,20 +292,21 @@ public class TranslationServiceJpa extends RefsetServiceJpa
   /* see superclass */
   @SuppressWarnings("unchecked")
   @Override
-  public TranslationList findTranslationsForQuery(String query,
-    PfsParameter pfs) throws Exception {
-    Logger.getLogger(getClass())
-        .info("Translation Service - find translations " + query);
+  public TranslationList findTranslationsForQuery(String query, PfsParameter pfs)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "Translation Service - find translations " + query);
     int origStartIndex = pfs == null ? -1 : pfs.getStartIndex();
     if (pfs != null && pfs.getLatestOnly()) {
       pfs.setStartIndex(-1);
     }
     // this will do filtering and sorting, but not paging
     int[] totalCt = new int[1];
-    List<Translation> list = (List<Translation>) getQueryResults(
-        query == null || query.isEmpty() ? "id:[* TO *] AND provisional:false"
-            : query + " AND provisional:false",
-        TranslationJpa.class, TranslationJpa.class, pfs, totalCt);
+    List<Translation> list =
+        (List<Translation>) getQueryResults(query == null || query.isEmpty()
+            ? "id:[* TO *] AND provisional:false" : query
+                + " AND provisional:false", TranslationJpa.class,
+            TranslationJpa.class, pfs, totalCt);
 
     final TranslationList result = new TranslationListJpa();
 
@@ -354,8 +356,9 @@ public class TranslationServiceJpa extends RefsetServiceJpa
   @Override
   public ConceptList findConceptsForTranslation(Long translationId,
     String query, PfsParameter pfs) throws Exception {
-    Logger.getLogger(getClass()).info("Translation Service - find concepts - "
-        + query + " translationId " + translationId);
+    Logger.getLogger(getClass()).info(
+        "Translation Service - find concepts - " + query + " translationId "
+            + translationId);
 
     final StringBuilder sb = new StringBuilder();
     if (query != null && !query.equals("")) {
@@ -368,8 +371,9 @@ public class TranslationServiceJpa extends RefsetServiceJpa
     }
 
     final int[] totalCt = new int[1];
-    final List<Concept> list = (List<Concept>) getQueryResults(sb.toString(),
-        ConceptJpa.class, ConceptJpa.class, pfs, totalCt);
+    final List<Concept> list =
+        (List<Concept>) getQueryResults(sb.toString(), ConceptJpa.class,
+            ConceptJpa.class, pfs, totalCt);
     for (final Concept c : list) {
       c.getDescriptions().size();
     }
@@ -481,13 +485,14 @@ public class TranslationServiceJpa extends RefsetServiceJpa
   /* see superclass */
   @Override
   public Concept addConcept(Concept concept) throws Exception {
-    Logger.getLogger(getClass())
-        .debug("Translation Service - add concept " + concept);
+    Logger.getLogger(getClass()).debug(
+        "Translation Service - add concept " + concept);
     // Assign id
     IdentifierAssignmentHandler idHandler = null;
     if (assignIdentifiersFlag) {
-      idHandler = getIdentifierAssignmentHandler(
-          concept.getTranslation().getTerminology());
+      idHandler =
+          getIdentifierAssignmentHandler(concept.getTranslation()
+              .getTerminology());
       if (idHandler == null) {
         throw new Exception("Unable to find id handler for "
             + concept.getTranslation().getTerminology());
@@ -503,18 +508,18 @@ public class TranslationServiceJpa extends RefsetServiceJpa
   /* see superclass */
   @Override
   public void updateConcept(Concept concept) throws Exception {
-    Logger.getLogger(getClass())
-        .debug("Translation Service - update concept " + concept);
+    Logger.getLogger(getClass()).debug(
+        "Translation Service - update concept " + concept);
 
     // Id assignment should not change
     final IdentifierAssignmentHandler idHandler =
-        getIdentifierAssignmentHandler(
-            concept.getTranslation().getTerminology());
+        getIdentifierAssignmentHandler(concept.getTranslation()
+            .getTerminology());
     if (assignIdentifiersFlag) {
       if (!idHandler.allowIdChangeOnUpdate()) {
         Concept concept2 = getConcept(concept.getId());
-        if (!idHandler.getTerminologyId(concept)
-            .equals(idHandler.getTerminologyId(concept2))) {
+        if (!idHandler.getTerminologyId(concept).equals(
+            idHandler.getTerminologyId(concept2))) {
           throw new Exception(
               "Update cannot be used to change object identity.");
         }
@@ -530,8 +535,8 @@ public class TranslationServiceJpa extends RefsetServiceJpa
   /* see superclass */
   @Override
   public void removeConcept(Long id, boolean cascade) throws Exception {
-    Logger.getLogger(getClass())
-        .debug("Translation Service - remove concept " + id);
+    Logger.getLogger(getClass()).debug(
+        "Translation Service - remove concept " + id);
 
     // Manage transaction
     boolean origTpo = getTransactionPerOperation();
@@ -570,31 +575,44 @@ public class TranslationServiceJpa extends RefsetServiceJpa
   /* see superclass */
   @Override
   public Concept getConcept(Long id) throws Exception {
-    Logger.getLogger(getClass())
-        .debug("Translation Service - get concept " + id);
+    Logger.getLogger(getClass()).debug(
+        "Translation Service - get concept " + id);
     return getHasLastModified(id, ConceptJpa.class);
   }
 
   /* see superclass */
   @Override
-  public Concept getConcept(String terminologyId, String terminology,
-    String version) throws Exception {
-    Logger.getLogger(getClass()).debug("Translation Service - get concept "
-        + terminologyId + "/" + terminology + "/" + version);
-    return getHasLastModified(terminologyId, terminology, version,
-        ConceptJpa.class);
+  public Concept getConcept(String terminologyId, Long translationId)
+    throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Translation Service - get concept " + terminologyId + ", "
+            + translationId);
+
+    try {
+      javax.persistence.Query query =
+          manager
+              .createQuery("select a from ConceptJpa a "
+                  + " where terminologyId = :terminologyId and translation.id = :translationId");
+      query.setParameter("terminologyId", terminologyId);
+      query.setParameter("translationId", translationId);
+      return (Concept) query.getSingleResult();
+    } catch (NoResultException e) {
+      return null;
+    }
+
   }
 
   /* see superclass */
   @Override
   public Description addDescription(Description description) throws Exception {
-    Logger.getLogger(getClass())
-        .debug("Translation Service - add description " + description);
+    Logger.getLogger(getClass()).debug(
+        "Translation Service - add description " + description);
     // Assign id
     IdentifierAssignmentHandler idHandler = null;
     if (assignIdentifiersFlag) {
-      idHandler = getIdentifierAssignmentHandler(
-          description.getConcept().getTranslation().getTerminology());
+      idHandler =
+          getIdentifierAssignmentHandler(description.getConcept()
+              .getTranslation().getTerminology());
       if (idHandler == null) {
         throw new Exception("Unable to find id handler for "
             + description.getConcept().getTranslation().getTerminology());
@@ -610,18 +628,18 @@ public class TranslationServiceJpa extends RefsetServiceJpa
   /* see superclass */
   @Override
   public void updateDescription(Description description) throws Exception {
-    Logger.getLogger(getClass())
-        .debug("Translation Service - update description " + description);
+    Logger.getLogger(getClass()).debug(
+        "Translation Service - update description " + description);
 
     // Id assignment should not change
     final IdentifierAssignmentHandler idHandler =
-        getIdentifierAssignmentHandler(
-            description.getConcept().getTranslation().getTerminology());
+        getIdentifierAssignmentHandler(description.getConcept()
+            .getTranslation().getTerminology());
     if (assignIdentifiersFlag) {
       if (!idHandler.allowIdChangeOnUpdate()) {
         Description description2 = getDescription(description.getId());
-        if (!idHandler.getTerminologyId(description)
-            .equals(idHandler.getTerminologyId(description2))) {
+        if (!idHandler.getTerminologyId(description).equals(
+            idHandler.getTerminologyId(description2))) {
           throw new Exception(
               "Update cannot be used to change object identity.");
         }
@@ -638,8 +656,8 @@ public class TranslationServiceJpa extends RefsetServiceJpa
   /* see superclass */
   @Override
   public void removeDescription(Long id) throws Exception {
-    Logger.getLogger(getClass())
-        .debug("Translation Service - remove description " + id);
+    Logger.getLogger(getClass()).debug(
+        "Translation Service - remove description " + id);
     // Remove the component
     removeHasLastModified(id, DescriptionJpa.class);
   }
@@ -647,28 +665,57 @@ public class TranslationServiceJpa extends RefsetServiceJpa
   /* see superclass */
   @Override
   public Description getDescription(Long id) throws Exception {
-    Logger.getLogger(getClass())
-        .debug("Translation Service - get description " + id);
+    Logger.getLogger(getClass()).debug(
+        "Translation Service - get description " + id);
     return getHasLastModified(id, DescriptionJpa.class);
   }
 
   /* see superclass */
   @Override
-  public Description getDescription(String terminologyId, String terminology,
-    String version) throws Exception {
-    Logger.getLogger(getClass()).debug("Translation Service - get description "
-        + terminologyId + "/" + terminology + "/" + version);
-    return getHasLastModified(terminologyId, terminology, version,
-        DescriptionJpa.class);
+  public Description getDescription(String terminologyId, Long conceptId)
+    throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Translation Service - get description " + terminologyId + ", "
+            + conceptId);
+    try {
+      javax.persistence.Query query =
+          manager
+              .createQuery("select a from DescriptionJpa a "
+                  + " where terminologyId = :terminologyId and concept.id = :conceptId");
+      query.setParameter("terminologyId", terminologyId);
+      query.setParameter("conceptId", conceptId);
+      return (Description) query.getSingleResult();
+    } catch (NoResultException e) {
+      return null;
+    }
+  }
 
+  /* see superclass */
+  @Override
+  public Description getTranslationDescription(String terminologyId,
+    Long translationId) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Translation Service - get translation description " + terminologyId
+            + ", " + translationId);
+    try {
+      javax.persistence.Query query =
+          manager.createQuery("select a from DescriptionJpa a, ConceptJpa b "
+              + " where a.terminologyId = :terminologyId and a.concept = b"
+              + " and b.translation.id = :translationId");
+      query.setParameter("terminologyId", terminologyId);
+      query.setParameter("translationId", translationId);
+      return (Description) query.getSingleResult();
+    } catch (NoResultException e) {
+      return null;
+    }
   }
 
   /* see superclass */
   @Override
   public LanguageRefsetMember addLanguageRefsetMember(
     LanguageRefsetMember member, String terminology) throws Exception {
-    Logger.getLogger(getClass())
-        .debug("Translation Service - add language refset member " + member);
+    Logger.getLogger(getClass()).debug(
+        "Translation Service - add language refset member " + member);
     // Assign id
     IdentifierAssignmentHandler idHandler = null;
     if (assignIdentifiersFlag) {
@@ -688,8 +735,8 @@ public class TranslationServiceJpa extends RefsetServiceJpa
   @Override
   public void updateLanguageRefsetMember(LanguageRefsetMember member,
     String terminology) throws Exception {
-    Logger.getLogger(getClass())
-        .debug("Translation Service - update language refset member " + member);
+    Logger.getLogger(getClass()).debug(
+        "Translation Service - update language refset member " + member);
 
     // Id assignment should not change
     final IdentifierAssignmentHandler idHandler =
@@ -697,8 +744,8 @@ public class TranslationServiceJpa extends RefsetServiceJpa
     if (assignIdentifiersFlag) {
       if (!idHandler.allowIdChangeOnUpdate()) {
         LanguageRefsetMember member2 = getLanguageRefsetMember(member.getId());
-        if (!idHandler.getTerminologyId(member)
-            .equals(idHandler.getTerminologyId(member2))) {
+        if (!idHandler.getTerminologyId(member).equals(
+            idHandler.getTerminologyId(member2))) {
           throw new Exception(
               "Update cannot be used to change object identity.");
         }
@@ -714,39 +761,26 @@ public class TranslationServiceJpa extends RefsetServiceJpa
   /* see superclass */
   @Override
   public void removeLanguageRefsetMember(Long id) throws Exception {
-    Logger.getLogger(getClass())
-        .debug("Translation Service - remove language refset member " + id);
+    Logger.getLogger(getClass()).debug(
+        "Translation Service - remove language refset member " + id);
     // Remove the component
     removeHasLastModified(id, LanguageRefsetMemberJpa.class);
   }
 
   /* see superclass */
   @Override
-  public LanguageRefsetMember getLanguageRefsetMember(Long id)
-    throws Exception {
-    Logger.getLogger(getClass())
-        .debug("Translation Service - get language refset member " + id);
+  public LanguageRefsetMember getLanguageRefsetMember(Long id) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Translation Service - get language refset member " + id);
     return getHasLastModified(id, LanguageRefsetMemberJpa.class);
-  }
-
-  /* see superclass */
-  @Override
-  public LanguageRefsetMember getLanguageRefsetMember(String terminologyId,
-    String terminology, String version) throws Exception {
-    Logger.getLogger(getClass())
-        .debug("Translation Service - get language refset member "
-            + terminologyId + "/" + terminology + "/" + version);
-    return getHasLastModified(terminologyId, terminology, version,
-        LanguageRefsetMemberJpa.class);
-
   }
 
   /* see superclass */
   @Override
   public StagedTranslationChange addStagedTranslationChange(
     StagedTranslationChange change) throws Exception {
-    Logger.getLogger(getClass())
-        .debug("Translation Service - add staged change " + change);
+    Logger.getLogger(getClass()).debug(
+        "Translation Service - add staged change " + change);
     if (getTransactionPerOperation()) {
       tx = manager.getTransaction();
       tx.begin();
@@ -795,8 +829,8 @@ public class TranslationServiceJpa extends RefsetServiceJpa
   @Override
   public StagedTranslationChange getStagedTranslationChangeFromOrigin(
     Long translationId) throws Exception {
-    Logger.getLogger(getClass())
-        .debug("Translation Service - get staged change " + translationId);
+    Logger.getLogger(getClass()).debug(
+        "Translation Service - get staged change " + translationId);
     final javax.persistence.Query query =
         manager.createQuery("select a from StagedTranslationChangeJpa a where "
             + "originTranslation.id = :translationId");
@@ -812,8 +846,8 @@ public class TranslationServiceJpa extends RefsetServiceJpa
   @Override
   public SpellingDictionary addSpellingDictionary(SpellingDictionary dictionary)
     throws Exception {
-    Logger.getLogger(getClass())
-        .debug("Translation Service - add spelling dictionary " + dictionary);
+    Logger.getLogger(getClass()).debug(
+        "Translation Service - add spelling dictionary " + dictionary);
 
     // Add spelling dictionary
     return addObject(dictionary);
@@ -845,8 +879,8 @@ public class TranslationServiceJpa extends RefsetServiceJpa
   /* see superclass */
   @Override
   public MemoryEntry addMemoryEntry(MemoryEntry memoryEntry) throws Exception {
-    Logger.getLogger(getClass())
-        .debug("Translation Service - add memory entry " + memoryEntry);
+    Logger.getLogger(getClass()).debug(
+        "Translation Service - add memory entry " + memoryEntry);
 
     // Add memory entry
     return addObject(memoryEntry);
@@ -855,8 +889,8 @@ public class TranslationServiceJpa extends RefsetServiceJpa
   /* see superclass */
   @Override
   public void updateMemoryEntry(MemoryEntry memoryEntry) throws Exception {
-    Logger.getLogger(getClass())
-        .debug("Translation Service - update memory entry " + memoryEntry);
+    Logger.getLogger(getClass()).debug(
+        "Translation Service - update memory entry " + memoryEntry);
 
     updateObject(memoryEntry);
   }
@@ -864,8 +898,8 @@ public class TranslationServiceJpa extends RefsetServiceJpa
   /* see superclass */
   @Override
   public void removeMemoryEntry(Long memoryEntryId) throws Exception {
-    Logger.getLogger(getClass())
-        .debug("Translation Service - remove memory entry " + memoryEntryId);
+    Logger.getLogger(getClass()).debug(
+        "Translation Service - remove memory entry " + memoryEntryId);
 
     final MemoryEntryJpa memoryEntry =
         this.getObject(memoryEntryId, MemoryEntryJpa.class);
@@ -878,8 +912,8 @@ public class TranslationServiceJpa extends RefsetServiceJpa
   @Override
   public PhraseMemory addPhraseMemory(PhraseMemory phraseMemory)
     throws Exception {
-    Logger.getLogger(getClass())
-        .debug("Translation Service - add phrase memory " + phraseMemory);
+    Logger.getLogger(getClass()).debug(
+        "Translation Service - add phrase memory " + phraseMemory);
 
     // Add phrase memory
     return addObject(phraseMemory);
@@ -888,8 +922,8 @@ public class TranslationServiceJpa extends RefsetServiceJpa
   /* see superclass */
   @Override
   public void updatePhraseMemory(PhraseMemory phraseMemory) throws Exception {
-    Logger.getLogger(getClass())
-        .debug("Translation Service - update phrase memory " + phraseMemory);
+    Logger.getLogger(getClass()).debug(
+        "Translation Service - update phrase memory " + phraseMemory);
 
     updateObject(phraseMemory);
   }
@@ -897,8 +931,8 @@ public class TranslationServiceJpa extends RefsetServiceJpa
   /* see superclass */
   @Override
   public void removePhraseMemory(Long phraseMemoryId) throws Exception {
-    Logger.getLogger(getClass())
-        .debug("Translation Service - remove phrase memory " + phraseMemoryId);
+    Logger.getLogger(getClass()).debug(
+        "Translation Service - remove phrase memory " + phraseMemoryId);
     final PhraseMemoryJpa phraseMemory =
         getObject(phraseMemoryId, PhraseMemoryJpa.class);
     if (phraseMemory != null) {
@@ -909,8 +943,8 @@ public class TranslationServiceJpa extends RefsetServiceJpa
   /* see superclass */
   @Override
   public MemoryEntry getMemoryEntry(Long id) throws Exception {
-    Logger.getLogger(getClass())
-        .debug("Translation Service - get Memory Entry " + id);
+    Logger.getLogger(getClass()).debug(
+        "Translation Service - get Memory Entry " + id);
 
     return getObject(id, MemoryEntryJpa.class);
   }
@@ -983,8 +1017,8 @@ public class TranslationServiceJpa extends RefsetServiceJpa
       // Reread to avoid problems across transactions
       final Concept originConcept = getConcept(translationConcept.getId());
       // Skip members for beta that are not ready for publication
-      if (stagingType == Translation.StagingType.BETA && originConcept
-          .getWorkflowStatus() != WorkflowStatus.READY_FOR_PUBLICATION) {
+      if (stagingType == Translation.StagingType.BETA
+          && originConcept.getWorkflowStatus() != WorkflowStatus.READY_FOR_PUBLICATION) {
         continue;
       }
 
@@ -1003,7 +1037,8 @@ public class TranslationServiceJpa extends RefsetServiceJpa
       // Add descriptions
       for (final Description originDescription : originConcept
           .getDescriptions()) {
-        final Description description = new DescriptionJpa(originDescription, false);
+        final Description description =
+            new DescriptionJpa(originDescription, false);
         description.setId(null);
         if (description.getEffectiveTime() == null) {
           description.setEffectiveTime(effectiveTime);
@@ -1063,7 +1098,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa
     if (!getTransactionPerOperation()) {
       commitClearBegin();
     }
-    
+
     // return connected copy with members attached
     return getTranslation(translationCopy.getId());
   }
@@ -1072,14 +1107,16 @@ public class TranslationServiceJpa extends RefsetServiceJpa
   @Override
   public ReleaseInfo getCurrentTranslationReleaseInfo(String terminologyId,
     Long projectId) throws Exception {
-    Logger.getLogger(getClass())
-        .debug("Release Service - get current release info for translation"
+    Logger.getLogger(getClass()).debug(
+        "Release Service - get current release info for translation"
             + terminologyId + ", " + projectId);
 
     // Get all release info for this terminologyId and projectId
     final List<ReleaseInfo> results =
-        findTranslationReleasesForQuery(null, "translationTerminologyId:"
-            + terminologyId + " AND projectId:" + projectId, null).getObjects();
+        findTranslationReleasesForQuery(
+            null,
+            "translationTerminologyId:" + terminologyId + " AND projectId:"
+                + projectId, null).getObjects();
 
     // Reverse sort releases by date
     Collections.sort(results, new Comparator<ReleaseInfo>() {
@@ -1102,8 +1139,8 @@ public class TranslationServiceJpa extends RefsetServiceJpa
   @Override
   public ReleaseInfoList findTranslationReleasesForQuery(Long translationId,
     String query, PfsParameter pfs) throws Exception {
-    Logger.getLogger(getClass())
-        .info("Release Service - find translation release infos " + "/" + query
+    Logger.getLogger(getClass()).info(
+        "Release Service - find translation release infos " + "/" + query
             + " translationId " + translationId);
 
     final StringBuilder sb = new StringBuilder();
@@ -1118,8 +1155,8 @@ public class TranslationServiceJpa extends RefsetServiceJpa
 
     int[] totalCt = new int[1];
     final List<ReleaseInfo> list =
-        (List<ReleaseInfo>) getQueryResults(sb.toString(), ReleaseInfoJpa.class,
-            ReleaseInfoJpa.class, pfs, totalCt);
+        (List<ReleaseInfo>) getQueryResults(sb.toString(),
+            ReleaseInfoJpa.class, ReleaseInfoJpa.class, pfs, totalCt);
     final ReleaseInfoList result = new ReleaseInfoListJpa();
     result.setTotalCount(totalCt[0]);
     result.setObjects(list);
@@ -1131,8 +1168,9 @@ public class TranslationServiceJpa extends RefsetServiceJpa
   @Override
   public List<MemoryEntry> findMemoryEntryForTranslation(Long translationId,
     String query, PfsParameter pfs) throws Exception {
-    Logger.getLogger(getClass()).info("Translation Service - find memory entry "
-        + "/" + query + " translationId " + translationId);
+    Logger.getLogger(getClass()).info(
+        "Translation Service - find memory entry " + "/" + query
+            + " translationId " + translationId);
     final StringBuilder sb = new StringBuilder();
     if (query != null && !query.equals("")) {
       sb.append(query).append(" AND ");
@@ -1144,8 +1182,8 @@ public class TranslationServiceJpa extends RefsetServiceJpa
     }
     int[] totalCt = new int[1];
     final List<MemoryEntry> list =
-        (List<MemoryEntry>) getQueryResults(sb.toString(), MemoryEntryJpa.class,
-            MemoryEntryJpa.class, pfs, totalCt);
+        (List<MemoryEntry>) getQueryResults(sb.toString(),
+            MemoryEntryJpa.class, MemoryEntryJpa.class, pfs, totalCt);
     return list;
   }
 
@@ -1153,8 +1191,8 @@ public class TranslationServiceJpa extends RefsetServiceJpa
   @Override
   public void lookupConceptNames(Long translationId, String label,
     boolean background) throws Exception {
-    Logger.getLogger(getClass())
-        .debug("Translation Service - lookup concept names - " + translationId);
+    Logger.getLogger(getClass()).debug(
+        "Translation Service - lookup concept names - " + translationId);
 
     // Only launch process if refset not already looked-up
     if (getTerminologyHandler().assignNames()) {
@@ -1200,8 +1238,8 @@ public class TranslationServiceJpa extends RefsetServiceJpa
     @Override
     public void run() {
       try {
-        Logger.getLogger(TranslationServiceJpa.this.getClass())
-            .info("Starting lookupConceptNamesThread - " + translationId);
+        Logger.getLogger(TranslationServiceJpa.this.getClass()).info(
+            "Starting lookupConceptNamesThread - " + translationId);
         // Initialize Process
         lookupProgressMap.put(translationId, 0);
 
@@ -1216,11 +1254,11 @@ public class TranslationServiceJpa extends RefsetServiceJpa
           translation = translationService.getTranslation(translationId);
           ms = (ms > 2000) ? ms + 2000 : ms * 2;
           if (ms > 60000) {
-            Exception e = new Exception(
-                "Unable to load translation after too many tries");
-            ExceptionHandler.handleException(e,
-                "looking up translation concept names - " + translationId,
-                null);
+            Exception e =
+                new Exception("Unable to load translation after too many tries");
+            ExceptionHandler
+                .handleException(e, "looking up translation concept names - "
+                    + translationId, null);
             throw e;
           }
         }
@@ -1263,8 +1301,9 @@ public class TranslationServiceJpa extends RefsetServiceJpa
               termIds.add(concepts.get(i).getTerminologyId());
             }
             // Get concepts from Term Server based on list
-            final ConceptList cons = getTerminologyHandler()
-                .getConcepts(termIds, terminology, version);
+            final ConceptList cons =
+                getTerminologyHandler().getConcepts(termIds, terminology,
+                    version);
 
             // IF the number of concepts returned doesn't match
             // the size of termIds, there was a problem
@@ -1280,8 +1319,9 @@ public class TranslationServiceJpa extends RefsetServiceJpa
             // Server
             for (final Concept con : cons.getObjects()) {
               // Reread the concept as we don't know if it has changed
-              final Concept concept = translationService
-                  .getConcept(conceptMap.get(con.getTerminologyId()).getId());
+              final Concept concept =
+                  translationService.getConcept(conceptMap.get(
+                      con.getTerminologyId()).getId());
               concept.setName(con.getName());
               concept.setActive(con.isActive());
               translationService.updateConcept(concept);
@@ -1302,8 +1342,8 @@ public class TranslationServiceJpa extends RefsetServiceJpa
         translationService.commit();
         translationService.close();
         lookupProgressMap.remove(translationId);
-        Logger.getLogger(TranslationServiceJpa.this.getClass())
-            .info("Finished lookupConceptNamesThread - " + translationId);
+        Logger.getLogger(TranslationServiceJpa.this.getClass()).info(
+            "Finished lookupConceptNamesThread - " + translationId);
       } catch (Exception e) {
         try {
           ExceptionHandler.handleException(e, label, null);
@@ -1330,8 +1370,8 @@ public class TranslationServiceJpa extends RefsetServiceJpa
           for (final LanguageRefsetMember member : desc
               .getLanguageRefsetMembers()) {
             if (member.getRefsetId().equals(type.getRefsetId())
-                && member.getAcceptabilityId()
-                    .equals(type.getDescriptionType().getAcceptabilityId())) {
+                && member.getAcceptabilityId().equals(
+                    type.getDescriptionType().getAcceptabilityId())) {
               return desc.getTerm();
             }
           }
@@ -1401,9 +1441,8 @@ public class TranslationServiceJpa extends RefsetServiceJpa
 
     StringBuilder resultSb = new StringBuilder();
     for (final LanguageDescriptionType type : result) {
-      resultSb
-          .append(
-              type.getRefsetId() + " " + type.getDescriptionType().getName())
+      resultSb.append(
+          type.getRefsetId() + " " + type.getDescriptionType().getName())
           .append(", ");
     }
     return result;
@@ -1421,12 +1460,13 @@ public class TranslationServiceJpa extends RefsetServiceJpa
 
     // Get last translation revision not a delete
     final AuditReader reader = AuditReaderFactory.get(manager);
-    final AuditQuery query = reader.createQuery()
-        // last updated revision
-        .forRevisionsOfEntity(TranslationJpa.class, false, false)
-        .addProjection(AuditEntity.revisionNumber().max())
-        // add id and owner as constraints
-        .add(AuditEntity.property("id").eq(translationId));
+    final AuditQuery query =
+        reader.createQuery()
+            // last updated revision
+            .forRevisionsOfEntity(TranslationJpa.class, false, false)
+            .addProjection(AuditEntity.revisionNumber().max())
+            // add id and owner as constraints
+            .add(AuditEntity.property("id").eq(translationId));
     final Number revision = (Number) query.getSingleResult();
     final TranslationJpa translation =
         reader.find(TranslationJpa.class, translationId, revision);
@@ -1499,11 +1539,13 @@ public class TranslationServiceJpa extends RefsetServiceJpa
         "Translation Service - get revision number for concept :" + conceptId);
     final AuditReader reader = AuditReaderFactory.get(manager);
 
-    final AuditQuery query = reader.createQuery()
-        // last updated revision
-        .forRevisionsOfEntity(ConceptJpa.class, true, false)
-        .add(AuditEntity.property("id").eq(conceptId))
-        .addProjection(AuditEntity.revisionNumber().max());
+    final AuditQuery query =
+        reader
+            .createQuery()
+            // last updated revision
+            .forRevisionsOfEntity(ConceptJpa.class, true, false)
+            .add(AuditEntity.property("id").eq(conceptId))
+            .addProjection(AuditEntity.revisionNumber().max());
 
     final Number revision = (Number) query.getSingleResult();
     return revision.intValue();
@@ -1560,8 +1602,8 @@ public class TranslationServiceJpa extends RefsetServiceJpa
         for (final LanguageRefsetMember member : oldDescription
             .getLanguageRefsetMembers()) {
           member.setId(null);
-          addLanguageRefsetMember(member,
-              originConcept.getTranslation().getTerminology());
+          addLanguageRefsetMember(member, originConcept.getTranslation()
+              .getTerminology());
           // No need to add to data structure, it's already there
           // oldDescription.getLanguageRefsetMembers().add(member);
         }
@@ -1607,9 +1649,8 @@ public class TranslationServiceJpa extends RefsetServiceJpa
               "The old and new language refset members must have the same id.");
         }
         // Update to the old member
-        updateLanguageRefsetMember(
-            oldDescription.getLanguageRefsetMembers().get(0),
-            originConcept.getTranslation().getTerminology());
+        updateLanguageRefsetMember(oldDescription.getLanguageRefsetMembers()
+            .get(0), originConcept.getTranslation().getTerminology());
         // Update the description (in case it changed)
         updateDescription(oldDescription);
         // Add it back into the data structure
@@ -1640,8 +1681,8 @@ public class TranslationServiceJpa extends RefsetServiceJpa
   @Override
   public StagedTranslationChange getStagedTranslationChangeFromStaged(
     Long stagedTranslationId) throws Exception {
-    Logger.getLogger(getClass())
-        .debug("Translation Service - get staged change for staged translation "
+    Logger.getLogger(getClass()).debug(
+        "Translation Service - get staged change for staged translation "
             + stagedTranslationId);
     final javax.persistence.Query query =
         manager.createQuery("select a from StagedTranslationChangeJpa a where "

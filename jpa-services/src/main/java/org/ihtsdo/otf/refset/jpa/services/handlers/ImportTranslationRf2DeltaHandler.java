@@ -21,6 +21,7 @@ import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.FieldedStringTokenizer;
 import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.jpa.ValidationResultJpa;
+import org.ihtsdo.otf.refset.jpa.services.TranslationServiceJpa;
 import org.ihtsdo.otf.refset.rf2.Component;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.Description;
@@ -28,12 +29,14 @@ import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.DescriptionJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.LanguageRefsetMemberJpa;
+import org.ihtsdo.otf.refset.services.TranslationService;
 import org.ihtsdo.otf.refset.services.handlers.ImportTranslationHandler;
 
 /**
  * Implementation of an algorithm to import a refset definition.
  */
-public class ImportTranslationRf2Handler implements ImportTranslationHandler {
+public class ImportTranslationRf2DeltaHandler implements
+    ImportTranslationHandler {
 
   /** The request cancel flag. */
   boolean requestCancel = false;
@@ -45,17 +48,17 @@ public class ImportTranslationRf2Handler implements ImportTranslationHandler {
   ValidationResult validationResult = new ValidationResultJpa();
 
   /**
-   * Instantiates an empty {@link ImportTranslationRf2Handler}.
+   * Instantiates an empty {@link ImportTranslationRf2DeltaHandler}.
    * @throws Exception if anything goes wrong
    */
-  public ImportTranslationRf2Handler() throws Exception {
+  public ImportTranslationRf2DeltaHandler() throws Exception {
     super();
   }
 
   /* see superclass */
   @Override
   public boolean isDeltaHandler() {
-    return false;
+    return true;
   }
 
   /* see superclass */
@@ -73,7 +76,7 @@ public class ImportTranslationRf2Handler implements ImportTranslationHandler {
   /* see superclass */
   @Override
   public String getName() {
-    return "Import RF2";
+    return "Import RF2 Delta";
   }
 
   /* see superclass */
@@ -103,6 +106,8 @@ public class ImportTranslationRf2Handler implements ImportTranslationHandler {
 
     int inactiveDescriptionCt = 0;
     int inactiveMemberCt = 0;
+    int addedDescriptionCt = 0;
+    int addedMemberCt = 0;
 
     // Iterate through the zip entries
     for (ZipEntry zipEntry; (zipEntry = zin.getNextEntry()) != null;) {
@@ -134,15 +139,23 @@ public class ImportTranslationRf2Handler implements ImportTranslationHandler {
           }
           if (!fields[0].equals(id)) {
 
-            // Skip inactive descriptions
+            // Mark inactive
             if (fields[2].equals("0")) {
               inactiveDescriptionCt++;
-              continue;
+            }
+
+            // Look for a module id change
+            if (!translation.getModuleId().equals(fields[3])) {
+              zin.close();
+              throw new LocalException(
+                  "Module id has changed, make sure to update the refset/translation module id first - "
+                      + fields[3]);
             }
 
             // Create description and populate from RF2
             final Description description = new DescriptionJpa();
             setCommonFields(description, translation.getRefset());
+            description.setActive(fields[2].equals("1"));
             description.setTerminologyId(fields[0]);
             if (!fields[1].equals("")) {
               description.setEffectiveTime(ConfigUtility.DATE_FORMAT
@@ -157,21 +170,22 @@ public class ImportTranslationRf2Handler implements ImportTranslationHandler {
             Concept concept = null;
             if (!conceptCache.containsKey(fields[4])) {
               conceptCache.put(fields[4], new ConceptJpa());
+              concept = conceptCache.get(fields[4]);
+              setCommonFields(concept, translation.getRefset());
+              if (!fields[1].equals("")) {
+                concept.setEffectiveTime(ConfigUtility.DATE_FORMAT
+                    .parse(fields[1]));
+              }
+              concept.setTerminologyId(fields[4]);
+              concept.setDefinitionStatusId("unknown");
+              concept.setTranslation(translation);
             }
             concept = conceptCache.get(fields[4]);
-            setCommonFields(concept, translation.getRefset());
-            if (!fields[1].equals("")) {
-              concept.setEffectiveTime(ConfigUtility.DATE_FORMAT
-                  .parse(fields[1]));
-            }
-            concept.setTerminologyId(fields[4]);
-            concept.setDefinitionStatusId("unknown");
-            concept.setTranslation(translation);
             concept.getDescriptions().add(description);
             description.setConcept(concept);
-
             // Cache the description for lookup by the language reset member
             descriptions.put(fields[0], description);
+            addedDescriptionCt++;
             Logger.getLogger(getClass()).debug(
                 "  description = " + description.getTerminologyId() + ", "
                     + description.getTerm());
@@ -208,25 +222,40 @@ public class ImportTranslationRf2Handler implements ImportTranslationHandler {
 
           if (!fields[0].equals(id)) { // header
 
-            // Skip inactive language entries
+            // Mark inactive language entries
             if (fields[2].equals("0")) {
               inactiveMemberCt++;
-              continue;
+            }
+
+            // Look for a module id change
+            if (!translation.getModuleId().equals(fields[3])) {
+              zin.close();
+              throw new LocalException(
+                  "Module id has changed, make sure to update the refset/translation module id first - "
+                      + fields[3]);
+            }
+
+            // Look for a refset id change
+            if (!translation.getTerminologyId().equals(fields[4])) {
+              zin.close();
+              throw new LocalException(
+                  "Translation refset id has changed, must create a new refset/translation for this delta - "
+                      + fields[4]);
             }
 
             // Create and configure the member
             final LanguageRefsetMember member = new LanguageRefsetMemberJpa();
             setCommonFields(member, translation.getRefset());
+            member.setActive(fields[2].equals("1"));
             member.setTerminologyId(fields[0]);
             if (!fields[1].equals("")) {
               member.setEffectiveTime(ConfigUtility.DATE_FORMAT
                   .parse(fields[1]));
             }
 
-            // Set from the translation refset
+            // Other fields
             member.setRefsetId(translation.getRefset().getTerminologyId());
-
-            // Language unique attributes
+            member.setDescriptionId(fields[5].intern());
             member.setAcceptabilityId(fields[6].intern());
 
             // Cache language refset members
@@ -236,6 +265,7 @@ public class ImportTranslationRf2Handler implements ImportTranslationHandler {
               throw new LocalException(
                   "Unexpected description with multiple langauges - " + line);
             }
+            addedMemberCt++;
             Logger.getLogger(getClass()).debug("    member = " + member);
 
           }
@@ -246,57 +276,117 @@ public class ImportTranslationRf2Handler implements ImportTranslationHandler {
     zin.close();
 
     // Verify that data was found
-    if (!descSeen || descriptions.isEmpty()) {
-      throw new LocalException("Missing or empty description file.");
+    if (!descSeen) {
+      throw new LocalException("Missing description file.");
     }
     if (!langSeen) {
-      throw new LocalException("Missing or empty language file.");
+      throw new LocalException("Missing language file.");
     }
 
-    final int langCt = descLangMap.size();
+    // NOTE: this all assumes that descriptions have at most ONE langauge refset
+    // entry
 
-    // Connect descriptions and language refset member objects
-    for (Description description : descriptions.values()) {
+    // Get a service to look stuff up
+    final TranslationService service = new TranslationServiceJpa();
+    try {
 
-      // Connect language and description
-      if (descLangMap.containsKey(description.getTerminologyId())) {
-        LanguageRefsetMember member =
-            descLangMap.get(description.getTerminologyId());
-        member.setDescriptionId(description.getTerminologyId());
-        description.getLanguageRefsetMembers().add(member);
+      // Connect descriptions and language refset member objects
+      for (final Description description : descriptions.values()) {
 
+        // Connect language and description
+        if (descLangMap.containsKey(description.getTerminologyId())) {
+          final LanguageRefsetMember member =
+              descLangMap.get(description.getTerminologyId());
+          description.getLanguageRefsetMembers().add(member);
+        }
+
+        // Otherwise, need to look up existing language members for this
+        // description and attach to the new one.
+        // If the description is null, this is an error, a description should
+        // only be here without languages if it already exists and is being
+        // updated
+        else {
+          for (final LanguageRefsetMember member : service
+              .getTranslationDescription(description.getTerminologyId(),
+                  translation.getId()).getLanguageRefsetMembers()) {
+            description.getLanguageRefsetMembers().add(member);
+          }
+        }
+        // Remove the entry from the map
         descLangMap.remove(description.getTerminologyId());
+
       }
 
-      else {
-        throw new LocalException("Unexpected description without language - "
-            + description.getTerminologyId());
+      // If any references are left in descLangMap, we've got a language without
+      // a desc -> need to look up description
+      if (descLangMap.size() > 0) {
+        for (final String descriptionId : descLangMap.keySet()) {
+
+          // Read description from DB and do a shallow copy (this should exist)
+          final Description description =
+              new DescriptionJpa(service.getTranslationDescription(
+                  descriptionId, translation.getId()), false);
+
+          Concept concept = null;
+          final String conceptId = description.getConcept().getTerminologyId();
+          // if not in cache, create concept and add to cache
+          if (!conceptCache.containsKey(conceptId)) {
+            concept = new ConceptJpa();
+            conceptCache.put(conceptId, concept);
+            concept = conceptCache.get(conceptId);
+            setCommonFields(concept, translation.getRefset());
+            concept.setEffectiveTime(description.getEffectiveTime());
+            concept.setTerminologyId(conceptId);
+            concept.setDefinitionStatusId("unknown");
+            concept.setTranslation(translation);
+            concept.getDescriptions().add(description);
+          }
+          // otherwise, just add the description to the cached concept
+          else {
+            concept = conceptCache.get(conceptId);
+            concept.getDescriptions().add(description);
+          }
+
+          // Attach local refset member
+          final LanguageRefsetMember member =
+              descLangMap.get(description.getTerminologyId());
+          description.getLanguageRefsetMembers().add(member);
+
+          descLangMap.remove(description.getTerminologyId());
+        }
       }
-
+    } catch (Exception e) {
+      throw e;
+    } finally {
+      service.close();
     }
-
-    // If any references are left in descLangMap, we've got a language without a
-    // desc
-    if (!descLangMap.isEmpty()) {
-      validationResult.addError(descLangMap.size()
-          + " language refset members without matching descriptions.");
-    }
-    validationResult.addComment(descriptions.size()
-        + " descriptions successfully loaded.");
-    validationResult.addComment(langCt
-        + " language refset members successfully loaded.");
 
     if (inactiveDescriptionCt == 1) {
-      validationResult.addWarning("1 inactive description not loaded.");
+      validationResult.addComment("1 description was retired.");
     } else if (inactiveDescriptionCt != 0) {
-      validationResult.addWarning(inactiveMemberCt
-          + " inactive descriptions not loaded.");
+      validationResult.addComment(inactiveDescriptionCt
+          + " inactive descriptions were retured.");
     }
     if (inactiveMemberCt == 1) {
-      validationResult.addWarning("1 inactive member not loaded.");
+      validationResult.addComment("1 language refset member was retired.");
     } else if (inactiveMemberCt != 0) {
-      validationResult.addWarning(inactiveMemberCt
-          + " inactive members not loaded.");
+      validationResult.addComment(inactiveMemberCt
+          + " language refset members retired.");
+    }
+
+    if (addedDescriptionCt == 1) {
+      validationResult
+          .addComment("1 description successfully loaded or updated.");
+    } else if (addedDescriptionCt != 0) {
+      validationResult.addComment(addedDescriptionCt
+          + " inactive descriptions successfully loaded or updated.");
+    }
+    if (addedMemberCt == 1) {
+      validationResult
+          .addComment("1 language refset member successfully loaded or updated.");
+    } else if (addedMemberCt != 0) {
+      validationResult.addComment(addedMemberCt
+          + " language refset members successfully loaded or udpated.");
     }
     // Return list of concepts
     return new ArrayList<>(conceptCache.values());
