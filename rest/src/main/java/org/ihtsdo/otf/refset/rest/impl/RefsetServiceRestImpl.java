@@ -528,6 +528,19 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
         }
       }
 
+      // Update all translations to set various inherited fields
+      TranslationList projectTranslations =
+          translationService.findTranslationsForQuery("projectId:"
+              + previousProject.getId(), new PfsParameterJpa());
+      for (Translation translation : projectTranslations.getObjects()) {
+        translation.setModuleId(refset.getModuleId());
+        translation.setTerminologyId(refset.getTerminologyId());
+        translation.setTerminology(refset.getTerminology());
+        translation.setVersion(refset.getVersion());
+        translation.setLastModifiedBy(userName);
+        translationService.updateTranslation(translation);
+      }
+
       // Update refset
       refset.setLastModifiedBy(userName);
       // allow ID to be changed
@@ -2611,7 +2624,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       Logger.getLogger(getClass()).info("  refset count = " + memberMap.size());
 
       if (memberMap.size() == 0 && handler.isDeltaHandler()) {
-        throw new LocalException("A delta import handler should only be used if a refset already has members.");
+        throw new LocalException(
+            "A delta import handler should only be used if a refset already has members.");
       }
 
       // Load members into memory and add to refset
