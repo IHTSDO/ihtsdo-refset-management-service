@@ -360,7 +360,6 @@ public class ImportTranslationRf2DeltaHandler implements
               descLangMap.get(description.getTerminologyId());
           description.getLanguageRefsetMembers().add(member);
 
-          descLangMap.remove(description.getTerminologyId());
         }
       }
     } catch (Exception e) {
