@@ -323,9 +323,17 @@ public class ImportTranslationRf2DeltaHandler implements
         for (final String descriptionId : descLangMap.keySet()) {
 
           // Read description from DB and do a shallow copy (this should exist)
-          final Description description =
-              new DescriptionJpa(service.getTranslationDescription(
-                  descriptionId, translation.getId()), false);
+          final Description orig =
+              service.getTranslationDescription(descriptionId,
+                  translation.getId());
+          if (orig == null) {
+            // This in SPANISH SNOMED is a description that is from English
+            // SNOMED.
+            Logger.getLogger(getClass()).warn(
+                "  language references description not in descriptions file.");
+            continue;
+          }
+          final Description description = new DescriptionJpa(orig, false);
 
           Concept concept = null;
           final String conceptId = description.getConcept().getTerminologyId();
