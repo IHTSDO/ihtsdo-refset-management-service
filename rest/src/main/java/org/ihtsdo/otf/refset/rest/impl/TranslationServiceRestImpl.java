@@ -1068,9 +1068,10 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
               member.setPublished(false);
               member.setDescriptionId(origDesc.getTerminologyId());
               member.setLastModifiedBy(userName);
-              translationService.addLanguageRefsetMember(member,
-                  translation.getTerminology());
-              origDesc.getLanguageRefsetMembers().add(member);
+              origMember =
+                  translationService.addLanguageRefsetMember(member,
+                      translation.getTerminology());
+              origDesc.getLanguageRefsetMembers().add(origMember);
               membersChanged = true;
             }
 
@@ -1079,8 +1080,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
             if (handler.isDeltaHandler() && origDesc != null
                 && !description.isActive()) {
               Logger.getLogger(getClass()).info("      REMOVE MEMBER 1");
-              translationService.removeLanguageRefsetMember(member.getId());
-              origDesc.getLanguageRefsetMembers().remove(member);
+              translationService.removeLanguageRefsetMember(origMember.getId());
+              origDesc.getLanguageRefsetMembers().remove(origMember);
               membersChanged = true;
             }
 
@@ -1089,9 +1090,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
                 && !member.isActive()) {
               Logger.getLogger(getClass()).info("      REMOVE MEMBER 2");
               // If retired, remove from the refset
-              translationService.removeLanguageRefsetMember(origMemberMap.get(
-                  member.getTerminologyId()).getId());
-              origDesc.getLanguageRefsetMembers().remove(member);
+              translationService.removeLanguageRefsetMember(origMember.getId());
+              origDesc.getLanguageRefsetMembers().remove(origMember);
               membersChanged = true;
             }
 
@@ -1115,8 +1115,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
               && !description.isActive()) {
             Logger.getLogger(getClass()).info("    REMOVE DESC");
             // If retired, remove from the concept
-            origConcept.getDescriptions().remove(origDesc);
             translationService.removeDescription(description.getId());
+            origConcept.getDescriptions().remove(origDesc);
           }
 
           // if members changed or description already existed, update
