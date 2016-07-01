@@ -309,7 +309,7 @@
         </plugins>
       </build>
     </profile>
-    <!-- Database QA, specify -Drun.config.umls=... -->
+    <!-- Database QA, specify -Drefset.config=... -->
     <profile>
       <id>Database</id>
       <build>
@@ -343,5 +343,59 @@
         </plugins>
       </build>
     </profile>
+
+    <!-- AdHoc mojo, specify -Drefset.config=... -->
+    <profile>
+      <id>DeltaTranslation</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.refset</groupId>
+            <artifactId>refset-admin</artifactId>
+            <version>${project.version}</version>
+            <executions>
+              <execution>
+                <id>delta-translation</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>delta-translation</goal>
+                </goals>
+                <configuration>
+                   <translationId>${translation.id}</translationId>
+                   <file>${file}</file>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <!-- AdHoc mojo, specify -Drefset.config=... -->
+    <profile>
+      <id>AdHoc</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.refset</groupId>
+            <artifactId>refset-admin</artifactId>
+            <version>${project.version}</version>
+            <executions>
+              <execution>
+                <id>ad-hoc</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>ad-hoc</goal>
+                </goals>
+                <configuration>
+                  <!-- Add what is needed -->
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
   </profiles>
 </project>

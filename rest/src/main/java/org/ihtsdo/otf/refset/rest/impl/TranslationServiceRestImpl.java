@@ -1115,7 +1115,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
               && !description.isActive()) {
             Logger.getLogger(getClass()).info("    REMOVE DESC");
             // If retired, remove from the concept
-            translationService.removeDescription(description.getId());
+            translationService.removeDescription(origDesc.getId());
             origConcept.getDescriptions().remove(origDesc);
           }
 
