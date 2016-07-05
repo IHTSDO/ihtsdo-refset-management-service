@@ -922,7 +922,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
       // Process concepts from import
       for (final Concept concept : concepts) {
-        Logger.getLogger(getClass()).info(
+        Logger.getLogger(getClass()).debug(
             "  concept = " + concept.getTerminologyId() + ", " + concept);
 
         // See if the concept already exists
@@ -930,13 +930,10 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
         // De-duplicate (because added concepts are put into the map)
         if (!handler.isDeltaHandler() && origConcept != null) {
-          Logger.getLogger(getClass()).info("    SKIP CONCEPT");
+          Logger.getLogger(getClass()).debug("    SKIP CONCEPT");
           continue;
         }
 
-        Logger.getLogger(getClass()).info(
-            "  concept descs = " + concept.getDescriptions());
-        // concept is always active, so no need to check
         ++objectCt;
 
         // Get orig descriptions - for a "new" concept there won't be any
@@ -944,7 +941,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
         // If orig concept exists, read its descriptions
         if (origConcept != null) {
-          Logger.getLogger(getClass()).info(
+          Logger.getLogger(getClass()).debug(
               "    orig concept = " + origConcept.getTerminologyId() + ", "
                   + origConcept);
           for (final Description desc : translationService.getConcept(
@@ -953,12 +950,12 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
             origConcept.getDescriptions().add(copy);
             origDescMap.put(desc.getTerminologyId(), copy);
           }
-          Logger.getLogger(getClass()).info("  orig desc map = " + origDescMap);
+          Logger.getLogger(getClass()).debug("  orig desc map = " + origDescMap);
         }
 
         // Otherwise add concept
         else {
-          Logger.getLogger(getClass()).info("    ADD CONCEPT");
+          Logger.getLogger(getClass()).debug("    ADD CONCEPT");
           concept.setId(null);
           concept.setPublishable(true);
           concept.setPublished(false);
@@ -975,14 +972,14 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
               new ConceptJpa(translationService.addConcept(concept), false);
           conceptMap.put(concept.getTerminologyId(), origConcept);
           Logger.getLogger(getClass())
-              .info("      id = " + origConcept.getId());
+              .debug("      id = " + origConcept.getId());
         }
 
         // Process descriptions from import
         for (final Description description : concept.getDescriptions()) {
 
           Logger.getLogger(getClass())
-              .info(
+              .debug(
                   "  desc = " + description.getTerminologyId() + ", "
                       + description);
 
@@ -993,7 +990,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
           // Skip descriptions already present for a non-delta handler
           // (e.g. de-duplicate)
           if (!handler.isDeltaHandler() && origDesc != null) {
-            Logger.getLogger(getClass()).info("    SKIP DESC");
+            Logger.getLogger(getClass()).debug("    SKIP DESC");
             continue;
           }
 
@@ -1007,7 +1004,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
           // If orig description exists, read its members
           if (origDesc != null) {
-            Logger.getLogger(getClass()).info(
+            Logger.getLogger(getClass()).debug(
                 "    orig desc = " + origDesc.getTerminologyId() + ", "
                     + origDesc);
             for (final LanguageRefsetMember member : translationService
@@ -1015,14 +1012,14 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
               origDesc.getLanguageRefsetMembers().add(member);
               origMemberMap.put(member.getTerminologyId(), member);
             }
-            Logger.getLogger(getClass()).info(
+            Logger.getLogger(getClass()).debug(
                 "    orig member map = " + origMemberMap);
           }
 
           // Otherwise, add the description
           else {
             // Otherwise, add it
-            Logger.getLogger(getClass()).info("    ADD DESC");
+            Logger.getLogger(getClass()).debug("    ADD DESC");
             description.setId(null);
             description.setPublishable(true);
             description.setPublished(false);
@@ -1034,7 +1031,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
             origDesc =
                 new DescriptionJpa(
                     translationService.addDescription(description), false);
-            Logger.getLogger(getClass()).info("      id = " + origDesc.getId());
+            Logger.getLogger(getClass()).debug("      id = " + origDesc.getId());
           }
 
           // Wire concept
@@ -1045,7 +1042,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
           // Process language refset members from import
           for (final LanguageRefsetMember member : members) {
-            Logger.getLogger(getClass()).info(
+            Logger.getLogger(getClass()).debug(
                 "    member = " + member.getTerminologyId() + ", " + member);
 
             // Get original language member
@@ -1054,7 +1051,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
             // If orig member exists, log it
             if (origMember != null) {
-              Logger.getLogger(getClass()).info(
+              Logger.getLogger(getClass()).debug(
                   "      orig member = " + origMember.getTerminologyId() + ", "
                       + origMember);
             }
@@ -1062,7 +1059,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
             // Otherwise, add language member
             else {
               // Otherwise, add it
-              Logger.getLogger(getClass()).info("      ADD MEMBER");
+              Logger.getLogger(getClass()).debug("      ADD MEMBER");
               member.setId(null);
               member.setPublishable(true);
               member.setPublished(false);
@@ -1079,7 +1076,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
             // Remove the corresponding language entry as well
             if (handler.isDeltaHandler() && origDesc != null
                 && !description.isActive()) {
-              Logger.getLogger(getClass()).info("      REMOVE MEMBER 1");
+              Logger.getLogger(getClass()).debug("      REMOVE MEMBER 1");
               translationService.removeLanguageRefsetMember(origMember.getId());
               origDesc.getLanguageRefsetMembers().remove(origMember);
               membersChanged = true;
@@ -1088,7 +1085,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
             // Retire
             else if (handler.isDeltaHandler() && origMember != null
                 && !member.isActive()) {
-              Logger.getLogger(getClass()).info("      REMOVE MEMBER 2");
+              Logger.getLogger(getClass()).debug("      REMOVE MEMBER 2");
               // If retired, remove from the refset
               translationService.removeLanguageRefsetMember(origMember.getId());
               origDesc.getLanguageRefsetMembers().remove(origMember);
@@ -1098,7 +1095,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
             // Update if changed
             else if (handler.isDeltaHandler() && origMember != null
                 && member.isActive()) {
-              Logger.getLogger(getClass()).info("      UPDATE MEMBER");
+              Logger.getLogger(getClass()).debug("      UPDATE MEMBER");
               // Update the terminologyId, effectiveTime, moduleId
               origMember.setAcceptabilityId(member.getAcceptabilityId());
               origMember.setEffectiveTime(member.getEffectiveTime());
@@ -1113,7 +1110,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
           // Retire descriptions for delta handler
           if (handler.isDeltaHandler() && origDesc != null
               && !description.isActive()) {
-            Logger.getLogger(getClass()).info("    REMOVE DESC");
+            Logger.getLogger(getClass()).debug("    REMOVE DESC");
             // If retired, remove from the concept
             translationService.removeDescription(origDesc.getId());
             origConcept.getDescriptions().remove(origDesc);
@@ -1123,7 +1120,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
           else if (membersChanged
               || (handler.isDeltaHandler() && origDesc != null && description
                   .isActive())) {
-            Logger.getLogger(getClass()).info("    UPDATE DESC");
+            Logger.getLogger(getClass()).debug("    UPDATE DESC");
             // Update fields
             origDesc.setCaseSignificanceId(description.getCaseSignificanceId());
             origDesc.setLanguageCode(description.getLanguageCode());
@@ -1151,7 +1148,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
         // If origConcept has no descriptions, remove it
         if (origConcept.getDescriptions().size() == 0) {
-          Logger.getLogger(getClass()).info("  REMOVE CONCEPT");
+          Logger.getLogger(getClass()).debug("  REMOVE CONCEPT");
           translationService.removeConcept(origConcept.getId(), false);
           conceptMap.remove(concept.getTerminologyId());
 
@@ -1160,7 +1157,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
         // otherwise update the orig concept (which for a new concept will be
         // the new one)
         else {
-          Logger.getLogger(getClass()).info("  UPDATE CONCEPT");
+          Logger.getLogger(getClass()).debug("  UPDATE CONCEPT");
           origConcept.setLastModifiedBy(userName);
           translationService.updateConcept(origConcept);
         }
