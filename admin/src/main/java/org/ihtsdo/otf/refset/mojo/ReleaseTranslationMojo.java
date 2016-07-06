@@ -36,7 +36,7 @@ import org.ihtsdo.otf.refset.rest.impl.TranslationServiceRestImpl;
 import org.ihtsdo.otf.refset.services.SecurityService;
 
 /**
- * Goal for processing a translation delta (e.g. for SNOMED spanish).
+ * Goal for processing a translation release (e.g. for SNOMED spanish).
  * 
  * See admin/pom.xml for sample usage
  * 
@@ -84,6 +84,7 @@ public class ReleaseTranslationMojo extends AbstractMojo {
       getLog().info("Release Translation Import");
       getLog().info("  translationId = " + translationId);
       getLog().info("  effectiveTime = " + effectiveTime);
+      getLog().info("  exporter = " + exporter);
 
       final Properties properties = ConfigUtility.getConfigProperties();
       // Ensure name lookups are not in the background...

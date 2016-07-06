@@ -80,6 +80,8 @@ public class PerformTranslationBetaAlgorithm extends TranslationServiceJpa
   /* see superclass */
   @Override
   public void checkPreconditions() throws Exception {
+    Logger.getLogger(getClass()).info("  Check preconditions");
+
     ReleaseInfoList releaseInfoList =
         findTranslationReleasesForQuery(translation.getId(), null, null);
     if (releaseInfoList.getCount() != 1) {
@@ -99,6 +101,7 @@ public class PerformTranslationBetaAlgorithm extends TranslationServiceJpa
   /* see superclass */
   @Override
   public void compute() throws Exception {
+    Logger.getLogger(getClass()).info("  Stage translation");
 
     translation.setLastModifiedBy(userName);
 
@@ -108,6 +111,7 @@ public class PerformTranslationBetaAlgorithm extends TranslationServiceJpa
             releaseInfo.getEffectiveTime());
 
     // Reread in case a commit was used
+    Logger.getLogger(getClass()).info("  Copy origin translation release info");
     releaseInfo = getReleaseInfo(releaseInfo.getId());
     // Copy the release info from origin refset
     final ReleaseInfo stageReleaseInfo = new ReleaseInfoJpa(releaseInfo);
@@ -126,6 +130,7 @@ public class PerformTranslationBetaAlgorithm extends TranslationServiceJpa
     // for the staged translation so we can pass them as detached to the export
     // process
     // and avoid running out of memory (in the case of hundreds of thousands)
+    Logger.getLogger(getClass()).info("  Generate snapshot translation and attach artifact");
 
     // Gather concept ids
     final Set<Long> conceptIds = new HashSet<Long>();
@@ -169,6 +174,7 @@ public class PerformTranslationBetaAlgorithm extends TranslationServiceJpa
             translation.getProject().getId());
 
     if (releaseInfo != null) {
+      Logger.getLogger(getClass()).info("  Generate delta translation and attach artifact");
 
       final String oldModuleId = releaseInfo.getTranslation().getModuleId();
       final String newModuleId = translation.getModuleId();

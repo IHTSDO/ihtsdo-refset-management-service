@@ -67,7 +67,7 @@ public class BeginRefsetReleaseAlgorthm extends RefsetServiceJpa implements
   /* see superclass */
   @Override
   public void checkPreconditions() throws Exception {
-
+    Logger.getLogger(getClass()).info("  Check preconditions");
     // Check that there are members
     if (refset.getMembers() == null || refset.getMembers().size() == 0) {
       throw new LocalException("Refset " + refset.getTerminologyId()
@@ -94,6 +94,7 @@ public class BeginRefsetReleaseAlgorthm extends RefsetServiceJpa implements
   /* see superclass */
   @Override
   public void compute() throws Exception {
+    Logger.getLogger(getClass()).info("  Create a relaseInfo object");
     // Create and add a release info
     releaseInfo = new ReleaseInfoJpa();
     String name = ConfigUtility.DATE_FORMAT.format(effectiveTime);
@@ -109,6 +110,7 @@ public class BeginRefsetReleaseAlgorthm extends RefsetServiceJpa implements
     releaseInfo.setPublished(false);
     releaseInfo = addReleaseInfo(releaseInfo);
 
+    Logger.getLogger(getClass()).info("  Update refset");
     refset.setInPublicationProcess(true);
     refset.setLastModifiedBy(userName);
     updateRefset(refset);

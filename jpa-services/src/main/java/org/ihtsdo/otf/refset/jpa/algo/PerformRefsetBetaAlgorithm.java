@@ -75,6 +75,8 @@ public class PerformRefsetBetaAlgorithm extends RefsetServiceJpa implements
   /* see superclass */
   @Override
   public void checkPreconditions() throws Exception {
+    Logger.getLogger(getClass()).info("  Check preconditions");
+
     // Check preconditions
     ReleaseInfoList releaseInfoList =
         findRefsetReleasesForQuery(refset.getId(), null, null);
@@ -99,6 +101,7 @@ public class PerformRefsetBetaAlgorithm extends RefsetServiceJpa implements
   public void compute() throws Exception {
 
     // Stage the refset for beta
+    Logger.getLogger(getClass()).info("  Stage the refset");
     refset.setLastModifiedBy(userName);
     stagedRefset =
         stageRefset(refset, StagingType.BETA, releaseInfo.getEffectiveTime());
@@ -108,12 +111,14 @@ public class PerformRefsetBetaAlgorithm extends RefsetServiceJpa implements
 
     // Copy the release info, copy any release artifacts from
     // the origin refset
+    Logger.getLogger(getClass()).info("  Copy release info and release artifacts");
     final ReleaseInfo stageReleaseInfo = new ReleaseInfoJpa(releaseInfo);
     stageReleaseInfo.setId(null);
     stageReleaseInfo.getArtifacts().addAll(releaseInfo.getArtifacts());
     stageReleaseInfo.setRefset(stagedRefset);
 
     // Generate the snapshot release artifact and add it
+    Logger.getLogger(getClass()).info("  Generate snapshot artifact and attach it");
     final ExportRefsetHandler handler = getExportRefsetHandler(ioHandlerId);
     InputStream inputStream =
         handler.exportMembers(stagedRefset, stagedRefset.getMembers());
@@ -135,6 +140,7 @@ public class PerformRefsetBetaAlgorithm extends RefsetServiceJpa implements
         getCurrentRefsetReleaseInfo(refset.getTerminologyId(), refset
             .getProject().getId());
     if (releaseInfo != null) {
+      Logger.getLogger(getClass()).info("  Generate delta artifact and attach it");
 
       final String oldModuleId = releaseInfo.getRefset().getModuleId();
       final String newModuleId = refset.getModuleId();

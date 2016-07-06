@@ -82,6 +82,7 @@ public class DeltaTranslationMojo extends AbstractMojo {
       getLog().info("Delta Translation Import");
       getLog().info("  file = " + file);
       getLog().info("  translationId = " + translationId);
+      getLog().info("  importer = " + importer);
 
       if (!new File(file).exists()) {
         throw new Exception("Specified file does not exist - " + file);
@@ -143,7 +144,7 @@ public class DeltaTranslationMojo extends AbstractMojo {
         String ioHandlerInfoId = null;
         for (final IoHandlerInfo info : translationService
             .getImportTranslationHandlers(authToken).getObjects()) {
-          if (info.getName().equals("Import RF2 Delta")) {
+          if (info.getId().equals(importer)) {
             ioHandlerInfoId = info.getId();
           }
         }
