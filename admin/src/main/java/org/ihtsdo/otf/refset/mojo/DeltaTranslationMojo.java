@@ -106,7 +106,7 @@ public class DeltaTranslationMojo extends AbstractMojo {
               properties.getProperty("admin.password")).getAuthToken();
       service.close();
 
-      if (!serverRunning) {
+      if (serverRunning) {
         TranslationClientRest translationService =
             new TranslationClientRest(properties);
 
