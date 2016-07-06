@@ -19,8 +19,6 @@
  */
 package org.ihtsdo.otf.refset.mojo;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
@@ -29,7 +27,11 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.IoHandlerInfo;
 import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
+import org.ihtsdo.otf.refset.jpa.services.rest.ReleaseServiceRest;
+import org.ihtsdo.otf.refset.jpa.services.rest.TranslationServiceRest;
+import org.ihtsdo.otf.refset.rest.client.ReleaseClientRest;
 import org.ihtsdo.otf.refset.rest.client.TranslationClientRest;
+import org.ihtsdo.otf.refset.rest.impl.ReleaseServiceRestImpl;
 import org.ihtsdo.otf.refset.rest.impl.TranslationServiceRestImpl;
 import org.ihtsdo.otf.refset.services.SecurityService;
 
@@ -38,26 +40,10 @@ import org.ihtsdo.otf.refset.services.SecurityService;
  * 
  * See admin/pom.xml for sample usage
  * 
- * @goal delta-translation
+ * @goal release-translation
  * @phase package
  */
-public class DeltaTranslationMojo extends AbstractMojo {
-
-  /**
-   * File for import.
-   *
-   * @required
-   * @parameter
-   */
-  private String file;
-
-  /**
-   * Importer key.
-   *
-   * @required
-   * @parameter
-   */
-  private String importer;
+public class ReleaseTranslationMojo extends AbstractMojo {
 
   /**
    * Translation id.
@@ -68,9 +54,25 @@ public class DeltaTranslationMojo extends AbstractMojo {
   private Long translationId;
 
   /**
-   * Instantiates an empty {@link DeltaTranslationMojo}.
+   * Effective time - YYYYMMDD
+   *
+   * @required
+   * @parameter
    */
-  public DeltaTranslationMojo() {
+  private String effectiveTime;
+
+  /**
+   * Exporter key.
+   *
+   * @required
+   * @parameter
+   */
+  private String exporter;
+
+  /**
+   * Instantiates an empty {@link ReleaseTranslationMojo}.
+   */
+  public ReleaseTranslationMojo() {
     // do nothing
   }
 
@@ -79,21 +81,26 @@ public class DeltaTranslationMojo extends AbstractMojo {
   public void execute() throws MojoFailureException {
 
     try {
-      getLog().info("Delta Translation Import");
-      getLog().info("  file = " + file);
+      getLog().info("Release Translation Import");
       getLog().info("  translationId = " + translationId);
+      getLog().info("  effectiveTime = " + effectiveTime);
 
-      if (!new File(file).exists()) {
-        throw new Exception("Specified file does not exist - " + file);
-      }
       final Properties properties = ConfigUtility.getConfigProperties();
       // Ensure name lookups are not in the background...
       properties.setProperty("lookup.background", "false");
+
+      // Validate effective time parameter
+      try {
+        ConfigUtility.DATE_FORMAT.parse(effectiveTime);
+      } catch (Exception e) {
+        throw new Exception("Invalid effective time format");
+      }
 
       // Verify server is not up
       boolean serverRunning = ConfigUtility.isServerActive();
       getLog().info(
           "Server status detected:  " + (!serverRunning ? "DOWN" : "UP"));
+
       // if (serverRunning) {
       // throw new Exception(
       // "Server must not be running to perform delta translation import");
@@ -107,63 +114,84 @@ public class DeltaTranslationMojo extends AbstractMojo {
       service.close();
 
       if (!serverRunning) {
+        TranslationServiceRest translationService =
+            new TranslationServiceRestImpl();
+
+        // Get IO handler id
+        String ioHandlerInfoId = null;
+        for (final IoHandlerInfo info : translationService
+            .getExportTranslationHandlers(authToken).getObjects()) {
+          if (info.getId().equals(exporter)) {
+            ioHandlerInfoId = info.getId();
+          }
+        }
+        if (ioHandlerInfoId == null) {
+          throw new Exception("Unable to find desired release exporter");
+        }
+
+        // begin release
+        getLog().info("  Begin translation release");
+        ReleaseServiceRest releaseService = new ReleaseServiceRestImpl();
+        releaseService.beginTranslationRelease(translationId, ioHandlerInfoId,
+            authToken);
+
+        // validate release
+        getLog().info("  Validate translation release");
+        releaseService = new ReleaseServiceRestImpl();
+        releaseService.validateTranslationRelease(translationId, authToken);
+
+        // beta release
+        getLog().info("  Beta translation release");
+        releaseService = new ReleaseServiceRestImpl();
+        releaseService.betaTranslationRelease(translationId, ioHandlerInfoId,
+            authToken);
+
+        // finish release
+        getLog().info("  Finish translation release");
+        releaseService = new ReleaseServiceRestImpl();
+        releaseService.finishTranslationRelease(translationId, authToken);
+
+      } else {
+
         TranslationClientRest translationService =
             new TranslationClientRest(properties);
 
         // Get IO handler id
         String ioHandlerInfoId = null;
         for (final IoHandlerInfo info : translationService
-            .getImportTranslationHandlers(authToken).getObjects()) {
-          if (info.getId().equals(importer)) {
+            .getExportTranslationHandlers(authToken).getObjects()) {
+          if (info.getId().equals(exporter)) {
             ioHandlerInfoId = info.getId();
           }
         }
         if (ioHandlerInfoId == null) {
-          throw new Exception("Unable to find desired delta importer");
+          throw new Exception("Unable to find desired release exporter");
         }
 
-        // Begin import
-        translationService = new TranslationClientRest(properties);
-        translationService.beginImportConcepts(translationId, ioHandlerInfoId,
+        // begin release
+        getLog().info("  Begin translation release");
+        ReleaseClientRest releaseService = new ReleaseClientRest(properties);
+        releaseService.beginTranslationRelease(translationId, ioHandlerInfoId,
             authToken);
 
-        // Finish import - the name lookup should block here until finished
-        // (e.g. not run in the background)
-        final FileInputStream in = new FileInputStream(new File(file));
-        translationService = new TranslationClientRest(properties);
-        translationService.finishImportConcepts(null, in, translationId,
-            ioHandlerInfoId, authToken);
+        // validate release
+        getLog().info("  Validate translation release");
+        releaseService = new ReleaseClientRest(properties);
+        releaseService.validateTranslationRelease(translationId, authToken);
 
-      } else {
-
-        TranslationServiceRestImpl translationService =
-            new TranslationServiceRestImpl();
-
-        // Get IO handler id
-        String ioHandlerInfoId = null;
-        for (final IoHandlerInfo info : translationService
-            .getImportTranslationHandlers(authToken).getObjects()) {
-          if (info.getName().equals("Import RF2 Delta")) {
-            ioHandlerInfoId = info.getId();
-          }
-        }
-        if (ioHandlerInfoId == null) {
-          throw new Exception("Unable to find desired delta importer");
-        }
-
-        // Begin import
-        translationService = new TranslationServiceRestImpl();
-        translationService.beginImportConcepts(translationId, ioHandlerInfoId,
+        // beta release
+        getLog().info("  Beta translation release");
+        releaseService = new ReleaseClientRest(properties);
+        releaseService.betaTranslationRelease(translationId, ioHandlerInfoId,
             authToken);
 
-        // Finish import - the name lookup should block here until finished
-        // (e.g. not run in the background)
-        final FileInputStream in = new FileInputStream(new File(file));
-        translationService = new TranslationServiceRestImpl();
-        translationService.finishImportConcepts(null, in, translationId,
-            ioHandlerInfoId, authToken);
+        // finish release
+        getLog().info("  Finish translation release");
+        releaseService = new ReleaseClientRest(properties);
+        releaseService.finishTranslationRelease(translationId, authToken);
 
       }
+
       // Done
       getLog().info("... done");
 

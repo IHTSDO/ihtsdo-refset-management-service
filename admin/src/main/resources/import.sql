@@ -5,7 +5,12 @@ INSERT INTO users (id, applicationRole, email, name, userName) values (1, 'ADMIN
 -- Load initial guest user
 INSERT INTO users (id, applicationRole, email, name, userName) values (2, 'VIEWER', 'test@example.com', 'Guest User', 'guest');
 
--- Create ancestorPath index for tree positions (not needed bcause of lucene)
---create index x_ctr_ancestor_path on concept_tree_positions (ancestorPath(255));
---create index x_dtr_ancestor_path on descriptor_tree_positions (ancestorPath(255));
---create index x_cdtr_ancestor_path on code_tree_positions (ancestorPath(255));
+
+-- Indexes on AUD tables
+create index x_translations_aud on translations_AUD (id);
+create index x_refsets_aud on refsets_AUD (id);
+create index x_concept_refset_members_aud on concept_refset_members_AUD(refset_id);
+create index x_concepts_aud on concepts_AUD (translation_id);
+create index x_descriptions_aud on descriptions_AUD (concept_id);
+create index x_desc_lang_aud on description_language_refset_members_AUD (description_id);
+create index x_lang_aud on language_refset_members_AUD (id);

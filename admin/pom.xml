@@ -18,6 +18,8 @@
   <!-- Mojo parameters -->
   <properties>
     <mode>do not create</mode>
+    <exporter>DEFAULT</exporter>
+    <importer>DELTA</importer>
   </properties>
 
   <dependencies>
@@ -344,7 +346,7 @@
       </build>
     </profile>
 
-    <!-- AdHoc mojo, specify -Drefset.config=... -->
+    <!-- Process a delta translation, specify -Drefset.config=... -->
     <profile>
       <id>DeltaTranslation</id>
       <build>
@@ -361,8 +363,37 @@
                   <goal>delta-translation</goal>
                 </goals>
                 <configuration>
-                   <translationId>${translation.id}</translationId>
-                   <file>${file}</file>
+                  <translationId>${translation.id}</translationId>
+                  <file>${file}</file>
+                  <importer>${importer}</importer>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <!-- Release translation mojo, specify -Drefset.config=... -->
+    <profile>
+      <id>ReleaseTranslation</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.refset</groupId>
+            <artifactId>refset-admin</artifactId>
+            <version>${project.version}</version>
+            <executions>
+              <execution>
+                <id>release-translation</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>release-translation</goal>
+                </goals>
+                <configuration>
+                  <translationId>${translation.id}</translationId>
+                  <effectiveTime>${effective.time}</effectiveTime>
+                  <exporter>${exporter}</exporter>
                 </configuration>
               </execution>
             </executions>
