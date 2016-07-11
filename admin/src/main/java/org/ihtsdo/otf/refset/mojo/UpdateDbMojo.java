@@ -17,7 +17,6 @@ import org.ihtsdo.otf.refset.jpa.services.RootServiceJpa;
  * See admin/pom.xml for sample usage
  * 
  * @goal updatedb
- * 
  * @phase package
  */
 public class UpdateDbMojo extends AbstractMojo {
