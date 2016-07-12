@@ -17,6 +17,7 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.jpa.services.RootServiceJpa;
 import org.ihtsdo.otf.refset.services.RootService;
@@ -33,9 +34,8 @@ public class QaDatabase extends AbstractMojo {
 
   /**
    * The queries
-   * @parameter
-   * @required
    */
+  @Parameter( required = true )
   private Properties queries;
 
   /** The manager. */

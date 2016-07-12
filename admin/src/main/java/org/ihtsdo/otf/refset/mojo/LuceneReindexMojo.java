@@ -9,6 +9,7 @@ import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.refset.rest.client.ProjectClientRest;
@@ -27,15 +28,15 @@ public class LuceneReindexMojo extends AbstractMojo {
   /**
    * The specified objects to index.
    *
-   * @parameter
    */
+  @Parameter	
   private String indexedObjects;
 
   /**
    * Whether to run this mojo against an active server.
    *
-   * @parameter
    */
+  @Parameter
   private boolean server = false;
 
   /**

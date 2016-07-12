@@ -9,6 +9,7 @@ import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.jpa.services.RootServiceJpa;
 
@@ -23,9 +24,8 @@ public class UpdateDbMojo extends AbstractMojo {
 
   /**
    * Mode: create or update
-   * @parameter
-   * @required
    */
+  @Parameter( required = true )	
   public String mode;
 
   /**
