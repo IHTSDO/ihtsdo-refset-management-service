@@ -307,7 +307,7 @@
           <version>3.3</version>
         </plugin> -->
         
-       <plugin>
+      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-plugin-plugin</artifactId>
         <version>3.4</version>
@@ -316,12 +316,11 @@
         </configuration>
         <executions>
           <execution>
-         <id>mojo-descriptor</id>
-            <!--  <id>default-descriptor</id> -->
-            <phase>process-classes</phase>
-            <goals>
-             <goal>descriptor</goal>
+            <id>default-descriptor</id> 
+             <goals>
+              <goal>descriptor</goal>
             </goals>
+            <phase>process-classes</phase>
           </execution>
           <!-- if you want to generate help goal -->
           <execution>
@@ -329,6 +328,7 @@
             <goals>
               <goal>helpmojo</goal>
             </goals>
+            <phase>process-classes</phase>
           </execution>
         </executions>
       </plugin> 
