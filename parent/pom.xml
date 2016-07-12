@@ -316,7 +316,8 @@
         </configuration>
         <executions>
           <execution>
-            <id>default-descriptor</id>
+         <id>mojo-descriptor</id>
+            <!--  <id>default-descriptor</id> -->
             <phase>process-classes</phase>
             <goals>
              <goal>descriptor</goal>
