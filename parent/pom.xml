@@ -7,7 +7,7 @@
 
   <groupId>org.ihtsdo.otf.refset</groupId>
   <artifactId>refset-parent</artifactId>
-  <version>1.0.2-SNAPSHOT</version>
+  <version>1.0.3-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>IHTSDO refset management service parent</name>
   <description>Parent project. Used to define versions of third party modules</description>
