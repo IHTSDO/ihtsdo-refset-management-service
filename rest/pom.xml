@@ -19,7 +19,8 @@
   <properties>
     <!-- Specify the config artifact parameters -->
     <config.groupId>org.ihtsdo.otf.refset</config.groupId>
-    <config.artifactId>refset-config-dev-windows</config.artifactId>
+   <!--   <config.artifactId>refset-config-dev-windows</config.artifactId> -->
+    <config.artifactId>refset-config-uat</config.artifactId> 
     <config.version>${project.version}</config.version>
 
     <!-- Defaults for Eclipse dev -->
