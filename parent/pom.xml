@@ -7,7 +7,7 @@
 
   <groupId>org.ihtsdo.otf.refset</groupId>
   <artifactId>refset-parent</artifactId>
-  <version>1.0.1</version>
+  <version>1.0.2</version>
   <packaging>pom</packaging>
   <name>IHTSDO refset management service parent</name>
   <description>Parent project. Used to define versions of third party modules</description>
@@ -307,13 +307,19 @@
           <version>3.3</version>
         </plugin> -->
         
-             <plugin>
+      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-plugin-plugin</artifactId>
         <version>3.4</version>
+        <configuration>
+         <skipErrorNoDescriptorsFound>true</skipErrorNoDescriptorsFound>
+        </configuration>
         <executions>
           <execution>
-            <id>default-descriptor</id>
+            <id>default-descriptor</id> 
+             <goals>
+              <goal>descriptor</goal>
+            </goals>
             <phase>process-classes</phase>
           </execution>
           <!-- if you want to generate help goal -->
@@ -322,6 +328,7 @@
             <goals>
               <goal>helpmojo</goal>
             </goals>
+            <phase>process-classes</phase>
           </execution>
         </executions>
       </plugin> 

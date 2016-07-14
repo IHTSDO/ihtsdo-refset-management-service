@@ -6,7 +6,7 @@
   <!-- Module Metadata -->
   <groupId>org.ihtsdo.otf.refset</groupId>
   <artifactId>refset-aggregator</artifactId>
-  <version>1.0.1</version>
+  <version>1.0.2</version>
   <packaging>pom</packaging>
   <name>IHTSDO refset management service</name>
   <description>Aggregator project.</description>

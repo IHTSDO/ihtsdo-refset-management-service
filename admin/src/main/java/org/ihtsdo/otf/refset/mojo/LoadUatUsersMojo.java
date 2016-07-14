@@ -26,6 +26,9 @@ import java.io.FileReader;
 import org.apache.log4j.Logger;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
 import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.helpers.FieldedStringTokenizer;
@@ -37,16 +40,14 @@ import org.ihtsdo.otf.refset.services.SecurityService;
  * Goal which loads UAT users.
  * 
  * See admin/pom.xml for sample usage
- * 
- * @goal load-uat-users
- * @phase package
  */
+@Mojo( name = "load-uat-users", defaultPhase = LifecyclePhase.PACKAGE)
 public class LoadUatUsersMojo extends AbstractMojo {
 
   /**
    * UAT Users file.
-   * @parameter
    */
+  @Parameter	
   private String file;
 
   /**

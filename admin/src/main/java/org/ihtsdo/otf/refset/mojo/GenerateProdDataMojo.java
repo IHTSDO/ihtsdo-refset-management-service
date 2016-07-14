@@ -32,6 +32,9 @@ import java.util.Properties;
 import org.apache.log4j.Logger;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
 import org.ihtsdo.otf.refset.DefinitionClause;
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
@@ -71,16 +74,15 @@ import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
  * 
  * See admin/pom.xml for sample usage
  * 
- * @goal prod-data
- * @phase package
  */
+@Mojo( name = "prod-data", defaultPhase = LifecyclePhase.PACKAGE)
 public class GenerateProdDataMojo extends AbstractMojo {
 
   /**
    * Mode - for recreating db.
    *
-   * @parameter
    */
+  @Parameter	
   private String mode = null;
 
   /**
