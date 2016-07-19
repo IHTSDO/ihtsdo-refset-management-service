@@ -7,7 +7,7 @@
   <parent>
     <groupId>org.ihtsdo.otf.refset</groupId>
     <artifactId>refset-parent</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.2</version>
     <relativePath>../parent</relativePath>
   </parent>
 
@@ -19,7 +19,8 @@
   <properties>
     <!-- Specify the config artifact parameters -->
     <config.groupId>org.ihtsdo.otf.refset</config.groupId>
-    <config.artifactId>refset-config-dev-windows</config.artifactId>
+   <!--   <config.artifactId>refset-config-dev-windows</config.artifactId> -->
+    <config.artifactId>refset-config-prod</config.artifactId> 
     <config.version>${project.version}</config.version>
 
     <!-- Defaults for Eclipse dev -->

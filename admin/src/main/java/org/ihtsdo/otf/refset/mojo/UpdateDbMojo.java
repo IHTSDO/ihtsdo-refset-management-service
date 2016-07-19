@@ -8,6 +8,9 @@ import java.util.Properties;
 import org.apache.log4j.Logger;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.jpa.services.RootServiceJpa;
 
@@ -16,17 +19,14 @@ import org.ihtsdo.otf.refset.jpa.services.RootServiceJpa;
  * 
  * See admin/pom.xml for sample usage
  * 
- * @goal updatedb
- * 
- * @phase package
  */
+@Mojo( name = "updatedb", defaultPhase = LifecyclePhase.PACKAGE)
 public class UpdateDbMojo extends AbstractMojo {
 
   /**
    * Mode: create or update
-   * @parameter
-   * @required
    */
+  @Parameter( required = true )	
   public String mode;
 
   /**
