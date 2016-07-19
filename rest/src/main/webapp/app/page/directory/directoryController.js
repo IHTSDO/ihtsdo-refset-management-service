@@ -69,7 +69,7 @@ tsApp
         // Check if user is logged in (for showing intro page)
         $scope.isLoggedIn = function() {
           return securityService.isLoggedIn();
-        }
+        };
 
         // Get $scope.projects
         $scope.getProjects = function() {

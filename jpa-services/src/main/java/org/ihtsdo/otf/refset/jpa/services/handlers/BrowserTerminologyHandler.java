@@ -320,7 +320,7 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
     for (final JsonNode conceptNode : doc.get("items")) {
       final Concept concept = new ConceptJpa();
 
-      concept.setActive(conceptNode.get("active").asText().equals("true"));
+      concept.setActive(conceptNode.get("conceptActive").asText().equals("true"));
       concept.setTerminologyId(conceptNode.get("id").asText());
       concept.setLastModified(ConfigUtility.DATE_FORMAT.parse(conceptNode.get(
           "effectiveTime").asText()));
