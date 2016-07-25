@@ -50,6 +50,7 @@ public class CancelRefsetReleaseAlgorithm extends RefsetServiceJpa implements
   /* see superclass */
   @Override
   public void checkPreconditions() throws Exception {
+    Logger.getLogger(getClass()).info("  Check preconditions");
     // Get release info and remove it
     ReleaseInfoList list =
         findRefsetReleasesForQuery(refset.getId(), null, null);
@@ -69,11 +70,13 @@ public class CancelRefsetReleaseAlgorithm extends RefsetServiceJpa implements
   public void compute() throws Exception {
 
     // Remove release info
+    Logger.getLogger(getClass()).info("  Remove release info");
     removeReleaseInfo(releaseInfo.getId());
 
     // Get staged refset change,
     StagedRefsetChange change = getStagedRefsetChangeFromOrigin(refset.getId());
     if (change != null) {
+      Logger.getLogger(getClass()).info("  Unstage the refset");
       // Remove staged refset change, release info, and the staged refset
       removeStagedRefsetChange(change.getId());
       refset.setStagingType(null);

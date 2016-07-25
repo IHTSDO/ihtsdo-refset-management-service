@@ -152,7 +152,7 @@ public class GenerateSampleDataMojo extends AbstractMojo {
       loadSampleData();
 
     } catch (Exception e) {
-      e.printStackTrace();
+      Logger.getLogger(getClass()).error("Unexpected exception", e);
       throw new MojoFailureException("Unexpected exception:", e);
     }
 
@@ -632,7 +632,6 @@ public class GenerateSampleDataMojo extends AbstractMojo {
       new RefsetServiceRestImpl().updateRefset((RefsetJpa) test5,
           author1.getAuthToken());
 
-
       // test 6
       RefsetJpa test3Copy = new RefsetJpa(test3);
       test3Copy.setTerminologyId("666666");
@@ -667,7 +666,6 @@ public class GenerateSampleDataMojo extends AbstractMojo {
       new WorkflowServiceRestImpl().performWorkflowAction(project1.getId(),
           test7.getId(), "reviewer1", "REVIEWER", "ASSIGN",
           author1.getAuthToken());
-
 
       // test 8
       test2Copy.setTerminologyId("888888");
@@ -723,7 +721,7 @@ public class GenerateSampleDataMojo extends AbstractMojo {
       new ReleaseServiceRestImpl().beginRefsetRelease(test9.getId(),
           ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()),
           reviewer1.getAuthToken());
-            new ReleaseServiceRestImpl().validateRefsetRelease(test9.getId(),
+      new ReleaseServiceRestImpl().validateRefsetRelease(test9.getId(),
           reviewer1.getAuthToken());
       new ReleaseServiceRestImpl().betaRefsetRelease(test9.getId(), "DEFAULT",
           reviewer1.getAuthToken());
@@ -742,7 +740,6 @@ public class GenerateSampleDataMojo extends AbstractMojo {
           reviewer1.getAuthToken());
       new ReleaseServiceRestImpl().finishRefsetRelease(test9.getId(),
           reviewer1.getAuthToken());
-
 
       // test 10
       test2Copy.setTerminologyId("101010101010");
@@ -772,7 +769,6 @@ public class GenerateSampleDataMojo extends AbstractMojo {
       new WorkflowServiceRestImpl().performWorkflowAction(project1.getId(),
           test10.getId(), "author1", "AUTHOR", "REASSIGN",
           reviewer1.getAuthToken());
-
 
       // test 11
       RefsetJpa test11 =
@@ -858,7 +854,7 @@ public class GenerateSampleDataMojo extends AbstractMojo {
 
       getLog().info("Done ...");
     } catch (Exception e) {
-      e.printStackTrace();
+      Logger.getLogger(getClass()).error("Unexpected exception", e);
       throw new MojoFailureException("Unexpected exception:", e);
     }
   }

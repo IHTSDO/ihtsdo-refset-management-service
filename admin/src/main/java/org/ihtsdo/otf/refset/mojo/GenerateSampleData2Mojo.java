@@ -158,7 +158,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
       loadSampleData();
 
     } catch (Exception e) {
-      e.printStackTrace();
+      Logger.getLogger(getClass()).error("Unexpected exception", e);
       throw new MojoFailureException("Unexpected exception:", e);
     }
 
@@ -678,7 +678,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
 
       getLog().info("Done ...");
     } catch (Exception e) {
-      e.printStackTrace();
+      Logger.getLogger(getClass()).error("Unexpected exception", e);
       throw new MojoFailureException("Unexpected exception:", e);
     }
   }

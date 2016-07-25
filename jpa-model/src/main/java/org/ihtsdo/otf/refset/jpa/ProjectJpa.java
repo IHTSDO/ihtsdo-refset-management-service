@@ -32,8 +32,11 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
+import org.apache.lucene.analysis.core.WhitespaceAnalyzer;
+import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import org.hibernate.envers.Audited;
 import org.hibernate.search.annotations.Analyze;
+import org.hibernate.search.annotations.Analyzer;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.FieldBridge;
 import org.hibernate.search.annotations.Fields;
@@ -47,8 +50,6 @@ import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.jpa.helpers.UserMapUserNameBridge;
 import org.ihtsdo.otf.refset.jpa.helpers.UserRoleBridge;
 import org.ihtsdo.otf.refset.jpa.helpers.UserRoleMapAdapter;
-
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
  * JPA enabled implementation of {@link Project}.
@@ -109,8 +110,8 @@ public class ProjectJpa implements Project {
   /** The feedback email. */
   @Column(nullable = true)
   private String feedbackEmail;
-  
-  /**  The exclusion clause. */
+
+  /** The exclusion clause. */
   @Column(nullable = true, length = 4000)
   private String exclusionClause;
 
@@ -127,8 +128,8 @@ public class ProjectJpa implements Project {
   @OneToMany(mappedBy = "project", targetEntity = RefsetJpa.class)
   // @IndexedEmbedded - n/a
   private List<Refset> refsets = new ArrayList<>();
-  
-  /**  The validation checks. */
+
+  /** The validation checks. */
   @Column(nullable = true)
   @ElementCollection(fetch = FetchType.EAGER)
   @CollectionTable(name = "project_validation_checks")
@@ -217,16 +218,16 @@ public class ProjectJpa implements Project {
   public String getLastModifiedBy() {
     return lastModifiedBy;
   }
-  
+
   @Override
   public void setExclusionClause(String exclusionClause) {
     this.exclusionClause = exclusionClause;
   }
-  
+
   @Override
   public String getExclusionClause() {
     return exclusionClause;
-  }  
+  }
 
   /* see superclass */
   @Override
@@ -361,8 +362,11 @@ public class ProjectJpa implements Project {
     result =
         prime * result + ((terminology == null) ? 0 : terminology.hashCode());
     result = prime * result + ((version == null) ? 0 : version.hashCode());
-    result = prime * result + ((exclusionClause == null) ? 0 : exclusionClause.hashCode());
-    // result = prime * result + ((validationChecks == null) ? 0 : validationChecks.hashCode());
+    result =
+        prime * result
+            + ((exclusionClause == null) ? 0 : exclusionClause.hashCode());
+    // result = prime * result + ((validationChecks == null) ? 0 :
+    // validationChecks.hashCode());
     return result;
   }
 
@@ -385,9 +389,10 @@ public class ProjectJpa implements Project {
   /* see superclass */
   @XmlJavaTypeAdapter(UserRoleMapAdapter.class)
   @Fields({
-      @Field(bridge = @FieldBridge(impl = UserRoleBridge.class), index = Index.YES, analyze = Analyze.YES, store = Store.NO),
-      @Field(name = "userAnyRole", bridge = @FieldBridge(impl = UserMapUserNameBridge.class), index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+      @Field(bridge = @FieldBridge(impl = UserRoleBridge.class), analyzer = @Analyzer(impl = WhitespaceAnalyzer.class), index = Index.YES, analyze = Analyze.YES, store = Store.NO),
+      @Field(name = "userAnyRole", bridge = @FieldBridge(impl = UserMapUserNameBridge.class), analyzer = @Analyzer(impl = WhitespaceAnalyzer.class), index = Index.YES, analyze = Analyze.YES, store = Store.NO)
   })
+  // @Analyzer(impl = WhitespaceAnalyzer.class)
   @Override
   public Map<User, UserRole> getUserRoleMap() {
     if (userRoleMap == null) {
@@ -422,11 +427,12 @@ public class ProjectJpa implements Project {
         return false;
     } else if (!name.equals(other.name))
       return false;
-    // 
-    /*if (validationChecks == null) {
-      if (other.validationChecks != null)        return false;
-    } else if (!validationChecks.equals(other.validationChecks))
-      return false;*/
+    //
+    /*
+     * if (validationChecks == null) { if (other.validationChecks != null)
+     * return false; } else if
+     * (!validationChecks.equals(other.validationChecks)) return false;
+     */
     if (namespace == null) {
       if (other.namespace != null)
         return false;
@@ -482,9 +488,9 @@ public class ProjectJpa implements Project {
         + ", lastModifiedBy=" + lastModifiedBy + ", name=" + name
         + ", namespace=" + namespace + ", moduleId=" + moduleId
         + ", organization=" + organization + ", description=" + description
-        + ", terminology=" + terminology + ", version=" + version 
-        + ", exclusionClause=" + exclusionClause
-        + ", userRoleMap=" + userRoleMap + ", validationChecks=" + validationChecks + "]";
+        + ", terminology=" + terminology + ", version=" + version
+        + ", exclusionClause=" + exclusionClause + ", userRoleMap="
+        + userRoleMap + ", validationChecks=" + validationChecks + "]";
   }
 
   /* see superclass */
@@ -501,7 +507,7 @@ public class ProjectJpa implements Project {
   public void setValidationChecks(List<String> validationChecks) {
     this.validationChecks = validationChecks;
   }
-  
+
   @Override
   public void addValidationCheck(String validationCheck) {
     this.validationChecks.add(validationCheck);

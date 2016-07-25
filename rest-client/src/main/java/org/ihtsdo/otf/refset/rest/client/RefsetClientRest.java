@@ -1557,4 +1557,40 @@ public class RefsetClientRest extends RootClientRest implements
         KeyValuePairList.class);
   }
 
+  /* see superclass */
+  @Override
+  public String assignRefsetTerminologyId(Long projectId, RefsetJpa refset,
+    String authToken) throws Exception {
+
+    Logger.getLogger(getClass()).debug(
+        "Rest Client - assign identifier - " + projectId + ", " + refset);
+
+    validateNotEmpty(projectId, "projectId");
+
+    if (refset == null) {
+      throw new Exception("Refset must not be null");
+    }
+
+    final Client client = ClientBuilder.newClient();
+    final WebTarget target =
+        client.target(config.getProperty("base.url") + "/assign?projectId="
+            + projectId);
+
+    final String refsetString =
+        ConfigUtility.getStringForGraph(refset == null ? new RefsetJpa()
+            : refset);
+
+    final Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).post(Entity.xml(refsetString));
+
+    final String refsetId = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+    return refsetId;
+  }
+
 }

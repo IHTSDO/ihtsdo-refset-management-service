@@ -54,6 +54,12 @@ public class ImportTranslationRf2Handler implements ImportTranslationHandler {
 
   /* see superclass */
   @Override
+  public boolean isDeltaHandler() {
+    return false;
+  }
+
+  /* see superclass */
+  @Override
   public String getFileTypeFilter() {
     return ".zip";
   }
@@ -94,7 +100,7 @@ public class ImportTranslationRf2Handler implements ImportTranslationHandler {
     // Handle the input stream as a zip input stream
     ZipInputStream zin = new ZipInputStream(content);
     Map<String, Concept> conceptCache = new HashMap<>();
-    
+
     int inactiveDescriptionCt = 0;
     int inactiveMemberCt = 0;
 
@@ -281,14 +287,16 @@ public class ImportTranslationRf2Handler implements ImportTranslationHandler {
         + " language refset members successfully loaded.");
 
     if (inactiveDescriptionCt == 1) {
-      validationResult.addWarning("1 inactive description not loaded.");      
-    } else if (inactiveDescriptionCt != 0){
-      validationResult.addWarning(inactiveMemberCt + " inactive descriptions not loaded.");
+      validationResult.addWarning("1 inactive description not loaded.");
+    } else if (inactiveDescriptionCt != 0) {
+      validationResult.addWarning(inactiveMemberCt
+          + " inactive descriptions not loaded.");
     }
     if (inactiveMemberCt == 1) {
-      validationResult.addWarning("1 inactive member not loaded.");      
-    } else if (inactiveMemberCt != 0){
-      validationResult.addWarning(inactiveMemberCt + " inactive members not loaded.");
+      validationResult.addWarning("1 inactive member not loaded.");
+    } else if (inactiveMemberCt != 0) {
+      validationResult.addWarning(inactiveMemberCt
+          + " inactive members not loaded.");
     }
     // Return list of concepts
     return new ArrayList<>(conceptCache.values());

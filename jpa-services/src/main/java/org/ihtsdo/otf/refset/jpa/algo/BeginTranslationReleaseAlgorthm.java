@@ -67,6 +67,8 @@ public class BeginTranslationReleaseAlgorthm extends TranslationServiceJpa
   /* see superclass */
   @Override
   public void checkPreconditions() throws Exception {
+    Logger.getLogger(getClass()).info("  Check preconditions");
+
     // check translation release has not begun
     ReleaseInfoList releaseInfoList =
         findTranslationReleasesForQuery(translation.getId(), null, null);
@@ -81,6 +83,7 @@ public class BeginTranslationReleaseAlgorthm extends TranslationServiceJpa
   /* see superclass */
   @Override
   public void compute() throws Exception {
+    Logger.getLogger(getClass()).info("  Create releaseInfo object");
     // Create and add a release info
     releaseInfo = new ReleaseInfoJpa();
     String name = ConfigUtility.DATE_FORMAT.format(effectiveTime);
@@ -96,6 +99,7 @@ public class BeginTranslationReleaseAlgorthm extends TranslationServiceJpa
     releaseInfo.setPublished(false);
     releaseInfo = addReleaseInfo(releaseInfo);
 
+    Logger.getLogger(getClass()).info("  Update translation");
     translation.setInPublicationProcess(true);
     translation.setLastModifiedBy(userName);
     updateTranslation(translation);

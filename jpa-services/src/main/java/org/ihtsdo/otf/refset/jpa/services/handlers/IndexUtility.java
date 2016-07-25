@@ -34,6 +34,7 @@ import org.hibernate.search.jpa.FullTextQuery;
 import org.hibernate.search.jpa.Search;
 import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
+import org.ihtsdo.otf.refset.jpa.services.WorkflowServiceJpa;
 import org.reflections.Reflections;
 
 /**
@@ -70,7 +71,8 @@ public class IndexUtility {
             IndexUtility.getIndexedFieldNames(clazz, false));
       }
     } catch (Exception e) {
-      e.printStackTrace();
+      Logger.getLogger(WorkflowServiceJpa.class).error(
+          "Failed to initialize index fields - serious error", e);
       stringFieldNames = null;
     }
   }

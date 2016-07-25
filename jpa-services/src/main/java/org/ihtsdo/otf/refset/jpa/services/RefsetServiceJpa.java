@@ -108,7 +108,8 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
         exportRefsetHandlers.put(handlerName, handlerService);
       }
     } catch (Exception e) {
-      e.printStackTrace();
+      Logger.getLogger(RefsetServiceJpa.class).error(
+          "Failed to initialize import/export handlers - serious error", e);
       importRefsetHandlers = null;
       exportRefsetHandlers = null;
     }
@@ -1131,7 +1132,6 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
         Logger.getLogger(RefsetServiceJpa.this.getClass()).info(
             "Finished lookupMemberNamesThread - " + refsetId);
       } catch (Exception e) {
-        e.printStackTrace();
         try {
           ExceptionHandler.handleException(e, label, null);
         } catch (Exception e1) {

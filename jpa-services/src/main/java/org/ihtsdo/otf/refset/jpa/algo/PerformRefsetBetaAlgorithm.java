@@ -75,6 +75,8 @@ public class PerformRefsetBetaAlgorithm extends RefsetServiceJpa implements
   /* see superclass */
   @Override
   public void checkPreconditions() throws Exception {
+    Logger.getLogger(getClass()).info("  Check preconditions");
+
     // Check preconditions
     ReleaseInfoList releaseInfoList =
         findRefsetReleasesForQuery(refset.getId(), null, null);
@@ -99,6 +101,7 @@ public class PerformRefsetBetaAlgorithm extends RefsetServiceJpa implements
   public void compute() throws Exception {
 
     // Stage the refset for beta
+    Logger.getLogger(getClass()).info("  Stage the refset");
     refset.setLastModifiedBy(userName);
     stagedRefset =
         stageRefset(refset, StagingType.BETA, releaseInfo.getEffectiveTime());
@@ -108,13 +111,15 @@ public class PerformRefsetBetaAlgorithm extends RefsetServiceJpa implements
 
     // Copy the release info, copy any release artifacts from
     // the origin refset
-    ReleaseInfo stageReleaseInfo = new ReleaseInfoJpa(releaseInfo);
+    Logger.getLogger(getClass()).info("  Copy release info and release artifacts");
+    final ReleaseInfo stageReleaseInfo = new ReleaseInfoJpa(releaseInfo);
     stageReleaseInfo.setId(null);
     stageReleaseInfo.getArtifacts().addAll(releaseInfo.getArtifacts());
     stageReleaseInfo.setRefset(stagedRefset);
 
     // Generate the snapshot release artifact and add it
-    ExportRefsetHandler handler = getExportRefsetHandler(ioHandlerId);
+    Logger.getLogger(getClass()).info("  Generate snapshot artifact and attach it");
+    final ExportRefsetHandler handler = getExportRefsetHandler(ioHandlerId);
     InputStream inputStream =
         handler.exportMembers(stagedRefset, stagedRefset.getMembers());
     ReleaseArtifactJpa artifact = new ReleaseArtifactJpa();
@@ -135,24 +140,35 @@ public class PerformRefsetBetaAlgorithm extends RefsetServiceJpa implements
         getCurrentRefsetReleaseInfo(refset.getTerminologyId(), refset
             .getProject().getId());
     if (releaseInfo != null) {
-      // Get members from last time
-      Map<String, ConceptRefsetMember> oldMemberMap = new HashMap<>();
-      for (final ConceptRefsetMember member : releaseInfo.getRefset()
-          .getMembers()) {
-        // Skip exclusions
-        if (member.getMemberType() == Refset.MemberType.EXCLUSION) {
-          continue;
+      Logger.getLogger(getClass()).info("  Generate delta artifact and attach it");
+
+      final String oldModuleId = releaseInfo.getRefset().getModuleId();
+      final String newModuleId = refset.getModuleId();
+
+      // If the module ids don't match, every existing member will be new.
+      final Map<String, ConceptRefsetMember> oldMemberMap = new HashMap<>();
+      if (oldModuleId.equals(newModuleId)) {
+        // Get members from last time
+        for (final ConceptRefsetMember member : releaseInfo.getRefset()
+            .getMembers()) {
+          // Skip exclusions
+          if (member.getMemberType() == Refset.MemberType.EXCLUSION) {
+            continue;
+          }
+          oldMemberMap.put(member.getConceptId(), member);
         }
-        oldMemberMap.put(member.getConceptId(), member);
       }
 
+      // At this point the oldMemberMap will be empty if module ids were
+      // different. Thus each "new member" will get written to the release
+
       // Get current members
-      Map<String, ConceptRefsetMember> newMemberMap = new HashMap<>();
+      final Map<String, ConceptRefsetMember> newMemberMap = new HashMap<>();
       for (final ConceptRefsetMember member : stagedRefset.getMembers()) {
         newMemberMap.put(member.getConceptId(), member);
       }
 
-      List<ConceptRefsetMember> delta = new ArrayList<>();
+      final List<ConceptRefsetMember> delta = new ArrayList<>();
 
       // member/inclusion now that did not exist before - add active
       // exclusion now that did exist before - add retired
@@ -196,10 +212,10 @@ public class PerformRefsetBetaAlgorithm extends RefsetServiceJpa implements
       artifact.setReleaseInfo(stageReleaseInfo);
       artifact.setIoHandlerId(ioHandlerId);
       artifact.setData(ByteStreams.toByteArray(inputStream));
-      artifact.setName(handler.getBetaFileName(refset.getProject().getNamespace(),
-          "Delta", releaseInfo.getName()));
-      artifact.setTimestamp(releaseInfo.getEffectiveTime());
-      artifact.setLastModified(releaseInfo.getEffectiveTime());
+      artifact.setName(handler.getBetaFileName(refset.getProject()
+          .getNamespace(), "Delta", stageReleaseInfo.getName()));
+      artifact.setTimestamp(stageReleaseInfo.getEffectiveTime());
+      artifact.setLastModified(stageReleaseInfo.getEffectiveTime());
       artifact.setLastModifiedBy(userName);
 
       // Add it to the staged release info

@@ -177,13 +177,12 @@ public interface TranslationService extends RefsetService {
    * Returns the concept.
    *
    * @param terminologyId the terminology id
-   * @param terminology the terminology
-   * @param version the version
+   * @param translationId the translation id
    * @return the concept
    * @throws Exception the exception
    */
-  public Concept getConcept(String terminologyId, String terminology,
-    String version) throws Exception;
+  public Concept getConcept(String terminologyId, Long translationId)
+    throws Exception;
 
   /**
    * Adds the description.
@@ -211,7 +210,7 @@ public interface TranslationService extends RefsetService {
   public void removeDescription(Long id) throws Exception;
 
   /**
-   * Returns the description.
+   * Returns the description for the specified id.
    *
    * @param id the id
    * @return the description
@@ -220,16 +219,27 @@ public interface TranslationService extends RefsetService {
   public Description getDescription(Long id) throws Exception;
 
   /**
-   * Returns the description.
+   * Returns the description for the specified terminology id and concept id.
    *
    * @param terminologyId the terminology id
-   * @param terminology the terminology
-   * @param version the version
+   * @param conceptId the concept id
    * @return the description
    * @throws Exception the exception
    */
-  public Description getDescription(String terminologyId, String terminology,
-    String version) throws Exception;
+  public Description getDescription(String terminologyId, Long conceptId)
+    throws Exception;
+
+  /**
+   * Returns the description for the specified terminology id and translation
+   * id.
+   *
+   * @param terminologyId the terminology id
+   * @param translationId the translation id
+   * @return the translation description
+   * @throws Exception the exception
+   */
+  public Description getTranslationDescription(String terminologyId,
+    Long translationId) throws Exception;
 
   /**
    * Adds the language refset member.
@@ -270,18 +280,6 @@ public interface TranslationService extends RefsetService {
    * @throws Exception the exception
    */
   public LanguageRefsetMember getLanguageRefsetMember(Long id) throws Exception;
-
-  /**
-   * Returns the language refset member.
-   *
-   * @param terminologyId the terminology id
-   * @param terminology the terminology
-   * @param version the version
-   * @return the language refset member
-   * @throws Exception the exception
-   */
-  public LanguageRefsetMember getLanguageRefsetMember(String terminologyId,
-    String terminology, String version) throws Exception;
 
   /**
    * Adds the staged change.

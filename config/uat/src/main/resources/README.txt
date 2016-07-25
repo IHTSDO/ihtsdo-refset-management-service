@@ -87,3 +87,6 @@ chmod -R 777 /var/lib/tomcat7/indexes/refset/*
 # to watch queries
 mysql> set global general_log = 1;
 % tail -f /var/lib/mysql/uat-refset.log
+
+# Restore from S3: prod-refset.backup.ihtsdo
+# see the mapping confluence page for more info

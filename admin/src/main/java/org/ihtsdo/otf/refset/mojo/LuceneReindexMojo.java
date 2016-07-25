@@ -5,6 +5,7 @@ package org.ihtsdo.otf.refset.mojo;
 
 import java.util.Properties;
 
+import org.apache.log4j.Logger;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
@@ -91,7 +92,7 @@ public class LuceneReindexMojo extends AbstractMojo {
       }
 
     } catch (Exception e) {
-      e.printStackTrace();
+      Logger.getLogger(getClass()).error("Unexpected exception", e);
       throw new MojoFailureException("Unexpected exception:", e);
     }
 

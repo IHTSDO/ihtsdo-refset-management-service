@@ -1,0 +1,2 @@
+id	effectiveTime	active	moduleId	conceptId	languageCode	typeId	term	caseSignificanceId
+10021000052013	20160131	1	45991000052106	432678004	sv	900000000000013009	indikation för åtgärd	900000000000017005

@@ -1,0 +1,2 @@
+id	effectiveTime	active	moduleId	refsetId	referencedComponentId	acceptabilityId
+233b509a-7619-4ece-9ed8-7d25bc20ee0e	20150731	1	45991000052106	46051000052106	10011000052013	900000000000549004

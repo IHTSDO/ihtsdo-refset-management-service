@@ -408,6 +408,14 @@ tsApp
                 return $scope.metadata.terminologyNames[terminology];
               };
 
+              // Get ordered definition clauses
+              $scope.getOrderedDefinitionClauses = function() {
+                if ($scope.selected.refset && $scope.selected.refset.definitionClauses) {
+                  return $scope.selected.refset.definitionClauses.sort(utilService
+                    .sort_by('negated'));
+                }
+              };
+
               // Table sorting mechanism
               $scope.setSortField = function(table, field, object) {
 
@@ -668,6 +676,11 @@ tsApp
                 }
               };
 
+              // Need both a $scope version and a non one for modals.
+              $scope.startLookup = function(refset) {
+                startLookup(refset);
+              };
+
               // Start lookup again - not $scope because modal must access it
               function startLookup(refset) {
                 refsetService.startLookup(refset.id).then(
@@ -787,8 +800,9 @@ tsApp
 
                 // Get paged clauses (assume all are loaded)
                 $scope.getPagedClauses = function() {
-                  $scope.pagedClauses = utilService.getPagedArray($scope.newClauses,
-                    $scope.paging['clauses'], $scope.pageSize);
+                  $scope.pagedClauses = utilService.getPagedArray($scope.newClauses
+                    .sort(utilService.sort_by('negated')), $scope.paging['clauses'],
+                    $scope.pageSize);
                 };
 
                 // identify whether defintion has changed
@@ -1165,6 +1179,19 @@ tsApp
                   $scope.getModules();
                 };
 
+                // Assign refset id
+                $scope.assignRefsetTerminologyId = function(refset) {
+                  refsetService.assignRefsetTerminologyId(refset.projectId, refset).then(
+                  // success
+                  function(data) {
+                    refset.terminologyId = data;
+                  },
+                  // error
+                  function(data) {
+                    handleError($scope.errors, data);
+                  });
+                };
+
                 // Submit refset
                 $scope.submitRefset = function(refset) {
 
@@ -1265,12 +1292,12 @@ tsApp
 
                 $scope.refset = refset;
                 $scope.ioHandlers = [];
-                
+
                 // Skip "with name" handlers if user is not logged in
-                // IHTSDO-specific, may be able make this more data driven             
+                // IHTSDO-specific, may be able make this more data driven
                 for (var i = 0; i < ioHandlers.length; i++) {
-                  if (!securityService.isLoggedIn() &&
-                    ioHandlers[i].name.toLowerCase().indexOf('with name') != -1) {
+                  if (!securityService.isLoggedIn()
+                    && ioHandlers[i].name.toLowerCase().indexOf('with name') != -1) {
                     continue;
                   }
                   $scope.ioHandlers.push(ioHandlers[i]);
@@ -2037,6 +2064,20 @@ tsApp
                   $scope.getModules();
                 };
 
+                // Assign refset id
+                $scope.assignRefsetTerminologyId = function(refset) {
+                  refsetService.assignRefsetTerminologyId(project.id, refset).then(
+                  // success
+                  function(data) {
+                    refset.terminologyId = data;
+                  },
+                  // error
+                  function(data) {
+                    handleError($scope.errors, data);
+                  });
+                };
+
+                // Add refset
                 $scope.submitRefset = function(refset) {
 
                   refset.projectId = project.id;
@@ -2181,7 +2222,20 @@ tsApp
                   $scope.getModules();
                 };
 
-                // Submit refset
+                // Assign refset id
+                $scope.assignRefsetTerminologyId = function(refset) {
+                  refsetService.assignRefsetTerminologyId(project.id, refset).then(
+                  // success
+                  function(data) {
+                    refset.terminologyId = data;
+                  },
+                  // error
+                  function(data) {
+                    handleError($scope.errors, data);
+                  });
+                };
+
+                // Update refset
                 $scope.submitRefset = function(refset) {
 
                   refset.projectId = refset.project.id;

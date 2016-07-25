@@ -519,6 +519,9 @@
                 ng-click="openDefinitionClausesModal(selected.refset, value);$event.stopPropagation()"
                 title="View definition, assign refset to edit"
                 class="noul material-icons md-18">list</i>
+              <i ng-show="value == 'AVAILABLE'"
+                title="Assign refset to edit definition"
+                class="md-grey material-icons md-18">edit</i>
               <i ng-show="value == 'ASSIGNED' && projects.role != 'ADMIN'"
                 ng-click="openDefinitionClausesModal(selected.refset, value);$event.stopPropagation()"
                 title="Edit definition" class="noul material-icons md-18">edit</i>
@@ -545,7 +548,7 @@
               <div style="max-height: 200px; overflow-y: scroll;">
                 <table class="table">
                   <tbody>
-                    <tr ng-repeat="clause in selected.refset.definitionClauses">
+                    <tr ng-repeat="clause in getOrderedDefinitionClauses()">
                       <td>
                         <div definition-clause clause="clause"
                           allow-negation=true mode="view"></div>
@@ -812,14 +815,22 @@
                   ng-show="member.notes.length == 0"
                   title="Add member notes (no notes yet)"
                   class="md-grey material-icons md-18">assignment</i>
+
+                <!-- Lookup names -->
+                <i
+                  ng-click="startLookupNames(selected.refset); $event.stopPropagation()"
+                  ng-show="member.conceptName == 'name lookup in progress' && !selected.refset.lookupInProgress"
+                  title="Restart name lookup" class="noul material-icons md-18">play_arrow</i>
+
               </td>
             </tr>
           </tbody>
         </table>
         <span
-          ng-show="paging['member'].filter && selected.refset.members.totalCount == 0"
-          class="alert alert-warning">
-          <br />No refset members matching filter
+          ng-show="paging['member'].filter && selected.refset.members.totalCount == 0">
+          <br />
+          <span class="alert alert-warning"> No refset members matching
+            filter </span>
         </span>
 
       </div>

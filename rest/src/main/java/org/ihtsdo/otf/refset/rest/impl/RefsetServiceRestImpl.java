@@ -54,6 +54,7 @@ import org.ihtsdo.otf.refset.jpa.MemberDiffReportJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetNoteJpa;
 import org.ihtsdo.otf.refset.jpa.StagedRefsetChangeJpa;
+import org.ihtsdo.otf.refset.jpa.TranslationJpa;
 import org.ihtsdo.otf.refset.jpa.ValidationResultJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptRefsetMemberListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.IoHandlerInfoListJpa;
@@ -67,6 +68,7 @@ import org.ihtsdo.otf.refset.jpa.services.WorkflowServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.RefsetServiceRest;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
+import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
 import org.ihtsdo.otf.refset.services.RefsetService;
 import org.ihtsdo.otf.refset.services.ReleaseService;
@@ -74,6 +76,7 @@ import org.ihtsdo.otf.refset.services.SecurityService;
 import org.ihtsdo.otf.refset.services.TranslationService;
 import org.ihtsdo.otf.refset.services.WorkflowService;
 import org.ihtsdo.otf.refset.services.handlers.ExportRefsetHandler;
+import org.ihtsdo.otf.refset.services.handlers.IdentifierAssignmentHandler;
 import org.ihtsdo.otf.refset.services.handlers.ImportRefsetHandler;
 import org.ihtsdo.otf.refset.services.handlers.TerminologyHandler;
 import org.ihtsdo.otf.refset.workflow.TrackingRecord;
@@ -512,7 +515,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       // if project has changed, update project on all of the refset's
       // translations
       if (previousProject.getId() != refset.getProject().getId()) {
-        TranslationList projectTranslations =
+        final TranslationList projectTranslations =
             translationService.findTranslationsForQuery("projectId:"
                 + previousProject.getId(), new PfsParameterJpa());
         for (Translation translation : projectTranslations.getObjects()) {
@@ -523,6 +526,19 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
           translation.setLastModifiedBy(userName);
           translationService.updateTranslation(translation);
         }
+      }
+
+      // Update all translations to set various inherited fields
+      final TranslationList projectTranslations =
+          translationService.findTranslationsForQuery("projectId:"
+              + previousProject.getId(), new PfsParameterJpa());
+      for (Translation translation : projectTranslations.getObjects()) {
+        translation.setModuleId(refset.getModuleId());
+        translation.setTerminologyId(refset.getTerminologyId());
+        translation.setTerminology(refset.getTerminology());
+        translation.setVersion(refset.getVersion());
+        translation.setLastModifiedBy(userName);
+        translationService.updateTranslation(translation);
       }
 
       // Update refset
@@ -648,7 +664,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
   @ApiOperation(value = "Clone refset", notes = "Adds the specified refset, which is a potentially modified copy of another refset", response = RefsetJpa.class)
   public Refset cloneRefset(
     @ApiParam(value = "Project id, e.g. 3", required = true) @QueryParam("projectId") Long projectId,
-    @ApiParam(value = "Refset , e.g. 347582394", required = false) RefsetJpa refset,
+    @ApiParam(value = "Refset POST data", required = false) RefsetJpa refset,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
@@ -2423,7 +2439,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       final ValidationResult result = new ValidationResultJpa();
       if (refset.getMembers().size() != 0) {
         result
-            .addError("Refset already contains members, this operation will add more members");
+            .addError("Refset already contains members, this operation will add or update members");
       } else {
         return result;
       }
@@ -2601,12 +2617,16 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       }
 
       // Get a set of concept ids for current members
-      final Set<String> conceptIds = new HashSet<>();
+      final Map<String, ConceptRefsetMember> memberMap = new HashMap<>();
       for (final ConceptRefsetMember member : refset.getMembers()) {
-        conceptIds.add(member.getConceptId());
+        memberMap.put(member.getConceptId(), member);
       }
-      Logger.getLogger(getClass())
-          .info("  refset count = " + conceptIds.size());
+      Logger.getLogger(getClass()).info("  refset count = " + memberMap.size());
+
+      if (memberMap.size() == 0 && handler.isDeltaHandler()) {
+        throw new LocalException(
+            "A delta import handler should only be used if a refset already has members.");
+      }
 
       // Load members into memory and add to refset
       final List<ConceptRefsetMember> members =
@@ -2615,33 +2635,56 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       int objectCt = 0;
       for (final ConceptRefsetMember member : members) {
 
+        final ConceptRefsetMember origMember =
+            memberMap.get(member.getConceptId());
         // De-duplicate
-        if (conceptIds.contains(member.getConceptId())) {
+        if (!handler.isDeltaHandler() && origMember != null) {
           continue;
         }
-        ++objectCt;
-        member.setActive(true);
-        member.setId(null);
-        member.setPublishable(true);
-        member.setPublished(false);
-        member.setMemberType(Refset.MemberType.MEMBER);
 
-        // Initialize values to be overridden by lookupNames routine
-        member.setConceptActive(true);
-        member.setConceptName(TerminologyHandler.NAME_LOOKUP_IN_PROGRESS);
+        // Retire
+        else if (handler.isDeltaHandler() && origMember != null
+            && !member.isActive()) {
+          // If retired, remove from the refset
+          refsetService.removeMember(memberMap.get(member.getConceptId())
+              .getId());
+          memberMap.remove(member.getConceptId());
+        }
 
-        member.setLastModifiedBy(userName);
-        refsetService.addMember(member);
+        else if (handler.isDeltaHandler() && origMember != null
+            && member.isActive()) {
+          // Update the effectiveTime, moduleId
+          origMember.setEffectiveTime(member.getEffectiveTime());
+          origMember.setModuleId(member.getTerminologyId());
+          origMember.setLastModifiedBy(userName);
+          refsetService.updateMember(origMember);
+        }
+        // Otherwise, add it
+        else {
 
-        conceptIds.add(member.getConceptId());
-        if (objectCt % commitCt == 0) {
-          refsetService.commit();
-          refsetService.clear();
-          refsetService.beginTransaction();
+          ++objectCt;
+          member.setActive(true);
+          member.setId(null);
+          member.setPublishable(true);
+          member.setPublished(false);
+          member.setMemberType(Refset.MemberType.MEMBER);
+
+          // Initialize values to be overridden by lookupNames routine
+          member.setConceptActive(true);
+          member.setConceptName(TerminologyHandler.NAME_LOOKUP_IN_PROGRESS);
+
+          member.setLastModifiedBy(userName);
+          refsetService.addMember(member);
+
+          memberMap.put(member.getConceptId(), member);
+          if (objectCt % commitCt == 0) {
+            refsetService.commitClearBegin();
+          }
         }
       }
+      refsetService.commitClearBegin();
       Logger.getLogger(getClass()).info("  refset import count = " + objectCt);
-      Logger.getLogger(getClass()).info("  total = " + conceptIds.size());
+      Logger.getLogger(getClass()).info("  total = " + memberMap.size());
 
       // Remove the staged refset change and set staging type back to null
       refsetService.removeStagedRefsetChange(change.getId());
@@ -2652,12 +2695,15 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
         refset.setLookupInProgress(true);
       }
       refset.setLastModifiedBy(userName);
+      refset.setMembers(new ArrayList<ConceptRefsetMember>());
       refsetService.updateRefset(refset);
 
       // End transaction
-      addLogEntry(refsetService, userName, "FINISH IMPORT refset", refset
-          .getProject().getId(), refset.getId(), refset.getTerminologyId()
-          + ": " + refset.getName() + ", " + objectCt + " members imported");
+      addLogEntry(refsetService, userName,
+          "FINISH IMPORT " + (handler.isDeltaHandler() ? "DELTA " : "")
+              + "refset", refset.getProject().getId(), refset.getId(),
+          refset.getTerminologyId() + ": " + refset.getName() + ", " + objectCt
+              + " members imported");
       refsetService.commit();
 
       // With contents committed, can now lookup Names/Statuses of members
@@ -3277,5 +3323,59 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       refsetService.close();
       securityService.close();
     }
+  }
+
+  /* see superclass */
+  @Override
+  @POST
+  @Produces("text/plain")
+  @Path("/assign")
+  @ApiOperation(value = "Assign a refset id", notes = "Assigns a concept identifier to the refset.", response = Long.class)
+  public String assignRefsetTerminologyId(
+    @ApiParam(value = "Project id, e.g. 3", required = true) @QueryParam("projectId") Long projectId,
+    @ApiParam(value = "Refset POST data", required = true) RefsetJpa refset,
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
+
+  throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful call (Refset): assign refset id " + projectId + ", " + refset);
+
+    final RefsetService refsetService = new RefsetServiceJpa();
+    try {
+      authorizeProject(refsetService, projectId, securityService, authToken,
+          "assign refset id", UserRole.AUTHOR);
+
+      // Check preconditions
+      if (refset.getNamespace() == null || refset.getNamespace().isEmpty()) {
+        throw new LocalException("Unable to assign refset id without namespace");
+      }
+
+      if (refset.getTerminology() == null || refset.getTerminology().isEmpty()) {
+        throw new LocalException(
+            "Unable to assign refset id without terminology");
+      }
+
+      // NOTE: this is very SNOMED-specific
+      final Concept concept = new ConceptJpa();
+      final Translation translation = new TranslationJpa();
+      concept.setTranslation(translation);
+      translation.setRefset(refset);
+      final IdentifierAssignmentHandler handler =
+          refsetService.getIdentifierAssignmentHandler(refset.getTerminology());
+      if (handler == null) {
+        throw new LocalException(
+            "Unable to find ID assignment handler for terminology "
+                + refset.getTerminology());
+      }
+
+      return handler.getTerminologyId(concept);
+
+    } catch (Exception e) {
+      handleException(e, "trying to assign refset id");
+    } finally {
+      refsetService.close();
+      securityService.close();
+    }
+    return null;
   }
 }

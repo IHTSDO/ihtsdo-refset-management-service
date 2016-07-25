@@ -85,7 +85,7 @@ public class ExportTranslationRf2Handler implements ExportTranslationHandler {
     descSb.append("languageCode").append("\t");
     descSb.append("typeId").append("\t");
     descSb.append("term").append("\t");
-    descSb.append("caseSignificanceId").append("\t");
+    descSb.append("caseSignificanceId");
     descSb.append("\r\n");
 
     StringBuilder langSb = new StringBuilder();
@@ -95,7 +95,7 @@ public class ExportTranslationRf2Handler implements ExportTranslationHandler {
     langSb.append("moduleId").append("\t");
     langSb.append("refsetId").append("\t");
     langSb.append("referencedComponentId").append("\t");
-    langSb.append("acceptabilityId").append("\t");
+    langSb.append("acceptabilityId");
     langSb.append("\r\n");
 
     for (final Concept concept : concepts) {
@@ -123,7 +123,7 @@ public class ExportTranslationRf2Handler implements ExportTranslationHandler {
         descSb.append(description.getLanguageCode()).append("\t");
         descSb.append(description.getTypeId()).append("\t");
         descSb.append(description.getTerm()).append("\t");
-        descSb.append(description.getCaseSignificanceId()).append("\t");
+        descSb.append(description.getCaseSignificanceId());
         descSb.append("\r\n");
 
         for (final LanguageRefsetMember member : description
@@ -142,7 +142,7 @@ public class ExportTranslationRf2Handler implements ExportTranslationHandler {
           langSb.append(translation.getRefset().getTerminologyId())
               .append("\t");
           langSb.append(description.getTerminologyId()).append("\t");
-          langSb.append(member.getAcceptabilityId()).append("\t");
+          langSb.append(member.getAcceptabilityId());
           langSb.append("\r\n");
         }
       }
@@ -201,7 +201,7 @@ public class ExportTranslationRf2Handler implements ExportTranslationHandler {
     descSb.append("languageCode").append("\t");
     descSb.append("typeId").append("\t");
     descSb.append("term").append("\t");
-    descSb.append("caseSignificanceId").append("\t");
+    descSb.append("caseSignificanceId");
     descSb.append("\r\n");
 
     StringBuilder langSb = new StringBuilder();
@@ -211,7 +211,7 @@ public class ExportTranslationRf2Handler implements ExportTranslationHandler {
     langSb.append("moduleId").append("\t");
     langSb.append("refsetId").append("\t");
     langSb.append("referencedComponentId").append("\t");
-    langSb.append("acceptabilityId").append("\t");
+    langSb.append("acceptabilityId");
     langSb.append("\r\n");
 
     for (Description description : descriptions) {
@@ -233,7 +233,7 @@ public class ExportTranslationRf2Handler implements ExportTranslationHandler {
       descSb.append(description.getLanguageCode()).append("\t");
       descSb.append(description.getTypeId()).append("\t");
       descSb.append(description.getTerm()).append("\t");
-      descSb.append(description.getCaseSignificanceId()).append("\t");
+      descSb.append(description.getCaseSignificanceId());
       descSb.append("\r\n");
     }
 
@@ -251,7 +251,7 @@ public class ExportTranslationRf2Handler implements ExportTranslationHandler {
       langSb.append(translation.getRefset().getModuleId()).append("\t");
       langSb.append(translation.getRefset().getTerminologyId()).append("\t");
       langSb.append(member.getDescriptionId()).append("\t");
-      langSb.append(member.getAcceptabilityId()).append("\t");
+      langSb.append(member.getAcceptabilityId());
       langSb.append("\r\n");
     }
 

@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 
+import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
@@ -50,7 +51,8 @@ public class ValidationServiceJpa extends RootServiceJpa implements
         validationHandlersMap.put(handlerName, handlerService);
       }
     } catch (Exception e) {
-      e.printStackTrace();
+      Logger.getLogger(ValidationServiceJpa.class).error(
+          "Failed to initialize validation.service.handler - serious error", e);
       validationHandlersMap = null;
     }
   }

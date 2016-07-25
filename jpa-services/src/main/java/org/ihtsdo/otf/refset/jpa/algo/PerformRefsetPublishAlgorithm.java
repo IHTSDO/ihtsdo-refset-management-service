@@ -64,6 +64,8 @@ public class PerformRefsetPublishAlgorithm extends RefsetServiceJpa
   /* see superclass */
   @Override
   public void checkPreconditions() throws Exception {
+    Logger.getLogger(getClass()).info("  Check preconditions");
+
     if (!refset.isStaged())
       throw new LocalException(
           "refset workflowstatus is not staged for " + refset.getId());
@@ -80,6 +82,7 @@ public class PerformRefsetPublishAlgorithm extends RefsetServiceJpa
   @Override
   public void compute() throws Exception {
 
+    Logger.getLogger(getClass()).info("  Unstage origin refset");
     // Unstage the origin refset
     refset.setStaged(false);
     refset.setStagingType(null);
@@ -88,6 +91,7 @@ public class PerformRefsetPublishAlgorithm extends RefsetServiceJpa
     updateRefset(refset);
 
     // Obtain and remove the origin refset release info
+    Logger.getLogger(getClass()).info("  Obtain release info");
     ReleaseInfoList list =
         findRefsetReleasesForQuery(refset.getId(), null, null);
     if (list.getCount() != 1) {
@@ -98,6 +102,7 @@ public class PerformRefsetPublishAlgorithm extends RefsetServiceJpa
     removeReleaseInfo(releaseInfo.getId());
 
     // Get the staged refset and mark as published, and disable provisional flag
+    Logger.getLogger(getClass()).info("  Make the staged refset official");
     stagedRefset = stagedRefsetChange.getStagedRefset();
     stagedRefset.setWorkflowStatus(WorkflowStatus.PUBLISHED);
     stagedRefset.setLastModifiedBy(userName);
@@ -119,6 +124,7 @@ public class PerformRefsetPublishAlgorithm extends RefsetServiceJpa
     updateReleaseInfo(releaseInfo);
 
     // Fix the artifact filenames
+    Logger.getLogger(getClass()).info("  Fix artifact names");
     for (final ReleaseArtifact artifact : releaseInfo.getArtifacts()) {
       ExportRefsetHandler handler =
           getExportRefsetHandler(artifact.getIoHandlerId());

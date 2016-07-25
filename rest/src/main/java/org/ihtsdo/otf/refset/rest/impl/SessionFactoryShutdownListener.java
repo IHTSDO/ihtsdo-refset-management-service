@@ -38,7 +38,7 @@ public class SessionFactoryShutdownListener implements ServletContextListener {
       LocalService service = new LocalService();
       service.getFactory().close();
     } catch (Exception e) {
-      e.printStackTrace();
+      // n/a
     }
   }
 

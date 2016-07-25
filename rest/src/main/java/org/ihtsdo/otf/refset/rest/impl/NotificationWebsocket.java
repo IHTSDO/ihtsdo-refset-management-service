@@ -93,7 +93,6 @@ public class NotificationWebsocket {
           // Send async message
           session.getAsyncRemote().sendText(message);
         } catch (Exception e) {
-          e.printStackTrace();
           // if anything went wrong, close the session and remove it
           try {
             session.close(new CloseReason(CloseCodes.UNEXPECTED_CONDITION,

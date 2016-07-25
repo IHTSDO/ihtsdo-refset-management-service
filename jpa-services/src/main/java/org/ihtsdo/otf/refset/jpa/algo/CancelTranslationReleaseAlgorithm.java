@@ -51,6 +51,7 @@ public class CancelTranslationReleaseAlgorithm extends TranslationServiceJpa
   /* see superclass */
   @Override
   public void checkPreconditions() throws Exception {
+    Logger.getLogger(getClass()).info("  Remove release info");
     ReleaseInfoList list =
         findTranslationReleasesForQuery(translation.getId(), null, null);
     if (list.getCount() != 1) {
@@ -68,6 +69,8 @@ public class CancelTranslationReleaseAlgorithm extends TranslationServiceJpa
   @Override
   public void compute() throws Exception {
 
+    Logger.getLogger(getClass()).info("  Remove release info");
+
     // Remove the origin refset release info
     removeReleaseInfo(releaseInfo.getId());
 
@@ -76,6 +79,7 @@ public class CancelTranslationReleaseAlgorithm extends TranslationServiceJpa
     StagedTranslationChange change =
         getStagedTranslationChangeFromOrigin(translation.getId());
     if (change != null) {
+      Logger.getLogger(getClass()).info("  Unstage the translation");
       // Remove change
       removeStagedTranslationChange(change.getId());
 

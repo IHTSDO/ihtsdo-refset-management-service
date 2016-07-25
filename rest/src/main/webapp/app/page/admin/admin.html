@@ -128,8 +128,8 @@
                 ng-bind="getSortIndicator('user','userName')"></span></th>
             <th class="col-md-4 col-xs-4" ng-click="setSortField('user','name')">Name<span
                 ng-bind="getSortIndicator('user','name')"></span></th>
-            <th class="col-md-3 col-xs-3"
-              ng-click="setSortField('user','email')">Email<span
+            <th ng-if="user.applicationRole == 'ADMIN'"
+              class="col-md-3 col-xs-3" ng-click="setSortField('user','email')">Email<span
                 ng-bind="getSortIndicator('user','email')"></span></th>
             <th class="col-md-2 col-xs-2"
               ng-click="setSortField('user','applicationRole')">Application
@@ -139,18 +139,19 @@
           </tr>
         </thead>
         <tbody>
-          <tr ng-repeat="user in users">
-            <td>{{user.userName}}</td>
-            <td>{{user.name}}</td>
-            <td>{{user.email}}</td>
-            <td>{{user.applicationRole}}</td>
+          <tr ng-repeat="localUser in users">
+            <td>{{localUser.userName}}</td>
+            <td>{{localUser.name}}</td>
+            <td ng-if="user.applicationRole == 'ADMIN'">{{localUser.email}}</td>
+            <td>{{localUser.applicationRole}}</td>
 
             <td class="nobreak">
-              <i ng-click="openEditUserModal(user); $event.stopPropagation()"
+              <i ng-if="user.applicationRole == 'ADMIN'"
+                ng-click="openEditUserModal(localUser); $event.stopPropagation()"
                 title="Edit" class="noul material-icons md-18">edit</i>
-              <i
-                confirm="Are you sure you want to remove the user ({{user.userName}})?"
-                ng-click="removeUser(user); $event.stopPropagation()"
+              <i ng-if="user.applicationRole == 'ADMIN'"
+                confirm="Are you sure you want to remove the user ({{localUser.userName}})?"
+                ng-click="removeUser(localUser); $event.stopPropagation()"
                 title="Delete" class="noul material-icons md-18">delete</i>
             </td>
           </tr>

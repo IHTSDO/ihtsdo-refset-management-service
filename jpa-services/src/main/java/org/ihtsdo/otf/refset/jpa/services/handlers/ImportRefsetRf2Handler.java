@@ -49,12 +49,18 @@ public class ImportRefsetRf2Handler implements ImportRefsetHandler {
   private int inactiveCt = 0;
 
   /**
-   * Instantiates an empty {@link ImportRefsetRf2Handler}.
+   * Instantiates an empty {@link ImportRefsetRf2DeltaHandler}.
    * @throws Exception if anything goes wrong
    */
   public ImportRefsetRf2Handler() throws Exception {
     super();
 
+  }
+
+  /* see superclass */
+  @Override
+  public boolean isDeltaHandler() {
+    return false;
   }
 
   /* see superclass */

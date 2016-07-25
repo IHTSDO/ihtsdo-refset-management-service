@@ -26,6 +26,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
+import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import org.hibernate.envers.Audited;
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Field;
@@ -53,8 +54,6 @@ import org.ihtsdo.otf.refset.rf2.jpa.AbstractComponent;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.DescriptionTypeJpa;
 import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
-
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
  * JPA enabled implementation of {@link Refset}.
@@ -370,7 +369,7 @@ public class TranslationJpa extends AbstractComponent implements Translation {
   }
 
   /**
-   * Sets the refset id.
+   * Sets the refset id. For JAXB.
    *
    * @param refsetId the refset id
    */
@@ -380,6 +379,29 @@ public class TranslationJpa extends AbstractComponent implements Translation {
       refset = new RefsetJpa();
     }
     refset.setId(refsetId);
+  }
+
+  /**
+   * Returns the refset name. For JAXB.
+   *
+   * @return the refset name
+   */
+  @XmlElement
+  public String getRefsetName() {
+    return (refset != null) ? refset.getName() : "";
+  }
+
+  /**
+   * Sets the refset name. For JAXB.
+   *
+   * @param refsetName the refset name
+   */
+  @SuppressWarnings("unused")
+  private void setRefsetName(String refsetName) {
+    if (refset == null) {
+      refset = new RefsetJpa();
+    }
+    refset.setName(refsetName);
   }
 
   /* see superclass */
@@ -546,7 +568,6 @@ public class TranslationJpa extends AbstractComponent implements Translation {
     this.version = version;
   }
 
-
   /* see superclass */
   @XmlElement
   @Fields({
@@ -570,6 +591,7 @@ public class TranslationJpa extends AbstractComponent implements Translation {
     }
     project.setOrganization(organization);
   }
+
   /* see superclass */
   @Override
   public int hashCode() {

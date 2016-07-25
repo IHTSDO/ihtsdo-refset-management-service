@@ -240,7 +240,6 @@ tsApp
         $scope.getTerminologyEditions = function() {
           projectService.getTerminologyEditions().then(function(data) {
             $scope.metadata.terminologies = data.terminologies;
-            utilService.setTerminologies(data.terminologies);
             // Look up all versions
             for (var i = 0; i < data.terminologies.length; i++) {
               $scope.getTerminologyVersions(data.terminologies[i].terminology);
@@ -820,6 +819,9 @@ tsApp
               user : function() {
                 return luser;
               },
+              applicationRole : function() {
+                return $scope.user.applicationRole;
+              },
               applicationRoles : function() {
                 return $scope.applicationRoles;
               }
@@ -835,16 +837,23 @@ tsApp
         };
 
         // Add user controller
-        var AddUserModalCtrl = function($scope, $uibModalInstance, user, applicationRoles) {
+        var AddUserModalCtrl = function($scope, $uibModalInstance, user, applicationRole,
+          applicationRoles) {
           $scope.action = 'Add';
           $scope.user = user;
+          $scope.applicationRole = applicationRole;
           $scope.applicationRoles = applicationRoles;
           $scope.errors = [];
-
+          
           $scope.submitUser = function(user) {
-            if (!user || !user.name || !user.userName || !user.applicationRole) {
-              window.alert('The name, user name, and application role fields cannot be blank. ');
+            if (!user || !user.name || !user.userName) {
+              window.alert('The name, user name fields cannot be blank. ');
               return;
+            }
+            // Default application role
+            if (!user.applicationRole) {
+              user.applicationRole = 'VIEWER';
+              user.email = 'tbd';
             }
             securityService.addUser(user).then(
             // Success
@@ -853,7 +862,7 @@ tsApp
             },
             // Error
             function(data) {
-              $scope.errors[0] = data;
+              $scope.errors = data;
               utilService.clearError();
             });
 
@@ -877,6 +886,9 @@ tsApp
               user : function() {
                 return luser;
               },
+              applicationRole : function() {
+                return $scope.user.applicationRole;
+              },
               applicationRoles : function() {
                 return $scope.applicationRoles;
               }
@@ -891,11 +903,13 @@ tsApp
           });
         };
 
-        var EditUserModalCtrl = function($scope, $uibModalInstance, user, applicationRoles) {
+        var EditUserModalCtrl = function($scope, $uibModalInstance, user, applicationRole,
+          applicationRoles) {
 
           $scope.action = 'Edit';
           $scope.user = user;
           // copy data structure so it will be fresh each time modal is opened
+          $scope.applicationRole = applicationRole;
           $scope.applicationRoles = JSON.parse(JSON.stringify(applicationRoles));
           $scope.errors = [];
 

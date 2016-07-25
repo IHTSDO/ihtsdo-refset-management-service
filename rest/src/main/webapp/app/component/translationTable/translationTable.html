@@ -342,9 +342,10 @@
           </tr>
           <tr>
             <td>
-              <b>Refset Id</b>
+              <b>Refset</b>
             </td>
-            <td>{{selected.translation.terminologyId}}</td>
+            <td>{{selected.translation.refsetName}}
+              ({{selected.translation.terminologyId}})</td>
           </tr>
           <tr>
             <td>
@@ -919,6 +920,13 @@
               <i ng-show="projects.role != 'ADMIN' && concept.notes.length == 0"
                 ng-click="openNotesModal(concept, 'Concept'); $event.stopPropagation()"
                 title="Add concept notes" class="md-grey material-icons md-18">assignment</i>
+
+              <!-- Lookup names -->
+              <i
+                ng-click="startLookup(selected.translation); $event.stopPropagation()"
+                ng-show="concept.name == 'name lookup in progress' && !selected.translation.lookupInProgress"
+                title="Restart name lookup" class="noul material-icons md-18">play_arrow</i>
+
             </td>
           </tr>
         </tbody>

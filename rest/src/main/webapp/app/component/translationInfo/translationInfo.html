@@ -16,9 +16,9 @@
     </tr>
     <tr>
       <td>
-        <b>Refset Id</b>
+        <b>Refset</b>
       </td>
-      <td>{{translation.terminologyId}}</td>
+      <td>{{translation.refsetName}} ({{translation.terminologyId}})</td>
     </tr>
     <tr>
       <td>
@@ -45,7 +45,8 @@
       <td>
         <b>Terminology</b>
       </td>
-      <td>{{getTerminologyName(translation.terminology)}} {{translation.version}}</td>
+      <td>{{getTerminologyName(translation.terminology)}}
+        {{translation.version}}</td>
     </tr>
   </tbody>
 </table>

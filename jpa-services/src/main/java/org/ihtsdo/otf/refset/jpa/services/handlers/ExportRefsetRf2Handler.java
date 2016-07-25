@@ -102,10 +102,10 @@ public class ExportRefsetRf2Handler implements ExportRefsetHandler {
       } else {
         sb.append("\t");
       }
-      sb.append(1).append("\t");
+      sb.append(member.isActive() ? 1 : 0).append("\t");
       sb.append(refset.getModuleId()).append("\t");
       sb.append(member.getRefset().getTerminologyId()).append("\t");
-      sb.append(member.getConceptId()).append("\t");
+      sb.append(member.getConceptId());
       sb.append("\r\n");
     }
 
@@ -144,7 +144,7 @@ public class ExportRefsetRf2Handler implements ExportRefsetHandler {
     sb.append(refset.getTerminologyId()).append("\t");
     // fake id for now
     sb.append(refset.getTerminologyId()).append("\t");
-    sb.append(refset.computeDefinition(inclusions, exclusions)).append("\t");
+    sb.append(refset.computeDefinition(inclusions, exclusions));
     sb.append("\r\n");
 
     return new ByteArrayInputStream(sb.toString().getBytes("UTF-8"));
