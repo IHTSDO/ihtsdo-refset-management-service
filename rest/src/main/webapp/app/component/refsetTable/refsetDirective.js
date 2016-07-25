@@ -1864,6 +1864,12 @@ tsApp
                 $scope.includeMembers = function() {
                   $scope.errors = [];
                   $scope.ids = getIds($scope.memberIdList);
+                  // practical limit
+                  if ($scope.ids.length > 1100) {
+                    window.alert('The practical limit for adding members from a list is 1000. '
+                      + 'Break your list up into 1000 entry chunks.');
+                    return;
+                  }
                   for (var i = 0; i < $scope.ids.length; i++) {
                     var conceptId = $scope.ids[i];
                     includeMember(refset, conceptId);
