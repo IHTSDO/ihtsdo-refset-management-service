@@ -7,11 +7,13 @@ tsApp.controller('LoginCtrl', [
   'gpService',
   'utilService',
   'tabService',
-  'projectService',
+  'projectService', 'appConfig',
   function($scope, $http, $location, securityService, gpService, utilService, tabService,
-    projectService) {
+    projectService, appConfig) {
     console.debug('configure LoginCtrl');
 
+    $scope.appConfig = appConfig;
+    
     // Clear user info
     securityService.clearUser();
     console.debug("user = ", securityService.getUser());

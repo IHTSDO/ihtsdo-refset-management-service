@@ -10,7 +10,9 @@ tsApp
       'gpService',
       'utilService',
       'projectService',
-      function($scope, $http, $location, securityService, gpService, utilService, projectService) {
+      'appConfig',
+      function($scope, $http, $location, securityService, gpService, utilService, projectService,
+        appConfig) {
 
         $scope.message = "Authenticating ${security.handler.IMS.url} user ...";
 
@@ -34,7 +36,7 @@ tsApp
                   })
                 .then(
 
-                  // Success 
+                  // Success
                   function(response) {
                     console.debug("user = ", response.data);
                     securityService.setUser(response.data);
@@ -61,8 +63,10 @@ tsApp
             // Error
             function(response) {
               utilService.handleError(response);
-              $scope.message = "Authentication error, log in at ${security.handler.IMS.url}";
-              window.location.href = "${security.handler.IMS.url}/#/login?serviceReferer=${base.url}%2F%23%2Flogin";
+              $scope.message = 'Authentication error, log in at '
+                + $scope.appConfig['security.handler.IMS.url'];
+              window.location.href = $scope.appConfig['security.handler.IMS.url']
+                + '/#/login?serviceReferer=' + appConfig['base.url'] + '%2F%23%2Flogin';
             });
 
       } ])

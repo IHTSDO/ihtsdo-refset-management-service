@@ -5,8 +5,8 @@ tsApp
     [
       '$location',
       '$anchorScroll',
-      '$uibModal',
-      function($location, $anchorScroll, $uibModal) {
+      '$uibModal', 'appConfig',
+      function($location, $anchorScroll, $uibModal, appConfig) {
         console.debug('configure utilService');
         // declare the error
         this.error = {
@@ -124,7 +124,7 @@ tsApp
         // Convert date to a string
         var workDate = new Date();
         this.toDate = function(lastModified) {
-          var date = new Date(lastModified + ((60+workDate.getTimezoneOffset()) * 60000));
+          var date = new Date(lastModified + ((60 + workDate.getTimezoneOffset()) * 60000));
           var year = '' + date.getFullYear();
           var month = '' + (date.getMonth() + 1);
           if (month.length == 1) {
@@ -151,7 +151,7 @@ tsApp
 
         // Convert date to a short string
         this.toShortDate = function(lastModified) {
-          var date = new Date(lastModified + ((60+workDate.getTimezoneOffset()) * 60000));
+          var date = new Date(lastModified + ((60 + workDate.getTimezoneOffset()) * 60000));
           var year = '' + date.getFullYear();
           var month = '' + (date.getMonth() + 1);
           if (month.length == 1) {
@@ -166,7 +166,7 @@ tsApp
 
         // Convert date to a simple string
         this.toSimpleDate = function(lastModified) {
-          var date = new Date(lastModified + ((60+workDate.getTimezoneOffset()) * 60000));
+          var date = new Date(lastModified + ((60 + workDate.getTimezoneOffset()) * 60000));
           var year = '' + date.getFullYear();
           var month = '' + (date.getMonth() + 1);
           if (month.length == 1) {
@@ -198,6 +198,13 @@ tsApp
                 paging[key].page = 1;
             }
           }
+        };
+
+        this.uniq = function uniq(a) {
+          var seen = {};
+          return a.filter(function(item) {
+            return seen.hasOwnProperty(item) ? false : (seen[item] = true);
+          });
         };
 
         // Return up or down sort chars if sorted
@@ -525,7 +532,7 @@ tsApp.service('securityService', [
         // clear http authorization header
         $http.defaults.headers.common.Authorization = null;
         gpService.decrement();
-        window.location.href = '${logout.url}';
+        window.location.href = appConfig['logout.url'];
       },
       // error
       function(response) {
@@ -731,6 +738,26 @@ tsApp.service('securityService', [
       return deferred.promise;
     };
 
+    // Get config properties
+    this.getConfigProperties = function() {
+      console.debug("get config properties");
+      var deferred = $q.defer();
+
+      gpService.increment();
+      $http.get(securityUrl + '/properties').then(
+      // success
+      function(response) {
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // Error
+      function(response) {
+        gpService.decrement();
+        utilService.handleError(response);
+        deferred.reject();
+      });
+      return deferred.promise;
+    };
   } ]);
 
 // Tab service

@@ -1865,9 +1865,9 @@ tsApp
                   $scope.errors = [];
                   $scope.ids = getIds($scope.memberIdList);
                   // practical limit
-                  if ($scope.ids.length > 1100) {
-                    window.alert('The practical limit for adding members from a list is 1000. '
-                      + 'Break your list up into 1000 entry chunks.');
+                  if ($scope.ids.length > 2100) {
+                    window.alert('The practical limit for adding members from a list is 2000. '
+                      + 'Break your list up into 2000 entry chunks.');
                     return;
                   }
                   for (var i = 0; i < $scope.ids.length; i++) {
@@ -1966,6 +1966,12 @@ tsApp
                     if (list[i]) {
                       result.push(list[i]);
                     }
+                  }
+                  var x = result.length;
+                  result = utilService.uniq(result);
+                  var y = result.length;
+                  if (x != y) {
+                    $scope.warnings.push((x - y) + " duplicate entries found.");
                   }
                   return result;
                 }

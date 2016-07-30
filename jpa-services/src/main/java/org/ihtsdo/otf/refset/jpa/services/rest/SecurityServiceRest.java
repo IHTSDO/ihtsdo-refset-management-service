@@ -3,6 +3,8 @@
  */
 package org.ihtsdo.otf.refset.jpa.services.rest;
 
+import java.util.Map;
+
 import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.UserPreferences;
 import org.ihtsdo.otf.refset.helpers.StringList;
@@ -153,4 +155,12 @@ public interface SecurityServiceRest {
    */
   public UserPreferences updateUserPreferences(
     UserPreferencesJpa userPreferences, String authToken) throws Exception;
+
+  /**
+   * Returns the config properties.
+   *
+   * @return the config properties
+   * @throws Exception the exception
+   */
+  public Map<String, String> getConfigProperties() throws Exception;
 }

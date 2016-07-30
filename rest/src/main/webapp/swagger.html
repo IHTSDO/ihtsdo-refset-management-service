@@ -32,25 +32,31 @@
 
 <script type="text/javascript">
   $(function() {
-    window.swaggerUi = new SwaggerUi({
-      url : "${base.url}/api-docs",
-      dom_id : "swagger-ui-container",
-      dom_id : "swagger-ui-container",
-      supportedSubmitMethods : [ 'get', 'post', 'put', 'delete', 'patch' ],
-      onComplete : function(swaggerApi, swaggerUi) {
-        log("Loaded SwaggerUI");
-        $('pre code').each(function(i, e) {
-          hljs.highlightBlock(e)
-        });
-      },
-      onFailure : function(data) {
-        log("Unable to Load SwaggerUI");
-      },
-      docExpansion : "none",
-      sorter : "alpha"
-    });
 
-    window.swaggerUi.load();
+    var url = window.location.href.replace('/swagger.html', '');
+    console.debug("URL = ", url);
+
+    $.ajax(url + 'security/properties').done(function(data) {
+      window.swaggerUi = new SwaggerUi({
+        url : data['base.url'] + '/api-docs',
+        dom_id : "swagger-ui-container",
+        dom_id : "swagger-ui-container",
+        supportedSubmitMethods : [ 'get', 'post', 'put', 'delete', 'patch' ],
+        onComplete : function(swaggerApi, swaggerUi) {
+          log("Loaded SwaggerUI");
+          $('pre code').each(function(i, e) {
+            hljs.highlightBlock(e)
+          });
+        },
+        onFailure : function(data) {
+          log("Unable to Load SwaggerUI");
+        },
+        docExpansion : "none",
+        sorter : "alpha"
+      });
+
+      window.swaggerUi.load();
+    });
   });
 </script>
 </head>
@@ -64,16 +70,19 @@
       <div class="navbar-header">
         <table>
           <tr>
-            <td><a href="${deploy.link}">
+            <td>
+              <a href="${deploy.link}">
                 <img class="hidden-xs" height="72px"
                   style="background-color: white; padding: 5px; margin: 5px; border-radius: 5px;"
                   src="images/logo65x72.jpg"> <img class="visible-xs"
                   height="40px"
                   style="background-color: white; padding: 3px; margin: 3px; border-radius: 3px;"
                   src="images/logo36x40.jpg">
-              </a></td>
-            <td style="vertical-align: middle"><b style="color: white;">
-                ${deploy.title} API </b></td>
+              </a>
+            </td>
+            <td style="vertical-align: middle">
+              <b style="color: white;"> ${deploy.title} API </b>
+            </td>
           </tr>
         </table>
       </div>

@@ -59,6 +59,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.AnnotationIntrospector;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
@@ -192,6 +193,33 @@ public class ConfigUtility {
   }
 
   /**
+   * Returns the ui config properties.
+   *
+   * @return the ui config properties
+   * @throws Exception the exception
+   */
+  public static Properties getUiConfigProperties() throws Exception {
+    final Properties config = getConfigProperties();
+    // use "deploy.*" and "site.*" and "base.url" properties
+    final Properties p = new Properties();
+    for (final Object prop : config.keySet()) {
+      final String str = prop.toString();
+
+      if (str.startsWith("deploy.") || str.startsWith("site.")
+          || str.startsWith("base.url")) {
+        p.put(prop, config.getProperty(prop.toString()));
+      }
+
+      if (str.startsWith("security") && str.contains("url")) {
+        p.put(prop, config.getProperty(prop.toString()));
+      }
+
+    }
+    return p;
+
+  }
+
+  /**
    * New handler instance.
    *
    * @param <T> the
@@ -303,6 +331,34 @@ public class ConfigUtility {
         new JaxbAnnotationIntrospector(mapper.getTypeFactory());
     mapper.setAnnotationIntrospector(introspector);
     return mapper.readValue(in, graphClass);
+
+  }
+
+  /**
+   * Returns the graph for json. sample usage:
+   * 
+   * <pre>
+   *   List&lt;ConceptJpa&gt; list = ConfigUtility.getGraphForJson(str, new TypeReference&lt;List&lt;ConceptJpa&gt;&gt;{});
+   * </pre>
+   * 
+   * @param <T> the
+   * @param json the json
+   * @param typeRef the type ref
+   * @return the graph for json
+   * @throws Exception the exception
+   */
+  public static <T> T getGraphForJson(String json, TypeReference<T> typeRef)
+    throws Exception {
+    if (json != null && !json.isEmpty()) {
+      return null;
+    }
+    InputStream in =
+        new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8));
+    ObjectMapper mapper = new ObjectMapper();
+    AnnotationIntrospector introspector =
+        new JaxbAnnotationIntrospector(mapper.getTypeFactory());
+    mapper.setAnnotationIntrospector(introspector);
+    return mapper.readValue(in, typeRef);
 
   }
 

@@ -19,8 +19,7 @@
   <properties>
     <!-- Specify the config artifact parameters -->
     <config.groupId>org.ihtsdo.otf.refset</config.groupId>
-   <!--   <config.artifactId>refset-config-dev-windows</config.artifactId> -->
-    <config.artifactId>refset-config-uat</config.artifactId> 
+    <config.artifactId>refset-config-dev-windows</config.artifactId>
     <config.version>${project.version}</config.version>
 
     <!-- Defaults for Eclipse dev -->
@@ -197,26 +196,6 @@
         </executions>
       </plugin>
 
-      <!-- Configure environment-specific build time information -->
-      <!-- In particular, this is for base.url -->
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>properties-maven-plugin</artifactId>
-        <executions>
-          <execution>
-            <phase>generate-sources</phase>
-            <goals>
-              <goal>read-project-properties</goal>
-            </goals>
-            <configuration>
-              <files>
-                <file>${project.build.directory}/config/resources/config.properties</file>
-              </files>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-
       <!-- Configure .war settings -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -228,20 +207,9 @@
           <webResources>
             <resource>
               <directory>${project.build.directory}/config/resources</directory>
-              <filtering>true</filtering>
-              <!-- include files to filter -->
-              <includes>
-                <include>app/page/login/login.html</include>
-                <include>app/page/login/loginController.js</include>
-              </includes>
-            </resource>
-            <resource>
-              <directory>${project.build.directory}/config/resources</directory>
               <!-- avoid unnecessary stuff and filtered files -->
               <filtering>false</filtering>
               <excludes>
-                <exclude>app/page/login/login.html</exclude>
-                <exclude>app/page/login/loginController.js</exclude>
                 <exclude>bin/**</exclude>
                 <exclude>config*.properties</exclude>
               </excludes>
@@ -250,28 +218,14 @@
               <directory>src/main/webapp</directory>
               <filtering>true</filtering>
               <includes>
-                <include>app/page/login/login.html</include>
-                <include>app/page/login/loginController.js</include>
-                <include>app/page/general/footer.html</include>
-                <include>app/page/general/header.html</include>
-                <include>app/util/general/services.js</include>
-                <include>index.html</include>
-                <include>swagger.html</include>
-                <include>WEB-INF/web.xml</include>
+                <include>app/appConfig.js</include>
               </includes>
             </resource>
             <resource>
               <directory>src/main/webapp</directory>
               <filtering>false</filtering>
               <excludes>
-                <exclude>app/page/login/login.html</exclude>
-                <exclude>app/page/login/loginController.js</exclude>
-                <exclude>app/page/general/footer.html</exclude>
-                <exclude>app/page/general/header.html</exclude>
-                <exclude>app/util/general/services.js</exclude>
-                <exclude>index.html</exclude>
-                <exclude>swagger.html</exclude>
-                <exclude>WEB-INF/web.xml</exclude>
+                <exclude>app/appConfig.js</exclude>
               </excludes>
             </resource>
             <resource>

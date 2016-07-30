@@ -6,14 +6,15 @@
     <table style="width: 100%">
       <tr>
         <td style="width: 55px">
-          <a href="${deploy.link}">
+          <a href="{{appConfig['deploy.link']}}">
             <img class="hidden-xs" src="images/logo-desktop.png"> <img
               class="visible-xs" src="images/logo-mobile.png">
           </a>
         </td>
         <td style="width: 70%">
-          <span class="header-footer-title" title="${project.version}">
-            ${deploy.title} </span>
+          <span class="header-footer-title"
+            title="{{appConfig['projectVersion']}}">
+            {{appConfig['deploy.title']}} </span>
         </td>
         <td style="text-align: right;">
           <div class="nobreak">
@@ -27,7 +28,7 @@
             <!-- Help icon -->
             &nbsp;
             <span class="header-footer-text header-footer-link">
-              <a href="${help.url}" target="_blank">
+              <a href="{{appConfig['help.url']}}" target="_blank">
                 <i title="Help" class="noul material-icons md-18">help</i>
               </a>
             </span>

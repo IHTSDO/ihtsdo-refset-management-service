@@ -22,6 +22,56 @@ tsApp.run([ '$rootScope', '$http', '$window', function($rootScope, $http, $windo
   // n/a
 } ]);
 
+// Initialize app config (runs after route provider config)
+tsApp.run([
+  '$http',
+  'appConfig',
+  'gpService',
+  'utilService',
+  function($http, appConfig, gpService, utilService) {
+
+    // Request properties from the server
+    gpService.increment();
+    $http.get('security/properties').then(
+      // success
+      function(response) {
+        gpService.decrement();
+        // Copy over to appConfig
+        for ( var key in response.data) {
+          appConfig[key] = response.data[key];
+        }
+
+        // if appConfig not set or contains nonsensical values, throw error
+        var errMsg = '';
+        if (!appConfig) {
+          errMsg += 'Application configuration (appConfig.js) could not be found';
+        }
+
+        // Iterate through app config variables and verify interpolation
+        console.debug('Application configuration variables set:');
+        for ( var key in appConfig) {
+          if (appConfig.hasOwnProperty(key)) {
+            console.debug('  ' + key + ': ' + appConfig[key]);
+            if (appConfig[key].startsWith('${')) {
+              errMsg += 'Configuration property ' + key
+                + ' not set in project or configuration file';
+            }
+          }
+        }
+
+        if (errMsg.length > 0) {
+          // Send an embedded 'data' object
+          utilService.handleError({ data:'Configuration Error:\n' + errMsg});
+        }
+
+      },
+      // Error
+      function(response) {
+        gpService.decrement();
+        utilService.handleError(response);
+      });
+  } ]);
+
 // Route provider configuration
 tsApp.config([ '$routeProvider', '$logProvider', function($routeProvider, $logProvider) {
   console.debug('configure $routeProvider');
@@ -141,12 +191,13 @@ tsApp.controller('TabCtrl', [ '$scope', '$interval', '$timeout', 'securityServic
   } ]);
 
 // Header controller
-tsApp.controller('HeaderCtrl', [ '$scope', '$location', '$http', 'securityService',
-  function($scope, $location, $http, securityService) {
+tsApp.controller('HeaderCtrl', [ '$scope', '$location', '$http', 'securityService', 'appConfig',
+  function($scope, $location, $http, securityService, appConfig) {
     console.debug('configure HeaderCtrl');
 
     // Declare user
     $scope.user = securityService.getUser();
+    $scope.appConfig = appConfig;
 
     // Logout method
     $scope.logout = function() {
@@ -178,11 +229,13 @@ tsApp.controller('HeaderCtrl', [ '$scope', '$location', '$http', 'securityServic
   } ]);
 
 // Footer controller
-tsApp.controller('FooterCtrl', [ '$scope', 'gpService', 'securityService',
-  function($scope, gpService, securityService) {
+tsApp.controller('FooterCtrl', [ '$scope', 'gpService', 'securityService', 'appConfig',
+  function($scope, gpService, securityService, appConfig) {
     console.debug('configure FooterCtrl');
+
     // Declare user
     $scope.user = securityService.getUser();
+    $scope.appConfig = appConfig;
 
     // Logout method
     $scope.logout = securityService.logout;
