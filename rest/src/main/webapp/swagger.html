@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>${deploy.title} - Swagger UI</title>
+<title>Refset - Swagger UI</title>
 <link rel="icon" type="image/png" href="images/favicon.png" />
 
 <link href='css/typography.css' media='screen' rel='stylesheet' type='text/css' />
@@ -36,7 +36,7 @@
     var url = window.location.href.replace('/swagger.html', '');
     console.debug("URL = ", url);
 
-    $.ajax(url + 'security/properties').done(function(data) {
+    $.ajax(url + '/security/properties').done(function(data) {
       window.swaggerUi = new SwaggerUi({
         url : data['base.url'] + '/api-docs',
         dom_id : "swagger-ui-container",
@@ -71,17 +71,17 @@
         <table>
           <tr>
             <td>
-              <a href="${deploy.link}">
+              <a href="/index.html">
                 <img class="hidden-xs" height="72px"
                   style="background-color: white; padding: 5px; margin: 5px; border-radius: 5px;"
-                  src="images/logo65x72.jpg"> <img class="visible-xs"
+                  src="images/logo-desktop.png"> <img class="visible-xs"
                   height="40px"
                   style="background-color: white; padding: 3px; margin: 3px; border-radius: 3px;"
-                  src="images/logo36x40.jpg">
+                  src="images/logo-mobile.png">
               </a>
             </td>
             <td style="vertical-align: middle">
-              <b style="color: white;"> ${deploy.title} API </b>
+              <b style="color: white;"> Refset API </b>
             </td>
           </tr>
         </table>
