@@ -190,7 +190,7 @@ tsApp.service('projectService', [
         utilService.prepPfs(pfs)).then(
       // success
       function(response) {
-        console.debug('  output = ', response.data);
+        console.debug('  projects = ', response.data);
         gpService.decrement();
         deferred.resolve(response.data);
       },
@@ -217,7 +217,7 @@ tsApp.service('projectService', [
         utilService.prepPfs(pfs)).then(
       // success
       function(response) {
-        console.debug('  output = ', response.data);
+        console.debug('  assigned users = ', response.data);
         gpService.decrement();
         deferred.resolve(response.data);
       },
@@ -245,7 +245,7 @@ tsApp.service('projectService', [
         utilService.prepPfs(pfs)).then(
       // success
       function(response) {
-        console.debug('  output = ', response.data);
+        console.debug('  unassigned users = ', response.data);
         gpService.decrement();
         deferred.resolve(response.data);
       },
@@ -368,7 +368,7 @@ tsApp.service('projectService', [
       .then(
       // success
       function(response) {
-        console.debug('  output = ', response.data);
+        console.debug('  concepts = ', response.data);
         gpService.decrement();
         deferred.resolve(response.data);
       },
@@ -396,7 +396,7 @@ tsApp.service('projectService', [
           + (translationId != null ? '&translationId=' + translationId : '')).then(
       // success
       function(response) {
-        console.debug('  output = ', response.data);
+        console.debug('  parents = ', response.data);
         gpService.decrement();
         deferred.resolve(response.data);
       },
@@ -425,7 +425,7 @@ tsApp.service('projectService', [
         utilService.prepPfs(pfs)).then(
       // success
       function(response) {
-        console.debug('  output = ', response.data);
+        console.debug('  children = ', response.data);
         gpService.decrement();
         deferred.resolve(response.data);
       },
@@ -454,7 +454,7 @@ tsApp.service('projectService', [
           + (translationId != null ? '&translationId=' + translationId : '')).then(
       // success
       function(response) {
-        console.debug('  output = ', response.data);
+        console.debug('  concept = ', response.data);
         gpService.decrement();
         deferred.resolve(response.data);
       },

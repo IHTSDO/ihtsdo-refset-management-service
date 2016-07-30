@@ -140,7 +140,7 @@ tsApp.service('refsetService', [
         utilService.prepPfs(pfs)).then(
       // success
       function(response) {
-        console.debug('  output = ', response.data);
+        console.debug('  refsets = ', response.data);
         gpService.decrement();
         deferred.resolve(response.data);
       },
@@ -168,7 +168,7 @@ tsApp.service('refsetService', [
       }).then(
       // success
       function(response) {
-        console.debug('  output = ', response.data);
+        console.debug('  members = ', response.data);
         gpService.decrement();
         deferred.resolve(response.data);
       },
@@ -549,7 +549,7 @@ tsApp.service('refsetService', [
           + utilService.prepQuery(query), utilService.prepPfs(pfs)).then(
       // success
       function(response) {
-        console.debug('  output = ', response.data);
+        console.debug('  members in common = ', response.data);
         gpService.decrement();
         deferred.resolve(response.data);
       },
@@ -573,7 +573,7 @@ tsApp.service('refsetService', [
       $http.get(refsetUrl + 'diff/members?reportToken=' + reportToken).then(
       // success
       function(response) {
-        console.debug('  output = ', response.data);
+        console.debug('  diff rpt = ', response.data);
         gpService.decrement();
         deferred.resolve(response.data);
       },
@@ -596,7 +596,6 @@ tsApp.service('refsetService', [
       $http.get(refsetUrl + 'release/report?reportToken=' + reportToken).then(
       // success
       function(response) {
-        console.debug('  output = ', response.data);
         gpService.decrement();
         deferred.resolve(response.data);
       },
@@ -619,7 +618,6 @@ tsApp.service('refsetService', [
       $http.get(refsetUrl + 'optimize/' + refsetId).then(
       // success
       function(response) {
-        console.debug('  output = ', response.data);
         gpService.decrement();
         deferred.resolve(response.data);
       },
@@ -642,7 +640,7 @@ tsApp.service('refsetService', [
       $http.get(refsetUrl + 'definition/' + refsetId).then(
       // success
       function(response) {
-        console.debug('  output = ', response.data);
+        console.debug('  definition = ', response.data);
         gpService.decrement();
         deferred.resolve(response.data);
       },
@@ -669,7 +667,7 @@ tsApp.service('refsetService', [
           + utilService.prepQuery(query), utilService.prepPfs(pfs)).then(
       // success
       function(response) {
-        console.debug('  output = ', response.data);
+        console.debug('  old members = ', response.data);
         gpService.decrement();
         deferred.resolve(response.data);
       },
@@ -696,7 +694,7 @@ tsApp.service('refsetService', [
           + utilService.prepQuery(query), utilService.prepPfs(pfs)).then(
       // success
       function(response) {
-        console.debug('  output = ', response.data);
+        console.debug('  new members = ', response.data);
         gpService.decrement();
         deferred.resolve(response.data);
       },
@@ -1202,7 +1200,7 @@ tsApp.service('refsetService', [
       }).then(
       // success
       function(response) {
-        console.debug('  output = ', response.data);
+        console.debug('  lookup progress = ', response.data);
         deferred.resolve(response.data);
       },
       // error
@@ -1248,7 +1246,7 @@ tsApp.service('refsetService', [
         }).then(
       // success
       function(response) {
-        console.debug('  output = ', response.data);
+        console.debug('  expression count = ', response.data);
         gpService.decrement();
         deferred.resolve(response.data);
       },
@@ -1302,7 +1300,7 @@ tsApp.service('refsetService', [
       }).then(
       // success
       function(response) {
-        console.debug('  output = ', response.data);
+        console.debug('  origin = ', response.data);
         deferred.resolve(response.data);
       },
       // error
@@ -1324,7 +1322,7 @@ tsApp.service('refsetService', [
           + (workflowStatus ? 'workflowStatus=' + workflowStatus : '')).then(
       // success
       function(response) {
-        console.debug('  output = ', response.data);
+        console.debug('  filters = ', response.data);
         deferred.resolve(response.data);
       },
       // error

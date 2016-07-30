@@ -1179,7 +1179,7 @@ tsApp.service('translationService', [
       }).then(
       // success
       function(response) {
-        console.debug('  output = ', response.data);
+        console.debug('  lookup progress = ', response.data);
         deferred.resolve(response.data);
       },
       // error
@@ -1246,7 +1246,7 @@ tsApp.service('translationService', [
       }).then(
       // success
       function(response) {
-        console.debug('  output = ', response.data);
+        console.debug('  origin = ', response.data);
         deferred.resolve(response.data);
       },
       // error
@@ -1268,7 +1268,7 @@ tsApp.service('translationService', [
           + (workflowStatus ? 'workflowStatus=' + workflowStatus : '')).then(
       // success
       function(response) {
-        console.debug('  output = ', response.data);
+        console.debug('  filters = ', response.data);
         deferred.resolve(response.data);
       },
       // error

@@ -694,7 +694,7 @@ tsApp.service('securityService', [
         utilService.prepPfs(pfs)).then(
       // success
       function(response) {
-        console.debug('  output = ', response.data);
+        console.debug('  users = ', response.data);
         gpService.decrement();
         deferred.resolve(response.data);
       },
