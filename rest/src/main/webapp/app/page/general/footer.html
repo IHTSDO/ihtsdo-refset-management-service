@@ -14,6 +14,7 @@
           <a class="header-footer-link" ng-click="logout()">Logout</a>
           &nbsp;
         </span>
+<span class="header-footer-text">{{appConfig.projectVersion}}</span>
       </div>
     </div>
   </div>
@@ -24,7 +25,8 @@
     <div class="container-fluid">
       <div style="width: 100%; margin-top: 15px;">
         <div style="width: 1%; white-space: nowrap; display: table-cell;">
-          <a class="header-footer-text header-footer-link" href="{{appConfig['deploy.link']}}">{{appConfig['deploy.footer.copyright']}}</a>
+          <a class="header-footer-text header-footer-link"
+            href="{{appConfig['deploy.link']}}">{{appConfig['deploy.footer.copyright']}}</a>
         </div>
         <div style="display: table-cell;">
           &nbsp;&nbsp;
@@ -35,6 +37,7 @@
             {{getGlassPaneCounter()}})
           </div>
         </div>
+        <div class="header-footer-text" style="display: table-cell;">{{appConfig.projectVersion}}</div>
       </div>
     </div>
   </nav>
