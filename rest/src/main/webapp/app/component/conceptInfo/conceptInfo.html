@@ -3,8 +3,8 @@
 
   <div class="col-md-12 col-xs-12"
     ng-show="role == 'ADMIN' && value == 'ASSIGNED'">
-    <span class="alert alert-warning">Editing disabled for ADMIN. Choose
-      AUTHOR or REVIEWER role to make changes.</span>
+    <span class="alert alert-warning">Editing disabled for ADMIN. Choose AUTHOR
+      or REVIEWER role to make changes.</span>
   </div>
 </div>
 
@@ -25,12 +25,14 @@
   <div class="col-md-12 col-xs-12">
     <h4 ng-show="data.concept && concept">
       <b>Concept Details</b>
+      <button class="btn btn-xs inactive" ng-show="!data.concept.active"
+        uib-tooltip="Inactive">I</button>
     </h4>
 
     <p ng-show="parents.length > 0">
       <b>Parents</b>
     </p>
-    <div ui-tree ng-show="parents.length > 0"  class="info-text"
+    <div ui-tree ng-show="parents.length > 0" class="info-text"
       style="max-height: 300px; overflow-y: scroll;">
       <ol ui-tree-nodes="" ng-model="parents" data-nodrop-enabled="true">
         <li ng-repeat="tree in parents" ui-tree-node data-nodrag
@@ -153,7 +155,7 @@
       </div>
     </div>
 
-    <p ng-show="children.length > 0" style="margin-top: 10px" >
+    <p ng-show="children.length > 0" style="margin-top: 10px">
       <b>Children<span ng-show="children.length > 0">
           ({{children.length}})</span></b>
     </p>
@@ -164,6 +166,6 @@
           ng-include="'app/component/tree/childTree.html'"></li>
       </ol>
     </div>
-        
+
   </div>
 </div>

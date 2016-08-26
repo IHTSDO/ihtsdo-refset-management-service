@@ -299,7 +299,7 @@ tsApp
 
             if (array[object].conceptActive && filter == 'Active') {
               newArray.push(array[object]);
-            } else if (!array[object].conceptActive && filter == 'Retired') {
+            } else if (!array[object].conceptActive && filter == 'Inactive') {
               newArray.push(array[object]);
             } else if (array[object].conceptActive && filter == 'All') {
               newArray.push(array[object]);

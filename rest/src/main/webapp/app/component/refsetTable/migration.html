@@ -77,13 +77,13 @@
     <div class="col-md-2 col-xs-2"></div>
     <div ng-show="refset.stagingType && refset.type=='EXTENSIONAL'"
       class="info-text col-md-8 col-xs-8">For EXTENSIONAL refsets, use the
-      "Filter by status" control to check for retired members. For each one,
+      "Filter by status" control to check for inactive members. For each one,
       decide whether to keep or remove it and decide whether to map through
       historical relationships to find replacement concepts.</div>
     <div ng-show="refset.stagingType && refset.type=='INTENSIONAL'"
       class="info-text col-md-8 col-xs-8">For INTENSIONAL refsets, decide
       whether to keep any "Valid Inclusions" or "Valid Exclusions" and "Old
-      Members". For retired "Old Members" you can map through historical
+      Members". For inactive "Old Members" you can map through historical
       relationships to find replacement concepts.</div>
     <div class="col-md-2 col-xs-2"></div>
   </div>
@@ -146,12 +146,12 @@
               <td>
                 <span class="nobreak" ng-show="refset.type == 'EXTENSIONAL'">
                   <i title="Remove"
-                    confirm="Are you sure you want to remove the retired member?"
+                    confirm="Are you sure you want to remove the inactive member?"
                     ng-show="!member.conceptActive && refset.type == 'EXTENSIONAL'"
                     ng-click="removeMember(member); $event.stopPropagation()"
                     class="noul material-icons md-18">delete</i>
-                  <button class="btn btn-xs retired"
-                    ng-show="!member.conceptActive" uib-tooltip="Retired">R</button>
+                  <button class="btn btn-xs inactive"
+                    ng-show="!member.conceptActive" uib-tooltip="Inactive">I</button>
                   <i ng-click="include(stagedRefset, member, false)"
                     ng-show="!member.conceptActive"
                     title="Add replacement concepts to refset"
@@ -220,8 +220,8 @@
               <td style="word-break: break-word;">{{member.conceptId}}</td>
               <td>{{member.conceptName}}</td>
               <td>
-                <button class="btn btn-xs retired"
-                  ng-show="!member.conceptActive" uib-tooltip="Retired">R</button>
+                <button class="btn btn-xs inactive"
+                  ng-show="!member.conceptActive" uib-tooltip="Inactive">I</button>
                 <i title="Exclude new member."
                   ng-click="exclude(refset, member, false)"
                   ng-show="refset.type == 'INTENSIONAL'"
@@ -317,8 +317,8 @@
                     <i title="Add inclusion to migrated refset."
                       ng-click="include(stagedRefset, member, true)"
                       class="noul material-icons md-18">arrow_forward</i>
-                    <button class="btn btn-xs retired"
-                      ng-show="!member.conceptActive" uib-tooltip="Retired">R</button>
+                    <button class="btn btn-xs inactive"
+                      ng-show="!member.conceptActive" uib-tooltip="Inactive">I</button>
                   </td>
                 </tr>
               </tbody>
@@ -391,8 +391,8 @@
                     <i title="Revert migrated inclusion."
                       ng-click="revert(refset, member)"
                       class="noul material-icons md-18">arrow_back</i>
-                    <button class="btn btn-xs retired"
-                      ng-show="!member.conceptActive" uib-tooltip="Retired">R</button>
+                    <button class="btn btn-xs inactive"
+                      ng-show="!member.conceptActive" uib-tooltip="Inactive">I</button>
                   </td>
                 </tr>
               </tbody>
@@ -610,8 +610,8 @@
               <td style="word-break: break-word;">{{member.conceptId}}</td>
               <td>{{member.conceptName}}</td>
               <td class="nobreak">
-                <button class="btn btn-xs retired"
-                  ng-show="!member.conceptActive" uib-tooltip="Retired">R</button>
+                <button class="btn btn-xs inactive"
+                  ng-show="!member.conceptActive" uib-tooltip="Inactive">I</button>
                 <a ng-show="member.memberType == 'MEMBER'"
                   ng-click="include(stagedRefset, member, true)">
                   <i title="Include old member."

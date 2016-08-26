@@ -10,13 +10,15 @@ tsApp
       'gpService',
       'utilService',
       'tabService',
+      'configureService',
       'securityService',
       'projectService',
       'validationService',
       'refsetService',
       'translationService',
       function($scope, $http, $location, $uibModal, gpService, utilService, tabService,
-        securityService, projectService, validationService, refsetService, translationService) {
+        configureService, securityService, projectService, validationService, refsetService,
+        translationService) {
         console.debug('configure AdminCtrl');
 
         // Clear error
@@ -97,7 +99,7 @@ tsApp
           sortField : 'userName',
           ascending : null
         };
-        $scope.paging['candidateUser'] = {
+        $scope.paging['unassignedUser'] = {
           page : 1,
           filter : '',
           sortField : 'userName',
@@ -186,16 +188,16 @@ tsApp
         // assigned to the selected project
         $scope.getUnassignedUsers = function() {
           var pfs = {
-            startIndex : ($scope.paging['candidateUser'].page - 1) * $scope.pageSize,
+            startIndex : ($scope.paging['unassignedUser'].page - 1) * $scope.pageSize,
             maxResults : $scope.pageSize,
-            sortField : $scope.paging['candidateUser'].sortField,
-            ascending : $scope.paging['candidateUser'].ascending == null ? true
-              : $scope.paging['candidateUser'].ascending,
+            sortField : $scope.paging['unassignedUser'].sortField,
+            ascending : $scope.paging['unassignedUser'].ascending == null ? true
+              : $scope.paging['unassignedUser'].ascending,
             queryRestriction : '(applicationRole:USER OR applicationRole:ADMIN)'
           };
 
           projectService.findUnassignedUsersForProject($scope.selectedProject.id,
-            $scope.paging['candidateUser'].filter, pfs).then(function(data) {
+            $scope.paging['unassignedUser'].filter, pfs).then(function(data) {
             $scope.unassignedUsers = data.users;
             $scope.unassignedUsers.totalCount = data.totalCount;
           });
@@ -471,7 +473,7 @@ tsApp
             $scope.getUsers();
           } else if (table === 'assignedUser') {
             $scope.getAssignedUsers();
-          } else if (table === 'candidateUser') {
+          } else if (table === 'unassignedUser') {
             $scope.getUnassignedUsers();
           } else if (table === 'lang') {
             $scope.getPagedAvailableLdt();
@@ -844,7 +846,7 @@ tsApp
           $scope.applicationRole = applicationRole;
           $scope.applicationRoles = applicationRoles;
           $scope.errors = [];
-          
+
           $scope.submitUser = function(user) {
             if (!user || !user.name || !user.userName) {
               window.alert('The name, user name fields cannot be blank. ');
@@ -945,28 +947,38 @@ tsApp
 
         };
 
-        // Configure the tab
-        $scope.configureTab = function() {
-          $scope.user.userPreferences.lastTab = '/admin';
-          securityService.updateUserPreferences($scope.user.userPreferences);
-        };
-
         //
-        // Initialize
+        // Initialize - DO NOT PUT ANYTHING AFTER THIS SECTION
         //
-        $scope.getProjects();
-        $scope.getUsers();
-        $scope.getCandidateProjects();
-        $scope.getApplicationRoles();
-        $scope.getProjectRoles();
-        $scope.getTerminologyEditions();
-        $scope.getValidationChecks();
-        $scope.getLanguageDescriptionTypes();
 
-        // Handle users with user preferences
-        if ($scope.user.userPreferences) {
-          $scope.configureTab();
+        $scope.initialize = function() {
+          //
+          // Initialize data structures
+          //
+          $scope.getProjects();
+          $scope.getUsers();
+          $scope.getCandidateProjects();
+          $scope.getApplicationRoles();
+          $scope.getProjectRoles();
+          $scope.getTerminologyEditions();
+          $scope.getValidationChecks();
+          $scope.getLanguageDescriptionTypes();
+
+          // configure tab
+          securityService.saveTab($scope.user.userPreferences, '/admin');
+
         }
+
+        //
+        // Initialization: Check that application is configured
+        //
+        configureService.isConfigured().then(function(isConfigured) {
+          if (!isConfigured) {
+            $location.path('/configure');
+          } else {
+            $scope.initialize();
+          }
+        });
 
         // end
 

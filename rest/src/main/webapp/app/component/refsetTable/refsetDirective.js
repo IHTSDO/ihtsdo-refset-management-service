@@ -55,7 +55,7 @@ tsApp
               $scope.filters = [];
 
               // Page metadata
-              $scope.memberTypes = [ 'Member', 'Exclusion', 'Inclusion', 'Active', 'Retired' ];
+              $scope.memberTypes = [ 'Member', 'Exclusion', 'Inclusion', 'Active', 'Inactive' ];
 
               // Used for project admin to know what users are assigned to
               // something.
@@ -332,7 +332,7 @@ tsApp
                   var value = $scope.paging['member'].typeFilter;
 
                   // Handle inactive
-                  if (value == 'Retired') {
+                  if (value == 'Inactive') {
                     pfs.queryRestriction = 'conceptActive:false';
                   } else if (value == 'Active') {
                     pfs.queryRestriction = 'conceptActive:true';
@@ -2558,7 +2558,7 @@ tsApp
                 $scope.versions = metadata.versions[metadata.terminologies[0].terminology].sort()
                   .reverse();
                 $scope.errors = [];
-                $scope.statusTypes = [ 'Active', 'Retired' ];
+                $scope.statusTypes = [ 'Active', 'Inactive' ];
                 $scope.pagedStagedInclusions = [];
                 $scope.paging['newRegularMembers'] = {
                   page : 1,
@@ -2732,7 +2732,7 @@ tsApp
                   var conceptActive;
                   if ($scope.paging['oldRegularMembers'].typeFilter == 'Active') {
                     conceptActive = true;
-                  } else if ($scope.paging['oldRegularMembers'].typeFilter == 'Retired') {
+                  } else if ($scope.paging['oldRegularMembers'].typeFilter == 'Inactive') {
                     conceptActive = false;
                   } else {
                     conceptActive = null;
@@ -2787,7 +2787,7 @@ tsApp
                   var conceptActive;
                   if ($scope.paging['membersInCommon'].typeFilter == 'Active') {
                     conceptActive = true;
-                  } else if ($scope.paging['membersInCommon'].typeFilter == 'Retired') {
+                  } else if ($scope.paging['membersInCommon'].typeFilter == 'Inactive') {
                     conceptActive = false;
                   } else {
                     conceptActive = null;
@@ -3030,7 +3030,7 @@ tsApp
 
                 // add inclusion
                 $scope.include = function(refset, member, staged) {
-                  // if retired, find if there are replacement concepts
+                  // if inactive, find if there are replacement concepts
                   if (!member.conceptActive) {
                     projectService.getReplacementConcepts(member.conceptId, refset.terminology,
                       refset.version).then(
@@ -3324,7 +3324,8 @@ tsApp
                         $scope.expectedCt++;
                       }
                     }
-                    // if intensional, check if retired concept itself should be
+                    // if intensional, check if inactive concept itself should
+                    // be
                     // included
                     if (refset.type == 'INTENSIONAL') {
                       if ($scope.selection.ids[$scope.member.conceptId]) {
