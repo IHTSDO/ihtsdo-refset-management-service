@@ -12,8 +12,7 @@
       <div>
         <form ng-submit="getSearchResults(search, true);">
           <input autofocus ng-model="search" size="30">
-          <button type="submit"
-            class="submitbutton btn btn-md btn-primary">Search</button>
+          <button type="submit" class="submitbutton btn btn-sm btn-primary">Search</button>
         </form>
       </div>
 
@@ -32,6 +31,10 @@
             total-items="searchResults.totalCount"
             ng-model="paging['search'].page"
             ng-change="getSearchResults(search);"></uib-pagination>
+          <span>
+            <input type="checkbox" ng-model="activeOnly" title="Active Only"
+              ng-click="getSearchResults(search, true)">Active Only
+          </span>
 
         </span>
 

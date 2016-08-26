@@ -829,12 +829,16 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
       localPfs.setMaxResults(Integer.MAX_VALUE);
     }
 
+    // Support active-only searches
+    final String statusFilter = localPfs.getActiveOnly()
+        ? "&statusFilter=activeOnly" : "&statusFilter=activeAndInactive";
+
     // Use getConcept() if it's an id, otherwise search term
     // Read past the limit to find all names for the concept
     final String targetUrl =
         url + "/snomed/" + terminology + "/v" + version + "/descriptions?query="
             + URLEncoder.encode(query, "UTF-8").replaceAll(" ", "%20")
-            + "&searchMode=partialMatching&lang=english&statusFilter=activeAndInactive&"
+            + "&searchMode=partialMatching&lang=english" + statusFilter + "&"
             + "skipTo=" + localPfs.getStartIndex() + "&returnLimit="
             + (localPfs.getMaxResults() * 3) + "&normalize=true";
 

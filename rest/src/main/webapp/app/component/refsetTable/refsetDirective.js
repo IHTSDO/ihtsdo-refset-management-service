@@ -2336,6 +2336,7 @@ tsApp
                 project, value) {
                 console.debug('Entered add member modal control');
                 $scope.value = value;
+                $scope.activeOnly = false;
                 $scope.pageSize = 10;
                 $scope.searchResults = null;
                 $scope.data = {
@@ -2452,7 +2453,10 @@ tsApp
                     ascending : null,
                     queryRestriction : null
                   };
-
+                  if ($scope.activeOnly) {
+                    console.debug('active only');
+                    pfs.activeOnly = true;
+                  }
                   projectService.findConceptsForQuery(search, refset.terminology, refset.version,
                     pfs).then(
                   // Success
