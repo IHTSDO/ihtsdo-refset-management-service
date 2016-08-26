@@ -733,7 +733,7 @@ tsApp
               // Get the most recent note for display
               $scope.getLatestNote = function(translation) {
                 if (translation && translation.notes && translation.notes.length > 0) {
-                  return $sce.trustAsHtml(translation.notes.sort(utilService.sort_by(
+                  return $sce.trustAsHtml(translation.notes.sort(utilService.sortBy(
                     'lastModified', -1))[0].value);
                 }
                 return $sce.trustAsHtml('');
@@ -984,7 +984,7 @@ tsApp
                       return $scope.metadata;
                     },
                     refsets : function() {
-                      return $scope.refsets.sort(utilService.sort_by('name'));
+                      return $scope.refsets.sort(utilService.sortBy('name'));
                     },
                     project : function() {
                       return $scope.project;
@@ -1262,7 +1262,7 @@ tsApp
                 $scope.errors = [];
 
                 // Sort users by name and role restrict
-                var sortedUsers = assignedUsers.sort(utilService.sort_by('name'));
+                var sortedUsers = assignedUsers.sort(utilService.sortBy('name'));
                 for (var i = 0; i < sortedUsers.length; i++) {
                   if ($scope.role == 'AUTHOR'
                     || $scope.project.userRoleMap[sortedUsers[i].userName] == 'REVIEWER'
@@ -1445,7 +1445,7 @@ tsApp
                 $scope.note = '';
 
                 // Sort users by name and role restrict
-                var sortedUsers = assignedUsers.sort(utilService.sort_by('name'));
+                var sortedUsers = assignedUsers.sort(utilService.sortBy('name'));
                 for (var i = 0; i < sortedUsers.length; i++) {
                   if ($scope.role == 'AUTHOR'
                     || $scope.project.userRoleMap[sortedUsers[i].userName] == 'REVIEWER'
@@ -2108,7 +2108,7 @@ tsApp
 
                 // Get description types
                 $scope.getDescriptionTypes = function() {
-                  return $scope.translation.descriptionTypes.sort(utilService.sort_by('name'));
+                  return $scope.translation.descriptionTypes.sort(utilService.sortBy('name'));
                 };
                 // Get paged descriptions (assume all are loaded)
                 $scope.getPagedDescriptions = function() {
@@ -2523,7 +2523,7 @@ tsApp
                         list.push(data.translations[i]);
                       }
                     }
-                    $scope.translations = list.sort(utilService.sort_by('name'));
+                    $scope.translations = list.sort(utilService.sortBy('name'));
                     if ($scope.translations.length == 0) {
                       $scope.errors[0] = 'No translations with ' + type + ' entries were found.';
                     }

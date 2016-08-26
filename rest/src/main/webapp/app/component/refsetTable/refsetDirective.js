@@ -412,7 +412,7 @@ tsApp
               $scope.getOrderedDefinitionClauses = function() {
                 if ($scope.selected.refset && $scope.selected.refset.definitionClauses) {
                   return $scope.selected.refset.definitionClauses.sort(utilService
-                    .sort_by('negated'));
+                    .sortBy('negated'));
                 }
               };
 
@@ -729,7 +729,7 @@ tsApp
               $scope.getLatestNote = function(refset) {
                 if (refset && refset.notes && refset.notes.length > 0) {
                   return $sce.trustAsHtml(refset.notes
-                    .sort(utilService.sort_by('lastModified', -1))[0].value);
+                    .sort(utilService.sortBy('lastModified', -1))[0].value);
                 }
                 return $sce.trustAsHtml('');
               };
@@ -801,7 +801,7 @@ tsApp
                 // Get paged clauses (assume all are loaded)
                 $scope.getPagedClauses = function() {
                   $scope.pagedClauses = utilService.getPagedArray($scope.newClauses
-                    .sort(utilService.sort_by('negated')), $scope.paging['clauses'],
+                    .sort(utilService.sortBy('negated')), $scope.paging['clauses'],
                     $scope.pageSize);
                 };
 
@@ -1639,7 +1639,7 @@ tsApp
                 $scope.errors = [];
 
                 // Sort users by name and role restricts
-                var sortedUsers = assignedUsers.sort(utilService.sort_by('name'));
+                var sortedUsers = assignedUsers.sort(utilService.sortBy('name'));
                 for (var i = 0; i < sortedUsers.length; i++) {
                   if ($scope.role == 'AUTHOR'
                     || $scope.project.userRoleMap[sortedUsers[i].userName] == 'REVIEWER'

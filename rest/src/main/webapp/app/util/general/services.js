@@ -5,7 +5,8 @@ tsApp
     [
       '$location',
       '$anchorScroll',
-      '$uibModal', 'appConfig',
+      '$uibModal',
+      'appConfig',
       function($location, $anchorScroll, $uibModal, appConfig) {
         console.debug('configure utilService');
         // declare the error
@@ -235,7 +236,7 @@ tsApp
           // apply sort if specified
           if (paging.sortField) {
             // if ascending specified, use that value, otherwise use false
-            newArray.sort(this.sort_by(paging.sortField, paging.ascending));
+            newArray.sort(this.sortBy(paging.sortField, paging.ascending));
           }
 
           // apply filter
@@ -262,7 +263,7 @@ tsApp
         };
 
         // function for sorting an array by (string) field and direction
-        this.sort_by = function(field, reverse) {
+        this.sortBy = function(field, reverse) {
 
           // key: function to return field value from object
           var key = function(x) {
