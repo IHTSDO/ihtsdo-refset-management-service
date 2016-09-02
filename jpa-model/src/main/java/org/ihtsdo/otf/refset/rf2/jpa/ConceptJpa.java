@@ -137,7 +137,9 @@ public class ConceptJpa extends AbstractComponent implements Concept {
         relationships.add(newRel);
       }
       for (Note note : concept.getNotes()) {
-        getNotes().add(new ConceptNoteJpa((ConceptNoteJpa) note));
+        ConceptNoteJpa copy = new ConceptNoteJpa((ConceptNoteJpa) note);
+        copy.setConcept(this);
+        getNotes().add(copy);
       }
     }
   }
@@ -346,10 +348,8 @@ public class ConceptJpa extends AbstractComponent implements Concept {
     final int prime = 31;
     int result = super.hashCode();
     result = prime * result + (revision ? 1231 : 1237);
-    result =
-        prime
-            * result
-            + ((definitionStatusId == null) ? 0 : definitionStatusId.hashCode());
+    result = prime * result
+        + ((definitionStatusId == null) ? 0 : definitionStatusId.hashCode());
     return result;
   }
 

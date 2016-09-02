@@ -80,7 +80,7 @@ public class RelationshipJpa extends AbstractComponent implements Relationship {
     // destination
     // because they coming from JSON would be separate objects, though if id is
     // always set, then its fine
-    destinationConcept = relationship.getDestinationConcept();
+    destinationConcept = new ConceptJpa(relationship.getDestinationConcept(),false);
     modifierId = relationship.getModifierId();
     relationshipGroup = relationship.getRelationshipGroup();
     // in deep copy contexts, this will be overridden
