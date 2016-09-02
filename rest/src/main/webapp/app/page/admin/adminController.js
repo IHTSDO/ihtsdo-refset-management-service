@@ -844,11 +844,16 @@ tsApp
           $scope.applicationRole = applicationRole;
           $scope.applicationRoles = applicationRoles;
           $scope.errors = [];
-
+          
           $scope.submitUser = function(user) {
-            if (!user || !user.name || !user.userName || !user.applicationRole) {
-              window.alert('The name, user name, and application role fields cannot be blank. ');
+            if (!user || !user.name || !user.userName) {
+              window.alert('The name, user name fields cannot be blank. ');
               return;
+            }
+            // Default application role
+            if (!user.applicationRole) {
+              user.applicationRole = 'VIEWER';
+              user.email = 'tbd';
             }
             securityService.addUser(user).then(
             // Success
@@ -857,7 +862,7 @@ tsApp
             },
             // Error
             function(data) {
-              $scope.errors[0] = data;
+              $scope.errors = data;
               utilService.clearError();
             });
 
