@@ -85,8 +85,8 @@ public class PerformTranslationBetaAlgorithm extends TranslationServiceJpa
     ReleaseInfoList releaseInfoList =
         findTranslationReleasesForQuery(translation.getId(), null, null);
     if (releaseInfoList.getCount() != 1) {
-      throw new LocalException("Cannot find release info for translation "
-          + translation.getId());
+      throw new LocalException(
+          "Cannot find release info for translation " + translation.getId());
     }
     releaseInfo = releaseInfoList.getObjects().get(0);
     if (releaseInfo == null || !releaseInfo.isPlanned()
@@ -94,8 +94,8 @@ public class PerformTranslationBetaAlgorithm extends TranslationServiceJpa
       throw new LocalException("translation release is not ready to validate "
           + translation.getId());
     if (translation.isStaged())
-      throw new LocalException("translation workflowstatus is staged for "
-          + translation.getId());
+      throw new LocalException(
+          "translation workflowstatus is staged for " + translation.getId());
   }
 
   /* see superclass */
@@ -106,9 +106,8 @@ public class PerformTranslationBetaAlgorithm extends TranslationServiceJpa
     translation.setLastModifiedBy(userName);
 
     // Stage the translation
-    stagedTranslation =
-        stageTranslation(translation, Translation.StagingType.BETA,
-            releaseInfo.getEffectiveTime());
+    stagedTranslation = stageTranslation(translation,
+        Translation.StagingType.BETA, releaseInfo.getEffectiveTime());
 
     // Reread in case a commit was used
     Logger.getLogger(getClass()).info("  Copy origin translation release info");
@@ -120,6 +119,7 @@ public class PerformTranslationBetaAlgorithm extends TranslationServiceJpa
     stageReleaseInfo.setTranslation(stagedTranslation);
 
     if (!getTransactionPerOperation()) {
+      Logger.getLogger(getClass()).info("  commit");
       commitClearBegin();
     }
 
@@ -130,13 +130,15 @@ public class PerformTranslationBetaAlgorithm extends TranslationServiceJpa
     // for the staged translation so we can pass them as detached to the export
     // process
     // and avoid running out of memory (in the case of hundreds of thousands)
-    Logger.getLogger(getClass()).info("  Generate snapshot translation and attach artifact");
+    Logger.getLogger(getClass())
+        .info("  Generate snapshot translation and attach artifact");
 
     // Gather concept ids
     final Set<Long> conceptIds = new HashSet<Long>();
     for (final Concept concept : stagedTranslation.getConcepts()) {
       conceptIds.add(concept.getId());
     }
+    Logger.getLogger(getClass()).info("    concepts = " + conceptIds.size());
 
     // Clear staged translation concept references
     stagedTranslation = getTranslation(stagedTranslation.getId());
@@ -149,32 +151,37 @@ public class PerformTranslationBetaAlgorithm extends TranslationServiceJpa
       final Concept exportConcept = getConcept(id);
       // Detach object by copying it
       final Concept copy = new ConceptJpa(exportConcept, true);
+      copy.setTranslation(null);
       exportConcepts.add(copy);
     }
 
     // Generate the snapshot release artifact and add it
+    Logger.getLogger(getClass()).info("  Begin exporting concepts");
     final ExportTranslationHandler handler =
         getExportTranslationHandler(ioHandlerId);
     InputStream inputStream =
         handler.exportConcepts(stagedTranslation, exportConcepts);
+
+    Logger.getLogger(getClass()).info("  Attach release artifact");
     ReleaseArtifactJpa artifact = new ReleaseArtifactJpa();
     artifact.setReleaseInfo(stageReleaseInfo);
     artifact.setIoHandlerId(ioHandlerId);
     artifact.setData(ByteStreams.toByteArray(inputStream));
-    artifact.setName(handler.getBetaFileName(translation.getProject()
-        .getNamespace(), "ActiveSnapshot", releaseInfo.getName()));
+    artifact.setName(
+        handler.getBetaFileName(translation.getProject().getNamespace(),
+            "ActiveSnapshot", releaseInfo.getName()));
     artifact.setTimestamp(releaseInfo.getEffectiveTime());
     artifact.setLastModified(releaseInfo.getEffectiveTime());
     artifact.setLastModifiedBy(userName);
     stageReleaseInfo.getArtifacts().add(artifact);
 
     // Generate the delta release artifact and add it
-    releaseInfo =
-        getCurrentTranslationReleaseInfo(translation.getTerminologyId(),
-            translation.getProject().getId());
+    releaseInfo = getCurrentTranslationReleaseInfo(
+        translation.getTerminologyId(), translation.getProject().getId());
 
     if (releaseInfo != null) {
-      Logger.getLogger(getClass()).info("  Generate delta translation and attach artifact");
+      Logger.getLogger(getClass())
+          .info("  Generate delta translation and attach artifact");
 
       final String oldModuleId = releaseInfo.getTranslation().getModuleId();
       final String newModuleId = translation.getModuleId();
@@ -185,7 +192,8 @@ public class PerformTranslationBetaAlgorithm extends TranslationServiceJpa
 
       // If the module ids don't match, every description/lang will be updated
       if (oldModuleId.equals(newModuleId)) {
-        for (final Concept concept : releaseInfo.getTranslation().getConcepts()) {
+        for (final Concept concept : releaseInfo.getTranslation()
+            .getConcepts()) {
           for (final Description description : concept.getDescriptions()) {
             oldDescriptionMap.put(description.getTerminologyId(),
                 new DescriptionJpa(description, false));
@@ -240,8 +248,8 @@ public class PerformTranslationBetaAlgorithm extends TranslationServiceJpa
 
         // changed
         if (oldDescriptionMap.containsKey(description.getTerminologyId())
-            && !description.equals(oldDescriptionMap.get(description
-                .getTerminologyId()))) {
+            && !description.equals(
+                oldDescriptionMap.get(description.getTerminologyId()))) {
           description.setActive(true);
           description.setEffectiveTime(stageReleaseInfo.getEffectiveTime());
           deltaDescriptions.add(description);
@@ -286,15 +294,15 @@ public class PerformTranslationBetaAlgorithm extends TranslationServiceJpa
       }
 
       // Export
-      inputStream =
-          handler.exportDelta(stagedTranslation, deltaDescriptions,
-              deltaMembers);
+      inputStream = handler.exportDelta(stagedTranslation, deltaDescriptions,
+          deltaMembers);
       artifact = new ReleaseArtifactJpa();
       artifact.setReleaseInfo(stageReleaseInfo);
       artifact.setIoHandlerId(ioHandlerId);
       artifact.setData(ByteStreams.toByteArray(inputStream));
-      artifact.setName(handler.getBetaFileName(stagedTranslation.getProject()
-          .getNamespace(), "Delta", stageReleaseInfo.getName()));
+      artifact.setName(
+          handler.getBetaFileName(stagedTranslation.getProject().getNamespace(),
+              "Delta", stageReleaseInfo.getName()));
       artifact.setTimestamp(stageReleaseInfo.getEffectiveTime());
       artifact.setLastModified(stageReleaseInfo.getEffectiveTime());
       artifact.setLastModifiedBy(userName);
