@@ -100,15 +100,6 @@ public class DescriptionJpa extends AbstractComponent implements Description {
     }
   }
 
-  /**
-   * Instantiates a {@link Description} from the specified parameters.
-   * 
-   * @param type the type
-   */
-  public DescriptionJpa(String type) {
-    this.typeId = type;
-  }
-
   /* see superclass */
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   @Override
