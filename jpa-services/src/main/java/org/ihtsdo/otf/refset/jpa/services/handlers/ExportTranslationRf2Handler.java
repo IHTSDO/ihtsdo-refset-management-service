@@ -151,6 +151,7 @@ public class ExportTranslationRf2Handler implements ExportTranslationHandler {
       concept.getDescriptions().clear();
     }
 
+    //
     Logger.getLogger(getClass()).info("  prepare .zip file");
 
     final ByteArrayOutputStream baos = new ByteArrayOutputStream();
