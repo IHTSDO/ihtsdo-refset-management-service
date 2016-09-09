@@ -416,7 +416,8 @@ tsApp.service('securityService', [
   '$cookieStore',
   'utilService',
   'gpService',
-  function($http, $location, $q, $cookieStore, utilService, gpService) {
+  'appConfig',
+  function($http, $location, $q, $cookieStore, utilService, gpService, appConfig) {
     console.debug('configure securityService');
 
     // Declare the user
