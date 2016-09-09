@@ -6,8 +6,7 @@ tsApp
       '$location',
       '$anchorScroll',
       '$uibModal',
-      'appConfig',
-      function($location, $anchorScroll, $uibModal, appConfig) {
+      function($location, $anchorScroll, $uibModal) {
         console.debug('configure utilService');
         // declare the error
         this.error = {
@@ -415,10 +414,14 @@ tsApp.service('securityService', [
   '$q',
   '$cookieStore',
   'utilService',
-  'gpService',
-  function($http, $location, $q, $cookieStore, utilService, gpService) {
+  'gpService', 'appConfig',
+  function($http, $location, $q, $cookieStore, utilService, gpService, appConfig) {
     console.debug('configure securityService');
 
+    
+    // Save app config
+    this.appConfig = appConfig; 
+    
     // Declare the user
     var user = {
       userName : null,
@@ -533,7 +536,7 @@ tsApp.service('securityService', [
         // clear http authorization header
         $http.defaults.headers.common.Authorization = null;
         gpService.decrement();
-        window.location.href = appConfig['logout.url'];
+        window.location.href = this.appConfig['logout.url'];
       },
       // error
       function(response) {
