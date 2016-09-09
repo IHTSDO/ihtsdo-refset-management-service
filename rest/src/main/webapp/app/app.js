@@ -247,7 +247,7 @@ tsApp.controller('FooterCtrl', [ '$scope', '$sce', 'gpService', 'securityService
     
     // Site tracking code
     $scope.siteTrackingCode = function() {
-      return $sce.trustAsHtml(scope.appConfig['site.tracking.code']);
+      return $sce.trustAsHtml($scope.appConfig['site.tracking.code']);
     }
 
   } ]);

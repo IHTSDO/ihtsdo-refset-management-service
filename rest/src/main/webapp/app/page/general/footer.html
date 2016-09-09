@@ -1,9 +1,9 @@
 
-<!-- Analytics -->
-<span ng-bind-html="siteTrackingCode()"></span>
 
 <!-- Footer -->
 <div ng-controller="FooterCtrl">
+  <!-- Analytics -->
+  <span ng-bind-html="siteTrackingCode()"></span>
   <div>
     <!--  Show logout button at the bottom in XS mode -->
     <div style="margin-top: 10px" id="mobileFooter" ng-show="isShowing()"
