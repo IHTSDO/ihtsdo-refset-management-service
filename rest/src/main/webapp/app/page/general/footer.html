@@ -1,6 +1,6 @@
 
 <!-- Analytics -->
-{{appConfig['site.tracking.code']}}
+<span ng-bind-html="siteTrackingCode()"></span>
 
 <!-- Footer -->
 <div ng-controller="FooterCtrl">
@@ -14,7 +14,7 @@
           <a class="header-footer-link" ng-click="logout()">Logout</a>
           &nbsp;
         </span>
-<span class="header-footer-text">{{appConfig.projectVersion}}</span>
+        <span class="header-footer-text">{{appConfig.projectVersion}}</span>
       </div>
     </div>
   </div>
