@@ -229,8 +229,8 @@ tsApp.controller('HeaderCtrl', [ '$scope', '$location', '$http', 'securityServic
   } ]);
 
 // Footer controller
-tsApp.controller('FooterCtrl', [ '$scope', 'gpService', 'securityService', 'appConfig',
-  function($scope, gpService, securityService, appConfig) {
+tsApp.controller('FooterCtrl', [ '$scope', '$sce', 'gpService', 'securityService', 'appConfig',
+  function($scope, $sce, gpService, securityService, appConfig) {
     console.debug('configure FooterCtrl');
 
     // Declare user
@@ -244,6 +244,11 @@ tsApp.controller('FooterCtrl', [ '$scope', 'gpService', 'securityService', 'appC
     $scope.isShowing = function() {
       return securityService.isLoggedIn();
     };
+    
+    // Site tracking code
+    $scope.siteTrackingCode = function() {
+      return $sce.trustAsHtml($scope.appConfig['site.tracking.code']);
+    }
 
   } ]);
 

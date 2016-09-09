@@ -1,9 +1,9 @@
 
-<!-- Analytics -->
-{{appConfig['site.tracking.code']}}
 
 <!-- Footer -->
 <div ng-controller="FooterCtrl">
+  <!-- Analytics -->
+  <span ng-bind-html="siteTrackingCode()"></span>
   <div>
     <!--  Show logout button at the bottom in XS mode -->
     <div style="margin-top: 10px" id="mobileFooter" ng-show="isShowing()"
@@ -14,7 +14,7 @@
           <a class="header-footer-link" ng-click="logout()">Logout</a>
           &nbsp;
         </span>
-<span class="header-footer-text">{{appConfig.projectVersion}}</span>
+        <span class="header-footer-text">{{appConfig.projectVersion}}</span>
       </div>
     </div>
   </div>
