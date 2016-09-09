@@ -17,7 +17,7 @@
             <td>
               <select ng-model="project" ng-show="projects.data.length > 1"
                 ng-options="item.name for item in projects.data"
-                ng-change="setProject(item);"></select>
+                ng-change="setProject(project);"></select>
               <span ng-show="projects.data.length == 1">{{project.name}}</span>
               &nbsp;
               <span>{{project.organization}}</span>
