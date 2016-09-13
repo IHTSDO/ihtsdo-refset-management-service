@@ -283,7 +283,7 @@
               ng-click="openAssignRefsetModal(refset,'UNASSIGN-REASSIGN'); $event.stopPropagation()"
               title="Reassign back to author" class="noul material-icons md-18">assignment_returned</i>
             <i confirm="Are you sure you want to finalize editing/review?"
-              ng-show="refset.workflowStatus.indexOf('IN_PROGRESS') != -1 || refset.workflowStatus=='REVIEW_NEW'"
+              ng-show="refset.workflowStatus.indexOf('IN_PROGRESS') != -1 || refset.workflowStatus.indexOf('NEW') != -1"
               ng-click="performWorkflowAction(refset, 'FINISH', user.userName)"
               title="Finish" class="noul material-icons md-18">done</i>
             <i ng-show="refset.workflowStatus == 'REVIEW_DONE'"
