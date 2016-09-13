@@ -345,8 +345,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
         break;
 
       case FINISH:
-        // NEW,EDITING_IN_PROGRESS => EDITING_DONE (and mark as not for
-        // authoring)
+        // EDITING_IN_PROGRESS => EDITING_DONE (and mark as not for authoring)
         if (refset.getWorkflowStatus() == WorkflowStatus.NEW || refset
             .getWorkflowStatus() == WorkflowStatus.EDITING_IN_PROGRESS) {
           record.setForAuthoring(false);
