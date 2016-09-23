@@ -2561,13 +2561,13 @@ tsApp
                 // set up variables
                 $scope.refset = refset;
                 $scope.newTerminology = refset.terminology;
-                $scope.newVersion = null;
                 $scope.membersInCommon = null;
                 $scope.pageSize = 5;
                 $scope.paging = paging;
                 $scope.metadata = metadata;
                 $scope.versions = angular
                   .copy(metadata.versions[$scope.newTerminology].sort().reverse());
+                $scope.newVersion = $scope.versions[0];
                 $scope.errors = [];
                 $scope.statusTypes = [ 'Active', 'Inactive' ];
                 $scope.pagedStagedInclusions = [];
