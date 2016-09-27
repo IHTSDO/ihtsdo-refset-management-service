@@ -728,8 +728,8 @@ tsApp
               // Get the most recent note for display
               $scope.getLatestNote = function(refset) {
                 if (refset && refset.notes && refset.notes.length > 0) {
-                  return $sce.trustAsHtml(refset.notes
-                    .sort(utilService.sortBy('lastModified', -1))[0].value);
+                  return $sce
+                    .trustAsHtml(refset.notes.sort(utilService.sortBy('lastModified', -1))[0].value);
                 }
                 return $sce.trustAsHtml('');
               };
@@ -800,9 +800,9 @@ tsApp
 
                 // Get paged clauses (assume all are loaded)
                 $scope.getPagedClauses = function() {
-                  $scope.pagedClauses = utilService.getPagedArray($scope.newClauses
-                    .sort(utilService.sortBy('negated')), $scope.paging['clauses'],
-                    $scope.pageSize);
+                  $scope.pagedClauses = utilService
+                    .getPagedArray($scope.newClauses.sort(utilService.sortBy('negated')),
+                      $scope.paging['clauses'], $scope.pageSize);
                 };
 
                 // identify whether defintion has changed
@@ -1141,7 +1141,8 @@ tsApp
                 $scope.projects = projects;
                 $scope.metadata = metadata;
                 $scope.filters = filters;
-                $scope.versions = metadata.versions[refset.terminology].sort().reverse();
+                $scope.versions = angular.copy(metadata.versions[refset.terminology].sort()
+                  .reverse());
                 // Copy refset and clear terminology id
                 $scope.refset = JSON.parse(JSON.stringify(refset));
                 $scope.refset.terminologyId = null;
@@ -1170,7 +1171,9 @@ tsApp
 
                 // Handle terminology selected
                 $scope.terminologySelected = function(terminology) {
-                  $scope.versions = $scope.metadata.versions[terminology].sort().reverse();
+                  $scope.versions = angular.copy($scope.metadata.versions[terminology].sort()
+                    .reverse());
+                  $scope.refset.version = $scope.versions[0];
                   $scope.getModules();
                 };
 
@@ -2030,7 +2033,8 @@ tsApp
                 $scope.filters = filters;
                 $scope.project = project;
                 $scope.projects = projects;
-                $scope.versions = metadata.versions[$scope.project.terminology].sort().reverse();
+                $scope.versions = angular.copy(metadata.versions[$scope.project.terminology].sort()
+                  .reverse());
                 $scope.clause = {
                   value : null
                 };
@@ -2066,7 +2070,7 @@ tsApp
 
                 // Handle terminology selected
                 $scope.terminologySelected = function(terminology) {
-                  $scope.versions = metadata.versions[terminology].sort().reverse();
+                  $scope.versions = angular.copy(metadata.versions[terminology].sort().reverse());
                   $scope.refset.version = $scope.versions[0];
                   $scope.getModules();
                 };
@@ -2207,7 +2211,8 @@ tsApp
                 $scope.refset.project = project;
                 $scope.projects = projects;
                 $scope.metadata = metadata;
-                $scope.versions = $scope.metadata.versions[refset.terminology].sort().reverse();
+                $scope.versions = angular.copy($scope.metadata.versions[refset.terminology].sort()
+                  .reverse());
                 $scope.modules = [];
                 $scope.errors = [];
 
@@ -2225,7 +2230,9 @@ tsApp
 
                 // Handle terminology selected
                 $scope.terminologySelected = function(terminology) {
-                  $scope.versions = $scope.metadata.versions[terminology].sort().reverse();
+                  $scope.versions = angular.copy($scope.metadata.versions[terminology].sort()
+                    .reverse());
+                  $scope.refset.version = $scope.versions[0];
                   $scope.getModules();
                 };
 
@@ -2554,13 +2561,13 @@ tsApp
                 // set up variables
                 $scope.refset = refset;
                 $scope.newTerminology = refset.terminology;
-                $scope.newVersion = null;
                 $scope.membersInCommon = null;
                 $scope.pageSize = 5;
                 $scope.paging = paging;
                 $scope.metadata = metadata;
-                $scope.versions = metadata.versions[metadata.terminologies[0].terminology].sort()
-                  .reverse();
+                $scope.versions = angular
+                  .copy(metadata.versions[$scope.newTerminology].sort().reverse());
+                $scope.newVersion = $scope.versions[0];
                 $scope.errors = [];
                 $scope.statusTypes = [ 'Active', 'Inactive' ];
                 $scope.pagedStagedInclusions = [];
@@ -2662,6 +2669,13 @@ tsApp
                 // Return the name for a terminology
                 $scope.getTerminologyName = function(terminology) {
                   return $scope.metadata.terminologyNames[terminology];
+                };
+
+                // Handle terminology selected
+                $scope.terminologySelected = function() {
+                  $scope.versions = angular.copy($scope.metadata.versions[$scope.newTerminology].sort()
+                    .reverse());
+                  $scope.newVersion = $scope.versions[0];
                 };
 
                 // Table sorting mechanism

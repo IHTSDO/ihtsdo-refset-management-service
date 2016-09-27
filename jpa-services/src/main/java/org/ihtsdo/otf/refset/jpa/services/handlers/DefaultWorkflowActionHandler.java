@@ -388,7 +388,9 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
         throw new LocalException("Illegal workflow action - " + action);
     }
 
-    if (!skipUpdate) {
+    if (!skipUpdate)
+
+    {
       refset.setLastModifiedBy(user.getUserName());
       service.updateRefset(refset);
     }
