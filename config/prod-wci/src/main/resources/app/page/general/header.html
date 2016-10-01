@@ -1,0 +1,43 @@
+<!--  header -->
+<nav ng-controller="HeaderCtrl"
+  class="navbar navbar-default navbar-fixed-top header-footer-bg">
+  <div class="container-fluid">
+
+    <table style="width: 100%">
+      <tr>
+        <td style="width: 55px">
+          <a href="{{appConfig['deploy.link']}}">
+            <img class="hidden-xs" src="images/logo-desktop.jpg"> <img
+              class="visible-xs" src="images/logo-mobile.jpg">
+          </a>
+        </td>
+        <td style="width: 70%">
+          <span class="header-footer-title"
+            title="{{appConfig['projectVersion']}}">
+            {{appConfig['deploy.title']}} </span>
+        </td>
+        <td style="text-align: right;">
+          <div class="nobreak">
+            <span class="hidden-xs header-footer-text" ng-show="isLoggedIn()">
+              {{user.name}}&nbsp;&nbsp;
+              <a class="header-footer-link" ng-click="logout()">Logout</a>
+            </span>
+            <span class="hidden-xs header-footer-text" ng-show="!isLoggedIn()">
+              <span class="header-footer-link" ng-click="login()">Login</span>
+            </span>
+            <!-- Help icon -->
+            &nbsp;
+            <span class="header-footer-text header-footer-link">
+              <a href="{{appConfig['help.url']}}" target="_blank">
+                <i title="Help" class="noul material-icons md-18">help</i>
+              </a>
+            </span>
+          </div>
+        </td>
+      </tr>
+    </table>
+
+
+  </div>
+</nav>
+
