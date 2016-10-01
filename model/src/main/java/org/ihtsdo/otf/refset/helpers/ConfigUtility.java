@@ -206,7 +206,8 @@ public class ConfigUtility {
       final String str = prop.toString();
 
       if (str.startsWith("deploy.") || str.startsWith("site.")
-          || str.startsWith("base.url") || str.startsWith("logout.")) {
+          || str.startsWith("base.url") || str.startsWith("logout.") ||
+          str.startsWith("help.url")) {
         p.put(prop, config.getProperty(prop.toString()));
       }
 
