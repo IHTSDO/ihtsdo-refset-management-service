@@ -922,17 +922,16 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     // workflow status does not have to be 'NEW' because sometimes work
     // that is in progress is unassigned
     // For sure, ready, beta, or published refsets are not available
-    final String queryStr = "select a from RefsetJpa a where " // workflowStatus
-                                                               // = 'NEW' "
+    final String queryStr = "select a from RefsetJpa a where " 
         + " a.project.id = :projectId " + "and a.provisional = false "
         + "and a not in (select refset from TrackingRecordJpa where refset is not null) "
-        + "and workflowStatus not in ('READY_FOR_PUBLICATION','BETA','PUBLISHED')";
+        + "and workflowStatus not in ('BETA','PUBLISHED')";
 
     final Query ctQuery =
         ((RootServiceJpa) service).getEntityManager().createQuery(
             "select count(*) from RefsetJpa a where a.project.id = :projectId and a.provisional = false "
                 + "and a not in (select refset from TrackingRecordJpa where refset is not null) "
-                + "and workflowStatus not in ('READY_FOR_PUBLICATION','BETA','PUBLISHED')");
+                + "and workflowStatus not in ('BETA','PUBLISHED')");
 
     ctQuery.setParameter("projectId", projectId);
 

@@ -221,10 +221,10 @@
       </dependency>
       <dependency>
         <groupId>javax.ws.rs</groupId>
-        <artifactId>jsr311-api</artifactId>
-        <version>1.1.1</version>
+        <artifactId>javax.ws.rs-api</artifactId>
+        <version>2.0</version>
       </dependency>
-
+      
       <!-- OWL API <version>4.1.0-RC2</version> -->
       <dependency>
         <groupId>net.sourceforge.owlapi</groupId>
@@ -301,37 +301,34 @@
       <plugins>
 
         <!-- Maven plugins -->
-       <!--   <plugin>
+        <!-- <plugin> <groupId>org.apache.maven.plugins</groupId> <artifactId>maven-plugin-plugin</artifactId> 
+          <version>3.3</version> </plugin> -->
+
+        <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-plugin-plugin</artifactId>
-          <version>3.3</version>
-        </plugin> -->
-        
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-plugin-plugin</artifactId>
-        <version>3.4</version>
-        <configuration>
-         <skipErrorNoDescriptorsFound>true</skipErrorNoDescriptorsFound>
-        </configuration>
-        <executions>
-          <execution>
-            <id>default-descriptor</id> 
-             <goals>
-              <goal>descriptor</goal>
-            </goals>
-            <phase>process-classes</phase>
-          </execution>
-          <!-- if you want to generate help goal -->
-          <execution>
-            <id>help-goal</id>
-            <goals>
-              <goal>helpmojo</goal>
-            </goals>
-            <phase>process-classes</phase>
-          </execution>
-        </executions>
-      </plugin> 
+          <version>3.4</version>
+          <configuration>
+            <skipErrorNoDescriptorsFound>true</skipErrorNoDescriptorsFound>
+          </configuration>
+          <executions>
+            <execution>
+              <id>default-descriptor</id>
+              <goals>
+                <goal>descriptor</goal>
+              </goals>
+              <phase>process-classes</phase>
+            </execution>
+            <!-- if you want to generate help goal -->
+            <execution>
+              <id>help-goal</id>
+              <goals>
+                <goal>helpmojo</goal>
+              </goals>
+              <phase>process-classes</phase>
+            </execution>
+          </executions>
+        </plugin>
 
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
