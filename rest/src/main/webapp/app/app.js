@@ -1,12 +1,13 @@
 'use strict';
 
-var tsApp = angular.module('tsApp',
-  [ 'ngRoute', 'ui.bootstrap', 'ui.tree', 'ngFileUpload', 'ui.tinymce', 'ngCookies' ]).config(
-  function($rootScopeProvider) {
+var tsApp = angular.module(
+  'tsApp',
+  [ 'ngRoute', 'ui.bootstrap', 'ui.tree', 'ngFileUpload', 'ui.tinymce',
+    'ngCookies' ]).config(function($rootScopeProvider) {
 
-    // Set recursive digest limit higher to handle very deep trees.
-    $rootScopeProvider.digestTtl(17);
-  });
+  // Set recursive digest limit higher to handle very deep trees.
+  $rootScopeProvider.digestTtl(17);
+});
 
 // Declare top level URL vars
 var securityUrl = 'security/';
@@ -18,127 +19,147 @@ var workflowUrl = 'workflow/';
 var validationUrl = 'validate/';
 
 // Initialization of tsApp
-tsApp.run([ '$rootScope', '$http', '$window', function($rootScope, $http, $window) {
-  // n/a
-} ]);
-
-// Initialize app config (runs after route provider config)
-tsApp.run([
-  '$http',
-  'appConfig',
-  'gpService',
-  'utilService',
-  function($http, appConfig, gpService, utilService) {
-
-    // Request properties from the server
-    gpService.increment();
-    $http.get('security/properties').then(
-      // success
-      function(response) {
-        gpService.decrement();
-        // Copy over to appConfig
-        for ( var key in response.data) {
-          appConfig[key] = response.data[key];
-        }
-
-        // if appConfig not set or contains nonsensical values, throw error
-        var errMsg = '';
-        if (!appConfig) {
-          errMsg += 'Application configuration (appConfig.js) could not be found';
-        }
-
-        // Iterate through app config variables and verify interpolation
-        console.debug('Application configuration variables set:');
-        for ( var key in appConfig) {
-          if (appConfig.hasOwnProperty(key)) {
-            console.debug('  ' + key + ': ' + appConfig[key]);
-            if (appConfig[key].startsWith('${')) {
-              errMsg += 'Configuration property ' + key
-                + ' not set in project or configuration file';
-            }
-          }
-        }
-
-        if (errMsg.length > 0) {
-          // Send an embedded 'data' object
-          utilService.handleError({ data:'Configuration Error:\n' + errMsg});
-        }
-
-      },
-      // Error
-      function(response) {
-        gpService.decrement();
-        utilService.handleError(response);
-      });
+tsApp.run([ '$rootScope', '$http', '$window',
+  function($rootScope, $http, $window) {
+    // n/a
   } ]);
 
+// Initialize app config (runs after route provider config)
+tsApp
+  .run([
+    '$http',
+    'appConfig',
+    'gpService',
+    'utilService',
+    function($http, appConfig, gpService, utilService) {
+
+      // Request properties from the server
+      gpService.increment();
+      $http
+        .get('security/properties')
+        .then(
+          // success
+          function(response) {
+            gpService.decrement();
+            // Copy over to appConfig
+            for ( var key in response.data) {
+              appConfig[key] = response.data[key];
+            }
+
+            // if appConfig not set or contains nonsensical values, throw error
+            var errMsg = '';
+            if (!appConfig) {
+              errMsg += 'Application configuration (appConfig.js) could not be found';
+            }
+
+            // Iterate through app config variables and verify interpolation
+            console.debug('Application configuration variables set:');
+            for ( var key in appConfig) {
+              if (appConfig.hasOwnProperty(key)) {
+                console.debug('  ' + key + ': ' + appConfig[key]);
+                if (appConfig[key].startsWith('${')) {
+                  errMsg += 'Configuration property ' + key
+                    + ' not set in project or configuration file';
+                }
+              }
+            }
+
+            if (errMsg.length > 0) {
+              // Send an embedded 'data' object
+              utilService.handleError({
+                data : 'Configuration Error:\n' + errMsg
+              });
+            }
+
+          },
+          // Error
+          function(response) {
+            gpService.decrement();
+            utilService.handleError(response);
+          });
+    } ]);
+
 // Route provider configuration
-tsApp.config([ '$routeProvider', '$logProvider', function($routeProvider, $logProvider) {
-  console.debug('configure $routeProvider');
-  $logProvider.debugEnabled(true);
+tsApp.config([
+  '$routeProvider',
+  '$logProvider',
+  function($routeProvider, $logProvider) {
+    console.debug('configure $routeProvider');
+    $logProvider.debugEnabled(true);
 
-  // Set reloadOnSearch so that $location.hash() calls do not reload the
-  // controller
-  $routeProvider.when('/login', {
-    templateUrl : 'app/page/login/login.html',
-    controller : 'LoginCtrl',
-    reloadOnSearch : false
-  }).when('/refset', {
-    templateUrl : 'app/page/refset/refset.html',
-    controller : 'RefsetCtrl',
-    reloadOnSearch : false
-  }).when('/translation', {
-    templateUrl : 'app/page/translation/translation.html',
-    controller : 'TranslationCtrl',
-    reloadOnSearch : false
-  }).when('/directory', {
-    templateUrl : 'app/page/directory/directory.html',
-    controller : 'DirectoryCtrl',
-    reloadOnSearch : false
-  }).when('/admin', {
-    templateUrl : 'app/page/admin/admin.html',
-    controller : 'AdminCtrl',
-    reloadOnSearch : false
-  }).when('/help/:type', {
-    templateUrl : function(params) {
-      return 'app/page/' + params.type + '/help/' + params.type + 'Help.html';
-    }
-  }).otherwise({
-    redirectTo : '/directory'
-  });
+    // Set reloadOnSearch so that $location.hash() calls do not reload the
+    // controller
+    $routeProvider.when('/login', {
+      templateUrl : 'app/page/login/login.html',
+      controller : 'LoginCtrl',
+      reloadOnSearch : false
+    }).when('/refset', {
+      templateUrl : 'app/page/refset/refset.html',
+      controller : 'RefsetCtrl',
+      reloadOnSearch : false
+    }).when('/translation', {
+      templateUrl : 'app/page/translation/translation.html',
+      controller : 'TranslationCtrl',
+      reloadOnSearch : false
+    }).when('/directory', {
+      templateUrl : 'app/page/directory/directory.html',
+      controller : 'DirectoryCtrl',
+      reloadOnSearch : false
+    }).when('/admin', {
+      templateUrl : 'app/page/admin/admin.html',
+      controller : 'AdminCtrl',
+      reloadOnSearch : false
+    }).when(
+      '/help/:type',
+      {
+        templateUrl : function(params) {
+          return 'app/page/' + params.type + '/help/' + params.type
+            + 'Help.html';
+        }
+      }).otherwise({
+      redirectTo : '/directory'
+    });
 
-  // $locationProvider.html5Mode(true);
+    // $locationProvider.html5Mode(true);
 
-} ]);
+  } ]);
 
 // Simple glass pane controller
-tsApp.controller('GlassPaneCtrl', [ '$scope', 'gpService', function($scope, gpService) {
-  console.debug('configure GlassPaneCtrl');
+tsApp.controller('GlassPaneCtrl', [ '$scope', 'gpService',
+  function($scope, gpService) {
+    console.debug('configure GlassPaneCtrl');
 
-  $scope.glassPane = gpService.glassPane;
+    $scope.glassPane = gpService.glassPane;
 
-} ]);
+  } ]);
 
 // Simple error controller
-tsApp.controller('ErrorCtrl', [ '$scope', 'utilService', function($scope, utilService) {
-  console.debug('configure ErrorCtrl');
+tsApp.controller('ErrorCtrl', [ '$scope', 'utilService',
+  function($scope, utilService) {
+    console.debug('configure ErrorCtrl');
 
-  $scope.error = utilService.error;
+    $scope.error = utilService.error;
 
-  $scope.clearError = function() {
-    utilService.clearError();
-  };
+    $scope.clearError = function() {
+      utilService.clearError();
+    };
 
-  $scope.setError = function(message) {
-    utilService.setError(message);
-  };
+    $scope.setError = function(message) {
+      utilService.setError(message);
+    };
 
-} ]);
+  } ]);
 
 // Tab controller
-tsApp.controller('TabCtrl', [ '$scope', '$interval', '$timeout', 'securityService', 'tabService',
+tsApp.controller('TabCtrl', [
+  '$scope',
+  '$interval',
+  '$timeout',
+  'securityService',
+  'tabService',
   'projectService',
-  function($scope, $interval, $timeout, securityService, tabService, projectService) {
+  function($scope, $interval, $timeout, securityService, tabService,
+    projectService) {
     console.debug('configure TabCtrl');
 
     // Setup tabs
@@ -191,7 +212,12 @@ tsApp.controller('TabCtrl', [ '$scope', '$interval', '$timeout', 'securityServic
   } ]);
 
 // Header controller
-tsApp.controller('HeaderCtrl', [ '$scope', '$location', '$http', 'securityService', 'appConfig',
+tsApp.controller('HeaderCtrl', [
+  '$scope',
+  '$location',
+  '$http',
+  'securityService',
+  'appConfig',
   function($scope, $location, $http, securityService, appConfig) {
     console.debug('configure HeaderCtrl');
 
@@ -213,7 +239,8 @@ tsApp.controller('HeaderCtrl', [ '$scope', '$location', '$http', 'securityServic
     // Open help page dynamically
     $scope.goToHelp = function() {
       var path = $location.path();
-      path = '/help' + path + '?authToken=' + $http.defaults.headers.common.Authorization;
+      path = '/help' + path + '?authToken='
+        + $http.defaults.headers.common.Authorization;
       var currentUrl = window.location.href;
       var baseUrl = currentUrl.substring(0, currentUrl.indexOf('#') + 1);
       var newUrl = baseUrl + path;
@@ -229,7 +256,8 @@ tsApp.controller('HeaderCtrl', [ '$scope', '$location', '$http', 'securityServic
   } ]);
 
 // Footer controller
-tsApp.controller('FooterCtrl', [ '$scope', '$sce', 'gpService', 'securityService', 'appConfig',
+tsApp.controller('FooterCtrl', [ '$scope', '$sce', 'gpService',
+  'securityService', 'appConfig',
   function($scope, $sce, gpService, securityService, appConfig) {
     console.debug('configure FooterCtrl');
 
@@ -244,7 +272,7 @@ tsApp.controller('FooterCtrl', [ '$scope', '$sce', 'gpService', 'securityService
     $scope.isShowing = function() {
       return securityService.isLoggedIn();
     };
-    
+
     // Site tracking code
     $scope.siteTrackingCode = function() {
       return $sce.trustAsHtml($scope.appConfig['site.tracking.code']);
@@ -271,7 +299,7 @@ tsApp
   .value(
     '$confirmModalDefaults',
     {
-      template : '<div class="modal-header"><h3 class="modal-title">Confirm</h3></div><div class="modal-body">{{data.text}}</div><div class="modal-footer"><button class="btn btn-primary" ng-click="ok()">OK</button><button class="btn btn-warning" ng-click="cancel()">Cancel</button></div>',
+      template : '<div class="modal-header"><h3 class="modal-title">Confirm</h3></div><div class="modal-body">{{data.text}}</div><div class="modal-footer"><form name="name" class="form" ng-submit="ok()"><button autofocus type="submit" class="btn btn-primary" >OK</button><button type="button" class="btn btn-warning" ng-click="cancel()">Cancel</button></form></div>',
       controller : 'ConfirmModalCtrl'
     });
 

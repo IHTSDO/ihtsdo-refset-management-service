@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Scanner;
+import java.util.UUID;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -21,6 +22,7 @@ import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.FieldedStringTokenizer;
 import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.jpa.ValidationResultJpa;
+import org.ihtsdo.otf.refset.jpa.services.RefsetServiceJpa;
 import org.ihtsdo.otf.refset.rf2.Component;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.Description;
@@ -28,6 +30,8 @@ import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.DescriptionJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.LanguageRefsetMemberJpa;
+import org.ihtsdo.otf.refset.services.RefsetService;
+import org.ihtsdo.otf.refset.services.handlers.IdentifierAssignmentHandler;
 import org.ihtsdo.otf.refset.services.handlers.ImportTranslationHandler;
 
 /**
@@ -98,153 +102,287 @@ public class ImportTranslationRf2Handler implements ImportTranslationHandler {
     /** The lang seen. */
     boolean langSeen = false;
     // Handle the input stream as a zip input stream
-    ZipInputStream zin = new ZipInputStream(content);
-    Map<String, Concept> conceptCache = new HashMap<>();
+    final ZipInputStream zin = new ZipInputStream(content);
+    final Map<String, Concept> conceptCache = new HashMap<>();
 
     int inactiveDescriptionCt = 0;
     int inactiveMemberCt = 0;
 
-    // Iterate through the zip entries
-    for (ZipEntry zipEntry; (zipEntry = zin.getNextEntry()) != null;) {
+    final RefsetService service = new RefsetServiceJpa();
+    try {
+      final IdentifierAssignmentHandler handler =
+          service.getIdentifierAssignmentHandler(ConfigUtility.DEFAULT);
 
-      Logger.getLogger(getClass()).debug(
-          "Import translation Rf2 handler - reading zipEntry "
-              + zipEntry.getName());
+      // Iterate through the zip entries
+      for (ZipEntry zipEntry; (zipEntry = zin.getNextEntry()) != null;) {
 
-      // Find the descriptions file
-      if (zipEntry.getName().contains("Description")) {
-
-        // Verify we haven't seen it already
-        if (descSeen) {
-          throw new LocalException(
-              "More than one description file in translation import zip file.");
-        }
-        descSeen = true;
-
-        // Scan through the file and create descriptions and cache concepts
-        String line = null;
-        Scanner sc = new Scanner(zin);
-        while (sc.hasNextLine()) {
-          line = sc.nextLine();
-          final String fields[] = FieldedStringTokenizer.split(line, "\t");
-          if (fields.length != 9) {
-            sc.close();
-            throw new LocalException(
-                "Unexpected field count in descriptions file.");
-          }
-          if (!fields[0].equals(id)) {
-
-            // Skip inactive descriptions
-            if (fields[2].equals("0")) {
-              inactiveDescriptionCt++;
-              continue;
-            }
-
-            // Create description and populate from RF2
-            final Description description = new DescriptionJpa();
-            setCommonFields(description, translation.getRefset());
-            description.setTerminologyId(fields[0]);
-            if (!fields[1].equals("")) {
-              description.setEffectiveTime(ConfigUtility.DATE_FORMAT
-                  .parse(fields[1]));
-            }
-            description.setLanguageCode(fields[5].intern());
-            description.setTypeId(fields[6].intern());
-            description.setTerm(fields[7]);
-            description.setCaseSignificanceId(fields[8].intern());
-
-            // Handle the concept the description is connected to
-            Concept concept = null;
-            if (!conceptCache.containsKey(fields[4])) {
-              conceptCache.put(fields[4], new ConceptJpa());
-            }
-            concept = conceptCache.get(fields[4]);
-            setCommonFields(concept, translation.getRefset());
-            if (!fields[1].equals("")) {
-              concept.setEffectiveTime(ConfigUtility.DATE_FORMAT
-                  .parse(fields[1]));
-            }
-            concept.setTerminologyId(fields[4]);
-            concept.setDefinitionStatusId("unknown");
-            concept.setTranslation(translation);
-            concept.getDescriptions().add(description);
-            description.setConcept(concept);
-
-            // Cache the description for lookup by the language reset member
-            descriptions.put(fields[0], description);
-            Logger.getLogger(getClass()).debug(
-                "  description = " + description.getTerminologyId() + ", "
-                    + description.getTerm());
-          }
-        }
-
-      }
-
-      // Find the languages file
-      else if (zipEntry.getName().contains("Refset_Language")) {
-
-        Logger.getLogger(getClass()).debug(
-            "Import translation Rf2 handler - reading zipEntry "
+        Logger.getLogger(getClass())
+            .debug("Import translation Rf2 handler - reading zipEntry "
                 + zipEntry.getName());
 
-        // Verify we have not encountered this already
-        if (langSeen) {
-          throw new LocalException(
-              "More than one language file in translation import zip file.");
-        }
-        langSeen = true;
+        // Find the descriptions file
+        if (zipEntry.getName().contains("Description")) {
 
-        String line = null;
-        Scanner sc = new Scanner(zin);
-        while (sc.hasNextLine()) {
-          line = sc.nextLine();
-          line = line.replace("\r", "");
-          final String fields[] = FieldedStringTokenizer.split(line, "\t");
-
-          if (fields.length != 7) {
-            sc.close();
-            throw new LocalException("Unexpected field count in language file.");
+          // Verify we haven't seen it already
+          if (descSeen) {
+            throw new LocalException(
+                "More than one description file in translation import zip file.");
           }
+          descSeen = true;
 
-          if (!fields[0].equals(id)) { // header
-
-            // Skip inactive language entries
-            if (fields[2].equals("0")) {
-              inactiveMemberCt++;
-              continue;
-            }
-
-            // Create and configure the member
-            final LanguageRefsetMember member = new LanguageRefsetMemberJpa();
-            setCommonFields(member, translation.getRefset());
-            member.setTerminologyId(fields[0]);
-            if (!fields[1].equals("")) {
-              member.setEffectiveTime(ConfigUtility.DATE_FORMAT
-                  .parse(fields[1]));
-            }
-
-            // Set from the translation refset
-            member.setRefsetId(translation.getRefset().getTerminologyId());
-
-            // Language unique attributes
-            member.setAcceptabilityId(fields[6].intern());
-
-            // Cache language refset members
-            if (!descLangMap.containsKey(fields[5])) {
-              descLangMap.put(fields[5], member);
-            } else {
+          // Scan through the file and create descriptions and cache concepts
+          String line = null;
+          Scanner sc = new Scanner(zin);
+          while (sc.hasNextLine()) {
+            line = sc.nextLine();
+            final String fields[] = FieldedStringTokenizer.split(line, "\t");
+            if (fields.length != 9) {
+              sc.close();
               throw new LocalException(
-                  "Unexpected description with multiple langauges - " + line);
+                  "Unexpected field count in descriptions file.");
             }
-            Logger.getLogger(getClass()).debug("    member = " + member);
+            if (!fields[0].equals(id)) {
 
+              // Skip inactive descriptions
+              if (fields[2].equals("0")) {
+                inactiveDescriptionCt++;
+                continue;
+              }
+
+              // Create description and populate from RF2
+              final Description description = new DescriptionJpa();
+              setCommonFields(description, translation.getRefset());
+              if (!fields[1].equals("")) {
+                description.setEffectiveTime(
+                    ConfigUtility.DATE_FORMAT.parse(fields[1]));
+              }
+              description.setTerminologyId("");
+              description.setLanguageCode(fields[5].intern());
+              description.setTypeId(fields[6
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           ].intern());
+              description.setTerm(fields[7]);
+              description.setCaseSignificanceId(fields[8].intern());
+
+              // Handle the concept the description is connected to
+              Concept concept = null;
+              if (!conceptCache.containsKey(fields[4])) {
+                conceptCache.put(fields[4], new ConceptJpa());
+              }
+              concept = conceptCache.get(fields[4]);
+              setCommonFields(concept, translation.getRefset());
+              if (!fields[1].equals("")) {
+                concept.setEffectiveTime(
+                    ConfigUtility.DATE_FORMAT.parse(fields[1]));
+              }
+              concept.setTerminologyId(fields[4]);
+              concept.setDefinitionStatusId("unknown");
+              concept.setTranslation(translation);
+              concept.getDescriptions().add(description);
+              description.setConcept(concept);
+
+              // Assign identifier from handler
+              if (description.getTerminologyId().isEmpty()) {
+                description
+                    .setTerminologyId(handler.getTerminologyId(description));
+              }
+              // Cache the description for lookup by the language reset member
+              descriptions.put(description.getTerminologyId(), description);
+              descriptions.put(fields[0], description);
+              Logger.getLogger(getClass())
+                  .info("  description = " + fields[0] + ", " + description.getTerminologyId()
+                      + ", " + description.getTerm());
+            }
           }
-        } // end while
 
-      }
-    } // zin close
-    zin.close();
+        }
 
+        // Find the languages file
+        else if (zipEntry.getName().contains("Refset_Language")) {
+
+          Logger.getLogger(getClass())
+              .debug("Import translation Rf2 handler - reading zipEntry "
+                  + zipEntry.getName());
+
+          // Verify we have not encountered this already
+          if (langSeen) {
+            throw new LocalException(
+                "More than one language file in translation import zip file.");
+          }
+          langSeen = true;
+
+          String line = null;
+          Scanner sc = new Scanner(zin);
+          while (sc.hasNextLine()) {
+            line = sc.nextLine();
+            line = line.replace("\r", "");
+            final String fields[] = FieldedStringTokenizer.split(line, "\t");
+
+            if (fields.length != 7) {
+              sc.close();
+              throw new LocalException(
+                  "Unexpected field count in language file.");
+            }
+
+            if (!fields[0].equals(id)) { // header
+
+              // Skip inactive language entries
+              if (fields[2].equals("0")) {
+                inactiveMemberCt++;
+                continue;
+              }
+
+              // Create and configure the member
+              final LanguageRefsetMember member = new LanguageRefsetMemberJpa();
+              setCommonFields(member, translation.getRefset());
+              if (fields[0].equals("") || fields[0].startsWith("TMP-")) {
+                member.setTerminologyId(UUID.randomUUID().toString());
+              } else {
+                member.setTerminologyId(fields[0]);
+              }
+              if (!fields[1].equals("")) {
+                member.setEffectiveTime(
+                    ConfigUtility.DATE_FORMAT.parse(fields[1]));
+              }
+
+              // Set from the translation refset
+              member.setRefsetId(translation.getRefset().getTerminologyId());
+
+              // Language unique attributes
+              member.setAcceptabilityId(fields[6].intern());
+
+              // Cache language refset members
+              if (!descLangMap.containsKey(fields[5])) {
+                descLangMap.put(fields[5], member);
+              } else {
+                throw new LocalException(
+                    "Unexpected description with multiple langauges - " + line);
+              }
+              Logger.getLogger(getClass()).debug("    member = " + member);
+
+            }
+          } // end while
+
+        }
+      } // zin close
+    } catch (Exception e) {
+      throw e;
+    } finally {
+      service.close();
+      zin.close();
+    }
     // Verify that data was found
     if (!descSeen || descriptions.isEmpty()) {
       throw new LocalException("Missing or empty description file.");
@@ -281,22 +419,22 @@ public class ImportTranslationRf2Handler implements ImportTranslationHandler {
       validationResult.addError(descLangMap.size()
           + " language refset members without matching descriptions.");
     }
-    validationResult.addComment(descriptions.size()
-        + " descriptions successfully loaded.");
-    validationResult.addComment(langCt
-        + " language refset members successfully loaded.");
+    validationResult
+        .addComment(descriptions.size() + " descriptions successfully loaded.");
+    validationResult
+        .addComment(langCt + " language refset members successfully loaded.");
 
     if (inactiveDescriptionCt == 1) {
       validationResult.addWarning("1 inactive description not loaded.");
     } else if (inactiveDescriptionCt != 0) {
-      validationResult.addWarning(inactiveMemberCt
-          + " inactive descriptions not loaded.");
+      validationResult
+          .addWarning(inactiveMemberCt + " inactive descriptions not loaded.");
     }
     if (inactiveMemberCt == 1) {
       validationResult.addWarning("1 inactive member not loaded.");
     } else if (inactiveMemberCt != 0) {
-      validationResult.addWarning(inactiveMemberCt
-          + " inactive members not loaded.");
+      validationResult
+          .addWarning(inactiveMemberCt + " inactive members not loaded.");
     }
     // Return list of concepts
     return new ArrayList<>(conceptCache.values());
