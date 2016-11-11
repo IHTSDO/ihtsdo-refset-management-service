@@ -878,7 +878,7 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
       desc.setTerm(conceptNode.get("term").asText());
       if (conceptMap.containsKey(conceptId)) {
         final Concept concept = conceptMap.get(conceptId);
-        if (desc.isActive() && !concept.getName().equals(desc.getTerm())) {
+        if (desc.isActive() || !localPfs.getActiveOnly()) {
           concept.getDescriptions().add(desc);
         }
       }
@@ -893,7 +893,7 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
               conceptNode.get("definitionStatus").asText());
           concept.setTerminologyId(conceptId);
           concept.setModuleId(conceptNode.get("module").asText());
-          concept.setName(conceptNode.get("term").asText());
+          concept.setName(conceptNode.get("fsn").asText());
           concept.setPublishable(true);
           concept.setPublished(true);
           // Do not add the first description, use it as the concept name

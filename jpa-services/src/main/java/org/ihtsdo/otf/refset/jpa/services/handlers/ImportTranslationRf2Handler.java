@@ -156,123 +156,18 @@ public class ImportTranslationRf2Handler implements ImportTranslationHandler {
                 description.setEffectiveTime(
                     ConfigUtility.DATE_FORMAT.parse(fields[1]));
               }
-              description.setTerminologyId("");
+
+              // Either use description id or fake it and assign later
+              if (fields[0].equals("") || fields[0].startsWith("TMP-")) {
+                description
+                .setTerminologyId(handler.getTerminologyId(description));
+            descriptions.put(description.getTerminologyId(), description);
+              } else {
+                description.setTerminologyId(fields[0]);
+              }
+
               description.setLanguageCode(fields[5].intern());
-              description.setTypeId(fields[6
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           
-                                           ].intern());
+              description.setTypeId(fields[6].intern());
               description.setTerm(fields[7]);
               description.setCaseSignificanceId(fields[8].intern());
 
@@ -293,17 +188,12 @@ public class ImportTranslationRf2Handler implements ImportTranslationHandler {
               concept.getDescriptions().add(description);
               description.setConcept(concept);
 
-              // Assign identifier from handler
-              if (description.getTerminologyId().isEmpty()) {
-                description
-                    .setTerminologyId(handler.getTerminologyId(description));
-              }
               // Cache the description for lookup by the language reset member
-              descriptions.put(description.getTerminologyId(), description);
               descriptions.put(fields[0], description);
               Logger.getLogger(getClass())
-                  .info("  description = " + fields[0] + ", " + description.getTerminologyId()
-                      + ", " + description.getTerm());
+                  .info("  description = " + fields[0] + ", "
+                      + description.getTerminologyId() + ", "
+                      + description.getTerm());
             }
           }
 
