@@ -248,3 +248,10 @@ a:hover {
 .middle-blue {
 	color: #337ab7;
 }
+
+.panel-heading {
+	padding-top: 5px;
+	padding-left: 10px;
+	padding-right: 10px;
+	padding-bottom: 5px;
+}

@@ -743,7 +743,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
     final ProjectService projectService = new ProjectServiceJpa();
     try {
       authorizeApp(securityService, authToken, "find concepts", UserRole.VIEWER);
-
+      System.out.println("  handler = " + projectService.getTerminologyHandler().getClass());
       final ConceptList concepts =
           projectService.getTerminologyHandler().findConceptsForQuery(query,
               terminology, version, pfs);

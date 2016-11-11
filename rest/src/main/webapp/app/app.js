@@ -61,7 +61,9 @@ tsApp.run([
 
         if (errMsg.length > 0) {
           // Send an embedded 'data' object
-          utilService.handleError({ data:'Configuration Error:\n' + errMsg});
+          utilService.handleError({
+            data : 'Configuration Error:\n' + errMsg
+          });
         }
 
       },
@@ -244,7 +246,7 @@ tsApp.controller('FooterCtrl', [ '$scope', '$sce', 'gpService', 'securityService
     $scope.isShowing = function() {
       return securityService.isLoggedIn();
     };
-    
+
     // Site tracking code
     $scope.siteTrackingCode = function() {
       return $sce.trustAsHtml($scope.appConfig['site.tracking.code']);
@@ -271,7 +273,7 @@ tsApp
   .value(
     '$confirmModalDefaults',
     {
-      template : '<div class="modal-header"><h3 class="modal-title">Confirm</h3></div><div class="modal-body">{{data.text}}</div><div class="modal-footer"><button class="btn btn-primary" ng-click="ok()">OK</button><button class="btn btn-warning" ng-click="cancel()">Cancel</button></div>',
+      template : '<div class="modal-header"><h3 class="modal-title">Confirm</h3></div><div class="modal-body">{{data.text}}</div><div class="modal-footer"><form name="name" class="form" ng-submit="ok()"><button autofocus type="submit" class="btn btn-primary" >OK</button><button type="button" class="btn btn-warning" ng-click="cancel()">Cancel</button></form></div>',
       controller : 'ConfirmModalCtrl'
     });
 
