@@ -813,6 +813,7 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
   @Override
   public ConceptList findConceptsForQuery(String query, String terminology,
     String version, PfsParameter pfs) throws Exception {
+
     final ConceptList conceptList = new ConceptListJpa();
     // Make a webservice call to browser api
     final Client client = ClientBuilder.newClient();
@@ -896,8 +897,10 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
           concept.setName(conceptNode.get("fsn").asText());
           concept.setPublishable(true);
           concept.setPublished(true);
-          // Do not add the first description, use it as the concept name
-          // concept.getDescriptions().add(desc);
+
+          // Add the description
+          concept.getDescriptions().add(desc);
+
           conceptList.addObject(concept);
           conceptMap.put(conceptId, concept);
           Logger.getLogger(getClass()).debug("  concept = " + concept);
