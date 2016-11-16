@@ -304,6 +304,7 @@ public class ImportTranslationRf2Handler implements ImportTranslationHandler {
         service.getIdentifierAssignmentHandler(ConfigUtility.DEFAULT);
     for (final Description description : descriptions.values()) {
       if (description.getTerminologyId().startsWith("TMP-")) {
+        description.setTerminologyId("");
         description.setTerminologyId(handler.getTerminologyId(description));
         for (final LanguageRefsetMember member : description
             .getLanguageRefsetMembers()) {
