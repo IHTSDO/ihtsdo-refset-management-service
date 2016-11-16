@@ -6,6 +6,7 @@ package org.ihtsdo.otf.refset.jpa.services.handlers;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -80,6 +81,14 @@ public class ImportTranslationRf2Handler implements ImportTranslationHandler {
     return "Import RF2";
   }
 
+  /**
+   * Import concepts.
+   *
+   * @param translation the translation
+   * @param content the content
+   * @return the list
+   * @throws Exception the exception
+   */
   /* see superclass */
   @SuppressWarnings("resource")
   @Override
@@ -160,8 +169,7 @@ public class ImportTranslationRf2Handler implements ImportTranslationHandler {
               // Either use description id or fake it and assign later
               if (fields[0].equals("") || fields[0].startsWith("TMP-")) {
                 description
-                .setTerminologyId(handler.getTerminologyId(description));
-            descriptions.put(description.getTerminologyId(), description);
+                    .setTerminologyId(handler.getTerminologyId(description));
               } else {
                 description.setTerminologyId(fields[0]);
               }
@@ -284,15 +292,13 @@ public class ImportTranslationRf2Handler implements ImportTranslationHandler {
     final int langCt = descLangMap.size();
 
     // Connect descriptions and language refset member objects
-    for (Description description : descriptions.values()) {
-
+    for (final String key : new HashSet<>(descriptions.keySet())) {
+      final Description description = descriptions.get(key);
       // Connect language and description
-      if (descLangMap.containsKey(description.getTerminologyId())) {
-        LanguageRefsetMember member =
-            descLangMap.get(description.getTerminologyId());
+      final LanguageRefsetMember member = descLangMap.get(key);
+      if (member != null) {
         member.setDescriptionId(description.getTerminologyId());
         description.getLanguageRefsetMembers().add(member);
-
         descLangMap.remove(description.getTerminologyId());
       }
 
