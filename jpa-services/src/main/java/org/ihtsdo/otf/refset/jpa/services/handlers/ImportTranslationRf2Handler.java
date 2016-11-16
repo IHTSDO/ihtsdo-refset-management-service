@@ -119,8 +119,6 @@ public class ImportTranslationRf2Handler implements ImportTranslationHandler {
 
     final RefsetService service = new RefsetServiceJpa();
     try {
-      final IdentifierAssignmentHandler handler =
-          service.getIdentifierAssignmentHandler(ConfigUtility.DEFAULT);
 
       // Iterate through the zip entries
       for (ZipEntry zipEntry; (zipEntry = zin.getNextEntry()) != null;) {
@@ -166,14 +164,7 @@ public class ImportTranslationRf2Handler implements ImportTranslationHandler {
                     ConfigUtility.DATE_FORMAT.parse(fields[1]));
               }
 
-              // Either use description id or fake it and assign later
-              if (fields[0].equals("") || fields[0].startsWith("TMP-")) {
-                description
-                    .setTerminologyId(handler.getTerminologyId(description));
-              } else {
-                description.setTerminologyId(fields[0]);
-              }
-
+              description.setTerminologyId(fields[0]);
               description.setLanguageCode(fields[5].intern());
               description.setTypeId(fields[6].intern());
               description.setTerm(fields[7]);
@@ -199,7 +190,7 @@ public class ImportTranslationRf2Handler implements ImportTranslationHandler {
               // Cache the description for lookup by the language reset member
               descriptions.put(fields[0], description);
               Logger.getLogger(getClass())
-                  .info("  description = " + fields[0] + ", "
+                  .debug("  description = " + fields[0] + ", "
                       + description.getTerminologyId() + ", "
                       + description.getTerm());
             }
@@ -304,11 +295,22 @@ public class ImportTranslationRf2Handler implements ImportTranslationHandler {
 
       else {
         throw new LocalException("Unexpected description without language - "
-            + description.getTerminologyId());
+            + key + ", " + description.getTerminologyId());
       }
-
     }
 
+    // Assign identifiers if descriptions have "TMP-" ids
+    final IdentifierAssignmentHandler handler =
+        service.getIdentifierAssignmentHandler(ConfigUtility.DEFAULT);
+    for (final Description description : descriptions.values()) {
+      if (description.getTerminologyId().startsWith("TMP-")) {
+        description.setTerminologyId(handler.getTerminologyId(description));
+        for (final LanguageRefsetMember member : description
+            .getLanguageRefsetMembers()) {
+          member.setDescriptionId(description.getTerminologyId());
+        }
+      }
+    }
     // If any references are left in descLangMap, we've got a language without a
     // desc
     if (!descLangMap.isEmpty()) {
