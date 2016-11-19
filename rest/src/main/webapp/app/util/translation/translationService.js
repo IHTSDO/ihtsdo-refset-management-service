@@ -1027,12 +1027,13 @@ tsApp.service('translationService', [
     };
 
     // Export concepts
-    this.exportConcepts = function(translation, handler) {
+    this.exportConcepts = function(translation, handler, query, pfs) {
       console.debug('exportConcepts');
 
       gpService.increment();
-      $http.get(
-        translationUrl + 'export?translationId=' + translation.id + '&handlerId=' + handler.id, {
+      $http.post(
+        translationUrl + 'export?translationId=' + translation.id + '&handlerId=' + handler.id
+          + (query ? '&query=' + utilService.prepQuery(query) : ""), pfs, {
           responseType : 'arraybuffer'
         }).then(
       // Success
@@ -1259,7 +1260,7 @@ tsApp.service('translationService', [
 
     // get filters
     this.getFilters = function(projectId, workflowStatus) {
-      console.debug('getFilters',projectId,workflowStatus);
+      console.debug('getFilters', projectId, workflowStatus);
       // Setup deferred
       var deferred = $q.defer();
 

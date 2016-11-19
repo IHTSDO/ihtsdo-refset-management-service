@@ -24,7 +24,7 @@
           total-items="pagedClauses.totalCount"
           ng-model="paging['clauses'].page" ng-change="getPagedClauses()"></uib-pagination>
 
-        <input class="input-filter" placeholder="Search"
+        <input placeholder="Search"
           ng-show="pagedClauses.totalCount > pageSize || paging['clauses'].filter"
           type="text" ng-model="paging['clauses'].filter"
           ng-model-options="{ debounce: 300 }" ng-change="getPagedClauses()">

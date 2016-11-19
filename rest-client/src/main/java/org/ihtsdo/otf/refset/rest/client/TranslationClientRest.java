@@ -51,8 +51,8 @@ import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
 /**
  * A client for connecting to a translation REST service.
  */
-public class TranslationClientRest extends RootClientRest implements
-    TranslationServiceRest {
+public class TranslationClientRest extends RootClientRest
+    implements TranslationServiceRest {
 
   /** The config. */
   private Properties config = null;
@@ -70,17 +70,15 @@ public class TranslationClientRest extends RootClientRest implements
   @Override
   public Translation getTranslation(Long translationId, String authToken)
     throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Translation Client - get translation for id " + translationId);
+    Logger.getLogger(getClass())
+        .debug("Translation Client - get translation for id " + translationId);
     validateNotEmpty(translationId, "translationId");
 
     Client client = ClientBuilder.newClient();
-    WebTarget target =
-        client.target(config.getProperty("base.url") + "/translation/"
-            + translationId);
-    Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken).get();
+    WebTarget target = client.target(
+        config.getProperty("base.url") + "/translation/" + translationId);
+    Response response = target.request(MediaType.APPLICATION_XML)
+        .header("Authorization", authToken).get();
 
     if (response.getStatus() == 204) {
       return null;
@@ -106,12 +104,10 @@ public class TranslationClientRest extends RootClientRest implements
         "Translation Client - get translations for refset - " + refsetId);
 
     Client client = ClientBuilder.newClient();
-    WebTarget target =
-        client.target(config.getProperty("base.url")
-            + "/translation/translations/" + refsetId);
-    Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken).get();
+    WebTarget target = client.target(config.getProperty("base.url")
+        + "/translation/translations/" + refsetId);
+    Response response = target.request(MediaType.APPLICATION_XML)
+        .header("Authorization", authToken).get();
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -120,9 +116,8 @@ public class TranslationClientRest extends RootClientRest implements
       throw new Exception(response.toString());
     }
     // converting to object
-    TranslationListJpa translationList =
-        (TranslationListJpa) ConfigUtility.getGraphForString(resultString,
-            TranslationListJpa.class);
+    TranslationListJpa translationList = (TranslationListJpa) ConfigUtility
+        .getGraphForString(resultString, TranslationListJpa.class);
     return translationList;
   }
 
@@ -136,18 +131,14 @@ public class TranslationClientRest extends RootClientRest implements
     validateNotEmpty(query, "query");
 
     Client client = ClientBuilder.newClient();
-    WebTarget target =
-        client.target(config.getProperty("base.url")
-            + "/translation/translations"
-            + "?query="
-            + URLEncoder.encode(query == null ? "" : query, "UTF-8")
+    WebTarget target = client
+        .target(config.getProperty("base.url") + "/translation/translations"
+            + "?query=" + URLEncoder.encode(query == null ? "" : query, "UTF-8")
                 .replaceAll("\\+", "%20"));
-    String pfsString =
-        ConfigUtility.getStringForGraph(pfs == null ? new PfsParameterJpa()
-            : pfs);
-    Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken).post(Entity.xml(pfsString));
+    String pfsString = ConfigUtility
+        .getStringForGraph(pfs == null ? new PfsParameterJpa() : pfs);
+    Response response = target.request(MediaType.APPLICATION_XML)
+        .header("Authorization", authToken).post(Entity.xml(pfsString));
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -163,21 +154,18 @@ public class TranslationClientRest extends RootClientRest implements
 
   /* see superclass */
   @Override
-  public Translation addTranslation(TranslationJpa translation, String authToken)
-    throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Translation Client - add translation " + " " + translation);
+  public Translation addTranslation(TranslationJpa translation,
+    String authToken) throws Exception {
+    Logger.getLogger(getClass())
+        .debug("Translation Client - add translation " + " " + translation);
 
     Client client = ClientBuilder.newClient();
     WebTarget target =
         client.target(config.getProperty("base.url") + "/translation/add");
-    String translationString =
-        ConfigUtility.getStringForGraph(translation == null
-            ? new TranslationJpa() : translation);
-    Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken)
-            .put(Entity.xml(translationString));
+    String translationString = ConfigUtility.getStringForGraph(
+        translation == null ? new TranslationJpa() : translation);
+    Response response = target.request(MediaType.APPLICATION_XML)
+        .header("Authorization", authToken).put(Entity.xml(translationString));
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -195,19 +183,16 @@ public class TranslationClientRest extends RootClientRest implements
   @Override
   public void updateTranslation(TranslationJpa translation, String authToken)
     throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Translation Client - update translation " + " " + translation);
+    Logger.getLogger(getClass())
+        .debug("Translation Client - update translation " + " " + translation);
 
     Client client = ClientBuilder.newClient();
     WebTarget target =
         client.target(config.getProperty("base.url") + "/translation/update");
-    String translationString =
-        ConfigUtility.getStringForGraph(translation == null
-            ? new TranslationJpa() : translation);
-    Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken)
-            .post(Entity.xml(translationString));
+    String translationString = ConfigUtility.getStringForGraph(
+        translation == null ? new TranslationJpa() : translation);
+    Response response = target.request(MediaType.APPLICATION_XML)
+        .header("Authorization", authToken).post(Entity.xml(translationString));
 
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -220,18 +205,16 @@ public class TranslationClientRest extends RootClientRest implements
   @Override
   public void removeTranslation(Long translationId, boolean cascade,
     String authToken) throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Translation Client - remove translation " + translationId);
+    Logger.getLogger(getClass())
+        .debug("Translation Client - remove translation " + translationId);
     validateNotEmpty(translationId, "translationId");
 
     Client client = ClientBuilder.newClient();
-    WebTarget target =
-        client.target(config.getProperty("base.url") + "/translation/remove/"
-            + translationId + "?cascade=" + cascade);
+    WebTarget target = client.target(config.getProperty("base.url")
+        + "/translation/remove/" + translationId + "?cascade=" + cascade);
 
-    Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken).delete();
+    Response response = target.request(MediaType.APPLICATION_XML)
+        .header("Authorization", authToken).delete();
 
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -243,19 +226,22 @@ public class TranslationClientRest extends RootClientRest implements
   /* see superclass */
   @Override
   public InputStream exportConcepts(Long translationId, String ioHandlerInfoId,
-    String authToken) throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Translation Client - export translation concepts - " + translationId
-            + ", " + ioHandlerInfoId);
+    String query, PfsParameterJpa pfs, String authToken) throws Exception {
+    Logger.getLogger(getClass())
+        .debug("Translation Client - export translation concepts - "
+            + translationId + ", " + ioHandlerInfoId);
 
     Client client = ClientBuilder.newClient();
-    WebTarget target =
-        client.target(config.getProperty("base.url")
-            + "/translation/export/concepts" + "?translationId="
-            + translationId + "&handlerId=" + ioHandlerInfoId);
-    Response response =
-        target.request(MediaType.APPLICATION_OCTET_STREAM)
-            .header("Authorization", authToken).get();
+    WebTarget target = client.target(config.getProperty("base.url")
+        + "/translation/export/concepts" + "?translationId=" + translationId
+        + "&handlerId=" + ioHandlerInfoId + "&query="
+        + URLEncoder.encode(query == null ? "" : query, "UTF-8")
+            .replaceAll("\\+", "%20"));
+    String pfsString = ConfigUtility
+        .getStringForGraph(pfs == null ? new PfsParameterJpa() : pfs);
+
+    Response response = target.request(MediaType.APPLICATION_OCTET_STREAM)
+        .header("Authorization", authToken).post(Entity.xml(pfsString));
 
     InputStream in = response.readEntity(InputStream.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -274,13 +260,11 @@ public class TranslationClientRest extends RootClientRest implements
         "Rest Client - remove all translation concepts - " + translationId);
     validateNotEmpty(translationId, "translationId");
     Client client = ClientBuilder.newClient();
-    WebTarget target =
-        client.target(config.getProperty("base.url")
-            + "/translation/concept/remove/all/" + translationId);
+    WebTarget target = client.target(config.getProperty("base.url")
+        + "/translation/concept/remove/all/" + translationId);
 
-    Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken).delete();
+    Response response = target.request(MediaType.APPLICATION_XML)
+        .header("Authorization", authToken).delete();
 
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // do nothing, successful
@@ -294,28 +278,20 @@ public class TranslationClientRest extends RootClientRest implements
   @Override
   public ConceptList findTranslationConceptsForQuery(Long translationId,
     String query, PfsParameterJpa pfs, String authToken) throws Exception {
-    Logger
-        .getLogger(getClass())
-        .debug(
-            "Translation Client - get translation concepts based on translation id, pfs parameter and query "
-                + translationId + query);
+    Logger.getLogger(getClass()).debug(
+        "Translation Client - get translation concepts based on translation id, pfs parameter and query "
+            + translationId + query);
     validateNotEmpty(translationId, "translationId");
 
     Client client = ClientBuilder.newClient();
-    WebTarget target =
-        client.target(config.getProperty("base.url")
-            + "/translation/concepts"
-            + "?translationId="
-            + translationId
-            + "&query="
-            + URLEncoder.encode(query == null ? "" : query, "UTF-8")
-                .replaceAll("\\+", "%20"));
-    String pfsString =
-        ConfigUtility.getStringForGraph(pfs == null ? new PfsParameterJpa()
-            : pfs);
-    Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken).post(Entity.xml(pfsString));
+    WebTarget target = client.target(config.getProperty("base.url")
+        + "/translation/concepts" + "?translationId=" + translationId
+        + "&query=" + URLEncoder.encode(query == null ? "" : query, "UTF-8")
+            .replaceAll("\\+", "%20"));
+    String pfsString = ConfigUtility
+        .getStringForGraph(pfs == null ? new PfsParameterJpa() : pfs);
+    Response response = target.request(MediaType.APPLICATION_XML)
+        .header("Authorization", authToken).post(Entity.xml(pfsString));
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -333,16 +309,14 @@ public class TranslationClientRest extends RootClientRest implements
   @Override
   public IoHandlerInfoList getImportTranslationHandlers(String authToken)
     throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Translation Client - get import translation handlers ");
+    Logger.getLogger(getClass())
+        .debug("Translation Client - get import translation handlers ");
 
     Client client = ClientBuilder.newClient();
-    WebTarget target =
-        client.target(config.getProperty("base.url")
-            + "/translation/import/handlers");
-    Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken).get();
+    WebTarget target = client.target(
+        config.getProperty("base.url") + "/translation/import/handlers");
+    Response response = target.request(MediaType.APPLICATION_XML)
+        .header("Authorization", authToken).get();
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -360,16 +334,14 @@ public class TranslationClientRest extends RootClientRest implements
   @Override
   public IoHandlerInfoList getExportTranslationHandlers(String authToken)
     throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Translation Client - get export translation handlers ");
+    Logger.getLogger(getClass())
+        .debug("Translation Client - get export translation handlers ");
 
     Client client = ClientBuilder.newClient();
-    WebTarget target =
-        client.target(config.getProperty("base.url")
-            + "/translation/export/handlers");
-    Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken).get();
+    WebTarget target = client.target(
+        config.getProperty("base.url") + "/translation/export/handlers");
+    Response response = target.request(MediaType.APPLICATION_XML)
+        .header("Authorization", authToken).get();
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -387,20 +359,16 @@ public class TranslationClientRest extends RootClientRest implements
   @Override
   public Concept addTranslationConcept(ConceptJpa concept, String authToken)
     throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Translation Client - add translation concept " + " " + concept);
+    Logger.getLogger(getClass())
+        .debug("Translation Client - add translation concept " + " " + concept);
 
     Client client = ClientBuilder.newClient();
-    WebTarget target =
-        client.target(config.getProperty("base.url")
-            + "/translation/concept/add");
-    String translationString =
-        ConfigUtility.getStringForGraph(concept == null ? new ConceptJpa()
-            : concept);
-    Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken)
-            .put(Entity.xml(translationString));
+    WebTarget target = client
+        .target(config.getProperty("base.url") + "/translation/concept/add");
+    String translationString = ConfigUtility
+        .getStringForGraph(concept == null ? new ConceptJpa() : concept);
+    Response response = target.request(MediaType.APPLICATION_XML)
+        .header("Authorization", authToken).put(Entity.xml(translationString));
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -418,19 +386,16 @@ public class TranslationClientRest extends RootClientRest implements
   @Override
   public Concept updateTranslationConcept(ConceptJpa concept, String authToken)
     throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Translation Client - update concept " + " " + concept);
+    Logger.getLogger(getClass())
+        .debug("Translation Client - update concept " + " " + concept);
 
     Client client = ClientBuilder.newClient();
-    WebTarget target =
-        client.target(config.getProperty("base.url")
-            + "/translation/concept/update");
-    String conceptString =
-        ConfigUtility.getStringForGraph(concept == null ? new ConceptJpa()
-            : concept);
-    Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken).post(Entity.xml(conceptString));
+    WebTarget target = client
+        .target(config.getProperty("base.url") + "/translation/concept/update");
+    String conceptString = ConfigUtility
+        .getStringForGraph(concept == null ? new ConceptJpa() : concept);
+    Response response = target.request(MediaType.APPLICATION_XML)
+        .header("Authorization", authToken).post(Entity.xml(conceptString));
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -453,13 +418,11 @@ public class TranslationClientRest extends RootClientRest implements
     validateNotEmpty(conceptId, "conceptId");
 
     Client client = ClientBuilder.newClient();
-    WebTarget target =
-        client.target(config.getProperty("base.url")
-            + "/translation/concept/remove/" + conceptId);
+    WebTarget target = client.target(config.getProperty("base.url")
+        + "/translation/concept/remove/" + conceptId);
 
-    Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken).delete();
+    Response response = target.request(MediaType.APPLICATION_XML)
+        .header("Authorization", authToken).delete();
 
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -476,12 +439,10 @@ public class TranslationClientRest extends RootClientRest implements
         "Translation Client - get translations with spelling dictionary ");
 
     Client client = ClientBuilder.newClient();
-    WebTarget target =
-        client.target(config.getProperty("base.url")
-            + "/translation/translations/dictionary");
-    Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken).get();
+    WebTarget target = client.target(config.getProperty("base.url")
+        + "/translation/translations/dictionary");
+    Response response = target.request(MediaType.APPLICATION_XML)
+        .header("Authorization", authToken).get();
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -499,23 +460,19 @@ public class TranslationClientRest extends RootClientRest implements
   @Override
   public void copySpellingDictionary(Long fromTranslationId,
     Long toTranslationId, String authToken) throws Exception {
-    Logger
-        .getLogger(getClass())
-        .debug(
-            "Translation Client - copy spelling dictionary from one translation to another "
-                + fromTranslationId + " " + toTranslationId);
+    Logger.getLogger(getClass()).debug(
+        "Translation Client - copy spelling dictionary from one translation to another "
+            + fromTranslationId + " " + toTranslationId);
     validateNotEmpty(fromTranslationId, "fromTranslationId");
     validateNotEmpty(toTranslationId, "toTranslationId");
 
     Client client = ClientBuilder.newClient();
-    WebTarget target =
-        client.target(config.getProperty("base.url")
-            + "/translation/spelling/copy?toTranslationId=" + toTranslationId
-            + "&fromTranslationId=" + fromTranslationId);
+    WebTarget target = client.target(config.getProperty("base.url")
+        + "/translation/spelling/copy?toTranslationId=" + toTranslationId
+        + "&fromTranslationId=" + fromTranslationId);
 
-    Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken).get();
+    Response response = target.request(MediaType.APPLICATION_XML)
+        .header("Authorization", authToken).get();
 
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -528,20 +485,18 @@ public class TranslationClientRest extends RootClientRest implements
   @Override
   public void addSpellingDictionaryEntry(Long translationId, String entry,
     String authToken) throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Translation Client - add new entry to the spelling dictionary " + " "
-            + translationId + " " + entry);
+    Logger.getLogger(getClass())
+        .debug("Translation Client - add new entry to the spelling dictionary "
+            + " " + translationId + " " + entry);
     validateNotEmpty(translationId, "translationId");
     validateNotEmpty(entry, "entry");
 
     Client client = ClientBuilder.newClient();
-    WebTarget target =
-        client.target(config.getProperty("base.url")
-            + "/translation/spelling/add?translationId=" + translationId);
+    WebTarget target = client.target(config.getProperty("base.url")
+        + "/translation/spelling/add?translationId=" + translationId);
 
-    Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken).put(Entity.text(entry));
+    Response response = target.request(MediaType.APPLICATION_XML)
+        .header("Authorization", authToken).put(Entity.text(entry));
 
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -568,18 +523,14 @@ public class TranslationClientRest extends RootClientRest implements
 
     Client client = ClientBuilder.newClient();
 
-    String termsStringList =
-        ConfigUtility.getStringForGraph(entries == null ? new StringList()
-            : entries);
+    String termsStringList = ConfigUtility
+        .getStringForGraph(entries == null ? new StringList() : entries);
 
-    WebTarget target =
-        client.target(config.getProperty("base.url")
-            + "/translation/spelling/add/batch?translationId=" + translationId);
+    WebTarget target = client.target(config.getProperty("base.url")
+        + "/translation/spelling/add/batch?translationId=" + translationId);
 
-    Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken)
-            .post(Entity.xml(termsStringList));
+    Response response = target.request(MediaType.APPLICATION_XML)
+        .header("Authorization", authToken).post(Entity.xml(termsStringList));
 
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -592,21 +543,19 @@ public class TranslationClientRest extends RootClientRest implements
   public void removeSpellingDictionaryEntry(Long translationId, String entry,
     String authToken) throws Exception {
     Logger.getLogger(getClass()).debug(
-        "Translation Client - delete an entry to the spelling dictionary "
-            + " " + translationId + " " + entry);
+        "Translation Client - delete an entry to the spelling dictionary " + " "
+            + translationId + " " + entry);
     validateNotEmpty(translationId, "translationId");
     validateNotEmpty(entry, "entry");
 
     Client client = ClientBuilder.newClient();
-    WebTarget target =
-        client.target(config.getProperty("base.url")
-            + "/translation/spelling/remove?translationId=" + translationId
-            + "&entry="
-            + URLEncoder.encode(entry, "UTF-8").replaceAll("\\+", "%20"));
+    WebTarget target = client.target(config.getProperty("base.url")
+        + "/translation/spelling/remove?translationId=" + translationId
+        + "&entry="
+        + URLEncoder.encode(entry, "UTF-8").replaceAll("\\+", "%20"));
 
-    Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken).delete();
+    Response response = target.request(MediaType.APPLICATION_XML)
+        .header("Authorization", authToken).delete();
 
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -619,19 +568,17 @@ public class TranslationClientRest extends RootClientRest implements
   @Override
   public void clearSpellingDictionary(Long translationId, String authToken)
     throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Translation Client - clear spelling dictionary entries " + " "
+    Logger.getLogger(getClass())
+        .debug("Translation Client - clear spelling dictionary entries " + " "
             + translationId);
     validateNotEmpty(translationId, "translationId");
 
     Client client = ClientBuilder.newClient();
-    WebTarget target =
-        client.target(config.getProperty("base.url")
-            + "/translation/spelling/clear?translationId=" + translationId);
+    WebTarget target = client.target(config.getProperty("base.url")
+        + "/translation/spelling/clear?translationId=" + translationId);
 
-    Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken).delete();
+    Response response = target.request(MediaType.APPLICATION_XML)
+        .header("Authorization", authToken).delete();
 
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -644,16 +591,14 @@ public class TranslationClientRest extends RootClientRest implements
   @Override
   public TranslationList findTranslationsWithPhraseMemory(String authToken)
     throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Translation Client - get translations with phrase memory ");
+    Logger.getLogger(getClass())
+        .debug("Translation Client - get translations with phrase memory ");
 
     Client client = ClientBuilder.newClient();
-    WebTarget target =
-        client.target(config.getProperty("base.url")
-            + "/translation/translations/memory");
-    Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken).get();
+    WebTarget target = client.target(
+        config.getProperty("base.url") + "/translation/translations/memory");
+    Response response = target.request(MediaType.APPLICATION_XML)
+        .header("Authorization", authToken).get();
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -678,14 +623,12 @@ public class TranslationClientRest extends RootClientRest implements
     validateNotEmpty(toTranslationId, "toTranslationId");
 
     Client client = ClientBuilder.newClient();
-    WebTarget target =
-        client.target(config.getProperty("base.url")
-            + "/translation/memory/copy?fromTranslationId=" + fromTranslationId
-            + "&toTranslationId=" + toTranslationId);
+    WebTarget target = client.target(config.getProperty("base.url")
+        + "/translation/memory/copy?fromTranslationId=" + fromTranslationId
+        + "&toTranslationId=" + toTranslationId);
 
-    Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken).get();
+    Response response = target.request(MediaType.APPLICATION_XML)
+        .header("Authorization", authToken).get();
 
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -698,20 +641,17 @@ public class TranslationClientRest extends RootClientRest implements
   @Override
   public MemoryEntry addPhraseMemoryEntry(Long translationId, String name,
     String translatedName, String authToken) throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Translation Client - add new entry to the spelling dictionary " + " "
-            + translationId + " " + name + " " + translatedName);
+    Logger.getLogger(getClass())
+        .debug("Translation Client - add new entry to the spelling dictionary "
+            + " " + translationId + " " + name + " " + translatedName);
     validateNotEmpty(translationId, "translationId");
 
     Client client = ClientBuilder.newClient();
-    WebTarget target =
-        client.target(config.getProperty("base.url") + "/translation/"
-            + "/memory/add?" + "translationId=" + translationId + "&name="
-            + URLEncoder.encode(name, "UTF-8").replaceAll("\\+", "%20"));
-    Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken)
-            .put(Entity.text(translatedName));
+    WebTarget target = client.target(config.getProperty("base.url")
+        + "/translation/" + "/memory/add?" + "translationId=" + translationId
+        + "&name=" + URLEncoder.encode(name, "UTF-8").replaceAll("\\+", "%20"));
+    Response response = target.request(MediaType.APPLICATION_XML)
+        .header("Authorization", authToken).put(Entity.text(translatedName));
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -729,26 +669,21 @@ public class TranslationClientRest extends RootClientRest implements
   @Override
   public void removePhraseMemoryEntry(Long translationId, String name,
     String translatedName, String authToken) throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Translation Client - remove phrase memory entry " + translationId
-            + " " + name);
+    Logger.getLogger(getClass())
+        .debug("Translation Client - remove phrase memory entry "
+            + translationId + " " + name);
     validateNotEmpty(translationId, "translationId");
     validateNotEmpty(name, "name");
 
     Client client = ClientBuilder.newClient();
-    WebTarget target =
-        client.target(config.getProperty("base.url")
-            + "/translation/memory/remove?translationId="
-            + translationId
-            + "&name="
-            + URLEncoder.encode(name, "UTF-8").replaceAll("\\+", "%20")
-            + "&translatedName="
-            + URLEncoder.encode(translatedName, "UTF-8").replaceAll("\\+",
-                "%20"));
+    WebTarget target = client.target(config.getProperty("base.url")
+        + "/translation/memory/remove?translationId=" + translationId + "&name="
+        + URLEncoder.encode(name, "UTF-8").replaceAll("\\+", "%20")
+        + "&translatedName="
+        + URLEncoder.encode(translatedName, "UTF-8").replaceAll("\\+", "%20"));
 
-    Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken).delete();
+    Response response = target.request(MediaType.APPLICATION_XML)
+        .header("Authorization", authToken).delete();
 
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -761,19 +696,17 @@ public class TranslationClientRest extends RootClientRest implements
   @Override
   public void clearPhraseMemory(Long translationId, String authToken)
     throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Translation Client - clear phrase memory entries " + " "
+    Logger.getLogger(getClass())
+        .debug("Translation Client - clear phrase memory entries " + " "
             + translationId);
     validateNotEmpty(translationId, "translationId");
 
     Client client = ClientBuilder.newClient();
-    WebTarget target =
-        client.target(config.getProperty("base.url")
-            + "/translation/memory/clear?translationId=" + translationId);
+    WebTarget target = client.target(config.getProperty("base.url")
+        + "/translation/memory/clear?translationId=" + translationId);
 
-    Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken).delete();
+    Response response = target.request(MediaType.APPLICATION_XML)
+        .header("Authorization", authToken).delete();
 
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -794,9 +727,8 @@ public class TranslationClientRest extends RootClientRest implements
     validateNotEmpty(translationId, "translationId");
     validateNotEmpty(is.toString(), "in");
 
-    StreamDataBodyPart fileDataBodyPart =
-        new StreamDataBodyPart("file", is, "filename.dat",
-            MediaType.APPLICATION_OCTET_STREAM_TYPE);
+    StreamDataBodyPart fileDataBodyPart = new StreamDataBodyPart("file", is,
+        "filename.dat", MediaType.APPLICATION_OCTET_STREAM_TYPE);
     FormDataMultiPart multiPart = new FormDataMultiPart();
     multiPart.bodyPart(fileDataBodyPart);
 
@@ -804,15 +736,12 @@ public class TranslationClientRest extends RootClientRest implements
     clientConfig.register(MultiPartFeature.class);
     Client client = ClientBuilder.newClient(clientConfig);
 
-    WebTarget target =
-        client.target(config.getProperty("base.url")
-            + "/translation/spelling/import" + "?translationId="
-            + translationId);
+    WebTarget target = client.target(config.getProperty("base.url")
+        + "/translation/spelling/import" + "?translationId=" + translationId);
 
-    Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken)
-            .post(Entity.entity(multiPart, MediaType.MULTIPART_FORM_DATA_TYPE));
+    Response response = target.request(MediaType.APPLICATION_XML)
+        .header("Authorization", authToken)
+        .post(Entity.entity(multiPart, MediaType.MULTIPART_FORM_DATA_TYPE));
 
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -832,13 +761,11 @@ public class TranslationClientRest extends RootClientRest implements
 
     Client client = ClientBuilder.newClient();
 
-    WebTarget target =
-        client.target(config.getProperty("base.url")
-            + "/translation/spelling/export?translationId=" + translationId);
+    WebTarget target = client.target(config.getProperty("base.url")
+        + "/translation/spelling/export?translationId=" + translationId);
 
-    Response response =
-        target.request(MediaType.APPLICATION_OCTET_STREAM)
-            .header("Authorization", authToken).get();
+    Response response = target.request(MediaType.APPLICATION_OCTET_STREAM)
+        .header("Authorization", authToken).get();
 
     InputStream resultString = response.readEntity(InputStream.class);
 
@@ -855,13 +782,12 @@ public class TranslationClientRest extends RootClientRest implements
   public void importPhraseMemory(
     FormDataContentDisposition contentDispositionHeader, InputStream in,
     Long translationId, String authToken) throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Translation Client - begin import phrasememory");
+    Logger.getLogger(getClass())
+        .debug("Translation Client - begin import phrasememory");
     validateNotEmpty(translationId, "translationId");
 
-    StreamDataBodyPart fileDataBodyPart =
-        new StreamDataBodyPart("file", in, "filename.dat",
-            MediaType.APPLICATION_OCTET_STREAM_TYPE);
+    StreamDataBodyPart fileDataBodyPart = new StreamDataBodyPart("file", in,
+        "filename.dat", MediaType.APPLICATION_OCTET_STREAM_TYPE);
     FormDataMultiPart multiPart = new FormDataMultiPart();
     multiPart.bodyPart(fileDataBodyPart);
 
@@ -869,14 +795,12 @@ public class TranslationClientRest extends RootClientRest implements
     clientConfig.register(MultiPartFeature.class);
     Client client = ClientBuilder.newClient(clientConfig);
 
-    WebTarget target =
-        client.target(config.getProperty("base.url")
-            + "/translation/memory/import" + "?translationId=" + translationId);
+    WebTarget target = client.target(config.getProperty("base.url")
+        + "/translation/memory/import" + "?translationId=" + translationId);
 
-    Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken)
-            .post(Entity.entity(multiPart, MediaType.MULTIPART_FORM_DATA_TYPE));
+    Response response = target.request(MediaType.APPLICATION_XML)
+        .header("Authorization", authToken)
+        .post(Entity.entity(multiPart, MediaType.MULTIPART_FORM_DATA_TYPE));
 
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -889,16 +813,14 @@ public class TranslationClientRest extends RootClientRest implements
   @Override
   public InputStream exportPhraseMemory(Long translationId, String authToken)
     throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Translation Client - export phrase memory - " + translationId);
+    Logger.getLogger(getClass())
+        .debug("Translation Client - export phrase memory - " + translationId);
 
     Client client = ClientBuilder.newClient();
-    WebTarget target =
-        client.target(config.getProperty("base.url")
-            + "/translation/memory/export" + "?translationId=" + translationId);
-    Response response =
-        target.request(MediaType.APPLICATION_OCTET_STREAM)
-            .header("Authorization", authToken).get();
+    WebTarget target = client.target(config.getProperty("base.url")
+        + "/translation/memory/export" + "?translationId=" + translationId);
+    Response response = target.request(MediaType.APPLICATION_OCTET_STREAM)
+        .header("Authorization", authToken).get();
 
     InputStream in = response.readEntity(InputStream.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -919,14 +841,12 @@ public class TranslationClientRest extends RootClientRest implements
 
     Client client = ClientBuilder.newClient();
 
-    WebTarget target =
-        client.target(config.getProperty("base.url")
-            + "/translation/spelling/suggest?translationId=" + translationId
-            + "&entry=" + entry);
+    WebTarget target = client.target(config.getProperty("base.url")
+        + "/translation/spelling/suggest?translationId=" + translationId
+        + "&entry=" + entry);
 
-    Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken).get();
+    Response response = target.request(MediaType.APPLICATION_XML)
+        .header("Authorization", authToken).get();
 
     StringList suggestions = response.readEntity(StringList.class);
 
@@ -947,19 +867,15 @@ public class TranslationClientRest extends RootClientRest implements
             + translationId);
 
     Client client = ClientBuilder.newClient();
-    String lookupTermsStringList =
-        ConfigUtility.getStringForGraph(lookupTerms == null ? new StringList()
-            : lookupTerms);
+    String lookupTermsStringList = ConfigUtility.getStringForGraph(
+        lookupTerms == null ? new StringList() : lookupTerms);
 
-    WebTarget target =
-        client.target(config.getProperty("base.url")
-            + "/translation/spelling/suggest/batch?translationId="
-            + translationId);
+    WebTarget target = client.target(config.getProperty("base.url")
+        + "/translation/spelling/suggest/batch?translationId=" + translationId);
 
-    Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken)
-            .post(Entity.xml(lookupTermsStringList));
+    Response response = target.request(MediaType.APPLICATION_XML)
+        .header("Authorization", authToken)
+        .post(Entity.xml(lookupTermsStringList));
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -969,9 +885,8 @@ public class TranslationClientRest extends RootClientRest implements
     }
 
     // converting to object
-    KeyValuesMap map =
-        (KeyValuesMap) ConfigUtility.getGraphForString(resultString,
-            KeyValuesMap.class);
+    KeyValuesMap map = (KeyValuesMap) ConfigUtility
+        .getGraphForString(resultString, KeyValuesMap.class);
 
     return map;
   }
@@ -980,21 +895,19 @@ public class TranslationClientRest extends RootClientRest implements
   @Override
   public String compareTranslations(Long translationId1, Long translationId2,
     String authToken) throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Translation Client - compare translations");
+    Logger.getLogger(getClass())
+        .debug("Translation Client - compare translations");
     validateNotEmpty(translationId1, "translationId1");
     validateNotEmpty(translationId2, "translationId2");
 
     Client client = ClientBuilder.newClient();
 
-    WebTarget target =
-        client.target(config.getProperty("base.url") + "/translation/compare"
-            + "?translationId1=" + translationId1 + "&translationId2="
-            + translationId2);
+    WebTarget target = client.target(config.getProperty("base.url")
+        + "/translation/compare" + "?translationId1=" + translationId1
+        + "&translationId2=" + translationId2);
 
-    Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken).get();
+    Response response = target.request(MediaType.APPLICATION_XML)
+        .header("Authorization", authToken).get();
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -1014,22 +927,17 @@ public class TranslationClientRest extends RootClientRest implements
     validateNotEmpty(reportToken, "reportToken");
 
     Client client = ClientBuilder.newClient();
-    WebTarget target =
-        client.target(config.getProperty("base.url")
-            + "/translation/common/concepts"
-            + "?query="
-            + URLEncoder.encode(query == null ? "" : query, "UTF-8")
-                .replaceAll("\\+", "%20")
-            + "&reportToken="
-            + URLEncoder
-                .encode(reportToken == null ? "" : reportToken, "UTF-8")
-                .replaceAll("\\+", "%20"));
-    String pfsString =
-        ConfigUtility.getStringForGraph(pfs == null ? new PfsParameterJpa()
-            : pfs);
-    Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken).post(Entity.xml(pfsString));
+    WebTarget target = client.target(config.getProperty("base.url")
+        + "/translation/common/concepts" + "?query="
+        + URLEncoder.encode(query == null ? "" : query, "UTF-8")
+            .replaceAll("\\+", "%20")
+        + "&reportToken="
+        + URLEncoder.encode(reportToken == null ? "" : reportToken, "UTF-8")
+            .replaceAll("\\+", "%20"));
+    String pfsString = ConfigUtility
+        .getStringForGraph(pfs == null ? new PfsParameterJpa() : pfs);
+    Response response = target.request(MediaType.APPLICATION_XML)
+        .header("Authorization", authToken).post(Entity.xml(pfsString));
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -1039,9 +947,8 @@ public class TranslationClientRest extends RootClientRest implements
     }
 
     // converting to object
-    ConceptList list =
-        (ConceptListJpa) ConfigUtility.getGraphForString(resultString,
-            ConceptListJpa.class);
+    ConceptList list = (ConceptListJpa) ConfigUtility
+        .getGraphForString(resultString, ConceptListJpa.class);
     return list;
   }
 
@@ -1054,13 +961,11 @@ public class TranslationClientRest extends RootClientRest implements
 
     Client client = ClientBuilder.newClient();
 
-    WebTarget target =
-        client.target(config.getProperty("base.url")
-            + "/translation/diff/concepts" + "?reportToken=" + reportToken);
+    WebTarget target = client.target(config.getProperty("base.url")
+        + "/translation/diff/concepts" + "?reportToken=" + reportToken);
 
-    Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken).get();
+    Response response = target.request(MediaType.APPLICATION_XML)
+        .header("Authorization", authToken).get();
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -1078,19 +983,17 @@ public class TranslationClientRest extends RootClientRest implements
   @Override
   public void releaseReportToken(String reportToken, String authToken)
     throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Translation Client - release report token: " + reportToken);
+    Logger.getLogger(getClass())
+        .debug("Translation Client - release report token: " + reportToken);
     validateNotEmpty(reportToken, "reportToken");
 
     Client client = ClientBuilder.newClient();
 
-    WebTarget target =
-        client.target(config.getProperty("base.url")
-            + "/translation/release/report" + "?reportToken=" + reportToken);
+    WebTarget target = client.target(config.getProperty("base.url")
+        + "/translation/release/report" + "?reportToken=" + reportToken);
 
-    Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken).get();
+    Response response = target.request(MediaType.APPLICATION_XML)
+        .header("Authorization", authToken).get();
 
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -1103,21 +1006,19 @@ public class TranslationClientRest extends RootClientRest implements
   @Override
   public ValidationResult beginImportConcepts(Long translationId,
     String ioHandlerInfoId, String authToken) throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Translation Client - begin import concepts");
+    Logger.getLogger(getClass())
+        .debug("Translation Client - begin import concepts");
     validateNotEmpty(translationId, "translationId");
     validateNotEmpty(ioHandlerInfoId, "ioHandlerInfoId");
 
     Client client = ClientBuilder.newClient();
 
-    WebTarget target =
-        client.target(config.getProperty("base.url")
-            + "/translation/import/begin" + "?translationId=" + translationId
-            + "&handlerId=" + ioHandlerInfoId);
+    WebTarget target = client.target(config.getProperty("base.url")
+        + "/translation/import/begin" + "?translationId=" + translationId
+        + "&handlerId=" + ioHandlerInfoId);
 
-    Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken).get();
+    Response response = target.request(MediaType.APPLICATION_XML)
+        .header("Authorization", authToken).get();
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -1134,21 +1035,19 @@ public class TranslationClientRest extends RootClientRest implements
   @Override
   public ValidationResult resumeImportConcepts(Long translationId,
     String ioHandlerInfoId, String authToken) throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Translation Client - resume import concepts");
+    Logger.getLogger(getClass())
+        .debug("Translation Client - resume import concepts");
     validateNotEmpty(translationId, "translationId");
     validateNotEmpty(ioHandlerInfoId, "ioHandlerInfoId");
 
     Client client = ClientBuilder.newClient();
 
-    WebTarget target =
-        client.target(config.getProperty("base.url")
-            + "/translation/import/resume" + "?translationId=" + translationId
-            + "&handlerId=" + ioHandlerInfoId);
+    WebTarget target = client.target(config.getProperty("base.url")
+        + "/translation/import/resume" + "?translationId=" + translationId
+        + "&handlerId=" + ioHandlerInfoId);
 
-    Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken).get();
+    Response response = target.request(MediaType.APPLICATION_XML)
+        .header("Authorization", authToken).get();
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -1168,14 +1067,13 @@ public class TranslationClientRest extends RootClientRest implements
     Long translationId, String ioHandlerInfoId, String authToken)
     throws Exception {
 
-    Logger.getLogger(getClass()).debug(
-        "Translation Client - finish import concepts");
+    Logger.getLogger(getClass())
+        .debug("Translation Client - finish import concepts");
     validateNotEmpty(translationId, "translationId");
     validateNotEmpty(ioHandlerInfoId, "ioHandlerInfoId");
 
-    StreamDataBodyPart fileDataBodyPart =
-        new StreamDataBodyPart("file", in, "filename.dat",
-            MediaType.APPLICATION_OCTET_STREAM_TYPE);
+    StreamDataBodyPart fileDataBodyPart = new StreamDataBodyPart("file", in,
+        "filename.dat", MediaType.APPLICATION_OCTET_STREAM_TYPE);
     FormDataMultiPart multiPart = new FormDataMultiPart();
     multiPart.bodyPart(fileDataBodyPart);
 
@@ -1183,15 +1081,13 @@ public class TranslationClientRest extends RootClientRest implements
     clientConfig.register(MultiPartFeature.class);
     Client client = ClientBuilder.newClient(clientConfig);
 
-    WebTarget target =
-        client.target(config.getProperty("base.url")
-            + "/translation/import/finish" + "?translationId=" + translationId
-            + "&handlerId=" + ioHandlerInfoId);
+    WebTarget target = client.target(config.getProperty("base.url")
+        + "/translation/import/finish" + "?translationId=" + translationId
+        + "&handlerId=" + ioHandlerInfoId);
 
-    Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken)
-            .post(Entity.entity(multiPart, MediaType.MULTIPART_FORM_DATA_TYPE));
+    Response response = target.request(MediaType.APPLICATION_XML)
+        .header("Authorization", authToken)
+        .post(Entity.entity(multiPart, MediaType.MULTIPART_FORM_DATA_TYPE));
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -1208,19 +1104,17 @@ public class TranslationClientRest extends RootClientRest implements
   @Override
   public void cancelImportConcepts(Long translationId, String authToken)
     throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Translation Client - cancel import concepts");
+    Logger.getLogger(getClass())
+        .debug("Translation Client - cancel import concepts");
     validateNotEmpty(translationId, "translationId");
 
     Client client = ClientBuilder.newClient();
 
-    WebTarget target =
-        client.target(config.getProperty("base.url")
-            + "/translation/import/cancel" + "?translationId=" + translationId);
+    WebTarget target = client.target(config.getProperty("base.url")
+        + "/translation/import/cancel" + "?translationId=" + translationId);
 
-    Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken).get();
+    Response response = target.request(MediaType.APPLICATION_XML)
+        .header("Authorization", authToken).get();
 
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -1238,12 +1132,10 @@ public class TranslationClientRest extends RootClientRest implements
         "Rest Client - add translation note - " + translationId + ", " + note);
     validateNotEmpty(note, "note");
     Client client = ClientBuilder.newClient();
-    WebTarget target =
-        client.target(config.getProperty("base.url") + "/translation/add/note?"
-            + "translationId=" + translationId);
-    Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken).put(Entity.text(note));
+    WebTarget target = client.target(config.getProperty("base.url")
+        + "/translation/add/note?" + "translationId=" + translationId);
+    Response response = target.request(MediaType.APPLICATION_XML)
+        .header("Authorization", authToken).put(Entity.text(note));
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -1266,14 +1158,12 @@ public class TranslationClientRest extends RootClientRest implements
     validateNotEmpty(translationId, "translationId");
     validateNotEmpty(noteId, "noteId");
     Client client = ClientBuilder.newClient();
-    WebTarget target =
-        client.target(config.getProperty("base.url")
-            + "/translation/remove/note?" + "translationId=" + translationId
-            + "&noteId=" + noteId);
+    WebTarget target = client
+        .target(config.getProperty("base.url") + "/translation/remove/note?"
+            + "translationId=" + translationId + "&noteId=" + noteId);
 
-    Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken).delete();
+    Response response = target.request(MediaType.APPLICATION_XML)
+        .header("Authorization", authToken).delete();
 
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // do nothing, successful
@@ -1286,20 +1176,18 @@ public class TranslationClientRest extends RootClientRest implements
   @Override
   public Note addTranslationConceptNote(Long translationId, Long conceptId,
     String note, String authToken) throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Translation Client - add translation concept note - " + translationId
-            + ", " + conceptId + ", " + note);
+    Logger.getLogger(getClass())
+        .debug("Translation Client - add translation concept note - "
+            + translationId + ", " + conceptId + ", " + note);
     validateNotEmpty(translationId, "translationId");
     validateNotEmpty(conceptId, "conceptId");
     validateNotEmpty(note, "note");
     Client client = ClientBuilder.newClient();
-    WebTarget target =
-        client.target(config.getProperty("base.url")
-            + "/translation/concept/add/note?" + "translationId="
-            + translationId + "&conceptId=" + conceptId);
-    Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken).put(Entity.text(note));
+    WebTarget target = client.target(
+        config.getProperty("base.url") + "/translation/concept/add/note?"
+            + "translationId=" + translationId + "&conceptId=" + conceptId);
+    Response response = target.request(MediaType.APPLICATION_XML)
+        .header("Authorization", authToken).put(Entity.text(note));
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -1322,14 +1210,12 @@ public class TranslationClientRest extends RootClientRest implements
     validateNotEmpty(conceptId, "conceptId");
     validateNotEmpty(noteId, "noteId");
     Client client = ClientBuilder.newClient();
-    WebTarget target =
-        client.target(config.getProperty("base.url")
-            + "/translation/concept/remove/note?" + "conceptId=" + conceptId
-            + "&noteId=" + noteId);
+    WebTarget target = client.target(
+        config.getProperty("base.url") + "/translation/concept/remove/note?"
+            + "conceptId=" + conceptId + "&noteId=" + noteId);
 
-    Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken).delete();
+    Response response = target.request(MediaType.APPLICATION_XML)
+        .header("Authorization", authToken).delete();
 
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // do nothing, successful
@@ -1341,17 +1227,15 @@ public class TranslationClientRest extends RootClientRest implements
   /* see superclass */
   @Override
   public Concept getConcept(Long conceptId, String authToken) throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Translation Client - get concept for id " + conceptId);
+    Logger.getLogger(getClass())
+        .debug("Translation Client - get concept for id " + conceptId);
     validateNotEmpty(conceptId, "conceptId");
 
     Client client = ClientBuilder.newClient();
-    WebTarget target =
-        client.target(config.getProperty("base.url") + "/translation/concept/"
-            + conceptId);
-    Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken).get();
+    WebTarget target = client.target(
+        config.getProperty("base.url") + "/translation/concept/" + conceptId);
+    Response response = target.request(MediaType.APPLICATION_XML)
+        .header("Authorization", authToken).get();
 
     String resultString = response.readEntity(String.class);
 
@@ -1374,21 +1258,18 @@ public class TranslationClientRest extends RootClientRest implements
   @Override
   public StringList suggestTranslation(Long translationId, String name,
     String authToken) throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Translation Client - suggest translated name for translation "
+    Logger.getLogger(getClass())
+        .debug("Translation Client - suggest translated name for translation "
             + translationId);
 
     Client client = ClientBuilder.newClient();
 
-    WebTarget target =
-        client.target(config.getProperty("base.url")
-            + "/translation/memory/suggest?translationId=" + translationId
-            + "&name="
-            + URLEncoder.encode(name, "UTF-8").replaceAll("\\+", "%20"));
+    WebTarget target = client.target(config.getProperty("base.url")
+        + "/translation/memory/suggest?translationId=" + translationId
+        + "&name=" + URLEncoder.encode(name, "UTF-8").replaceAll("\\+", "%20"));
 
-    Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken).get();
+    Response response = target.request(MediaType.APPLICATION_XML)
+        .header("Authorization", authToken).get();
 
     StringList suggestions = response.readEntity(StringList.class);
 
@@ -1408,19 +1289,14 @@ public class TranslationClientRest extends RootClientRest implements
         "Translation Client - Batch suggest translations " + translationId);
 
     Client client = ClientBuilder.newClient();
-    String phrasesStringList =
-        ConfigUtility.getStringForGraph(phrases == null ? new StringList()
-            : phrases);
+    String phrasesStringList = ConfigUtility
+        .getStringForGraph(phrases == null ? new StringList() : phrases);
 
-    WebTarget target =
-        client.target(config.getProperty("base.url")
-            + "/translation/memory/suggest/batch?translationId="
-            + translationId);
+    WebTarget target = client.target(config.getProperty("base.url")
+        + "/translation/memory/suggest/batch?translationId=" + translationId);
 
-    Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken)
-            .post(Entity.xml(phrasesStringList));
+    Response response = target.request(MediaType.APPLICATION_XML)
+        .header("Authorization", authToken).post(Entity.xml(phrasesStringList));
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -1430,9 +1306,8 @@ public class TranslationClientRest extends RootClientRest implements
     }
 
     // converting to object
-    KeyValuesMap map =
-        (KeyValuesMap) ConfigUtility.getGraphForString(resultString,
-            KeyValuesMap.class);
+    KeyValuesMap map = (KeyValuesMap) ConfigUtility
+        .getGraphForString(resultString, KeyValuesMap.class);
 
     return map;
   }
@@ -1441,20 +1316,16 @@ public class TranslationClientRest extends RootClientRest implements
   @Override
   public Integer getLookupProgress(Long translationId, String authToken)
     throws Exception {
-    Logger
-        .getLogger(getClass())
-        .debug(
-            "Rest Client - get status for lookup of names and statuses of translation concepts "
-                + translationId);
+    Logger.getLogger(getClass()).debug(
+        "Rest Client - get status for lookup of names and statuses of translation concepts "
+            + translationId);
     validateNotEmpty(translationId, "translationId");
     Client client = ClientBuilder.newClient();
-    WebTarget target =
-        client.target(config.getProperty("base.url")
-            + "/translation/lookup/status" + "?translationId=" + translationId);
+    WebTarget target = client.target(config.getProperty("base.url")
+        + "/translation/lookup/status" + "?translationId=" + translationId);
 
-    Response response =
-        target.request(MediaType.TEXT_PLAIN).header("Authorization", authToken)
-            .get();
+    Response response = target.request(MediaType.TEXT_PLAIN)
+        .header("Authorization", authToken).get();
 
     Integer resultInteger = response.readEntity(Integer.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -1476,14 +1347,12 @@ public class TranslationClientRest extends RootClientRest implements
             + translationId);
     validateNotEmpty(translationId, "translationId");
     Client client = ClientBuilder.newClient();
-    WebTarget target =
-        client.target(config.getProperty("base.url")
-            + "/translation/lookup/start?" + "translationId=" + translationId
-            + (background != null ? "&background=" + background : ""));
+    WebTarget target = client.target(config.getProperty("base.url")
+        + "/translation/lookup/start?" + "translationId=" + translationId
+        + (background != null ? "&background=" + background : ""));
 
-    Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken).get();
+    Response response = target.request(MediaType.APPLICATION_XML)
+        .header("Authorization", authToken).get();
 
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -1496,15 +1365,14 @@ public class TranslationClientRest extends RootClientRest implements
   @Override
   public LanguageDescriptionTypeList getLanguageDescriptionTypes(
     String authToken) throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Translation Client - get language description types");
+    Logger.getLogger(getClass())
+        .debug("Translation Client - get language description types");
 
     Client client = ClientBuilder.newClient();
     WebTarget target =
         client.target(config.getProperty("base.url") + "/translation/langpref");
-    Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken).get();
+    Response response = target.request(MediaType.APPLICATION_XML)
+        .header("Authorization", authToken).get();
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -1514,27 +1382,25 @@ public class TranslationClientRest extends RootClientRest implements
     }
 
     // converting to object
-    return (LanguageDescriptionTypeListJpa) ConfigUtility.getGraphForString(
-        resultString, LanguageDescriptionTypeListJpa.class);
+    return (LanguageDescriptionTypeListJpa) ConfigUtility
+        .getGraphForString(resultString, LanguageDescriptionTypeListJpa.class);
   }
 
   /* see superclass */
   @Override
   public Translation recoverTranslation(Long projectId, Long translationId,
     String authToken) throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Translation Client - recover translation " + projectId + ", "
+    Logger.getLogger(getClass())
+        .debug("Translation Client - recover translation " + projectId + ", "
             + translationId);
     validateNotEmpty(translationId, "translationId");
     validateNotEmpty(projectId, "projectId");
 
     Client client = ClientBuilder.newClient();
-    WebTarget target =
-        client.target(config.getProperty("base.url") + "/translation/recover"
-            + translationId + "?projectId=" + projectId);
-    Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken).get();
+    WebTarget target = client.target(config.getProperty("base.url")
+        + "/translation/recover" + translationId + "?projectId=" + projectId);
+    Response response = target.request(MediaType.APPLICATION_XML)
+        .header("Authorization", authToken).get();
 
     if (response.getStatus() == 204) {
       return null;
@@ -1555,18 +1421,16 @@ public class TranslationClientRest extends RootClientRest implements
   @Override
   public Long getOriginForStagedTranslation(Long stagedTranslationId,
     String authToken) throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Rest Client - get origin id given the staged Translation Id "
+    Logger.getLogger(getClass())
+        .debug("Rest Client - get origin id given the staged Translation Id "
             + stagedTranslationId);
     validateNotEmpty(stagedTranslationId, "stagedTranslationId");
     Client client = ClientBuilder.newClient();
-    WebTarget target =
-        client.target(config.getProperty("base.url") + "/origin"
-            + "?stagedTranslationId=" + stagedTranslationId);
+    WebTarget target = client.target(config.getProperty("base.url") + "/origin"
+        + "?stagedTranslationId=" + stagedTranslationId);
 
-    Response response =
-        target.request(MediaType.TEXT_PLAIN).header("Authorization", authToken)
-            .get();
+    Response response = target.request(MediaType.TEXT_PLAIN)
+        .header("Authorization", authToken).get();
 
     Long originId = response.readEntity(Long.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -1581,22 +1445,18 @@ public class TranslationClientRest extends RootClientRest implements
 
   /* see superclass */
   @Override
-  public KeyValuePairList getFieldFilters(Long projectId,
-    String workflowStatus, String authToken) throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Translation Client - filters - " + projectId);
+  public KeyValuePairList getFieldFilters(Long projectId, String workflowStatus,
+    String authToken) throws Exception {
+    Logger.getLogger(getClass())
+        .debug("Translation Client - filters - " + projectId);
 
     Client client = ClientBuilder.newClient();
-    WebTarget target =
-        client
-            .target(config.getProperty("base.url")
-                + "/translation/filters"
-                + (projectId == null ? "?" : "?projectId=" + projectId + "&")
-                + (workflowStatus == null ? "" : "workflowStatus="
-                    + workflowStatus));
-    Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken).get();
+    WebTarget target = client.target(config.getProperty("base.url")
+        + "/translation/filters"
+        + (projectId == null ? "?" : "?projectId=" + projectId + "&")
+        + (workflowStatus == null ? "" : "workflowStatus=" + workflowStatus));
+    Response response = target.request(MediaType.APPLICATION_XML)
+        .header("Authorization", authToken).get();
 
     if (response.getStatus() == 204) {
       return null;

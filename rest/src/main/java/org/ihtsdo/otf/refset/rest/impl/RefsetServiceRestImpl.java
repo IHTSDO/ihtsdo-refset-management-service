@@ -972,7 +972,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
   }
 
   /* see superclass */
-  @GET
+  @POST
   @Override
   @Produces("application/octet-stream")
   @Path("/export/members")
@@ -980,6 +980,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
   public InputStream exportMembers(
     @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
     @ApiParam(value = "Import handler id, e.g. \"DEFAULT\"", required = true) @QueryParam("handlerId") String ioHandlerInfoId,
+    @ApiParam(value = "Query, e.g. \"aspirin\"", required = true) @QueryParam("query") String query,
+    @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
@@ -1008,10 +1010,10 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
 
       // export the members
       return handler.exportMembers(refset,
-          refsetService
-              .findMembersForRefset(refset.getId(),
-                  "(memberType:INCLUSION OR memberType:MEMBER)", null)
-              .getObjects());
+          refsetService.findMembersForRefset(refset.getId(),
+              query == null ? "(memberType:INCLUSION OR memberType:MEMBER)"
+                  : query + " AND (memberType:INCLUSION OR memberType:MEMBER)",
+              pfs).getObjects());
 
     } catch (Exception e) {
       handleException(e, "trying to export members");

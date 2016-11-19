@@ -169,12 +169,14 @@ public interface RefsetServiceRest {
    *
    * @param refsetId the refset id
    * @param ioHandlerInfoId the io handler info id
+   * @param query the query
+   * @param pfs the pfs
    * @param authToken the auth token
    * @return the input stream
    * @throws Exception the exception
    */
   public InputStream exportMembers(Long refsetId, String ioHandlerInfoId,
-    String authToken) throws Exception;
+    String query, PfsParameterJpa pfs, String authToken) throws Exception;
 
   /**
    * Adds the refset member.
@@ -243,8 +245,8 @@ public interface RefsetServiceRest {
    * @return the concept refset member
    * @throws Exception the exception
    */
-  public ConceptRefsetMember addRefsetExclusion(Long refsetId,
-    String conceptId, boolean staged, String authToken) throws Exception;
+  public ConceptRefsetMember addRefsetExclusion(Long refsetId, String conceptId,
+    boolean staged, String authToken) throws Exception;
 
   /**
    * Returns the import refset handlers.
@@ -536,8 +538,8 @@ public interface RefsetServiceRest {
    * @param authToken the auth token
    * @throws Exception the exception
    */
-  public void removeRefsetMembersForExpression(Long refsetId,
-    String expression, String authToken) throws Exception;
+  public void removeRefsetMembersForExpression(Long refsetId, String expression,
+    String authToken) throws Exception;
 
   /**
    * Optimize definition.
@@ -618,8 +620,8 @@ public interface RefsetServiceRest {
    * @return the field list values
    * @throws Exception the exception
    */
-  public KeyValuePairList getFieldFilters(Long projectId,
-    String workflowStatus, String authToken) throws Exception;
+  public KeyValuePairList getFieldFilters(Long projectId, String workflowStatus,
+    String authToken) throws Exception;
 
   /**
    * Assign refset id.

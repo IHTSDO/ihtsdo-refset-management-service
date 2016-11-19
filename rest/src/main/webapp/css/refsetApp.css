@@ -255,3 +255,10 @@ a:hover {
 	padding-right: 10px;
 	padding-bottom: 5px;
 }
+
+/* Make the pagination control smaller so it works with btn-xs */
+.pagination-sm>li>a, .pagination-sm>li>span {
+	padding: 3px 5.5px;
+	font-size: 12px;
+	line-height: 1.5;
+}

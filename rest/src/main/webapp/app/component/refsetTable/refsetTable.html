@@ -17,7 +17,7 @@
         <br class="visible-xs-inline" />
       </span>
 
-      <input class="input-filter" placeholder="Search"
+      <input placeholder="Search"
         ng-show="refsets.totalCount > visibleSize || paging['refset'].filter"
         type="text" ng-model="paging['refset'].filter"
         ng-model-options="{ debounce: 300 }" ng-change="getRefsets()"
@@ -673,34 +673,34 @@
             title="Remove all members" class="noul material-icons md-18">delete</i>
         </span>
       </h4>
-      <span
-        ng-show="selected.refset && !paging['member'].filter && !paging['member'].typeFilter && selected.refset.members.totalCount == 0">
-        <br />
-        <span ng-show="value !='AVAILABLE'" class="alert alert-warning">Refset
-          has no members</span>
-        <span ng-show="value =='AVAILABLE'" class="alert alert-warning">No
-          members, assign refset to edit</span>
-      </span>
 
       <div>
-        <span style="display: block;">
-          <uib-pagination items-per-page="pageSize" max-size="5"
-            boundary-links="true" class="pagination-xs" previous-text="&lsaquo;"
-            next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;"
+        <span style="display: block;"
+          ng-show="selected.refset.members.totalCount > pageSize || paging['member'].filter || withNotesOnly">
+          <uib-pagination
+            ng-show="selected.refset.members.totalCount > pageSize"
+            items-per-page="pageSize" max-size="5" boundary-links="true"
+            class="pagination-sm" previous-text="&lsaquo;" next-text="&rsaquo;"
+            first-text="&laquo;" last-text="&raquo;"
             ng-show="selected.refset.members.totalCount > pageSize"
             total-items="selected.refset.members.totalCount"
             ng-model="paging['member'].page"
             ng-change="getMembers(selected.refset)"></uib-pagination>
 
-          <input class="input-filter" placeholder="Search"
-            ng-show="selected.refset.members.totalCount > pageSize || paging['member'].filter"
-            type="text" ng-model="paging['member'].filter"
+          <input placeholder="Search" type="text"
+            ng-model="paging['member'].filter"
             ng-model-options="{ debounce: 300 }"
             ng-change="getMembers(selected.refset)">
 
+          <span class="nobreak">
+            <span uib-tooltip="Members with notes">Notes:</span>
+            <input type="checkbox" ng-model="withNotesOnly"
+              ng-change="getMembers(selected.refset)">
+          </span>
+
           <button class="btn btn-xs btn-warning"
-            ng-show="paging['member'].filter"
-            ng-click="paging['member'].filter = ''; getMembers(selected.refset)"
+            ng-show="paging['member'].filter || withNotesOnly"
+            ng-click="paging['member'].filter = ''; withNotesOnly = false; getMembers(selected.refset)"
             title="Click to clear filter text">Clear</button>
 
         </span>
@@ -807,7 +807,15 @@
           </tbody>
         </table>
         <span
-          ng-show="paging['member'].filter && selected.refset.members.totalCount == 0">
+          ng-show="selected.refset && !withNotesOnly && !paging['member'].filter && !paging['member'].typeFilter && selected.refset.members.totalCount == 0">
+          <br />
+          <span ng-show="value !='AVAILABLE'" class="alert alert-warning">Refset
+            has no members</span>
+          <span ng-show="value =='AVAILABLE'" class="alert alert-warning">No
+            members, assign refset to edit</span>
+        </span>
+        <span
+          ng-show="(paging['member'].filter || withNotesOnly) && selected.refset.members.totalCount == 0">
           <br />
           <span class="alert alert-warning"> No refset members matching
             filter </span>

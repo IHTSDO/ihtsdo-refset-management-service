@@ -52,6 +52,7 @@ tsApp
               $scope.project = null;
               $scope.cancelling = null;
               $scope.showLatest = true;
+              $scope.withNotesOnly = false;
               $scope.filters = [];
 
               // Page metadata
@@ -319,6 +320,20 @@ tsApp
               // Get $scope.members
               $scope.getMembers = function(refset) {
 
+                var pfs = prepPfs();
+
+                refsetService.findRefsetMembersForQuery(refset.id, $scope.paging['member'].filter,
+                  pfs).then(
+                // Success
+                function(data) {
+                  refset.members = data.members;
+                  refset.members.totalCount = data.totalCount;
+                });
+
+              };
+
+              // Prepare PFS for searches and for export
+              function prepPfs() {
                 var pfs = {
                   startIndex : ($scope.paging['member'].page - 1) * $scope.pageSize,
                   maxResults : $scope.pageSize,
@@ -346,15 +361,14 @@ tsApp
                   }
                 }
 
-                refsetService.findRefsetMembersForQuery(refset.id, $scope.paging['member'].filter,
-                  pfs).then(
-                // Success
-                function(data) {
-                  refset.members = data.members;
-                  refset.members.totalCount = data.totalCount;
-                });
-
-              };
+                if ($scope.withNotesOnly && pfs.queryRestriction) {
+                  pfs.queryRestriction += ' AND notes.value:[* TO *]';
+                }
+                if ($scope.withNotesOnly && !pfs.queryRestriction) {
+                  pfs.queryRestriction = 'notes.value:[* TO *]';
+                }
+                return pfs;
+              }
 
               // Get $scope.refsetReleaseInfo
               $scope.getRefsetReleaseInfo = function(refset) {
@@ -1272,6 +1286,14 @@ tsApp
                       } else {
                         return $scope.metadata.exportHandlers;
                       }
+                    },
+                    query : function() {
+                      return $scope.paging['member'].filter;
+                    },
+                    pfs : function() {
+                      var pfs = prepPfs();
+                      pfs.startIndex = -1;
+                      return pfs;
                     }
                   }
                 });
@@ -1289,13 +1311,13 @@ tsApp
 
               // Import/Export controller
               var ImportExportModalCtrl = function($scope, $uibModalInstance, refset, operation,
-                type, ioHandlers) {
+                type, ioHandlers, query, pfs) {
                 console.debug('Entered import export modal control', refset.id, ioHandlers,
                   operation, type);
-
+                $scope.query = query;
+                $scope.pfs = pfs;
                 $scope.refset = refset;
                 $scope.ioHandlers = [];
-
                 // Skip "with name" handlers if user is not logged in
                 // IHTSDO-specific, may be able make this more data driven
                 for (var i = 0; i < ioHandlers.length; i++) {
@@ -1326,16 +1348,18 @@ tsApp
                 $scope.errors = [];
                 $scope.importStarted = false;
                 $scope.importFinished = false;
-
+                if ($scope.query || $scope.pfs) {
+                  $scope.warnings
+                    .push("Export is based on current search criteria and may not include all members.");
+                }
                 // Handle export
                 $scope.export = function(file) {
                   if (type == 'Definition') {
-                    refsetService.exportDefinition($scope.refset, $scope.selectedIoHandler.id,
-                      $scope.selectedIoHandler.fileTypeFilter);
+                    refsetService.exportDefinition($scope.refset, $scope.selectedIoHandler);
                   }
                   if (type == 'Refset Members') {
-                    refsetService.exportMembers($scope.refset, $scope.selectedIoHandler.id,
-                      $scope.selectedIoHandler.fileTypeFilter);
+                    refsetService.exportMembers($scope.refset, $scope.selectedIoHandler,
+                      $scope.query, $scope.pfs);
                   }
                   $uibModalInstance.close(refset);
                 };
@@ -2565,8 +2589,8 @@ tsApp
                 $scope.pageSize = 5;
                 $scope.paging = paging;
                 $scope.metadata = metadata;
-                $scope.versions = angular
-                  .copy(metadata.versions[$scope.newTerminology].sort().reverse());
+                $scope.versions = angular.copy(metadata.versions[$scope.newTerminology].sort()
+                  .reverse());
                 $scope.newVersion = $scope.versions[0];
                 $scope.errors = [];
                 $scope.statusTypes = [ 'Active', 'Inactive' ];
@@ -2673,8 +2697,8 @@ tsApp
 
                 // Handle terminology selected
                 $scope.terminologySelected = function() {
-                  $scope.versions = angular.copy($scope.metadata.versions[$scope.newTerminology].sort()
-                    .reverse());
+                  $scope.versions = angular.copy($scope.metadata.versions[$scope.newTerminology]
+                    .sort().reverse());
                   $scope.newVersion = $scope.versions[0];
                 };
 

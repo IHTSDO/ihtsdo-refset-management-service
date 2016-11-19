@@ -104,8 +104,8 @@ import com.wordnik.swagger.annotations.ApiParam;
     MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
 })
 @Api(value = "/translation", description = "Operations to manage translations and translated concepts")
-public class TranslationServiceRestImpl extends RootServiceRestImpl implements
-    TranslationServiceRest {
+public class TranslationServiceRestImpl extends RootServiceRestImpl
+    implements TranslationServiceRest {
 
   /** The commit ct. */
   final int commitCt = 2000;
@@ -184,15 +184,16 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     final TranslationService translationService = new TranslationServiceJpa();
     try {
       Logger.getLogger(getClass())
-          .info(
-              "RESTful call GET (Translation): get concept, conceptId:"
-                  + conceptId);
+          .info("RESTful call GET (Translation): get concept, conceptId:"
+              + conceptId);
 
       authorizeApp(securityService, authToken, "get the concept",
           UserRole.VIEWER);
 
       final Concept concept = translationService.getConcept(conceptId);
-
+      if (concept != null) {
+        translationService.handleLazyInit(concept);
+      }
       return concept;
     } catch (Exception e) {
       handleException(e, "trying to get a concept");
@@ -252,8 +253,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(getClass()).info(
-        "RESTful call POST (Translation): translations");
+    Logger.getLogger(getClass())
+        .info("RESTful call POST (Translation): translations");
 
     final TranslationService translationService = new TranslationServiceJpa();
     try {
@@ -285,8 +286,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Translation, e.g. newTranslation", required = true) TranslationJpa translation,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    Logger.getLogger(getClass()).info(
-        "RESTful call PUT (Translation): /add " + translation);
+    Logger.getLogger(getClass())
+        .info("RESTful call PUT (Translation): /add " + translation);
 
     if (translation.getProject() == null
         || translation.getProject().getId() == null) {
@@ -310,17 +311,18 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       // Hard to enforce with primary key because effectiveTime can be null
       if (translation.getTerminologyId() != null) {
         final TranslationList existingTranslations =
-            translationService.findTranslationsForQuery("terminologyId:"
-                + translation.getTerminologyId(), null);
-        for (final Translation translation2 : existingTranslations.getObjects()) {
+            translationService.findTranslationsForQuery(
+                "terminologyId:" + translation.getTerminologyId(), null);
+        for (final Translation translation2 : existingTranslations
+            .getObjects()) {
           if ((translation.getTerminologyId() + translation.getName()
               + translation.getDescription() + translation.getProjectId()
               + translation.isProvisional() + translation.getEffectiveTime())
-              .equals((translation2.getTerminologyId() + translation2.getName()
-                  + translation2.getDescription()
-                  + translation2.getProject().getId()
-                  + translation2.isProvisional() + translation2
-                  .getEffectiveTime()))) {
+                  .equals((translation2.getTerminologyId()
+                      + translation2.getName() + translation2.getDescription()
+                      + translation2.getProject().getId()
+                      + translation2.isProvisional()
+                      + translation2.getEffectiveTime()))) {
             throw new LocalException(
                 "A translation with this refset, name, and description already exists in the project");
           }
@@ -367,37 +369,38 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Translation, e.g. existingTranslation", required = true) TranslationJpa translation,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    Logger.getLogger(getClass()).info(
-        "RESTful call POST (Translation): /update " + translation);
+    Logger.getLogger(getClass())
+        .info("RESTful call POST (Translation): /update " + translation);
 
     // Create service and configure transaction scope
     final TranslationService translationService = new TranslationServiceJpa();
     try {
-      final String userName =
-          authorizeProject(translationService, translation.getProjectId(),
-              securityService, authToken, "update translation", UserRole.AUTHOR);
+      final String userName = authorizeProject(translationService,
+          translation.getProjectId(), securityService, authToken,
+          "update translation", UserRole.AUTHOR);
       // Check preconditions
       // No translation with same terminologyId, name, description, project id,
       // provisional, effectiveTime
       // Hard to enforce with primary key because effectiveTime can be null
       if (translation.getTerminologyId() != null) {
         final TranslationList existingTranslations =
-            translationService.findTranslationsForQuery("terminologyId:"
-                + translation.getTerminologyId()
-                + " AND NOT workflowStatus:PUBLISHED"
-                + " AND NOT workflowStatus:BETA", null);
-        for (final Translation translation2 : existingTranslations.getObjects()) {
+            translationService.findTranslationsForQuery(
+                "terminologyId:" + translation.getTerminologyId()
+                    + " AND NOT workflowStatus:PUBLISHED"
+                    + " AND NOT workflowStatus:BETA",
+                null);
+        for (final Translation translation2 : existingTranslations
+            .getObjects()) {
           if (!translation.getId().equals(translation2.getId())
               && (translation.getTerminologyId() + translation.getName()
                   + translation.getDescription() + translation.getProjectId()
-                  + translation.isProvisional() + translation
-                    .getEffectiveTime()).equals((translation2
-                  .getTerminologyId()
-                  + translation2.getName()
-                  + translation2.getDescription()
-                  + translation2.getProject().getId()
-                  + translation2.isProvisional() + translation2
-                  .getEffectiveTime()))) {
+                  + translation.isProvisional()
+                  + translation.getEffectiveTime()).equals(
+                      (translation2.getTerminologyId() + translation2.getName()
+                          + translation2.getDescription()
+                          + translation2.getProject().getId()
+                          + translation2.isProvisional()
+                          + translation2.getEffectiveTime()))) {
             throw new LocalException(
                 "A translation with this refset, name, and description already exists in the project");
           }
@@ -431,8 +434,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Cascade, e.g. true", required = true) @QueryParam("cascade") boolean cascade,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    Logger.getLogger(getClass()).info(
-        "RESTful call DELETE (Translation): /remove/" + translationId);
+    Logger.getLogger(getClass())
+        .info("RESTful call DELETE (Translation): /remove/" + translationId);
 
     final TranslationService translationService = new TranslationServiceJpa();
     try {
@@ -444,9 +447,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
             "translation must have a project with a non null identifier.");
       }
       final String userName =
-          authorizeProject(translationService,
-              translation.getProject().getId(), securityService, authToken,
-              "removerefset", UserRole.AUTHOR);
+          authorizeProject(translationService, translation.getProject().getId(),
+              securityService, authToken, "removerefset", UserRole.AUTHOR);
 
       // If in publication process, don't allow
       if (translation.isInPublicationProcess()) {
@@ -455,9 +457,9 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       }
 
       if (translation.isStaged()) {
-        throw new LocalException("Refset is staged: "
-            + translation.getStagingType()
-            + " must be cancelled before removing it");
+        throw new LocalException(
+            "Refset is staged: " + translation.getStagingType()
+                + " must be cancelled before removing it");
       }
 
       if (translation.getWorkflowStatus() == WorkflowStatus.BETA) {
@@ -474,7 +476,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
           // translation
           for (final TrackingRecord record : workflowService
               .findTrackingRecordsForQuery("translationId:" + translationId,
-                  null).getObjects()) {
+                  null)
+              .getObjects()) {
             workflowService.removeTrackingRecord(record.getId());
           }
 
@@ -517,7 +520,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   }
 
   /* see superclass */
-  @GET
+  @POST
   @Override
   @Produces("application/octet-stream")
   @Path("/export")
@@ -525,12 +528,13 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   public InputStream exportConcepts(
     @ApiParam(value = "Translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
     @ApiParam(value = "Import handler id, e.g. \"DEFAULT\"", required = true) @QueryParam("handlerId") String ioHandlerInfoId,
+    @ApiParam(value = "Query, e.g. \"aspirin\"", required = true) @QueryParam("query") String query,
+    @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(getClass()).info(
-        "RESTful call GET (Translation): /export " + translationId + ", "
-            + ioHandlerInfoId);
+    Logger.getLogger(getClass()).info("RESTful call GET (Translation): /export "
+        + translationId + ", " + ioHandlerInfoId);
 
     final TranslationService translationService = new TranslationServiceJpa();
     try {
@@ -552,9 +556,10 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
         throw new Exception("invalid handler id " + ioHandlerInfoId);
       }
 
-      return handler.exportConcepts(translation, translationService
-          .findConceptsForTranslation(translation.getId(), "", null)
-          .getObjects());
+      return handler.exportConcepts(translation,
+          translationService
+              .findConceptsForTranslation(translation.getId(), query, pfs)
+              .getObjects());
 
     } catch (Exception e) {
       handleException(e, "trying to export translation concepts");
@@ -574,18 +579,17 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Translation id, e.g. 3", required = true) @PathParam("translationId") Long translationId,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    Logger.getLogger(getClass()).info(
-        "RESTful call DELETE (Translation): concept/remove/all/"
+    Logger.getLogger(getClass())
+        .info("RESTful call DELETE (Translation): concept/remove/all/"
             + translationId);
 
     final WorkflowService translationService = new WorkflowServiceJpa();
     try {
       final Translation translation =
           translationService.getTranslation(translationId);
-      final String userName =
-          authorizeProject(translationService,
-              translation.getProject().getId(), securityService, authToken,
-              "remove all concepts", UserRole.AUTHOR);
+      final String userName = authorizeProject(translationService,
+          translation.getProject().getId(), securityService, authToken,
+          "remove all concepts", UserRole.AUTHOR);
       translationService.setTransactionPerOperation(false);
       translationService.beginTransaction();
 
@@ -640,9 +644,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       authorizeApp(securityService, authToken, "find translation concepts",
           UserRole.VIEWER);
 
-      final ConceptList list =
-          translationService.findConceptsForTranslation(translationId, query,
-              pfs);
+      final ConceptList list = translationService
+          .findConceptsForTranslation(translationId, query, pfs);
       // Graph resolver - get descriptions and language refset entries
       for (final Concept c : list.getObjects()) {
         translationService.handleLazyInit(c);
@@ -721,9 +724,9 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(getClass()).info(
-        "RESTful call GET (Translation): /import/begin " + translationId + ", "
-            + ioHandlerInfoId);
+    Logger.getLogger(getClass())
+        .info("RESTful call GET (Translation): /import/begin " + translationId
+            + ", " + ioHandlerInfoId);
 
     final TranslationService translationService = new TranslationServiceJpa();
     try {
@@ -735,10 +738,9 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       }
 
       // Authorize the call
-      final String userName =
-          authorizeProject(translationService,
-              translation.getProject().getId(), securityService, authToken,
-              "import translation concepts", UserRole.AUTHOR);
+      final String userName = authorizeProject(translationService,
+          translation.getProject().getId(), securityService, authToken,
+          "import translation concepts", UserRole.AUTHOR);
 
       // Check staging flag
       if (translation.isStaged()) {
@@ -770,8 +772,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       // already
       final ValidationResult result = new ValidationResultJpa();
       if (translation.getConcepts().size() != 0) {
-        result
-            .addError("Translation already contains concepts, this operation will add or update concepts");
+        result.addError(
+            "Translation already contains concepts, this operation will add or update concepts");
       } else {
         return result;
       }
@@ -802,8 +804,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(getClass()).info(
-        "RESTful call GET (Translation): /import/resume " + translationId
+    Logger.getLogger(getClass())
+        .info("RESTful call GET (Translation): /import/resume " + translationId
             + ", " + ioHandlerInfoId);
 
     final TranslationService translationService = new TranslationServiceJpa();
@@ -831,8 +833,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       // already - same as begin - new opportunity to confirm/reject
       final ValidationResult result = new ValidationResultJpa();
       if (translation.getConcepts().size() != 0) {
-        result
-            .addError("Translation already contains concepts, this operation will add more concepts");
+        result.addError(
+            "Translation already contains concepts, this operation will add more concepts");
       } else {
         return result;
       }
@@ -860,8 +862,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(getClass()).info(
-        "RESTful call POST (Translation): /import/finish " + translationId
+    Logger.getLogger(getClass())
+        .info("RESTful call POST (Translation): /import/finish " + translationId
             + ", " + ioHandlerInfoId);
 
     final TranslationService translationService = new TranslationServiceJpa();
@@ -876,10 +878,9 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       }
 
       // Authorize the call
-      final String userName =
-          authorizeProject(translationService,
-              translation.getProject().getId(), securityService, authToken,
-              "import translation concepts", UserRole.AUTHOR);
+      final String userName = authorizeProject(translationService,
+          translation.getProject().getId(), securityService, authToken,
+          "import translation concepts", UserRole.AUTHOR);
 
       // verify that staged
       if (translation.getStagingType() != Translation.StagingType.IMPORT) {
@@ -888,9 +889,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       }
 
       // get the staged change tracking object
-      final StagedTranslationChange change =
-          translationService.getStagedTranslationChangeFromOrigin(translation
-              .getId());
+      final StagedTranslationChange change = translationService
+          .getStagedTranslationChangeFromOrigin(translation.getId());
 
       // Obtain the import handler
       ImportTranslationHandler handler =
@@ -902,11 +902,11 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       // Get copies of concepts for the current translation
       final Map<String, Concept> conceptMap = new HashMap<>();
       for (final Concept concept : translation.getConcepts()) {
-        conceptMap.put(concept.getTerminologyId(), new ConceptJpa(concept,
-            false));
+        conceptMap.put(concept.getTerminologyId(),
+            new ConceptJpa(concept, false));
       }
-      Logger.getLogger(getClass()).info(
-          "  translation count = " + conceptMap.size());
+      Logger.getLogger(getClass())
+          .info("  translation count = " + conceptMap.size());
 
       // Only allow delta import if there is at least one concept
       if (conceptMap.size() == 0 && handler.isDeltaHandler()) {
@@ -941,16 +941,16 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
         // If orig concept exists, read its descriptions
         if (origConcept != null) {
-          Logger.getLogger(getClass()).debug(
-              "    orig concept = " + origConcept.getTerminologyId() + ", "
-                  + origConcept);
-          for (final Description desc : translationService.getConcept(
-              origConcept.getId()).getDescriptions()) {
+          Logger.getLogger(getClass()).debug("    orig concept = "
+              + origConcept.getTerminologyId() + ", " + origConcept);
+          for (final Description desc : translationService
+              .getConcept(origConcept.getId()).getDescriptions()) {
             final Description copy = new DescriptionJpa(desc, false);
             origConcept.getDescriptions().add(copy);
             origDescMap.put(desc.getTerminologyId(), copy);
           }
-          Logger.getLogger(getClass()).debug("  orig desc map = " + origDescMap);
+          Logger.getLogger(getClass())
+              .debug("  orig desc map = " + origDescMap);
         }
 
         // Otherwise add concept
@@ -978,10 +978,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
         // Process descriptions from import
         for (final Description description : concept.getDescriptions()) {
 
-          Logger.getLogger(getClass())
-              .debug(
-                  "  desc = " + description.getTerminologyId() + ", "
-                      + description);
+          Logger.getLogger(getClass()).debug("  desc = "
+              + description.getTerminologyId() + ", " + description);
 
           // Get original description
           Description origDesc =
@@ -1004,16 +1002,15 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
           // If orig description exists, read its members
           if (origDesc != null) {
-            Logger.getLogger(getClass()).debug(
-                "    orig desc = " + origDesc.getTerminologyId() + ", "
-                    + origDesc);
+            Logger.getLogger(getClass()).debug("    orig desc = "
+                + origDesc.getTerminologyId() + ", " + origDesc);
             for (final LanguageRefsetMember member : translationService
                 .getDescription(origDesc.getId()).getLanguageRefsetMembers()) {
               origDesc.getLanguageRefsetMembers().add(member);
               origMemberMap.put(member.getTerminologyId(), member);
             }
-            Logger.getLogger(getClass()).debug(
-                "    orig member map = " + origMemberMap);
+            Logger.getLogger(getClass())
+                .debug("    orig member map = " + origMemberMap);
           }
 
           // Otherwise, add the description
@@ -1028,10 +1025,10 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
             origConcept.getDescriptions().add(description);
             // Copy the result to detach it - otherwise they share the same
             // member list
-            origDesc =
-                new DescriptionJpa(
-                    translationService.addDescription(description), false);
-            Logger.getLogger(getClass()).debug("      id = " + origDesc.getId());
+            origDesc = new DescriptionJpa(
+                translationService.addDescription(description), false);
+            Logger.getLogger(getClass())
+                .debug("      id = " + origDesc.getId());
           }
 
           // Wire concept
@@ -1051,9 +1048,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
             // If orig member exists, log it
             if (origMember != null) {
-              Logger.getLogger(getClass()).debug(
-                  "      orig member = " + origMember.getTerminologyId() + ", "
-                      + origMember);
+              Logger.getLogger(getClass()).debug("      orig member = "
+                  + origMember.getTerminologyId() + ", " + origMember);
             }
 
             // Otherwise, add language member
@@ -1065,9 +1061,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
               member.setPublished(false);
               member.setDescriptionId(origDesc.getTerminologyId());
               member.setLastModifiedBy(userName);
-              origMember =
-                  translationService.addLanguageRefsetMember(member,
-                      translation.getTerminology());
+              origMember = translationService.addLanguageRefsetMember(member,
+                  translation.getTerminology());
               origDesc.getLanguageRefsetMembers().add(origMember);
               membersChanged = true;
             }
@@ -1117,9 +1112,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
           }
 
           // if members changed or description already existed, update
-          else if (membersChanged
-              || (handler.isDeltaHandler() && origDesc != null && description
-                  .isActive())) {
+          else if (membersChanged || (handler.isDeltaHandler()
+              && origDesc != null && description.isActive())) {
             Logger.getLogger(getClass()).debug("    UPDATE DESC");
             // Update fields
             origDesc.setCaseSignificanceId(description.getCaseSignificanceId());
@@ -1170,8 +1164,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       }
       translationService.commitClearBegin();
 
-      Logger.getLogger(getClass()).info(
-          "  translation import count = " + objectCt);
+      Logger.getLogger(getClass())
+          .info("  translation import count = " + objectCt);
       Logger.getLogger(getClass()).info("  total = " + conceptMap.size());
 
       // Remove the staged translation change and set staging type back to null
@@ -1227,10 +1221,9 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       }
 
       // Authorize the call
-      final String userName =
-          authorizeProject(translationService,
-              translation.getProject().getId(), securityService, authToken,
-              "import translation concepts", UserRole.AUTHOR);
+      final String userName = authorizeProject(translationService,
+          translation.getProject().getId(), securityService, authToken,
+          "import translation concepts", UserRole.AUTHOR);
 
       // Check staging flag
       if (translation.getStagingType() != Translation.StagingType.IMPORT) {
@@ -1239,9 +1232,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       }
 
       // Remove the staged translation change and set staging type back to null
-      StagedTranslationChange change =
-          translationService.getStagedTranslationChangeFromOrigin(translation
-              .getId());
+      StagedTranslationChange change = translationService
+          .getStagedTranslationChangeFromOrigin(translation.getId());
       translationService.removeStagedTranslationChange(change.getId());
       translation.setStagingType(null);
       translation.setLastModifiedBy(userName);
@@ -1264,30 +1256,29 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Concept, e.g. newConcept", required = true) ConceptJpa concept,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    Logger.getLogger(getClass()).info(
-        "RESTful call PUT (Translation): /concept/add " + concept);
+    Logger.getLogger(getClass())
+        .info("RESTful call PUT (Translation): /concept/add " + concept);
 
     final TranslationService translationService = new TranslationServiceJpa();
     translationService.setTransactionPerOperation(false);
     translationService.beginTransaction();
     try {
       if (concept.getTranslation() == null) {
-        throw new Exception("Concept does not have a valid translation "
-            + concept.getId());
+        throw new Exception(
+            "Concept does not have a valid translation " + concept.getId());
       }
       // Load translation
       Translation translation =
           translationService.getTranslation(concept.getTranslation().getId());
       if (translation == null) {
-        throw new Exception("Concept does not have a valid translation "
-            + concept.getId());
+        throw new Exception(
+            "Concept does not have a valid translation " + concept.getId());
       }
 
       // Authorize the call
-      final String userName =
-          authorizeProject(translationService,
-              translation.getProject().getId(), securityService, authToken,
-              "add translation concept", UserRole.AUTHOR);
+      final String userName = authorizeProject(translationService,
+          translation.getProject().getId(), securityService, authToken,
+          "add translation concept", UserRole.AUTHOR);
 
       // Check to see if the concept already exists
       for (final Concept c : translation.getConcepts()) {
@@ -1334,8 +1325,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       newConcept.setLastModifiedBy(userName);
       translationService.updateConcept(newConcept);
 
-      addLogEntry(translationService, userName, "ADD concept", translation
-          .getProject().getId(), translation.getId(),
+      addLogEntry(translationService, userName, "ADD concept",
+          translation.getProject().getId(), translation.getId(),
           newConcept.getTerminologyId() + ": " + newConcept.getName());
 
       translationService.commit();
@@ -1359,8 +1350,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Concept", required = true) ConceptJpa concept,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    Logger.getLogger(getClass()).info(
-        "RESTful call POST (Translation): /concept/update " + concept);
+    Logger.getLogger(getClass())
+        .info("RESTful call POST (Translation): /concept/update " + concept);
 
     // Create service and configure transaction scope
     final TranslationService translationService = new TranslationServiceJpa();
@@ -1368,10 +1359,9 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     translationService.beginTransaction();
     try {
       final Concept oldConcept = translationService.getConcept(concept.getId());
-      final String userName =
-          authorizeProject(translationService, oldConcept.getTranslation()
-              .getProject().getId(), securityService, authToken,
-              "update concept", UserRole.AUTHOR);
+      final String userName = authorizeProject(translationService,
+          oldConcept.getTranslation().getProject().getId(), securityService,
+          authToken, "update concept", UserRole.AUTHOR);
 
       // Get translation reference
       final Translation translation =
@@ -1399,9 +1389,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
         // If the description is new
         // OR the description exists but the "term" has changed, add a new
         // description
-        if (desc.getId() == null
-            || (desc.getId() != null && !oldTermMap.get(desc.getId()).equals(
-                desc.getTerm()))) {
+        if (desc.getId() == null || (desc.getId() != null
+            && !oldTermMap.get(desc.getId()).equals(desc.getTerm()))) {
           // clear ID in case this is a term-change case
           desc.setId(null);
           desc.setConcept(concept);
@@ -1448,8 +1437,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
                 oldDesc.getLanguageRefsetMembers().get(0);
             LanguageRefsetMember member =
                 desc.getLanguageRefsetMembers().get(0);
-            if (!oldMember.getAcceptabilityId().equals(
-                member.getAcceptabilityId())) {
+            if (!oldMember.getAcceptabilityId()
+                .equals(member.getAcceptabilityId())) {
               oldMember.setAcceptabilityId(member.getAcceptabilityId());
               oldMember.setLastModifiedBy(userName);
               oldMember.setEffectiveTime(null);
@@ -1486,13 +1475,14 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       concept.setLastModifiedBy(userName);
       translationService.updateConcept(concept);
 
-      addLogEntry(translationService, userName, "UPDATE concept", translation
-          .getProject().getId(), translation.getId(),
+      addLogEntry(translationService, userName, "UPDATE concept",
+          translation.getProject().getId(), translation.getId(),
           concept.getTerminologyId() + ": " + concept.getName());
 
       // finish transaction
       translationService.commit();
 
+      translationService.handleLazyInit(concept);
       return concept;
 
     } catch (Exception e) {
@@ -1528,16 +1518,15 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       final Translation translation = concept.getTranslation();
 
       // Authorize call
-      final String userName =
-          authorizeProject(translationService,
-              translation.getProject().getId(), securityService, authToken,
-              "remove translation concept", UserRole.AUTHOR);
+      final String userName = authorizeProject(translationService,
+          translation.getProject().getId(), securityService, authToken,
+          "remove translation concept", UserRole.AUTHOR);
 
       // Create service and configure transaction scope
       translationService.removeConcept(conceptId, true);
 
-      addLogEntry(translationService, userName, "REMOVE concept", translation
-          .getProject().getId(), translation.getId(),
+      addLogEntry(translationService, userName, "REMOVE concept",
+          translation.getProject().getId(), translation.getId(),
           concept.getTerminologyId() + ": " + concept.getName());
 
       translationService.commit();
@@ -1558,8 +1547,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   public TranslationList getTranslationsWithSpellingDictionary(
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    Logger.getLogger(getClass()).info(
-        "RESTful call GET (Translation): /translations/dictionary");
+    Logger.getLogger(getClass())
+        .info("RESTful call GET (Translation): /translations/dictionary");
 
     final TranslationService translationService = new TranslationServiceJpa();
     try {
@@ -1579,7 +1568,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
       return translationsWithSpellingDictionary;
     } catch (Exception e) {
-      handleException(e, "trying to find translations with spelling dictionary");
+      handleException(e,
+          "trying to find translations with spelling dictionary");
       return null;
     } finally {
       translationService.close();
@@ -1597,9 +1587,9 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "to translation id, e.g. 3", required = true) @QueryParam("toTranslationId") Long toTranslationId,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    Logger.getLogger(getClass()).info(
-        "RESTful call GET (Translation): /spelling/copy/" + fromTranslationId
-            + " " + toTranslationId);
+    Logger.getLogger(getClass())
+        .info("RESTful call GET (Translation): /spelling/copy/"
+            + fromTranslationId + " " + toTranslationId);
 
     final TranslationService translationService = new TranslationServiceJpa();
     translationService.setTransactionPerOperation(false);
@@ -1621,8 +1611,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       final Translation toTranslation =
           translationService.getTranslation(toTranslationId);
       if (toTranslation == null) {
-        throw new Exception("The to-translation is not found: "
-            + toTranslationId);
+        throw new Exception(
+            "The to-translation is not found: " + toTranslationId);
       }
 
       final SpellingDictionary spelling = toTranslation.getSpellingDictionary();
@@ -1633,10 +1623,9 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       }
 
       // Authorize call
-      final String userName =
-          authorizeProject(translationService, toTranslation.getProject()
-              .getId(), securityService, authToken,
-              "copy translation spelling entries", UserRole.AUTHOR);
+      final String userName = authorizeProject(translationService,
+          toTranslation.getProject().getId(), securityService, authToken,
+          "copy translation spelling entries", UserRole.AUTHOR);
 
       final List<String> fromEntries = fromSpelling.getEntries();
       if (fromEntries == null) {
@@ -1658,8 +1647,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
       if (toTranslation.isSpellingDictionaryEmpty() != spelling.getEntries()
           .isEmpty()) {
-        toTranslation.setSpellingDictionaryEmpty(spelling.getEntries()
-            .isEmpty());
+        toTranslation
+            .setSpellingDictionaryEmpty(spelling.getEntries().isEmpty());
         toTranslation.setLastModifiedBy(userName);
         translationService.updateTranslation(toTranslation);
       }
@@ -1685,9 +1674,9 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "entry, e.g. word", required = true) String entry,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    Logger.getLogger(getClass()).info(
-        "RESTful call PUT (Translation): /spelling/add/" + translationId + " "
-            + entry);
+    Logger.getLogger(getClass())
+        .info("RESTful call PUT (Translation): /spelling/add/" + translationId
+            + " " + entry);
 
     final TranslationService translationService = new TranslationServiceJpa();
 
@@ -1706,10 +1695,9 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       }
 
       // Authorize call
-      final String userName =
-          authorizeProject(translationService,
-              translation.getProject().getId(), securityService, authToken,
-              "add entry from the spelling dictionary", UserRole.AUTHOR);
+      final String userName = authorizeProject(translationService,
+          translation.getProject().getId(), securityService, authToken,
+          "add entry from the spelling dictionary", UserRole.AUTHOR);
 
       spelling.getEntries().add(entry);
       final SpellingCorrectionHandler handler =
@@ -1741,9 +1729,9 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "StringList, e.g. foo bar", required = true) StringList entries,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    Logger.getLogger(getClass()).info(
-        "RESTful call POST (Translation): /spelling/add/batch " + translationId
-            + ", " + entries);
+    Logger.getLogger(getClass())
+        .info("RESTful call POST (Translation): /spelling/add/batch "
+            + translationId + ", " + entries);
 
     final TranslationService translationService = new TranslationServiceJpa();
 
@@ -1762,11 +1750,9 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       }
 
       // Authorize call
-      final String userName =
-          authorizeProject(translationService,
-              translation.getProject().getId(), securityService, authToken,
-              "add multiple entries from the spelling dictionary",
-              UserRole.AUTHOR);
+      final String userName = authorizeProject(translationService,
+          translation.getProject().getId(), securityService, authToken,
+          "add multiple entries from the spelling dictionary", UserRole.AUTHOR);
 
       // Bail on null
       if (entries == null || entries.getObjects() == null
@@ -1808,9 +1794,9 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "entry, e.g. word", required = true) @QueryParam("entry") String entry,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    Logger.getLogger(getClass()).info(
-        "RESTful call DELETE (Translation): /spelling/remove/" + translationId
-            + " " + entry);
+    Logger.getLogger(getClass())
+        .info("RESTful call DELETE (Translation): /spelling/remove/"
+            + translationId + " " + entry);
 
     final TranslationService translationService = new TranslationServiceJpa();
 
@@ -1829,10 +1815,9 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       }
 
       // Authorize call
-      final String userName =
-          authorizeProject(translationService,
-              translation.getProject().getId(), securityService, authToken,
-              "remove spelling dictionary entry", UserRole.AUTHOR);
+      final String userName = authorizeProject(translationService,
+          translation.getProject().getId(), securityService, authToken,
+          "remove spelling dictionary entry", UserRole.AUTHOR);
 
       spelling.getEntries().remove(entry);
       final SpellingCorrectionHandler handler =
@@ -1888,10 +1873,9 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       }
 
       // Authorize call
-      final String userName =
-          authorizeProject(translationService,
-              translation.getProject().getId(), securityService, authToken,
-              "remove all entries to the spelling dictionary", UserRole.AUTHOR);
+      final String userName = authorizeProject(translationService,
+          translation.getProject().getId(), securityService, authToken,
+          "remove all entries to the spelling dictionary", UserRole.AUTHOR);
 
       if (!spelling.getEntries().isEmpty()) {
         spelling.setEntries(new ArrayList<String>());
@@ -1925,8 +1909,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   public TranslationList findTranslationsWithPhraseMemory(
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    Logger.getLogger(getClass()).info(
-        "RESTful call GET (Translation): /translations/memory");
+    Logger.getLogger(getClass())
+        .info("RESTful call GET (Translation): /translations/memory");
 
     final TranslationService translationService = new TranslationServiceJpa();
     try {
@@ -1964,9 +1948,9 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "to translation id, e.g. 3", required = true) @QueryParam("toTranslationId") Long toTranslationId,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    Logger.getLogger(getClass()).info(
-        "RESTful call GET (Translation): /memory/copy/" + fromTranslationId
-            + " " + toTranslationId);
+    Logger.getLogger(getClass())
+        .info("RESTful call GET (Translation): /memory/copy/"
+            + fromTranslationId + " " + toTranslationId);
 
     final TranslationService translationService = new TranslationServiceJpa();
     translationService.setTransactionPerOperation(false);
@@ -1983,15 +1967,14 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       final Translation toTranslation =
           translationService.getTranslation(toTranslationId);
       if (toTranslation == null) {
-        throw new Exception("The to translation is not found: "
-            + toTranslationId);
+        throw new Exception(
+            "The to translation is not found: " + toTranslationId);
       }
 
       // authorize the call
-      final String userName =
-          authorizeProject(translationService, toTranslation.getProject()
-              .getId(), securityService, authToken, "copy phrase memory",
-              UserRole.AUTHOR);
+      final String userName = authorizeProject(translationService,
+          toTranslation.getProject().getId(), securityService, authToken,
+          "copy phrase memory", UserRole.AUTHOR);
 
       final List<MemoryEntry> fromEntries =
           fromTranslation.getPhraseMemory().getEntries();
@@ -2008,10 +1991,10 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
         translationService.addMemoryEntry(newEntry);
       }
 
-      if (toTranslation.isPhraseMemoryEmpty() != toTranslation
-          .getPhraseMemory().getEntries().isEmpty()) {
-        toTranslation.setPhraseMemoryEmpty(toTranslation.getPhraseMemory()
-            .getEntries().isEmpty());
+      if (toTranslation.isPhraseMemoryEmpty() != toTranslation.getPhraseMemory()
+          .getEntries().isEmpty()) {
+        toTranslation.setPhraseMemoryEmpty(
+            toTranslation.getPhraseMemory().getEntries().isEmpty());
         toTranslation.setLastModifiedBy(userName);
         translationService.updateTranslation(toTranslation);
       }
@@ -2039,9 +2022,9 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "translated name, e.g. translation1", required = true) String translatedName,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    Logger.getLogger(getClass()).info(
-        "RESTful call PUT (Translation): /memory/add/" + translationId + " "
-            + name + " " + translatedName);
+    Logger.getLogger(getClass())
+        .info("RESTful call PUT (Translation): /memory/add/" + translationId
+            + " " + name + " " + translatedName);
 
     final TranslationService translationService = new TranslationServiceJpa();
 
@@ -2051,10 +2034,9 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
           translationService.getTranslation(translationId);
 
       // authorize the call
-      final String userName =
-          authorizeProject(translationService,
-              translation.getProject().getId(), securityService, authToken,
-              "add new entry to the phrase memory", UserRole.AUTHOR);
+      final String userName = authorizeProject(translationService,
+          translation.getProject().getId(), securityService, authToken,
+          "add new entry to the phrase memory", UserRole.AUTHOR);
       final MemoryEntry entry = new MemoryEntryJpa();
       entry.setName(name);
       entry.setTranslatedName(translatedName);
@@ -2062,8 +2044,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
       if (translation.isPhraseMemoryEmpty() != translation.getPhraseMemory()
           .getEntries().isEmpty()) {
-        translation.setPhraseMemoryEmpty(translation.getPhraseMemory()
-            .getEntries().isEmpty());
+        translation.setPhraseMemoryEmpty(
+            translation.getPhraseMemory().getEntries().isEmpty());
         translation.setLastModifiedBy(userName);
         translationService.updateTranslation(translation);
       }
@@ -2090,8 +2072,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Translated name, e.g. phrase", required = true) @QueryParam("translatedName") String translatedName,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    Logger.getLogger(getClass()).info(
-        "RESTful call DELETE (Translation): /memory/remove/name "
+    Logger.getLogger(getClass())
+        .info("RESTful call DELETE (Translation): /memory/remove/name "
             + translationId + ", " + name + ", " + translatedName);
 
     final TranslationService translationService = new TranslationServiceJpa();
@@ -2100,16 +2082,14 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
           translationService.getTranslation(translationId);
 
       // authorize the call
-      final String userName =
-          authorizeProject(translationService,
-              translation.getProject().getId(), securityService, authToken,
-              "remove entry from the phrase memory", UserRole.AUTHOR);
+      final String userName = authorizeProject(translationService,
+          translation.getProject().getId(), securityService, authToken,
+          "remove entry from the phrase memory", UserRole.AUTHOR);
 
       final String query =
           "name:\"" + name + "\" AND translatedName:\"" + translatedName + "\"";
-      final List<MemoryEntry> entries =
-          translationService.findMemoryEntryForTranslation(translationId,
-              query, null);
+      final List<MemoryEntry> entries = translationService
+          .findMemoryEntryForTranslation(translationId, query, null);
       // Create service and configure transaction scope
       for (MemoryEntry entry : entries) {
         translationService.removeMemoryEntry(entry.getId());
@@ -2117,14 +2097,14 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
       if (translation.isPhraseMemoryEmpty() != translation.getPhraseMemory()
           .getEntries().isEmpty()) {
-        translation.setPhraseMemoryEmpty(translation.getPhraseMemory()
-            .getEntries().isEmpty());
+        translation.setPhraseMemoryEmpty(
+            translation.getPhraseMemory().getEntries().isEmpty());
         translation.setLastModifiedBy(userName);
         translationService.updateTranslation(translation);
       }
       addLogEntry(translationService, userName, "REMOVE phrase memory entry",
-          translation.getProject().getId(), translation.getId(), name + ": "
-              + translatedName);
+          translation.getProject().getId(), translation.getId(),
+          name + ": " + translatedName);
 
     } catch (Exception e) {
       handleException(e, "trying to remove a phrase memory entry");
@@ -2146,8 +2126,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "name, e.g. name", required = true) @QueryParam("name") String name,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    Logger.getLogger(getClass()).info(
-        "RESTful call GET (Translation): /translation/memory/suggest"
+    Logger.getLogger(getClass())
+        .info("RESTful call GET (Translation): /translation/memory/suggest"
             + translationId + " " + name);
 
     final TranslationService translationService = new TranslationServiceJpa();
@@ -2166,8 +2146,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
           securityService, authToken,
           "Suggest translation based on name supplied", UserRole.VIEWER);
       PhraseMemoryHandler handler = getPhraseMemoryHandler(translation);
-      return handler
-          .suggestTranslation(name, translationId, translationService);
+      return handler.suggestTranslation(name, translationId,
+          translationService);
     } catch (Exception e) {
       handleException(e, "trying to suggest a translation based on name");
     } finally {
@@ -2187,8 +2167,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "StringList, e.g. foo bar", required = true) StringList phrases,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    Logger.getLogger(getClass()).info(
-        "RESTful call POST (Translation): /memory/suggest/batch/"
+    Logger.getLogger(getClass())
+        .info("RESTful call POST (Translation): /memory/suggest/batch/"
             + translationId + ", " + phrases);
 
     final TranslationService translationService = new TranslationServiceJpa();
@@ -2221,8 +2201,9 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       PhraseMemoryHandler handler = getPhraseMemoryHandler(translation);
       final KeyValuesMap map = new KeyValuesMap();
       for (String phrase : phrases.getObjects()) {
-        for (String translatedPhrase : handler.suggestTranslation(phrase,
-            translationId, translationService).getObjects()) {
+        for (String translatedPhrase : handler
+            .suggestTranslation(phrase, translationId, translationService)
+            .getObjects()) {
           map.add(phrase, translatedPhrase);
         }
       }
@@ -2260,10 +2241,9 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
             "translation must have an associated phrase memory.");
       }
       // authorize the call
-      final String userName =
-          authorizeProject(translationService,
-              translation.getProject().getId(), securityService, authToken,
-              "remove all entries  from the phrase memory", UserRole.AUTHOR);
+      final String userName = authorizeProject(translationService,
+          translation.getProject().getId(), securityService, authToken,
+          "remove all entries  from the phrase memory", UserRole.AUTHOR);
 
       for (final MemoryEntry memoryEntry : phraseMemory.getEntries()) {
         translationService.removeMemoryEntry(memoryEntry.getId());
@@ -2317,10 +2297,9 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       }
 
       // Authorize the call
-      final String userName =
-          authorizeProject(translationService,
-              translation.getProject().getId(), securityService, authToken,
-              "import spelling entries", UserRole.AUTHOR);
+      final String userName = authorizeProject(translationService,
+          translation.getProject().getId(), securityService, authToken,
+          "import spelling entries", UserRole.AUTHOR);
 
       if (!spelling.getEntries().isEmpty()) {
         throw new LocalException(
@@ -2385,8 +2364,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
       // Authorize the call
       authorizeProject(translationService, translation.getProject().getId(),
-          securityService, authToken,
-          "Export spelling entries as InputStream ", UserRole.VIEWER);
+          securityService, authToken, "Export spelling entries as InputStream ",
+          UserRole.VIEWER);
 
       // Return the dictionary's contents as InputStream
       final SpellingCorrectionHandler handler =
@@ -2433,10 +2412,9 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       }
 
       // Authorize the call
-      final String userName =
-          authorizeProject(translationService,
-              translation.getProject().getId(), securityService, authToken,
-              "import translation definition", UserRole.AUTHOR);
+      final String userName = authorizeProject(translationService,
+          translation.getProject().getId(), securityService, authToken,
+          "import translation definition", UserRole.AUTHOR);
 
       final List<MemoryEntry> fromEntries =
           translation.getPhraseMemory().getEntries();
@@ -2456,8 +2434,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
       if (translation.isPhraseMemoryEmpty() != translation.getPhraseMemory()
           .getEntries().isEmpty()) {
-        translation.setPhraseMemoryEmpty(translation.getPhraseMemory()
-            .getEntries().isEmpty());
+        translation.setPhraseMemoryEmpty(
+            translation.getPhraseMemory().getEntries().isEmpty());
         translation.setLastModifiedBy(userName);
         translationService.updateTranslation(translation);
       }
@@ -2502,8 +2480,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
             + translation.getPhraseMemory().getId());
       }
       PhraseMemoryHandler handler = getPhraseMemoryHandler(translation);
-      return handler.getEntriesAsStream(translation.getPhraseMemory()
-          .getEntries());
+      return handler
+          .getEntriesAsStream(translation.getPhraseMemory().getEntries());
     } catch (Exception e) {
       handleException(e, "trying to export translation phrase memory");
     } finally {
@@ -2523,9 +2501,9 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "entry, e.g. word", required = true) @QueryParam("entry") String entry,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    Logger.getLogger(getClass()).info(
-        "RESTful call GET (Translation): /spelling/suggest/" + translationId
-            + " " + entry);
+    Logger.getLogger(getClass())
+        .info("RESTful call GET (Translation): /spelling/suggest/"
+            + translationId + " " + entry);
 
     final TranslationService translationService = new TranslationServiceJpa();
     try {
@@ -2570,8 +2548,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "StringList, e.g. foo bar", required = true) StringList lookupTerms,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    Logger.getLogger(getClass()).info(
-        "RESTful call POST (Translation): /spelling/suggest/batch/"
+    Logger.getLogger(getClass())
+        .info("RESTful call POST (Translation): /spelling/suggest/batch/"
             + translationId);
 
     final TranslationService translationService = new TranslationServiceJpa();
@@ -2613,8 +2591,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
         }
         // Otherwise, include the corrections
         else {
-          resultHashMap
-              .put(lookupTerm, handler.suggestSpelling(lookupTerm, 10));
+          resultHashMap.put(lookupTerm,
+              handler.suggestSpelling(lookupTerm, 10));
         }
       }
       final KeyValuesMap result = new KeyValuesMap();
@@ -2713,8 +2691,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(getClass()).info(
-        "RESTful call POST (Translation): common/concepts");
+    Logger.getLogger(getClass())
+        .info("RESTful call POST (Translation): common/concepts");
 
     final TranslationService translationService = new TranslationServiceJpa();
     try {
@@ -2758,8 +2736,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(getClass()).info(
-        "RESTful call GET (Translation): diff/concepts");
+    Logger.getLogger(getClass())
+        .info("RESTful call GET (Translation): diff/concepts");
 
     final TranslationService translationService = new TranslationServiceJpa();
     try {
@@ -2822,9 +2800,9 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "The note, e.g. \"this is a sample note\"", required = true) String note,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    Logger.getLogger(getClass()).info(
-        "RESTful POST call (Translation): /add/note " + translationId + ", "
-            + note);
+    Logger.getLogger(getClass())
+        .info("RESTful POST call (Translation): /add/note " + translationId
+            + ", " + note);
 
     final TranslationService translationService = new TranslationServiceJpa();
     try {
@@ -2836,10 +2814,9 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
             "Translation must have a project with a non null identifier.");
       }
 
-      final String userName =
-          authorizeProject(translationService,
-              translation.getProject().getId(), securityService, authToken,
-              "adding translation note", UserRole.AUTHOR);
+      final String userName = authorizeProject(translationService,
+          translation.getProject().getId(), securityService, authToken,
+          "adding translation note", UserRole.AUTHOR);
 
       // Create the note
       final Note translationNote = new TranslationNoteJpa();
@@ -2878,8 +2855,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Note id, e.g. 3", required = true) @QueryParam("noteId") Long noteId,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    Logger.getLogger(getClass()).info(
-        "RESTful call DELETE (Translation): /remove/note " + translationId
+    Logger.getLogger(getClass())
+        .info("RESTful call DELETE (Translation): /remove/note " + translationId
             + ", " + noteId);
 
     final TranslationService translationService = new TranslationServiceJpa();
@@ -2892,10 +2869,9 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
             "Translation must have a project with a non null identifier.");
       }
 
-      final String userName =
-          authorizeProject(translationService,
-              translation.getProject().getId(), securityService, authToken,
-              "remove translation note", UserRole.AUTHOR);
+      final String userName = authorizeProject(translationService,
+          translation.getProject().getId(), securityService, authToken,
+          "remove translation note", UserRole.AUTHOR);
 
       // remove note
       translationService.removeNote(noteId, TranslationNoteJpa.class);
@@ -2933,9 +2909,9 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "The note, e.g. \"this is a sample note\"", required = true) String note,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    Logger.getLogger(getClass()).info(
-        "RESTful POST call (Translation): /concept/add/note " + translationId
-            + "," + conceptId + ", " + note);
+    Logger.getLogger(getClass())
+        .info("RESTful POST call (Translation): /concept/add/note "
+            + translationId + "," + conceptId + ", " + note);
 
     final TranslationService translationService = new TranslationServiceJpa();
     try {
@@ -2947,10 +2923,9 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
             "Translation must have a project with a non null identifier.");
       }
 
-      final String userName =
-          authorizeProject(translationService,
-              translation.getProject().getId(), securityService, authToken,
-              "adding translation concept note", UserRole.AUTHOR);
+      final String userName = authorizeProject(translationService,
+          translation.getProject().getId(), securityService, authToken,
+          "adding translation concept note", UserRole.AUTHOR);
 
       // Look up the concept
       final Concept concept = translationService.getConcept(conceptId);
@@ -2972,9 +2947,9 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       concept.setLastModifiedBy(userName);
       translationService.updateConcept(concept);
 
-      addLogEntry(translationService, userName, "ADD concept note", translation
-          .getProject().getId(), translation.getId(), newNote.getId() + ": "
-          + newNote.getValue());
+      addLogEntry(translationService, userName, "ADD concept note",
+          translation.getProject().getId(), translation.getId(),
+          newNote.getId() + ": " + newNote.getValue());
 
       return newNote;
 
@@ -2996,9 +2971,9 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Note id, e.g. 3", required = true) @QueryParam("noteId") Long noteId,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    Logger.getLogger(getClass()).info(
-        "RESTful call DELETE (Translation): /concept/remove/note " + conceptId
-            + ", " + noteId);
+    Logger.getLogger(getClass())
+        .info("RESTful call DELETE (Translation): /concept/remove/note "
+            + conceptId + ", " + noteId);
 
     final TranslationService translationService = new TranslationServiceJpa();
     try {
@@ -3010,10 +2985,9 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
             "Translation must have a project with a non null identifier.");
       }
 
-      final String userName =
-          authorizeProject(translationService,
-              translation.getProject().getId(), securityService, authToken,
-              "remove concept note", UserRole.AUTHOR);
+      final String userName = authorizeProject(translationService,
+          translation.getProject().getId(), securityService, authToken,
+          "remove concept note", UserRole.AUTHOR);
 
       // remove note
       translationService.removeNote(noteId, ConceptNoteJpa.class);
@@ -3086,18 +3060,17 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Background flag, e.g. true", required = true) @QueryParam("background") Boolean background,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    Logger.getLogger(getClass()).info(
-        "RESTful call GET (Translation): /lookup/start " + translationId);
+    Logger.getLogger(getClass())
+        .info("RESTful call GET (Translation): /lookup/start " + translationId);
 
     final TranslationService translationService = new TranslationServiceJpa();
     try {
       final Translation translation =
           translationService.getTranslation(translationId);
       // Authorize the call
-      final String userName =
-          authorizeProject(translationService,
-              translation.getProject().getId(), securityService, authToken,
-              "start lookup concept names", UserRole.AUTHOR);
+      final String userName = authorizeProject(translationService,
+          translation.getProject().getId(), securityService, authToken,
+          "start lookup concept names", UserRole.AUTHOR);
 
       // Launch lookup process in background thread
       translationService.lookupConceptNames(translationId,
@@ -3120,8 +3093,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(getClass()).info(
-        "RESTful call GET (Translation): /langpref");
+    Logger.getLogger(getClass())
+        .info("RESTful call GET (Translation): /langpref");
 
     final TranslationService translationService = new TranslationServiceJpa();
     try {
@@ -3130,9 +3103,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
       final List<LanguageDescriptionType> types = new ArrayList<>();
 
-      final TranslationList list =
-          translationService
-              .findTranslationsForQuery("", new PfsParameterJpa());
+      final TranslationList list = translationService
+          .findTranslationsForQuery("", new PfsParameterJpa());
       // Go thru translations
       Set<String> terminologies = new HashSet<>();
       // To ensure types are unique, keep set of previously added
@@ -3147,9 +3119,9 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
           }
 
           // if type has already been added to list, skip it
-          if (existingTypes.contains(translation.getName()
-              + translation.getRefset().getTerminologyId()
-              + translation.getLanguage() + descriptionType.getName())) {
+          if (existingTypes.contains(
+              translation.getName() + translation.getRefset().getTerminologyId()
+                  + translation.getLanguage() + descriptionType.getName())) {
             continue;
           }
           final LanguageDescriptionType type = new LanguageDescriptionTypeJpa();
@@ -3161,9 +3133,9 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
           type.setRefsetId(translation.getRefset().getTerminologyId());
           type.setLanguage(translation.getLanguage());
           types.add(type);
-          existingTypes.add(translation.getName()
-              + translation.getRefset().getTerminologyId()
-              + translation.getLanguage() + descriptionType.getName());
+          existingTypes.add(
+              translation.getName() + translation.getRefset().getTerminologyId()
+                  + translation.getLanguage() + descriptionType.getName());
         }
       }
 
@@ -3199,7 +3171,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     if (!spellingCorrectionHandlerMap.containsKey(translation.getId())) {
 
       String key = "spelling.handler";
-      if (!ConfigUtility.getConfigProperties().containsKey("spelling.handler")) {
+      if (!ConfigUtility.getConfigProperties()
+          .containsKey("spelling.handler")) {
         throw new Exception(
             "Unable to find spelling.handler configuration, serious error.");
       }
@@ -3226,8 +3199,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     if (!phraseMemoryHandlerMap.containsKey(translation.getId())) {
 
       String key = "phrasememory.handler";
-      if (!ConfigUtility.getConfigProperties().containsKey(
-          "phrasememory.handler")) {
+      if (!ConfigUtility.getConfigProperties()
+          .containsKey("phrasememory.handler")) {
         throw new Exception(
             "Unable to find phrasememory.handler configuration, serious error.");
       }
@@ -3288,8 +3261,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Staged Translation id, e.g. 3", required = true) @QueryParam("stagedTranslationId") Long stagedTranslationId,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    Logger.getLogger(getClass()).info(
-        "RESTful call GET (Translation): origin, " + stagedTranslationId);
+    Logger.getLogger(getClass())
+        .info("RESTful call GET (Translation): origin, " + stagedTranslationId);
 
     final TranslationService translationService = new TranslationServiceJpa();
     try {
@@ -3304,14 +3277,13 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
           authorizeApp(securityService, authToken, "get origin translation",
               UserRole.VIEWER);
         } else {
-          authorizeProject(translationService, stagedTranslation.getProject()
-              .getId(), securityService, authToken, "get origin translation",
-              UserRole.AUTHOR);
+          authorizeProject(translationService,
+              stagedTranslation.getProject().getId(), securityService,
+              authToken, "get origin translation", UserRole.AUTHOR);
         }
       }
-      StagedTranslationChange stagedTranslationChange =
-          translationService
-              .getStagedTranslationChangeFromStaged(stagedTranslationId);
+      StagedTranslationChange stagedTranslationChange = translationService
+          .getStagedTranslationChangeFromStaged(stagedTranslationId);
       return stagedTranslationChange.getOriginTranslation().getId();
     } catch (Exception e) {
       handleException(e, "trying to get origin translation");
@@ -3354,7 +3326,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       StringBuilder clause2 = new StringBuilder();
       if (workflowStatus != null) {
         clause2.append("(");
-        for (final String s : FieldedStringTokenizer.split(workflowStatus, ",")) {
+        for (final String s : FieldedStringTokenizer.split(workflowStatus,
+            ",")) {
           if (clause2.length() > 1) {
             clause2.append(" OR ");
           }

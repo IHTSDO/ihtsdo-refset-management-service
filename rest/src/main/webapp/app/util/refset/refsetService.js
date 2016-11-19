@@ -840,10 +840,10 @@ tsApp.service('refsetService', [
       return deferred.promise;
     };
 
-    this.exportDefinition = function(refset, handlerId, extension) {
+    this.exportDefinition = function(refset, handler) {
       console.debug('exportDefinition');
       gpService.increment();
-      $http.get(refsetUrl + 'export/definition?refsetId=' + refset.id + '&handlerId=' + handlerId)
+      $http.get(refsetUrl + 'export/definition?refsetId=' + refset.id + '&handlerId=' + handler.id)
         .then(
         // Success
         function(response) {
@@ -856,7 +856,7 @@ tsApp.service('refsetService', [
           var a = document.createElement('a');
           a.href = fileURL;
           a.target = '_blank';
-          a.download = 'definition.' + refset.terminologyId + extension;
+          a.download = 'definition.' + refset.terminologyId + handler.fileTypeFilter;
           document.body.appendChild(a);
           gpService.decrement();
           a.click();
@@ -870,33 +870,34 @@ tsApp.service('refsetService', [
         });
     };
 
-    this.exportMembers = function(refset, handlerId, extension) {
+    this.exportMembers = function(refset, handler, query, pfs) {
       console.debug('exportMembers');
       gpService.increment();
-      $http.get(refsetUrl + 'export/members?refsetId=' + refset.id + '&handlerId=' + handlerId)
-        .then(
-        // Success
-        function(response) {
-          var blob = new Blob([ response.data ], {
-            type : ''
-          });
-
-          // fake a file URL and download it
-          var fileURL = URL.createObjectURL(blob);
-          var a = document.createElement('a');
-          a.href = fileURL;
-          a.target = '_blank';
-          a.download = 'members.' + refset.terminologyId + extension;
-          document.body.appendChild(a);
-          gpService.decrement();
-          a.click();
-
-        },
-        // Error
-        function(response) {
-          utilService.handleError(response);
-          gpService.decrement();
+      $http.post(
+        refsetUrl + 'export/members?refsetId=' + refset.id + '&handlerId=' + handler.id
+          + (query ? '&query=' + utilService.prepQuery(query) : ""), pfs).then(
+      // Success
+      function(response) {
+        var blob = new Blob([ response.data ], {
+          type : ''
         });
+
+        // fake a file URL and download it
+        var fileURL = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = fileURL;
+        a.target = '_blank';
+        a.download = 'members.' + refset.terminologyId + handler.fileTypeFilter;
+        document.body.appendChild(a);
+        gpService.decrement();
+        a.click();
+
+      },
+      // Error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+      });
     };
 
     // Begin import members - if validation is result, OK to proceed.

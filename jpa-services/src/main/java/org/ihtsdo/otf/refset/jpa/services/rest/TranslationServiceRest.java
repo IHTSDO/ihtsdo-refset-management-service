@@ -83,8 +83,8 @@ public interface TranslationServiceRest {
    * @return the translation
    * @throws Exception the exception
    */
-  public Translation addTranslation(TranslationJpa translation, String authToken)
-    throws Exception;
+  public Translation addTranslation(TranslationJpa translation,
+    String authToken) throws Exception;
 
   /**
    * Update translation.
@@ -112,12 +112,14 @@ public interface TranslationServiceRest {
    *
    * @param translationId the translation id
    * @param ioHandlerInfoId the io handler info id
+   * @param query the query
+   * @param pfs the pfs
    * @param authToken the auth token
    * @return the input stream
    * @throws Exception the exception
    */
   public InputStream exportConcepts(Long translationId, String ioHandlerInfoId,
-    String authToken) throws Exception;
+    String query, PfsParameterJpa pfs, String authToken) throws Exception;
 
   /**
    * Removes the all translation concepts.
@@ -613,8 +615,8 @@ public interface TranslationServiceRest {
 
   /**
    * Returns values for various translation fields that can be used as easy
-   * picklist filters. - field -> value e.g. "terminology" =>
-   * "International Edition". Fields include
+   * picklist filters. - field -> value e.g. "terminology" => "International
+   * Edition". Fields include
    * 
    * <pre>
    *  1. Module id
@@ -623,12 +625,13 @@ public interface TranslationServiceRest {
    * </pre>
    *
    * @param projectId the project id
-   * @param workflowStatus the workflow status, comma-separated list of workflow status values to search on
+   * @param workflowStatus the workflow status, comma-separated list of workflow
+   *          status values to search on
    * @param authToken the auth token
    * @return the field list values
    * @throws Exception the exception
    */
-  public KeyValuePairList getFieldFilters(Long projectId, String workflowStatus, String authToken)
-    throws Exception;
+  public KeyValuePairList getFieldFilters(Long projectId, String workflowStatus,
+    String authToken) throws Exception;
 
 }

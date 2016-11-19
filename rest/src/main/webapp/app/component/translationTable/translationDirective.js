@@ -53,6 +53,7 @@ tsApp
               $scope.refsets = [];
               $scope.filters = [];
               $scope.showLatest = true;
+              $scope.withNotesOnly = false;
 
               // Used for project admin to know what users are assigned to
               // something.
@@ -239,6 +240,18 @@ tsApp
               // Get $scope.selected.translation.concepts
               $scope.getConcepts = function(translation) {
 
+                var pfs = prepPfs();
+
+                translationService.findTranslationConceptsForQuery(translation.id,
+                  $scope.paging['concept'].filter, pfs).then(function(data) {
+                  translation.concepts = data.concepts;
+                  translation.concepts.totalCount = data.totalCount;
+                });
+
+              };
+
+              // Prepare PFS for searches and for export
+              function prepPfs() {
                 var pfs = {
                   startIndex : ($scope.paging['concept'].page - 1) * $scope.pageSize,
                   maxResults : $scope.pageSize,
@@ -251,19 +264,18 @@ tsApp
                 // For editing pane, restrict to READY_FOR_PUBLICATION only
                 if ($scope.value == 'EDITING') {
                   pfs.queryRestriction = 'workflowStatus:READY_FOR_PUBLICATION AND revision:false';
+                  if ($scope.withNotesOnly) {
+                    pfs.queryRestriction += ' AND notes.value:[* TO *]';
+                  }
                 }
                 if ($scope.value == 'RELEASE') {
+                  if ($scope.withNotesOnly) {
+                    pfs.queryRestriction = 'notes.value:[* TO *]';
+                  }
                   // may not need a restriction here
                 }
-
-                translationService.findTranslationConceptsForQuery(translation.id,
-                  $scope.paging['concept'].filter, pfs).then(function(data) {
-                  translation.concepts = data.concepts;
-                  translation.concepts.totalCount = data.totalCount;
-                });
-
-              };
-
+                return pfs;
+              }
               // Get $scope.selected.translation.available
               $scope.getAvailableConcepts = function(translation) {
                 if (!$scope.projects.role) {
@@ -733,8 +745,8 @@ tsApp
               // Get the most recent note for display
               $scope.getLatestNote = function(translation) {
                 if (translation && translation.notes && translation.notes.length > 0) {
-                  return $sce.trustAsHtml(translation.notes.sort(utilService.sortBy(
-                    'lastModified', -1))[0].value);
+                  return $sce.trustAsHtml(translation.notes.sort(utilService.sortBy('lastModified',
+                    -1))[0].value);
                 }
                 return $sce.trustAsHtml('');
               };
@@ -2124,7 +2136,9 @@ tsApp
                   description.caseSignificanceId = $scope.caseSignificanceTypes[0].key;
                   // Pick the last one by default (e.g. Synonym)
                   var types = $scope.getDescriptionTypes();
-                  description.type = types.filter(function(item) {return item.name == 'PN';})[0];
+                  description.type = types.filter(function(item) {
+                    return item.name == 'PN';
+                  })[0];
 
                   $scope.conceptTranslated.descriptions.unshift(description);
                   $scope.getPagedDescriptions();
@@ -2319,6 +2333,14 @@ tsApp
                       } else {
                         return $scope.metadata.exportHandlers;
                       }
+                    },
+                    query : function() {
+                      return $scope.paging['concept'].filter;
+                    },
+                    pfs : function() {
+                      var pfs = prepPfs();
+                      pfs.startIndex = -1;
+                      return pfs;
                     }
                   }
                 });
@@ -2332,9 +2354,11 @@ tsApp
 
               // Import/Export controller
               var ImportExportModalCtrl = function($scope, $uibModalInstance, translation,
-                operation, type, ioHandlers) {
+                operation, type, ioHandlers, query, pfs) {
                 console.debug('Entered import export modal control');
 
+                $scope.query = query;
+                $scope.pfs = pfs;
                 $scope.translation = translation;
                 $scope.ioHandlers = ioHandlers;
                 $scope.selectedIoHandler = null;
@@ -2355,6 +2379,10 @@ tsApp
                 $scope.comments = [];
                 $scope.importStarted = false;
                 $scope.importFinished = false;
+                if (type == 'Translation' && ($scope.query || $scope.pfs)) {
+                  $scope.warnings
+                    .push("Export is based on current search criteria and may not include all concepts.");
+                }
 
                 // Handle export
                 $scope.export = function() {
@@ -2365,7 +2393,8 @@ tsApp
                     translationService.exportPhraseMemory($scope.translation);
                   }
                   if (type == 'Translation') {
-                    translationService.exportConcepts($scope.translation, $scope.selectedIoHandler);
+                    translationService.exportConcepts($scope.translation, $scope.selectedIoHandler,
+                      $scope.query, $scope.pfs);
                   }
                   $uibModalInstance.close($scope.translation);
                 };

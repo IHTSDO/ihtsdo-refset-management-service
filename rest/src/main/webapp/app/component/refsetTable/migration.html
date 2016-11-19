@@ -14,8 +14,7 @@
             <b>New Terminology:</b>
           </td>
           <td>
-            <select ng-model="newTerminology"
-              ng-change="terminologySelected()"
+            <select ng-model="newTerminology" ng-change="terminologySelected()"
               ng-options="item.terminology as item.name for item in metadata.terminologies"></select>
           </td>
         </tr>
@@ -106,7 +105,7 @@
             ng-model="paging['membersInCommon'].page"
             ng-change="findMembersInCommon()"></uib-pagination>
 
-          <input class="input-filter" placeholder="Search"
+          <input placeholder="Search"
             ng-show="membersInCommon.totalCount > pageSize || paging['membersInCommon'].filter"
             type="text" ng-model="paging['membersInCommon'].filter"
             ng-model-options="{ debounce: 300 }"
@@ -188,7 +187,7 @@
             ng-model="paging['newRegularMembers'].page"
             ng-change="getNewRegularMembers()"></uib-pagination>
 
-          <input class="input-filter" placeholder="Search"
+          <input placeholder="Search"
             ng-show="newRegularMembers.totalCount > pageSize || paging['newRegularMembers'].filter"
             type="text" ng-model="paging['newRegularMembers'].filter"
             ng-model-options="{ debounce: 300 }"
@@ -275,7 +274,7 @@
                 ng-model="paging['validInclusions'].page"
                 ng-change="getPagedValidInclusions()"></uib-pagination>
 
-              <input class="input-filter" placeholder="Search"
+              <input placeholder="Search"
                 ng-show="pagedValidInclusions.totalCount > pageSize || paging['validInclusions'].filter"
                 type="text" ng-model="paging['validInclusions'].filter"
                 ng-model-options="{ debounce: 300 }"
@@ -351,7 +350,7 @@
                 ng-model="paging['stagedInclusions'].page"
                 ng-change="getPagedStagedInclusions()"></uib-pagination>
 
-              <input class="input-filter" placeholder="Search"
+              <input placeholder="Search"
                 ng-show="pagedStagedInclusions.totalCount > pageSize || paging['stagedInclusions'].filter"
                 type="text" ng-model="paging['stagedInclusions'].filter"
                 ng-model-options="{ debounce: 300 }"
@@ -436,7 +435,7 @@
                 ng-model="paging['validExclusions'].page"
                 ng-change="getPagedValidExclusions()"></uib-pagination>
 
-              <input class="input-filter" placeholder="Search"
+              <input placeholder="Search"
                 ng-show="pagedValidExclusions.totalCount > pageSize || paging['validExclusions'].filter"
                 type="text" ng-model="paging['validExclusions'].filter"
                 ng-model-options="{ debounce: 300 }"
@@ -502,7 +501,7 @@
                 ng-model="paging['stagedExclusions'].page"
                 ng-change="getPagedStagedExclusions()"></uib-pagination>
 
-              <input class="input-filter" placeholder="Search"
+              <input placeholder="Search"
                 ng-show="pagedStagedExclusions.totalCount > pageSize || paging['stagedExclusions'].filter"
                 type="text" ng-model="paging['stagedExclusions'].filter"
                 ng-model-options="{ debounce: 300 }"
@@ -572,7 +571,7 @@
             ng-model="paging['oldRegularMembers'].page"
             ng-change="getOldRegularMembers()"></uib-pagination>
 
-          <input class="input-filter" placeholder="Search"
+          <input placeholder="Search"
             ng-show="oldRegularMembers.totalCount > pageSize || paging['oldRegularMembers'].filter"
             type="text" ng-model="paging['oldRegularMembers'].filter"
             ng-model-options="{ debounce: 300 }"
@@ -661,7 +660,7 @@
                 ng-model="paging['invalidInclusions'].page"
                 ng-change="getPagedInvalidInclusions()"></uib-pagination>
 
-              <input class="input-filter" placeholder="Search"
+              <input placeholder="Search"
                 ng-show="pagedInvalidInclusions.totalCount > pageSize || paging['invalidInclusions'].filter"
                 type="text" ng-model="paging['invalidInclusions'].filter"
                 ng-model-options="{ debounce: 300 }"
@@ -720,7 +719,7 @@
                 ng-model="paging['invalidExclusions'].page"
                 ng-change="getPagedInvalidExclusions()"></uib-pagination>
 
-              <input class="input-filter" placeholder="Search"
+              <input placeholder="Search"
                 ng-show="pagedInvalidExclusions.totalCount > pageSize || paging['invalidExclusions'].filter"
                 type="text" ng-model="paging['invalidExclusions'].filter"
                 ng-model-options="{ debounce: 300 }"
