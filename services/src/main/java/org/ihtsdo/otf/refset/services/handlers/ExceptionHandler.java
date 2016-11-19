@@ -23,8 +23,8 @@ import org.ihtsdo.otf.refset.helpers.LocalException;
 public class ExceptionHandler {
 
   /** Date format */
-  public final static FastDateFormat df = FastDateFormat
-      .getInstance("hh:mm:ss a");
+  public final static FastDateFormat df =
+      FastDateFormat.getInstance("hh:mm:ss a");
 
   /**
    * Handle exception.
@@ -55,7 +55,8 @@ public class ExceptionHandler {
     Logger.getLogger(ExceptionHandler.class).error(e.getMessage(), e);
 
     if (e instanceof LocalException) {
-      if (e.getMessage().contains("AuthToken does not have a valid userName.")) {
+      if (e.getMessage()
+          .contains("AuthToken does not have a valid userName.")) {
         throw new LocalException("AuthToken does not have a valid userName.");
       } else {
         throw e;
@@ -68,7 +69,12 @@ public class ExceptionHandler {
     try {
       Properties config = ConfigUtility.getConfigProperties();
       String subject = "Refset Error Report";
-      String from = config.getProperty("mail.smtp.user");
+      String from = null;
+      if (config.containsKey("mail.smtp.from")) {
+        from = config.getProperty("mail.smtp.from");
+      } else {
+        from = config.getProperty("mail.smtp.user");
+      }
       String recipients = config.getProperty("mail.smtp.to");
 
       // Bail if no recipients
@@ -86,9 +92,8 @@ public class ExceptionHandler {
 
       StringBuilder body = new StringBuilder();
       if (!(e instanceof LocalException))
-        body.append(
-            "Unexpected error trying to " + whatIsHappening
-                + ". Please contact the administrator.").append("\n\n");
+        body.append("Unexpected error trying to " + whatIsHappening
+            + ". Please contact the administrator.").append("\n\n");
 
       try {
         body.append("HOST: " + InetAddress.getLocalHost().getHostName())
@@ -104,19 +109,19 @@ public class ExceptionHandler {
       PrintWriter pw = new PrintWriter(out);
       e.printStackTrace(pw);
       body.append(out.getBuffer());
-      Logger.getLogger(ExceptionHandler.class).info(
-          "Sending error email : " + props);
+      Logger.getLogger(ExceptionHandler.class)
+          .info("Sending error email : " + props);
       if (config.getProperty("mail.enabled") != null
           && config.getProperty("mail.enabled").equals("true")) {
         ConfigUtility.sendEmail(subject, from, recipients, body.toString(),
             props, "true".equals(props.get("mail.smtp.auth")));
       } else {
-        Logger.getLogger(ExceptionHandler.class).info(
-            "Sending mail is disabled.");
+        Logger.getLogger(ExceptionHandler.class)
+            .info("Sending mail is disabled.");
       }
     } catch (Exception ex) {
-      Logger.getLogger(ExceptionHandler.class).error(
-          "Unable to handle exception", ex);
+      Logger.getLogger(ExceptionHandler.class)
+          .error("Unable to handle exception", ex);
     }
 
   }

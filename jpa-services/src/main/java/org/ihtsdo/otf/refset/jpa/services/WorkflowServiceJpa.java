@@ -39,8 +39,8 @@ import org.ihtsdo.otf.refset.workflow.WorkflowAction;
 /**
  * JPA enabled implementation of {@link WorkflowService}.
  */
-public class WorkflowServiceJpa extends TranslationServiceJpa implements
-    WorkflowService {
+public class WorkflowServiceJpa extends TranslationServiceJpa
+    implements WorkflowService {
 
   /** The workflow action handlers. */
   static Map<String, WorkflowActionHandler> workflowHandlerMap =
@@ -89,8 +89,8 @@ public class WorkflowServiceJpa extends TranslationServiceJpa implements
   @Override
   public TrackingRecord performWorkflowAction(Long refsetId, User user,
     UserRole projectRole, WorkflowAction action) throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Workflow Service - perform workflow action " + action + ", "
+    Logger.getLogger(getClass())
+        .debug("Workflow Service - perform workflow action " + action + ", "
             + refsetId);
     final Refset refset = this.getRefset(refsetId);
     // Obtain the handler
@@ -110,17 +110,17 @@ public class WorkflowServiceJpa extends TranslationServiceJpa implements
 
   /* see superclass */
   @Override
-  public TrackingRecordList getTrackingRecordsForTranslation(
-    Long translationId, Long userId) throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Workflow Service - get tracking records " + translationId + ", "
+  public TrackingRecordList getTrackingRecordsForTranslation(Long translationId,
+    Long userId) throws Exception {
+    Logger.getLogger(getClass())
+        .debug("Workflow Service - get tracking records " + translationId + ", "
             + userId);
     // Get object references
     final Translation translation = getTranslation(translationId);
     // Get tracking records
-    final TrackingRecordList list =
-        findTrackingRecordsForQuery("translation.id:" + translation.getId()
-            + " AND user.id:" + userId, new PfsParameterJpa());
+    final TrackingRecordList list = findTrackingRecordsForQuery(
+        "translation.id:" + translation.getId() + " AND user.id:" + userId,
+        new PfsParameterJpa());
     return list;
   }
 
@@ -135,13 +135,12 @@ public class WorkflowServiceJpa extends TranslationServiceJpa implements
     // Get tracking records
     TrackingRecordList list = null;
     if (userId != null) {
-      list =
-          findTrackingRecordsForQuery("refsetId:" + refset.getId()
-              + " AND user.id:" + userId, new PfsParameterJpa());
+      list = findTrackingRecordsForQuery(
+          "refsetId:" + refset.getId() + " AND user.id:" + userId,
+          new PfsParameterJpa());
     } else {
-      list =
-          findTrackingRecordsForQuery("refsetId:" + refsetId,
-              new PfsParameterJpa());
+      list = findTrackingRecordsForQuery("refsetId:" + refsetId,
+          new PfsParameterJpa());
     }
     if (list.getCount() == 1) {
       // lazy initialization
@@ -163,8 +162,8 @@ public class WorkflowServiceJpa extends TranslationServiceJpa implements
   public TrackingRecord performWorkflowAction(Long translationId, User user,
     UserRole projectRole, WorkflowAction action, Concept concept)
     throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Workflow Service - perform workflow action " + action + ", "
+    Logger.getLogger(getClass())
+        .debug("Workflow Service - perform workflow action " + action + ", "
             + concept.getTerminologyId() + ", " + translationId);
     // Get object references
     final Translation translation = getTranslation(translationId);
@@ -172,17 +171,15 @@ public class WorkflowServiceJpa extends TranslationServiceJpa implements
     final WorkflowActionHandler handler =
         getWorkflowHandlerForPath(translation.getWorkflowPath());
     // Validate the action
-    final ValidationResult result =
-        handler.validateWorkflowAction(translation, user, projectRole, action,
-            concept, this);
+    final ValidationResult result = handler.validateWorkflowAction(translation,
+        user, projectRole, action, concept, this);
     if (!result.isValid()) {
       Logger.getLogger(getClass()).error("  validationResult = " + result);
       throw new LocalException(result.getErrors().iterator().next());
     }
     // Perform the action
-    TrackingRecord r =
-        handler.performWorkflowAction(translation, user, projectRole, action,
-            concept, this);
+    TrackingRecord r = handler.performWorkflowAction(translation, user,
+        projectRole, action, concept, this);
     return r;
   }
 
@@ -215,8 +212,8 @@ public class WorkflowServiceJpa extends TranslationServiceJpa implements
   /* see superclass */
   @Override
   public TrackingRecord getTrackingRecord(Long id) throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Workflow Service - get tracking record " + id);
+    Logger.getLogger(getClass())
+        .debug("Workflow Service - get tracking record " + id);
     return getHasLastModified(id, TrackingRecordJpa.class);
   }
 
@@ -224,8 +221,8 @@ public class WorkflowServiceJpa extends TranslationServiceJpa implements
   @Override
   public TrackingRecord addTrackingRecord(TrackingRecord trackingRecord)
     throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Workflow Service - add tracking record " + trackingRecord);
+    Logger.getLogger(getClass())
+        .debug("Workflow Service - add tracking record " + trackingRecord);
 
     // Add component
     return addHasLastModified(trackingRecord);
@@ -235,16 +232,16 @@ public class WorkflowServiceJpa extends TranslationServiceJpa implements
   @Override
   public void updateTrackingRecord(TrackingRecord trackingRecord)
     throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Workflow Service - update tracking record " + trackingRecord);
+    Logger.getLogger(getClass())
+        .debug("Workflow Service - update tracking record " + trackingRecord);
     updateHasLastModified(trackingRecord);
   }
 
   /* see superclass */
   @Override
   public void removeTrackingRecord(Long id) throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Workflow Service - remove tracking record " + id);
+    Logger.getLogger(getClass())
+        .debug("Workflow Service - remove tracking record " + id);
     removeHasLastModified(id, TrackingRecordJpa.class);
   }
 
@@ -259,11 +256,9 @@ public class WorkflowServiceJpa extends TranslationServiceJpa implements
     // Apply pfs restrictions to query
     FullTextQuery fullTextQuery = null;
     try {
-      fullTextQuery =
-          IndexUtility
-              .applyPfsToLuceneQuery(TrackingRecordJpa.class,
-                  TrackingRecordJpa.class, query == null ? "" : query, pfs,
-                  manager);
+      fullTextQuery = IndexUtility.applyPfsToLuceneQuery(
+          TrackingRecordJpa.class, TrackingRecordJpa.class,
+          query == null ? "" : query, pfs, manager);
     } catch (ParseException e) {
       // / Try performing an escaped search here
       String escapedPfsQuery = "";
@@ -311,21 +306,31 @@ public class WorkflowServiceJpa extends TranslationServiceJpa implements
         && config.getProperty("mail.enabled").equals("true")
         && feedbackEmail != null) {
 
+      String from = null;
+      if (config.containsKey("mail.smtp.from")) {
+        from = config.getProperty("mail.smtp.from");
+      } else {
+        from = config.getProperty("mail.smtp.user");
+      }
+
       if (refset != null) {
-        ConfigUtility.sendEmail("Refset Feedback: " + refset.getTerminologyId()
-            + ", " + refset.getName(), config.getProperty("mail.smtp.user"),
-            feedbackEmail, "<html><body><p>Name: " + name + "<br>Email: "
-                + email + "</p><div>" + message + "</div>", config,
-            "true".equals(config.get("mail.smtp.auth")));
+        ConfigUtility.sendEmail(
+            "Refset Feedback: " + refset.getTerminologyId() + ", "
+                + refset.getName(),
+            from, feedbackEmail,
+            "<html><body><p>Name: " + name + "<br>Email: " + email + "</p><div>"
+                + message + "</div>",
+            config, "true".equals(config.get("mail.smtp.auth")));
       }
 
       if (translation != null) {
         ConfigUtility.sendEmail(
             "Translation Feedback: " + translation.getTerminologyId() + ", "
-                + translation.getName(), config.getProperty("mail.smtp.user"),
-            feedbackEmail, "<html><body><p>Name: " + name + "<br>Email: "
-                + email + "</p><div>" + message + "</div>", config,
-            "true".equals(config.get("mail.smtp.auth")));
+                + translation.getName(),
+            from, feedbackEmail,
+            "<html><body><p>Name: " + name + "<br>Email: " + email + "</p><div>"
+                + message + "</div>",
+            config, "true".equals(config.get("mail.smtp.auth")));
       }
     }
   }

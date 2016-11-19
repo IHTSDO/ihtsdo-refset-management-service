@@ -121,8 +121,15 @@ public class QaDatabase extends AbstractMojo {
         if (config.getProperty("mail.enabled") != null
             && config.getProperty("mail.enabled").equals("true")
             && config.getProperty("mail.smtp.to") != null) {
+          String from = null;
+          if (config.containsKey("mail.smtp.from")) {
+            from = config.getProperty("mail.smtp.from");
+          } else {
+            from = config.getProperty("mail.smtp.user");
+          }
+
           ConfigUtility.sendEmail("[Refset Server] Database QA Results",
-              config.getProperty("mail.smtp.user"),
+              from,
               config.getProperty("mail.smtp.to"), msg.toString(), config,
               "true".equals(config.get("mail.smtp.auth")));
         }
