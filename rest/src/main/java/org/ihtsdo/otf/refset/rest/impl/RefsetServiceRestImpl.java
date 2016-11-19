@@ -512,9 +512,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       // if project has changed, update project on all of the refset's
       // translations
       if (previousProject.getId() != refset.getProject().getId()) {
-        final TranslationList projectTranslations =
-            translationService.findTranslationsForQuery(
-                "projectId:" + previousProject.getId(), new PfsParameterJpa());
+        final TranslationList projectTranslations = translationService
+            .findTranslationsForQuery("projectId:" + previousProject.getId()
+                + " AND refsetId:" + refset.getId(), new PfsParameterJpa());
         for (Translation translation : projectTranslations.getObjects()) {
           translation.setProject(refset.getProject());
           translation.setTerminologyId(refset.getTerminologyId());

@@ -35,8 +35,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * Implementation of {@link IdentifierAssignmentHandler} that interacts with the
  * IHTSDO component identifier service.
  */
-public class IhtsdoComponentIdentifierServiceHandler implements
-    IdentifierAssignmentHandler {
+public class IhtsdoComponentIdentifierServiceHandler
+    implements IdentifierAssignmentHandler {
 
   /** The accept. */
   private final String accept = "application/json";
@@ -95,9 +95,9 @@ public class IhtsdoComponentIdentifierServiceHandler implements
           namespace = concept.getTranslation().getRefset().getNamespace();
         }
         // Obtain the ID
-        return getTerminologyId(namespace,
-            (namespace != null && !namespace.isEmpty() && !namespace
-                .equals("0")) ? "10" : "00", authToken);
+        return getTerminologyId(namespace, (namespace != null
+            && !namespace.isEmpty() && !namespace.equals("0")) ? "10" : "00",
+            authToken);
       } catch (Exception e) {
         if (tried) {
           failedException = e;
@@ -130,15 +130,19 @@ public class IhtsdoComponentIdentifierServiceHandler implements
         String namespace = null;
         if (description != null && description.getConcept() != null
             && description.getConcept().getTranslation() != null
+            && description.getConcept().getTranslation().getRefset() != null) {
+          namespace = description.getConcept().getTranslation().getRefset()
+              .getNamespace();
+        } else if (description != null && description.getConcept() != null
+            && description.getConcept().getTranslation() != null
             && description.getConcept().getTranslation().getProject() != null) {
-          namespace =
-              description.getConcept().getTranslation().getProject()
-                  .getNamespace();
+          namespace = description.getConcept().getTranslation().getProject()
+              .getNamespace();
         }
         // Obtain the ID
-        return getTerminologyId(namespace,
-            (namespace != null && !namespace.isEmpty() && !namespace
-                .equals("0")) ? "11" : "01", authToken);
+        return getTerminologyId(namespace, (namespace != null
+            && !namespace.isEmpty() && !namespace.equals("0")) ? "11" : "01",
+            authToken);
       } catch (Exception e) {
         if (tried) {
           failedException = e;
@@ -267,9 +271,8 @@ public class IhtsdoComponentIdentifierServiceHandler implements
     Client client = ClientBuilder.newClient();
     WebTarget target = client.target(url + "/login");
     Builder builder = target.request(MediaType.APPLICATION_JSON);
-    Response response =
-        builder.post(Entity.json("{ \"username\": \"" + userName
-            + "\", \"password\": \"" + password + "\" }"));
+    Response response = builder.post(Entity.json("{ \"username\": \"" + userName
+        + "\", \"password\": \"" + password + "\" }"));
     if (response.getStatusInfo().getFamily() != Family.SUCCESSFUL) {
       throw new LocalException("Authentication to component id server failed. "
           + response.toString());
@@ -294,13 +297,11 @@ public class IhtsdoComponentIdentifierServiceHandler implements
     // Make a webservice call to CIS
     Client client = ClientBuilder.newClient();
     WebTarget target = client.target(url + "/sct/generate?token=" + authToken);
-    String postData =
-        "{ " + "\"namespace\": "
-            + (namespace == null || namespace.isEmpty() ? 0 : namespace) + ", "
-            + "\"partitionId\": \"" + partitionId + "\", "
-            + "\"systemId\": \"\", " + "\"software\": \"ihtsdo-refset\", "
-            + "\"comment\": \"string\", " + "\"generateLegacyIds\": \"false\" "
-            + "}";
+    String postData = "{ " + "\"namespace\": "
+        + (namespace == null || namespace.isEmpty() ? 0 : namespace) + ", "
+        + "\"partitionId\": \"" + partitionId + "\", " + "\"systemId\": \"\", "
+        + "\"software\": \"ihtsdo-refset\", " + "\"comment\": \"string\", "
+        + "\"generateLegacyIds\": \"false\" " + "}";
 
     Response response = target.request(accept).post(Entity.json(postData));
 
