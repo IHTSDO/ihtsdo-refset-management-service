@@ -671,6 +671,14 @@
             confirm="Are you sure you want to remove all the members of the refset ({{selected.refset.name}})?"
             ng-click="removeAllRefsetMembers(selected.refset); "
             title="Remove all members" class="noul material-icons md-18">delete</i>
+
+          <!-- Lookup names -->
+          <i confirm="Are you sure you want to start refset member name lookup?"
+            confirm-if="selected.refset.members.totalCount > 1000"
+            ng-show="value == 'ASSIGNED' && projects.role != 'ADMIN' && selected.refset.members.length > 0"
+            ng-click="startLookup(selected.refset);" title="Start name lookup"
+            class="noul material-icons md-18">play_arrow</i>
+
         </span>
       </h4>
 
@@ -796,12 +804,6 @@
                   ng-show="member.notes.length == 0"
                   title="Add member notes (no notes yet)"
                   class="md-grey material-icons md-18">assignment</i>
-                <!-- Lookup names -->
-                <i
-                  ng-click="startLookupNames(selected.refset); $event.stopPropagation()"
-                  ng-show="member.conceptName == 'name lookup in progress' && !selected.refset.lookupInProgress"
-                  title="Restart name lookup" class="noul material-icons md-18">play_arrow</i>
-
               </td>
             </tr>
           </tbody>
