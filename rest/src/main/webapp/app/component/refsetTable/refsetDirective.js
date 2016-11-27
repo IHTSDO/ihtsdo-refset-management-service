@@ -690,6 +690,24 @@ tsApp
                 }
               };
 
+              // Determine whether to show "play" button to restart
+              // name/inactive lookup.
+              $scope.requiresLookup = function(refset) {
+                if ($scope.selected.refset.lookupInProgress) {
+                  return false;
+                }
+                // check if any of the names say "name lookup in progress" or
+                // "unable to determine name"
+                for (var i = 0; i < $scope.selected.refset.members.length; i++) {
+                  var member = $scope.selected.refset.members[i];
+                  if (member.name === 'name lookup in progress'
+                    || member.name === 'unable to determine name') {
+                    return true;
+                  }
+                }
+                return false;
+              }
+
               // Need both a $scope version and a non one for modals.
               $scope.startLookup = function(refset) {
                 startLookup(refset);
