@@ -2137,7 +2137,7 @@ tsApp
                   // Pick the last one by default (e.g. Synonym)
                   var types = $scope.getDescriptionTypes();
                   description.type = types.filter(function(item) {
-                    return item.name == 'PN';
+                    return item.name == 'PT';
                   })[0];
 
                   $scope.conceptTranslated.descriptions.unshift(description);
