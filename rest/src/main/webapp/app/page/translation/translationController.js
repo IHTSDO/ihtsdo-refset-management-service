@@ -102,6 +102,8 @@ tsApp
           // Only save lastProjectRole if lastProject is the same
           if ($scope.user.userPreferences.lastProjectId != $scope.project.id) {
             $scope.user.userPreferences.lastProjectRole = null;
+            $scope.user.userPreferences.lastRefsetId = null;
+            $scope.user.userPreferences.lastTranslationId = null;
           }
           $scope.user.userPreferences.lastProjectId = $scope.project.id;
           // Empty PFS
@@ -135,15 +137,15 @@ tsApp
                     break;
                   }
                 }
-                $scope.user.userPreferences.lastProjectRole = $scope.projects.role;
-                securityService.updateUserPreferences($scope.user.userPreferences);
-                projectService.fireProjectChanged($scope.project);
+                $scope.setRole();
               });
         };
 
         $scope.setRole = function() {
-          $scope.user.userPreferences.lastProjectRole = $scope.projects.role;
-          securityService.updateUserPreferences($scope.user.userPreferences);
+          if ($scope.user.userPreferences.lastProjectRole != $scope.projects.role) {
+            $scope.user.userPreferences.lastProjectRole = $scope.projects.role;
+            securityService.updateUserPreferences($scope.user.userPreferences);
+          }
           projectService.fireProjectChanged($scope.project);
         };
 
@@ -186,8 +188,10 @@ tsApp
         // Set the current accordion
         $scope.setAccordion = function(data) {
           utilService.clearError();
-          if ($scope.user.userPreferences) {
+          if ($scope.user.userPreferences
+            && $scope.user.userPreferences.lastTranslationAccordion != data) {
             $scope.user.userPreferences.lastTranslationAccordion = data;
+            $scope.user.userPreferences.lastTranslationId = null;
             securityService.updateUserPreferences($scope.user.userPreferences);
           }
         };
@@ -200,8 +204,9 @@ tsApp
           } else {
             // default is published if nothing set
             $scope.accordionState['EDITING'] = true;
+            $scope.user.userPreferences.lastTranslationAccordion = 'EDITING';
+            securityService.updateUserPreferences($scope.user.userPreferences);
           }
-          securityService.updateUserPreferences($scope.user.userPreferences);
         };
 
         // Initialize some metadata first time

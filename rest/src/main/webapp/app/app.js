@@ -117,7 +117,7 @@ tsApp.config([ '$routeProvider', '$logProvider', function($routeProvider, $logPr
 tsApp.controller('GlassPaneCtrl', [ '$scope', 'gpService', function($scope, gpService) {
   console.debug('configure GlassPaneCtrl');
 
-  $scope.glassPane = gpService.glassPane;
+  $scope.glassPane = gpService.getGlassPane();
 
 } ]);
 

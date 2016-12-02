@@ -608,13 +608,7 @@
               ng-click="openAssignConceptModal(concept, 'REASSIGN'); $event.stopPropagation()"
               title="Reassign back to author" class="noul material-icons md-18">assignment_returned</i>
 
-            <!-- Unassign -->
-            <i
-              ng-show="projects.role == 'ADMIN' && concept.workflowStatus!='NEW'"
-              confirm="Are you sure you want to unassign this concept ({{concept.terminologyId}}, {{concept.name}})"
-              ng-click="unassign(concept, user.userName)" title="Unassign"
-              class="noul material-icons md-18">assignment_return</i>
-
+            <!-- Unassign - n/a - these are available concepts -->
 
           </td>
         </tr>
@@ -681,8 +675,8 @@
             </span></th>
           <th class="col-md-2 col-xs-2">Actions <!--  Unassign all --> <i
               ng-show="selected.translation.assigned.totalCount > 0"
-              confirm="Are you sure you want to unassign this concept ({{concept.terminologyId}}, {{concept.name}})"
-              ng-click="unassignAll();" title="Unassign all"
+              confirm="Are you sure you want to unassign all concepts?"
+              ng-click="unassignAll(user.userName)" title="Unassign all"
               class="noul material-icons md-18">assignment_return</i>
           </th>
         </tr>

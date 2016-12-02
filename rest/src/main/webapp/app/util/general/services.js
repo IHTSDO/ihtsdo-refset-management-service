@@ -121,6 +121,14 @@ tsApp
           }
         };
 
+        // Compose a URL properly for opening new window
+        this.composeUrl = function(extension) {
+          var currentUrl = $location.absUrl();
+          var baseUrl = currentUrl.substring(0, currentUrl.indexOf('#') + 1);
+          var newUrl = baseUrl + extension;
+          return newUrl;
+        }
+
         // Convert date to a string
         var workDate = new Date();
         this.toDate = function(lastModified) {
@@ -369,43 +377,59 @@ tsApp
       } ]);
 
 // Glass pane service
-tsApp.service('gpService', function() {
+tsApp.service('gpService', [ '$timeout', function($timeout) {
   console.debug('configure gpService');
   // declare the glass pane counter
-  this.glassPane = {
+  var glassPane = {
     counter : 0,
-    messages : []
+    messages : [],
+    enabled : true,
+    timeout : false
   };
 
+  this.getGlassPane = function() {
+    return glassPane;
+  }
+
   this.isGlassPaneSet = function() {
-    return this.glassPane.counter;
+    return glassPane.enabled;
   };
 
   this.isGlassPaneNegative = function() {
-    return this.glassPane.counter < 0;
+    return glassPane.counter < 0;
   };
 
   // Increments glass pane counter
   this.increment = function(message) {
     if (message) {
-      this.glassPane.messages.push(message);
+      glassPane.messages.push(message);
     }
-    this.glassPane.counter++;
+    glassPane.counter++;
+    if (!glassPane.timeout) {
+      $timeout(function() {
+        if (glassPane.counter > 0) {
+          glassPane.enabled = true;
+        }
+        glassPane.timeout = false;
+      }, 100);
+    }
   };
 
   // Decrements glass pane counter
   this.decrement = function(message) {
     if (message) {
-      var index = this.glassPane.messages.indexOf(message); // <-- Not supported
-      // in <IE9
+      var index = glassPane.messages.indexOf(message);
       if (index !== -1) {
-        this.glassPane.messages.splice(index, 1);
+        glassPane.messages.splice(index, 1);
       }
     }
-    this.glassPane.counter--;
+    glassPane.counter--;
+    if (glassPane.counter == 0) {
+      glassPane.enabled = false;
+    }
   };
 
-});
+} ]);
 
 // Security service
 tsApp.service('securityService', [
@@ -414,10 +438,11 @@ tsApp.service('securityService', [
   '$q',
   '$cookieStore',
   'utilService',
-  'gpService', 'appConfig',
+  'gpService',
+  'appConfig',
   function($http, $location, $q, $cookieStore, utilService, gpService, appConfig) {
     console.debug('configure securityService');
-    
+
     // Declare the user
     var user = {
       userName : null,

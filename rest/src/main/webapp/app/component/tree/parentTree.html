@@ -13,46 +13,48 @@
   <i ng-show="tree.leaf" class="glyphicon glyphicon-leaf"></i>
 
   <!-- Action for a non-member -->
-  <i
+  <button
+    style="transform: scale(.8, .8); margin-bottom: 4px; padding-left: 4px;"
     ng-click="openAddModal(data.refset, tree, project); $event.stopPropagation()"
     ng-show="data.refset.type == 'INTENSIONAL' && !disableMemberTypes && !data.memberTypes[tree.terminologyId].memberType"
-    title="Add inclusion" class="noul material-icons md-12">add</i>
-  <i
+    title="Add inclusion" class="btn btn-xs btn-primary">Add</button>
+  <button
+    style="transform: scale(.8, .8); margin-bottom: 4px; padding-left: 4px;"
     ng-click="openAddModal(data.refset, tree, project); $event.stopPropagation()"
     ng-show="data.refset.type == 'EXTENSIONAL' && !disableMemberTypes && !data.memberTypes[tree.terminologyId].memberType"
-    title="Add members" class="noul material-icons md-12">add</i>
+    title="Add members" class="btn btn-xs btn-primary">Add</button>
 
   <!-- Icons and actions for a regular member -->
   <button class="btn btn-xs btn-primary"
-    style="transform: scale(.6, .6); margin-bottom: 4px; padding-left: 4px;"
+    style="transform: scale(.8, .8); margin-bottom: 4px; padding-left: 4px;"
     ng-show="data.memberTypes[tree.terminologyId].memberType == 'MEMBER'"
     uib-tooltip="Member">M</button>
   <i
     ng-show="data.refset.type == 'INTENSIONAL' && data.memberTypes[tree.terminologyId].memberType == 'MEMBER'"
     ng-click="openRemoveModal(data.refset, data.memberTypes[tree.terminologyId]); "
-    title="Add exclusion" class="noul material-icons md-12">remove_circle_outline</i>
+    title="Add exclusion" class="noul material-icons md-18">remove_circle_outline</i>
   <i
     ng-show="data.refset.type == 'EXTENSIONAL' && data.memberTypes[tree.terminologyId].memberType == 'MEMBER'"
     ng-click="openRemoveModal(data.refset, data.memberTypes[tree.terminologyId]); "
-    title="Remove members" class="noul material-icons md-12">delete</i>
+    title="Remove members" class="noul material-icons md-18">delete</i>
 
   <!-- Icons and actions for an explicit exclusion -->
   <button class="btn btn-xs btn-danger"
-    style="transform: scale(.6, .6); margin-bottom: 4px; padding-left: 4px;"
+    style="transform: scale(.8, .8); margin-bottom: 4px; padding-left: 4px;"
     ng-show="data.memberTypes[tree.terminologyId].memberType == 'EXCLUSION'"
     uib-tooltip="Exclusion">X</button>
   <i ng-show="data.memberTypes[tree.terminologyId].memberType == 'EXCLUSION'"
     ng-click="removeRefsetExclusion(data.refset, data.memberTypes[tree.terminologyId]);"
-    title="Remove exclusion" class="noul material-icons md-12">delete</i>
+    title="Remove exclusion" class="noul material-icons md-18">delete</i>
 
   <!-- Icons and actions for an explicit inclusion -->
   <button class="btn btn-xs btn-success"
-    style="transform: scale(.6, .6); margin-bottom: 4px; padding-left: 4px;"
+    style="transform: scale(.8, .8); margin-bottom: 4px; padding-left: 4px;"
     ng-show="data.memberTypes[tree.terminologyId].memberType == 'INCLUSION'"
     uib-tooltip="Inclusion">I</button>
   <i ng-show="data.memberTypes[tree.terminologyId].memberType == 'INCLUSION'"
     ng-click="removeRefsetInclusion(data.refset,data.memberTypes[tree.terminologyId]);"
-    title="Remove inclusion" class="noul material-icons md-12">delete</i>
+    title="Remove inclusion" class="noul material-icons md-18">delete</i>
 
   <!-- if not the component viewed, render with hyperlink -->
   <span ng-show="tree.terminologyId != concept.terminologyId">
