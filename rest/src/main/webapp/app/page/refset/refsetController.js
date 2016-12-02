@@ -44,8 +44,6 @@ tsApp
         // Metadata for refsets, projects, etc.
         $scope.metadata = {
           refsetTypes : [],
-          terminologies : [],
-          versions : {},
           importHandlers : [],
           exportHandlers : [],
           workflowPaths : [],
@@ -163,33 +161,6 @@ tsApp
           });
         };
 
-        // Get $scope.metadata.terminologies, also loads
-        // versions for the first edition in the list
-        $scope.getTerminologyEditions = function() {
-          projectService
-            .getTerminologyEditions()
-            .then(
-              function(data) {
-                $scope.metadata.terminologies = data.terminologies;
-                // Look up all versions
-                for (var i = 0; i < data.terminologies.length; i++) {
-                  $scope.metadata.terminologyNames[data.terminologies[i].terminology] = data.terminologies[i].name;
-                  $scope.getTerminologyVersions(data.terminologies[i].terminology);
-                }
-              });
-
-        };
-
-        // Get $scope.metadata.versions
-        $scope.getTerminologyVersions = function(terminology) {
-          projectService.getTerminologyVersions(terminology).then(function(data) {
-            $scope.metadata.versions[terminology] = [];
-            for (var i = 0; i < data.terminologies.length; i++) {
-              $scope.metadata.versions[terminology].push(data.terminologies[i].version);
-            }
-          });
-        };
-
         // Get $scope.metadata.{import,export}Handlers
         $scope.getIOHandlers = function() {
           refsetService.getImportRefsetHandlers().then(function(data) {
@@ -232,7 +203,6 @@ tsApp
         };
 
         // Initialize some metadata first time
-        $scope.getTerminologyEditions();
         $scope.getProjects();
         $scope.getRefsetTypes();
         $scope.getIOHandlers();

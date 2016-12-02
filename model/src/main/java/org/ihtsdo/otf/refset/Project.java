@@ -111,14 +111,13 @@ public interface Project extends Searchable {
    */
   public void setFeedbackEmail(String feedbackEmail);
 
-  
   /**
    * Returns the validation checks.
    *
    * @return the validation checks
    */
   public List<String> getValidationChecks();
-  
+
   /**
    * Sets the validation checks.
    *
@@ -153,4 +152,33 @@ public interface Project extends Searchable {
    * @param exclusionClause the exclusion clause
    */
   public void setExclusionClause(String exclusionClause);
+
+  /**
+   * Returns the terminology handler key.
+   *
+   * @return the terminology handler key
+   */
+  public String getTerminologyHandlerKey();
+
+  /**
+   * Sets the terminology handler key.
+   *
+   * @param terminologyHandlerKey the terminology handler key
+   */
+  public void setTerminologyHandlerKey(String terminologyHandlerKey);
+
+  /**
+   * Returns the terminology handler url.
+   *
+   * @return the terminology handler url
+   */
+  public String getTerminologyHandlerUrl();
+
+  /**
+   * Sets the terminology handler url.
+   *
+   * @param terminologyHandlerUrl the terminology handler url
+   */
+  public void setTerminologyHandlerUrl(String terminologyHandlerUrl);
+
 }

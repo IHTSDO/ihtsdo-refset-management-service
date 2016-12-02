@@ -1307,15 +1307,16 @@ public class RefsetClientRest extends RootClientRest
 
   /* see superclass */
   @Override
-  public Boolean isExpressionValid(String expression, String terminology,
-    String version, String authToken) throws Exception {
+  public Boolean isExpressionValid(Long projectId, String expression,
+    String terminology, String version, String authToken) throws Exception {
     validateNotEmpty(expression, "expression");
     validateNotEmpty(terminology, "terminology");
     validateNotEmpty(version, "version");
+    validateNotEmpty(projectId, "projectId");
     Client client = ClientBuilder.newClient();
-    WebTarget target = client
-        .target(config.getProperty("base.url") + "/refset/expression/valid"
-            + "?terminology=" + terminology + "&version=" + version);
+    WebTarget target = client.target(config.getProperty("base.url")
+        + "/refset/expression/valid" + "?projectId=" + projectId
+        + "&terminology=" + terminology + "&version=" + version);
     Response response = target.request(MediaType.TEXT_PLAIN)
         .header("Authorization", authToken).post(Entity.text(expression));
 
@@ -1387,15 +1388,16 @@ public class RefsetClientRest extends RootClientRest
   }
 
   @Override
-  public Integer countExpression(String expression, String terminology,
-    String version, String authToken) throws Exception {
+  public Integer countExpression(Long projectId, String expression,
+    String terminology, String version, String authToken) throws Exception {
     validateNotEmpty(expression, "expression");
     validateNotEmpty(terminology, "terminology");
     validateNotEmpty(version, "version");
+    validateNotEmpty(projectId, "projectId");
     Client client = ClientBuilder.newClient();
-    WebTarget target = client
-        .target(config.getProperty("base.url") + "/refset/expression/count"
-            + "?terminology=" + terminology + "&version=" + version);
+    WebTarget target = client.target(config.getProperty("base.url")
+        + "/refset/expression/count" + "?projectId=" + projectId
+        + "&terminology=" + terminology + "&version=" + version);
     Response response = target.request(MediaType.TEXT_PLAIN)
         .header("Authorization", authToken).post(Entity.text(expression));
 

@@ -114,9 +114,11 @@ public interface ProjectService extends RootService {
   /**
    * Returns the terminology handler.
    *
+   * @param project the project
    * @return the terminology handler
    * @throws Exception the exception
    */
-  public TerminologyHandler getTerminologyHandler() throws Exception;
+  public TerminologyHandler getTerminologyHandler(Project project)
+    throws Exception;
 
 }

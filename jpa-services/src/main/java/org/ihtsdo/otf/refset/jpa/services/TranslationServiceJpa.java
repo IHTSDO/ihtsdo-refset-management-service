@@ -165,15 +165,15 @@ public class TranslationServiceJpa extends RefsetServiceJpa
 
     // These will get added by CASCADE
     if (translation.getDescriptionTypes().size() == 0) {
-      for (final DescriptionType d : getTerminologyHandler()
-          .getStandardDescriptionTypes(translation.getTerminology())) {
+      for (final DescriptionType d : getStandardDescriptionTypes(
+          translation.getTerminology())) {
         translation.getDescriptionTypes().add(d);
       }
     }
 
     // Case sensitive types - start with standard ones
-    translation.setCaseSensitiveTypes(getTerminologyHandler()
-        .getStandardCaseSensitivityTypes(translation.getTerminology()));
+    translation.setCaseSensitiveTypes(
+        getStandardCaseSensitivityTypes(translation.getTerminology()));
 
     // Add component
     final Translation newTranslation = addHasLastModified(translation);
@@ -1186,7 +1186,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa
         .debug("Translation Service - lookup concept names - " + translationId);
 
     // Only launch process if refset not already looked-up
-    if (getTerminologyHandler().assignNames()) {
+    if (ConfigUtility.isAssignNames()) {
       if (!lookupProgressMap.containsKey(translationId)) {
         // Create new thread
         Runnable lookup = new LookupConceptNamesThread(translationId, label);
@@ -1292,8 +1292,9 @@ public class TranslationServiceJpa extends RefsetServiceJpa
               termIds.add(concepts.get(i).getTerminologyId());
             }
             // Get concepts from Term Server based on list
-            final ConceptList cons = getTerminologyHandler()
-                .getConcepts(termIds, terminology, version);
+            final ConceptList cons =
+                getTerminologyHandler(translation.getProject())
+                    .getConcepts(termIds, terminology, version);
 
             // IF the number of concepts returned doesn't match
             // the size of termIds, there was a problem
@@ -1379,7 +1380,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa
 
     // Get standard language desc types
     final List<LanguageDescriptionType> standardTypes =
-        getTerminologyHandler().getStandardLanguageDescriptionTypes(
+        getStandardLanguageDescriptionTypes(
             translation != null ? translation.getTerminology() : "");
 
     // Get translation-specific desc types
@@ -1681,5 +1682,93 @@ public class TranslationServiceJpa extends RefsetServiceJpa
     } catch (NoResultException e) {
       return null;
     }
+  }
+
+  /* see superclass */
+  @Override
+  public List<DescriptionType> getStandardDescriptionTypes(String terminology)
+    throws Exception {
+    final List<DescriptionType> list = new ArrayList<>();
+    /**
+     * <pre>
+     * 0f928c01-b245-5907-9758-a46cbeed2674    20020131        1       900000000000207008      900000000000538005      900000000000003001      900000000000540000      255
+     * 807f775b-1d66-5069-b58e-a37ace985dcf    20140131        1       900000000000207008      900000000000538005      900000000000550004      900000000000540000      4096
+     * 909a711e-b114-5543-841e-242aaa246363    20020131        1       900000000000207008      900000000000538005      900000000000013009      900000000000540000      255
+     * </pre>
+     */
+    for (int i = 0; i < 4; i++) {
+      final DescriptionType type = new DescriptionTypeJpa();
+      type.setRefsetId("900000000000538005");
+      type.setDescriptionFormat("900000000000540000");
+      if (i == 0) {
+        type.setTerminologyId("909a711e-b114-5543-841e-242aaa246363");
+        type.setTypeId("900000000000013009");
+        type.setAcceptabilityId("900000000000548007");
+        type.setName("PT");
+        type.setDescriptionLength(255);
+      }
+      if (i == 1) {
+        type.setTerminologyId("0f928c01-b245-5907-9758-a46cbeed2674");
+        type.setTypeId("900000000000003001");
+        type.setAcceptabilityId("900000000000548007");
+        type.setName("FSN");
+        type.setDescriptionLength(255);
+      }
+      if (i == 2) {
+        type.setTerminologyId("909a711e-b114-5543-841e-242aaa246362");
+        type.setTypeId("900000000000013009");
+        type.setAcceptabilityId("900000000000549004");
+        type.setName("SY");
+        type.setDescriptionLength(255);
+      }
+      if (i == 3) {
+        type.setTerminologyId("807f775b-1d66-5069-b58e-a37ace985dcf");
+        type.setTypeId("900000000000550004");
+        type.setAcceptabilityId("900000000000548007");
+        type.setName("DEF");
+        type.setDescriptionLength(4096);
+      }
+      list.add(type);
+    }
+    return list;
+  }
+
+  /* see superclass */
+  @Override
+  public List<LanguageDescriptionType> getStandardLanguageDescriptionTypes(
+    String terminology) throws Exception {
+
+    // Assume these are in the correct order (see above)
+    final List<DescriptionType> descriptionTypes =
+        getStandardDescriptionTypes(terminology);
+    final List<LanguageDescriptionType> types = new ArrayList<>();
+    for (final DescriptionType descriptionType : descriptionTypes) {
+      // don't include definition
+      if (descriptionType.getName().equals("DEF")) {
+        continue;
+      }
+      final LanguageDescriptionType type = new LanguageDescriptionTypeJpa();
+      type.setDescriptionType(descriptionType);
+      type.setName("US English");
+      type.setRefsetId("900000000000509007");
+      type.setLanguage("en");
+      types.add(type);
+    }
+
+    return types;
+  }
+
+  /* see superclass */
+  @Override
+  public Map<String, String> getStandardCaseSensitivityTypes(String terminology)
+    throws Exception {
+    final Map<String, String> map = new HashMap<>();
+
+    // For now this is hard-coded but could be looked up if term server had an
+    // API
+    map.put("900000000000017005", "Case sensitive");
+    map.put("900000000000448009", "Case insensitive");
+    map.put("900000000000020002", "Initial character case insensitive");
+    return map;
   }
 }

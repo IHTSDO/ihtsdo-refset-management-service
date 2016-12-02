@@ -45,8 +45,6 @@
     <dependency>
       <groupId>org.apache.maven.plugin-tools</groupId>
       <artifactId>maven-plugin-annotations</artifactId>
-      <version>3.4</version>
-      <scope>provided</scope>
     </dependency>
 
     <!-- Required for Jersey and JSON -->
@@ -350,5 +348,36 @@
         </plugins>
       </build>
     </profile>
+
+
+    <!-- Run a custom patch function, for updating the DB when things change, -Drefset.config=... -->
+    <profile>
+      <id>Patch</id>
+      <build>
+        <plugins>
+
+          <!-- Update the database schema (or create it) -->
+          <plugin>
+            <groupId>org.ihtsdo.otf.refset</groupId>
+            <artifactId>refset-admin</artifactId>
+            <version>${project.version}</version>
+            <executions>
+              <execution>
+                <id>patch</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>patch</goal>
+                </goals>
+                <configuration>
+                  <start>${start}</start>
+                  <end>${end}</end>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
   </profiles>
 </project>
