@@ -8,6 +8,7 @@ tsApp
       '$window',
       '$sce',
       '$interval',
+      '$routeParams',
       'utilService',
       'securityService',
       'projectService',
@@ -15,7 +16,7 @@ tsApp
       'releaseService',
       'workflowService',
       'validationService',
-      function($uibModal, $window, $sce, $interval, utilService, securityService, projectService,
+      function($uibModal, $window, $sce, $interval, $routeParams, utilService, securityService, projectService,
         refsetService, releaseService, workflowService, validationService) {
         console.debug('configure refsetTable directive');
         return {
@@ -69,7 +70,7 @@ tsApp
               $scope.paging = {};
               $scope.paging['refset'] = {
                 page : 1,
-                filter : '',
+                filter : $routeParams.refsetId ? 'id:' + $routeParams.refsetId : '',
                 sortField : $scope.value == 'ASSIGNED' ? 'refsetName' : 'name',
                 ascending : null
               };
@@ -262,24 +263,39 @@ tsApp
 
               // Reselect selected refset to refresh
               $scope.reselect = function() {
-                // if there is a selection...
-                // Bail if nothing selected
+                // If no selected refset, use user preferences
+                if (!$scope.selected.refset && $routeParams.refsetId
+                  && $scope.value == 'PUBLISHED') {
+                  $scope.selected.refset = {
+                    id : $routeParams.refsetId
+                  };
+                }
+
+               // If no selected refset, use user preferences
+                if (!$scope.selected.refset && $scope.user.userPreferences.lastRefsetId
+                  && $scope.value == $scope.user.userPreferences.lastRefsetAccordion) {
+                  
+                  $scope.selected.refset = {
+                    id : $scope.user.userPreferences.lastRefsetId
+                  };
+                }
+
                 if ($scope.selected.refset) {
                   // If $scope.selected.refset is in the list, select it, if not
                   // clear $scope.selected.refset
                   var found = false;
-                  if ($scope.selected.refset) {
-                    for (var i = 0; i < $scope.refsets.length; i++) {
-                      if ($scope.selected.refset.id == $scope.refsets[i].id) {
-                        $scope.selectRefset($scope.refsets[i]);
-                        found = true;
-                        break;
-                      }
+                  for (var i = 0; i < $scope.refsets.length; i++) {
+                    if ($scope.selected.refset.id == $scope.refsets[i].id) {
+                      $scope.selectRefset($scope.refsets[i]);
+                      found = true;
+                      break;
                     }
                   }
+
                   if (!found) {
                     $scope.selected.refset = null;
                     $scope.selected.concept = null;
+                    $scope.clearLastRefsetId();
                   }
                 }
 
@@ -291,6 +307,16 @@ tsApp
                 }
               };
 
+              // clear the last refset id
+              $scope.clearLastRefsetId = function() {
+                if ($scope.user.userPreferences.lastRefsetId
+                  && $scope.value == $scope.user.userPreferences.lastRefsetAccordion) {
+                  $scope.user.userPreferences.lastRefsetId = null;
+                  securityService.updateUserPreferences($scope.user.userPreferences);
+                }
+              }
+
+              
               // Get $scope.filters
               $scope.getFilters = function() {
                 var projectId = $scope.project ? $scope.project.id : null;
@@ -486,6 +512,7 @@ tsApp
                 $scope.getRefsetReleaseInfo(refset);
                 $scope.getMembers(refset);
                 $scope.getStandardDescriptionTypes(refset.terminology, refset.version);
+                $scope.getLink(refset);
               };
 
               // Selects a member (setting $scope.selected.member)
@@ -747,6 +774,10 @@ tsApp
                 }
                 return $sce.trustAsHtml('');
               };
+              
+              $scope.getLink = function(refset) {
+                $scope.link = utilService.composeUrl('/directory?refsetId=' + refset.id)
+              }
 
               // Initialize if project setting isn't used
               if ($scope.value == 'BETA' || $scope.value == 'PUBLISHED') {
