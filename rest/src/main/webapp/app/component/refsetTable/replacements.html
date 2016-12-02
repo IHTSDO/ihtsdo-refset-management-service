@@ -28,7 +28,7 @@
             uib-tooltip="Inactive">I</button>
         </td>
       </tr>
-      <tr ng-repeat="concept in replacementConcepts"
+      <tr ng-repeat="concept in concepts"
         ng-class="{disabled : invalid.ids[concept.terminologyId]}">
         <td>
           <input type="checkbox" ng-show="!invalid.ids[concept.terminologyId]"
@@ -74,7 +74,7 @@
     </tr>
     <tr class="alert alert-warning" ng-repeat="warning in warnings">
       <td colspan="2">
-        <div class="alert alert-warning" ng-repeat="warning in warnings">{{warning}}</div>
+        <div class="alert alert-warning">{{warning}}</div>
       </td>
     </tr>
   </table>
