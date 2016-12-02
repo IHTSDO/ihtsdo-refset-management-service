@@ -5,7 +5,9 @@ tsApp
     'refsetTable',
     [
       '$uibModal',
+      '$location',
       '$window',
+      '$routeParams',
       '$sce',
       '$interval',
       'utilService',
@@ -15,9 +17,10 @@ tsApp
       'releaseService',
       'workflowService',
       'validationService',
-      function($uibModal, $window, $sce, $interval, utilService, securityService, projectService,
-        refsetService, releaseService, workflowService, validationService) {
-        console.debug('configure refsetTable directive');
+      function($uibModal, $location, $window, $routeParams, $sce, $interval, utilService,
+        securityService, projectService, refsetService, releaseService, workflowService,
+        validationService) {
+        console.debug('configure refsetTable directive', $routeParams);
         return {
           restrict : 'A',
           scope : {
@@ -137,6 +140,11 @@ tsApp
               // Logic for this depends on the $scope.value and
               // $scope.projects.role
               $scope.getRefsets = function() {
+                if ($routeParams.clone === 'true') {
+                  $scope.paging['refset'].sortField = 'lastModified';
+                  $scope.paging['refset'].ascending = false;
+                }
+
                 var pfs = {
                   startIndex : ($scope.paging['refset'].page - 1) * $scope.pageSize,
                   maxResults : $scope.pageSize,
@@ -262,25 +270,37 @@ tsApp
 
               // Reselect selected refset to refresh
               $scope.reselect = function() {
+                // If no selected refset, use user preferences
+                if (!$scope.selected.refset && $scope.user.userPreferences.lastRefsetId
+                  && $scope.value == $scope.user.userPreferences.lastRefsetAccordion) {
+                  $scope.selected.refset = {
+                    id : $scope.user.userPreferences.lastRefsetId
+                  };
+                }
+
                 // if there is a selection...
-                // Bail if nothing selected
                 if ($scope.selected.refset) {
                   // If $scope.selected.refset is in the list, select it, if not
                   // clear $scope.selected.refset
                   var found = false;
-                  if ($scope.selected.refset) {
-                    for (var i = 0; i < $scope.refsets.length; i++) {
-                      if ($scope.selected.refset.id == $scope.refsets[i].id) {
-                        $scope.selectRefset($scope.refsets[i]);
-                        found = true;
-                        break;
-                      }
+                  for (var i = 0; i < $scope.refsets.length; i++) {
+                    if ($scope.selected.refset.id == $scope.refsets[i].id) {
+                      $scope.selectRefset($scope.refsets[i]);
+                      found = true;
+                      break;
                     }
                   }
+
                   if (!found) {
                     $scope.selected.refset = null;
                     $scope.selected.concept = null;
+                    $scope.clearLastRefsetId();
                   }
+                }
+
+                // If still no selection, clear lastRefsetId
+                else {
+                  $scope.clearLastRefsetId();
                 }
 
                 // If 'lookup in progress' is set, get progress
@@ -290,6 +310,15 @@ tsApp
                   }
                 }
               };
+
+              // clear the last refset id
+              $scope.clearLastRefsetId = function() {
+                if ($scope.user.userPreferences.lastRefsetId
+                  && $scope.value == $scope.user.userPreferences.lastRefsetAccordion) {
+                  $scope.user.userPreferences.lastRefsetId = null;
+                  securityService.updateUserPreferences($scope.user.userPreferences);
+                }
+              }
 
               // Get $scope.filters
               $scope.getFilters = function() {
@@ -486,6 +515,10 @@ tsApp
                 $scope.getRefsetReleaseInfo(refset);
                 $scope.getMembers(refset);
                 $scope.getStandardDescriptionTypes(refset.terminology, refset.version);
+                if (refset.id != $scope.user.userPreferences.lastRefsetId) {
+                  $scope.user.userPreferences.lastRefsetId = refset.id;
+                  securityService.updateUserPreferences($scope.user.userPreferences);
+                }
               };
 
               // Selects a member (setting $scope.selected.member)
@@ -1141,7 +1174,22 @@ tsApp
                 modalInstance.result.then(
                 // Success
                 function(data) {
-                  $scope.handleWorkflow(data);
+
+                  // Successful clone, go to the refset
+                  $scope.user.userPreferences.lastRefsetAccordion = 'AVAILABLE';
+                  $scope.user.userPreferences.lastProjectRole = 'AUTHOR';
+                  $scope.user.userPreferences.lastProjectId = data.projectId;
+                  $scope.user.userPreferences.lastRefsetId = data.id;
+                  securityService.updateUserPreferences($scope.user.userPreferences).then(
+                  // Success
+                  function() {
+
+                    if ($location.url() == '/refset?clone=true') {
+                      $window.location.reload();
+                    } else {
+                      $location.url('/refset?clone=true');
+                    }
+                  });
                 });
 
               };
@@ -1159,9 +1207,11 @@ tsApp
                   .reverse());
                 // Copy refset and clear terminology id
                 $scope.refset = JSON.parse(JSON.stringify(refset));
+                $scope.newRefset = null;
                 $scope.refset.terminologyId = null;
                 $scope.modules = [];
                 $scope.errors = [];
+                $scope.comments = [];
 
                 // Handler for project change
                 $scope.projectSelected = function(project) {
@@ -1237,22 +1287,37 @@ tsApp
                       } else {
                         $scope.warnings = [];
                       }
-
+                      $scope.comments = [];
                       refsetService.cloneRefset(refset.project.id, refset).then(
-                      // Success - clone refset
-                      function(data) {
-                        var newRefset = data;
-                        $uibModalInstance.close(newRefset);
-                      },
-                      // Error - clone refset
-                      function(data) {
-                        handleError($scope.errors, data);
-                      });
+                        // Success - clone refset
+                        function(data) {
+                          $scope.newRefset = data;
+
+                          // Show a message upon completion
+                          var name = null;
+                          for (var i = 0; i < $scope.projects.data.length; i++) {
+                            if (data.projectId == $scope.projects.data[i].id) {
+                              name = $scope.projects.data[i].name;
+                            }
+                          }
+                          $scope.comments.push('Refset "' + data.name
+                            + '" successfully cloned to "' + name + '"');
+
+                        },
+                        // Error - clone refset
+                        function(data) {
+                          handleError($scope.errors, data);
+                        });
                     },
                     // Error - validate
                     function(data) {
                       handleError($scope.errors, data);
                     });
+                };
+
+                // Dismiss modal
+                $scope.close = function() {
+                  $uibModalInstance.close($scope.newRefset);
                 };
 
                 // Dismiss modal
@@ -2042,6 +2107,7 @@ tsApp
                 modalInstance.result.then(
                 // Success
                 function(data) {
+                  $scope.selected.refset = data;
                   refsetService.fireRefsetChanged(data);
                 });
               };
@@ -2367,7 +2433,7 @@ tsApp
                 project, value) {
                 console.debug('Entered add member modal control');
                 $scope.value = value;
-                $scope.activeOnly = false;
+                $scope.activeOnly = true;
                 $scope.pageSize = 10;
                 $scope.searchResults = null;
                 $scope.data = {
@@ -2495,6 +2561,9 @@ tsApp
                     $scope.searchResults = data.concepts;
                     $scope.searchResults.totalCount = data.totalCount;
                     $scope.getMemberTypes();
+                    if (data.concepts.length > 0) {
+                      $scope.selectConcept(data.concepts[0]);
+                    }
                   },
                   // Error
                   function(data) {

@@ -212,9 +212,14 @@
             ng-repeat="error in errors">{{error}}</div>
         </td>
       </tr>
-      <tr class="alert alert-warning" ng-repeat="warning in warnings">
+      <tr ng-repeat="warning in warnings">
         <td colspan="2">
-          <div class="alert alert-warning" ng-repeat="warning in warnings">{{warning}}</div>
+          <div class="alert alert-warning">{{warning}}</div>
+        </td>
+      </tr>
+      <tr ng-repeat="comment in comments">
+        <td colspan="2">
+          <div class="alert alert-success">{{comment}}</div>
         </td>
       </tr>
 
@@ -229,8 +234,11 @@
       ng-click="submitRefset(refset); ">Add</button>
     <button ng-show="action == 'Edit'" class="btn btn-primary"
       ng-click="submitRefset(refset); ">Save</button>
-    <button ng-show="action == 'Clone'" class="btn btn-primary"
-      ng-click="submitRefset(refset); ">Clone</button>
-    <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
+    <button ng-show="action == 'Clone' && comments.length == 0"
+      class="btn btn-primary" ng-click="submitRefset(refset); ">Clone</button>
+    <button ng-show="comments.length == 0" class="btn btn-warning"
+      ng-click="cancel()">Cancel</button>
+    <button ng-show="comments.length > 0" class="btn btn-warning"
+      ng-click="close()">Close</button>
   </div>
 </div>
