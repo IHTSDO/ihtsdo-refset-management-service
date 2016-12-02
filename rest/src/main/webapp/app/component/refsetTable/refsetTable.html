@@ -675,6 +675,11 @@
             confirm="Are you sure you want to remove all the members of the refset ({{selected.refset.name}})?"
             ng-click="removeAllRefsetMembers(selected.refset); "
             title="Remove all members" class="noul material-icons md-18">delete</i>
+
+          <!-- Lookup names -->
+          <i ng-click="startLookup(selected.refset); $event.stopPropagation()"
+            ng-show="(requiresNameLookup && !selected.refset.lookupInProgress) || projects.role == 'ADMIN'"
+            title="Restart name lookup" class="noul material-icons md-18">play_arrow</i>
         </span>
       </h4>
 
@@ -800,12 +805,12 @@
                   ng-show="member.notes.length == 0"
                   title="Add member notes (no notes yet)"
                   class="md-grey material-icons md-18">assignment</i>
-                <!-- Lookup names -->
-                <i
-                  ng-click="startLookupNames(selected.refset); $event.stopPropagation()"
-                  ng-show="member.conceptName == 'name lookup in progress' && !selected.refset.lookupInProgress"
-                  title="Restart name lookup" class="noul material-icons md-18">play_arrow</i>
 
+                <!-- replace inactive member -->
+                <i ng-click="replace(selected.refset, member)"
+                  ng-show="!member.conceptActive"
+                  title="Add replacement concepts to refset"
+                  class="noul material-icons md-18">rotate_right</i>
               </td>
             </tr>
           </tbody>

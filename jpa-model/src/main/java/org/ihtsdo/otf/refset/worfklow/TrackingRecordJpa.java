@@ -193,9 +193,8 @@ public class TrackingRecordJpa implements TrackingRecord {
   /**
    * Returns the project id. Just for indexing. Possibly consider making this
    *
-   * @return the project id
-   * @XmlElement, though then "set" method becomes complicated and
-   *              nondeterministic for testing.
+   * @return the project id @XmlElement, though then "set" method becomes
+   *         complicated and nondeterministic for testing.
    */
   @XmlTransient
   @FieldBridge(impl = LongBridge.class)
@@ -297,6 +296,29 @@ public class TrackingRecordJpa implements TrackingRecord {
       refset = new RefsetJpa();
     }
     refset.setId(refsetId);
+  }
+
+  /**
+   * Returns the refset terminology id. For JAXB.
+   *
+   * @return the refset terminology id
+   */
+  @XmlTransient
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  public String getRefsetTerminologyId() {
+    return refset == null ? null : refset.getTerminologyId();
+  }
+
+  /**
+   * Sets the refset terminology id. For JAXB.
+   *
+   * @param refsetTerminologyId the refset terminology id
+   */
+  public void setRefsetTerminologyId(Long refsetTerminologyId) {
+    if (refset == null) {
+      refset = new RefsetJpa();
+    }
+    refset.setId(refsetTerminologyId);
   }
 
   /* see superclass */
@@ -525,8 +547,8 @@ public class TrackingRecordJpa implements TrackingRecord {
     return "TrackingRecordJpa [id=" + id + ", lastModified=" + lastModified
         + ", lastModifiedBy=" + lastModifiedBy + ", forAuthoring="
         + forAuthoring + ", forReview=" + forReview + ", revision=" + revision
-        + ", authors=" + authors + ", reviewers=" + reviewers
-        + ", translation=" + translation + ", refset="
+        + ", authors=" + authors + ", reviewers=" + reviewers + ", translation="
+        + translation + ", refset="
         + (refset != null ? refset.getTerminologyId() : "") + ", concept="
         + (concept != null ? concept.getTerminologyId() : "")
         + ", originRevision=" + originRevision + ", reviewOriginRevision="

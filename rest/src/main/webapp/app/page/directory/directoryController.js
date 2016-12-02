@@ -143,7 +143,7 @@ tsApp
             return;
           }
 
-          if ($scope.user.userPreferences) {
+          if ($scope.user.userPreferences && $scope.user.userPreferences.lastDirectoryAccordion != data) {
             $scope.user.userPreferences.lastDirectoryAccordion = data;
             securityService.updateUserPreferences($scope.user.userPreferences);
           }
@@ -164,8 +164,8 @@ tsApp
           } else {
             // default is published if nothing set
             $scope.accordionState['PUBLISHED'] = true;
+            securityService.updateUserPreferences($scope.user.userPreferences);
           }
-          securityService.updateUserPreferences($scope.user.userPreferences);
         };
 
         // Get $scope.metadata.{import,export}Handlers

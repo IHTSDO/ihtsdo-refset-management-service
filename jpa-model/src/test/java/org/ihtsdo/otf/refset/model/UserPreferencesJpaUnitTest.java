@@ -111,6 +111,8 @@ public class UserPreferencesJpaUnitTest extends ModelUnitSupport {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     EqualsHashcodeTester tester = new EqualsHashcodeTester(object);
     tester.include("languageDescriptionTypes");
+    tester.include("lastRefsetId");
+    tester.include("lastTranslationId");
     tester.include("lastProjectId");
     tester.include("lastProjectRole");
     tester.include("lastDirectoryAccordion");
