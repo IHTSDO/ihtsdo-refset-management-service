@@ -5,6 +5,7 @@ package org.ihtsdo.otf.refset.services;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import org.ihtsdo.otf.refset.MemoryEntry;
 import org.ihtsdo.otf.refset.PhraseMemory;
@@ -21,6 +22,7 @@ import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
 import org.ihtsdo.otf.refset.helpers.TranslationList;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.Description;
+import org.ihtsdo.otf.refset.rf2.DescriptionType;
 import org.ihtsdo.otf.refset.rf2.LanguageDescriptionType;
 import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
 import org.ihtsdo.otf.refset.services.handlers.ExportTranslationHandler;
@@ -87,8 +89,8 @@ public interface TranslationService extends RefsetService {
    * @return the search result list
    * @throws Exception the exception
    */
-  public TranslationList findTranslationsForQuery(String query, PfsParameter pfs)
-    throws Exception;
+  public TranslationList findTranslationsForQuery(String query,
+    PfsParameter pfs) throws Exception;
 
   /**
    * Find concepts for translation.
@@ -551,5 +553,35 @@ public interface TranslationService extends RefsetService {
    */
   public StagedTranslationChange getStagedTranslationChangeFromStaged(
     Long stagedTranslationId) throws Exception;
+
+  /**
+   * Returns the standard description types.
+   *
+   * @param terminology the terminology
+   * @return the standard description types
+   * @throws Exception the exception
+   */
+  public List<DescriptionType> getStandardDescriptionTypes(String terminology)
+    throws Exception;
+
+  /**
+   * Returns the standard language description types.
+   *
+   * @param terminology the terminology
+   * @return the standard language description types
+   * @throws Exception the exception
+   */
+  public List<LanguageDescriptionType> getStandardLanguageDescriptionTypes(
+    String terminology) throws Exception;
+
+  /**
+   * Returns the standard case sensitivity types.
+   *
+   * @param terminology the terminology
+   * @return the standard case sensitivity types
+   * @throws Exception the exception
+   */
+  public Map<String, String> getStandardCaseSensitivityTypes(String terminology)
+    throws Exception;
 
 }

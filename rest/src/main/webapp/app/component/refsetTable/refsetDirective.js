@@ -799,8 +799,8 @@ tsApp
 
               // lookup and add replacement concepts
               $scope.replace = function(refset, member) {
-                projectService.getReplacementConcepts(member.conceptId, refset.terminology,
-                  refset.version).then(
+                projectService.getReplacementConcepts($scope.project.id, member.conceptId,
+                  refset.terminology, refset.version).then(
                 // Success
                 function(data) {
 
@@ -1066,8 +1066,8 @@ tsApp
                     $scope.warningFlag = false;
                     for (var i = 0; i < $scope.newClauses.length; i++) {
                       refsetService
-                        .countExpression($scope.newClauses[i].value, refset.terminology,
-                          refset.version)
+                        .countExpression($scope.project.id, $scope.newClauses[i].value,
+                          refset.terminology, refset.version)
                         .then(
                           // Success - count expression
                           function(data) {
@@ -1106,7 +1106,8 @@ tsApp
                     }
                   }
                   refsetService
-                    .isExpressionValid(clause.value, refset.terminology, refset.version)
+                    .isExpressionValid($scope.project.id, clause.value, refset.terminology,
+                      refset.version)
                     .then(
                       // Success - add refset
                       function(data) {
@@ -1117,7 +1118,8 @@ tsApp
                           $scope.warnings = {};
                           $scope.warningFlag = false;
                           refsetService
-                            .countExpression(clause.value, refset.terminology, refset.version)
+                            .countExpression($scope.project.id, clause.value, refset.terminology,
+                              refset.version)
                             .then(
                               // Success - count expression
                               function(data) {
@@ -1336,6 +1338,9 @@ tsApp
                   controller : CloneRefsetModalCtrl,
                   backdrop : 'static',
                   resolve : {
+                    project : function() {
+                      return $scope.project;
+                    },
                     refset : function() {
                       return lrefset;
                     },
@@ -1375,16 +1380,18 @@ tsApp
               };
 
               // Clone Refset controller
-              var CloneRefsetModalCtrl = function($scope, $uibModalInstance, refset, filters,
-                metadata, projects) {
+              var CloneRefsetModalCtrl = function($scope, $uibModalInstance, project, refset,
+                filters, metadata, projects) {
                 console.debug('Entered clone refset modal control', refset, projects);
 
                 $scope.action = 'Clone';
+                $scope.project = project;
                 $scope.projects = projects;
                 $scope.metadata = metadata;
                 $scope.filters = filters;
-                $scope.versions = angular.copy(metadata.versions[refset.terminology].sort()
-                  .reverse());
+                $scope.versionsMap = {};
+                $scope.terminologies = [];
+                $scope.versions = [];
                 // Copy refset and clear terminology id
                 $scope.refset = JSON.parse(JSON.stringify(refset));
                 $scope.newRefset = null;
@@ -1397,26 +1404,59 @@ tsApp
                 $scope.projectSelected = function(project) {
                   $scope.refset.namespace = project.namespace;
                   $scope.refset.moduleId = project.moduleId;
+                  $scope.getModules();
+                  $scope.getTerminologyEditions();
+                };
+
+                // Get $scope.terminologies
+                $scope.getTerminologyEditions = function() {
+                  projectService.getTerminologyEditions($scope.refset.project).then(function(data) {
+                    $scope.terminologies = data.terminologies;
+                    $scope.refset.terminology = $scope.refset.project.terminology;
+                    // Look up all versions
+                    for (var i = 0; i < data.terminologies.length; i++) {
+                      $scope.getTerminologyVersions(project, data.terminologies[i].terminology);
+                    }
+                  });
+
+                };
+
+                // Get $scope.versions
+                $scope.getTerminologyVersions = function(terminology) {
+                  projectService.getTerminologyVersions($scope.refset.project, terminology).then(
+                    function(data) {
+                      $scope.versionsMap[terminology] = [];
+                      for (var i = 0; i < data.terminologies.length; i++) {
+                        $scope.versionsMap[terminology].push(data.terminologies[i].version);
+                        if ($scope.refset.project.version == data.terminologies[i].version) {
+                          $scope.refset.version = data.terminologies[i].version;
+                        }
+                      }
+                      $scope.versionsMap[terminology] = angular
+                        .copy($scope.versionsMap[terminology].sort().reverse());
+                    });
+
                 };
 
                 // Get $scope.modules
                 $scope.getModules = function() {
-                  projectService.getModules($scope.refset.terminology, $scope.refset.version).then(
+                  projectService.getModules($scope.refset.project, $scope.refset.terminology,
+                    $scope.refset.version).then(
                   // Success
                   function(data) {
                     $scope.modules = data.concepts;
                   });
                 };
 
-                // Initialize modules if terminology/version set
+                // Initialize terminology/version/module
+                $scope.getTerminologyEditions();
                 if ($scope.refset.terminology && $scope.refset.version) {
                   $scope.getModules();
                 }
 
                 // Handle terminology selected
                 $scope.terminologySelected = function(terminology) {
-                  $scope.versions = angular.copy($scope.metadata.versions[terminology].sort()
-                    .reverse());
+                  $scope.versions = angular.copy($scope.versionsMap[terminology].sort().reverse());
                   $scope.refset.version = $scope.versions[0];
                   $scope.getModules();
                 };
@@ -2303,8 +2343,10 @@ tsApp
                 $scope.filters = filters;
                 $scope.project = project;
                 $scope.projects = projects;
-                $scope.versions = angular.copy(metadata.versions[$scope.project.terminology].sort()
-                  .reverse());
+                $scope.versionsMap = {};
+                $scope.terminologies = [];
+                $scope.versions = [];
+
                 $scope.clause = {
                   value : null
                 };
@@ -2324,9 +2366,36 @@ tsApp
                 $scope.errors = [];
                 $scope.warnings = [];
 
+                // Initialization
+                projectService.getTerminologyEditions($scope.project).then(
+                // Success
+                function(data) {
+                  $scope.terminologies = data.terminologies;
+                  // Look up all versions
+                  for (var i = 0; i < data.terminologies.length; i++) {
+                    $scope.getTerminologyVersions(data.terminologies[i].terminology);
+                  }
+                });
+
+                // Get $scope.versions
+                $scope.getTerminologyVersions = function(terminology) {
+                  projectService.getTerminologyVersions($scope.project, terminology).then(
+                    // Success
+                    function(data) {
+                      $scope.versionsMap[terminology] = [];
+                      for (var i = 0; i < data.terminologies.length; i++) {
+                        $scope.versionsMap[terminology].push(data.terminologies[i].version);
+                      }
+                      $scope.versionsMap[terminology] = angular
+                        .copy($scope.versionsMap[terminology].sort().reverse());
+                    });
+
+                };
+
                 // Get $scope.modules
                 $scope.getModules = function() {
-                  projectService.getModules($scope.refset.terminology, $scope.refset.version).then(
+                  projectService.getModules($scope.project, $scope.refset.terminology,
+                    $scope.refset.version).then(
                   // Success
                   function(data) {
                     $scope.modules = data.concepts;
@@ -2340,7 +2409,7 @@ tsApp
 
                 // Handle terminology selected
                 $scope.terminologySelected = function(terminology) {
-                  $scope.versions = angular.copy(metadata.versions[terminology].sort().reverse());
+                  $scope.versions = angular.copy(versionsMap[terminology].sort().reverse());
                   $scope.refset.version = $scope.versions[0];
                   $scope.getModules();
                 };
@@ -2481,27 +2550,56 @@ tsApp
                 $scope.refset.project = project;
                 $scope.projects = projects;
                 $scope.metadata = metadata;
-                $scope.versions = angular.copy($scope.metadata.versions[refset.terminology].sort()
-                  .reverse());
+                $scope.versionsMap = {};
+                $scope.terminologies = [];
+                $scope.versions = [];
                 $scope.modules = [];
                 $scope.errors = [];
 
+                // Look up terminology editions
+                projectService.getTerminologyEditions($scope.project).then(
+                // Success
+                function(data) {
+                  $scope.terminologies = data.terminologies;
+                  // Look up all versions
+                  for (var i = 0; i < data.terminologies.length; i++) {
+                    $scope.getTerminologyVersions(data.terminologies[i].terminology);
+                  }
+                });
+
+                // Get $scope.versions
+                $scope.getTerminologyVersions = function(terminology) {
+                  projectService.getTerminologyVersions($scope.project, terminology).then(
+                    // Success
+                    function(data) {
+                      $scope.versionsMap[terminology] = [];
+                      for (var i = 0; i < data.terminologies.length; i++) {
+                        $scope.versionsMap[terminology].push(data.terminologies[i].version);
+                      }
+                      $scope.versionsMap[terminology] = angular
+                        .copy($scope.versionsMap[terminology].sort().reverse());
+                    });
+
+                };
+
                 // Get $scope.modules
                 $scope.getModules = function() {
-                  projectService.getModules($scope.refset.terminology, $scope.refset.version).then(
+                  projectService.getModules($scope.project, $scope.refset.terminology,
+                    $scope.refset.version).then(
                   // Success
                   function(data) {
                     $scope.modules = data.concepts;
                   });
-                }; // Initialize modules if terminology/version set
+                };
+
+                // Initialize modules if terminology/version set
                 if ($scope.refset.terminology && $scope.refset.version) {
                   $scope.getModules();
                 }
 
                 // Handle terminology selected
                 $scope.terminologySelected = function(terminology) {
-                  $scope.versions = angular.copy($scope.metadata.versions[terminology].sort()
-                    .reverse());
+                  $scope.versions = angular.copy($scope.versionsMap[terminology].sort().reverse());
                   $scope.refset.version = $scope.versions[0];
                   $scope.getModules();
                 };
@@ -2734,8 +2832,8 @@ tsApp
                     console.debug('active only');
                     pfs.activeOnly = true;
                   }
-                  projectService.findConceptsForQuery(search, refset.terminology, refset.version,
-                    pfs).then(
+                  projectService.findConceptsForQuery(project.id, search, refset.terminology,
+                    refset.version, pfs).then(
                   // Success
                   function(data) {
                     $scope.searchResults = data.concepts;
@@ -2806,6 +2904,9 @@ tsApp
                   size : 'lg',
                   resolve : {
 
+                    project : function() {
+                      return $scope.project;
+                    },
                     refset : function() {
                       return lrefset;
                     },
@@ -2828,18 +2929,20 @@ tsApp
 
               // Migration modal controller
               var MigrationModalCtrl = function($scope, $uibModalInstance, $interval, gpService,
-                refset, paging, metadata) {
+                project, refset, paging, metadata) {
                 console.debug('Entered migration modal control');
 
                 // set up variables
+                $scope.project = project;
                 $scope.refset = refset;
                 $scope.newTerminology = refset.terminology;
                 $scope.membersInCommon = null;
                 $scope.pageSize = 5;
                 $scope.paging = paging;
                 $scope.metadata = metadata;
-                $scope.versions = angular.copy(metadata.versions[$scope.newTerminology].sort()
-                  .reverse());
+                $scope.versionsMap = {};
+                $scope.terminologies = [];
+                $scope.versions = [];
                 $scope.newVersion = $scope.versions[0];
                 $scope.errors = [];
                 $scope.statusTypes = [ 'Active', 'Inactive' ];
@@ -2946,8 +3049,8 @@ tsApp
 
                 // Handle terminology selected
                 $scope.terminologySelected = function() {
-                  $scope.versions = angular.copy($scope.metadata.versions[$scope.newTerminology]
-                    .sort().reverse());
+                  $scope.versions = angular.copy($scope.versionsMap[$scope.newTerminology].sort()
+                    .reverse());
                   $scope.newVersion = $scope.versions[0];
                 };
 
@@ -3323,7 +3426,7 @@ tsApp
                 $scope.include = function(member, staged, lookup) {
                   // if inactive, find if there are replacement concepts
                   if (lookup) {
-                    projectService.getReplacementConcepts(member.conceptId,
+                    projectService.getReplacementConcepts($scope.project.id, member.conceptId,
                       $scope.refset.terminology, $scope.refset.version).then(
                       // Success
                       function(data) {

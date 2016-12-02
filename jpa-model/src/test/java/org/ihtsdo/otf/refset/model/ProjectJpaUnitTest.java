@@ -33,8 +33,10 @@ public class ProjectJpaUnitTest extends ModelUnitSupport {
 
   /** test fixture l1 */
   private List<String> l1;
+
   /** test fixture l2 */
   private List<String> l2;
+
   /**
    * Setup class.
    */
@@ -85,6 +87,8 @@ public class ProjectJpaUnitTest extends ModelUnitSupport {
     tester.include("organization");
     tester.include("description");
     tester.include("terminology");
+    tester.include("terminologyHandlerKey");
+    tester.include("terminologyHandlerUrl");
     tester.include("version");
     tester.include("exclusionClause");
 
@@ -134,6 +138,7 @@ public class ProjectJpaUnitTest extends ModelUnitSupport {
     tester.include("name");
     tester.include("description");
     tester.include("terminology");
+    tester.include("terminologyHandlerKey");
     assertTrue(tester.testNotNullFields());
   }
 
@@ -164,6 +169,7 @@ public class ProjectJpaUnitTest extends ModelUnitSupport {
     tester.include("lastModified");
     tester.include("lastModifiedBy");
     tester.include("terminology");
+    tester.include("terminologyHandlerKey");
     tester.include("version");
     tester.include("nameSort");
     tester.include("descriptionSort");

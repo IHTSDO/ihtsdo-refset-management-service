@@ -33,6 +33,13 @@ tsApp.directive('conceptInfo', [
             sortField : 'name',
             ascending : null
           };
+          if ($scope.data.refset) {
+            $scope.projectId = $scope.data.refset.projectId;
+          } else if ($scope.data.translation) {
+            $scope.projectId = $scope.data.translation.projectId;            
+          } else {
+            window.alert('unexpected data object, no refset or translation');
+          }
           $scope.concept = null;
           $scope.orderedDescriptions = null;
           $scope.orderedRelationships = null;
@@ -127,7 +134,7 @@ tsApp.directive('conceptInfo', [
 
           // get concept with descriptions
           $scope.getFullConcept = function(concept) {
-            projectService.getFullConcept(concept.terminologyId, $scope.data.terminology,
+            projectService.getFullConcept($scope.projectId, concept.terminologyId, $scope.data.terminology,
               $scope.data.version, ($scope.data.translation ? $scope.data.translation.id : null))
               .then(
                 // Success
@@ -278,7 +285,7 @@ tsApp.directive('conceptInfo', [
             }
 
             // Get child trees
-            projectService.getConceptChildren(tree.terminologyId, $scope.data.terminology,
+            projectService.getConceptChildren($scope.projectId, tree.terminologyId, $scope.data.terminology,
               $scope.data.version, ($scope.data.translation ? $scope.data.translation.id : null), {
                 startIndex : -1
               }).then(function(data) {
@@ -331,7 +338,7 @@ tsApp.directive('conceptInfo', [
             }
 
             // Get parent trees
-            projectService.getConceptParents(tree.terminologyId, $scope.data.terminology,
+            projectService.getConceptParents($scope.conceptIdtree.terminologyId, $scope.data.terminology,
               $scope.data.version, ($scope.data.translation ? $scope.data.translation.id : null))
               .then(function(data) {
 

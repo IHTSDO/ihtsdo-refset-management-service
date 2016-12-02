@@ -1171,9 +1171,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
       // Remove the staged translation change and set staging type back to null
       translationService.removeStagedTranslationChange(change.getId());
       translation.setStagingType(null);
-      boolean assignNames =
-          translationService.getTerminologyHandler().assignNames();
-      if (assignNames) {
+      if (ConfigUtility.isAssignNames()) {
         translation.setLookupInProgress(true);
       }
       translation.setLastModifiedBy(userName);
@@ -1183,7 +1181,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
       translationService.commit();
 
       // Lookup names and active status of concepts
-      if (assignNames) {
+      if (ConfigUtility.isAssignNames()) {
         translationService.lookupConceptNames(translationId,
             "finish import concepts", ConfigUtility.isBackgroundLookup());
       }
@@ -1720,6 +1718,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
     }
   }
 
+  /* see superclass */
   @POST
   @Override
   @Path("/spelling/add/batch")
@@ -2158,6 +2157,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
     return new StringList();
   }
 
+  /* see superclass */
   @POST
   @Override
   @Path("/memory/suggest/batch")
@@ -2539,6 +2539,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
     return new StringList();
   }
 
+  /* see superclass */
   @POST
   @Override
   @Path("/spelling/suggest/batch")
@@ -2608,6 +2609,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
     return new KeyValuesMap();
   }
 
+  /* see superclass */
   @Override
   @GET
   @Path("/compare")
@@ -2677,6 +2679,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
     return null;
   }
 
+  /* see superclass */
   @Override
   @POST
   @Produces({
@@ -2727,6 +2730,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
     return null;
   }
 
+  /* see superclass */
   @Override
   @GET
   @Path("/diff/concepts")
@@ -2763,6 +2767,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
     return null;
   }
 
+  /* see superclass */
   @Override
   @GET
   @Path("/release/report")
@@ -2846,6 +2851,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
     }
   }
 
+  /* see superclass */
   @Override
   @DELETE
   @Path("/remove/note")
@@ -2898,6 +2904,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
     }
   }
 
+  /* see superclass */
   @Override
   @PUT
   @Consumes("text/plain")
@@ -2962,6 +2969,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
     }
   }
 
+  /* see superclass */
   @Override
   @DELETE
   @Path("/concept/remove/note")
@@ -3085,6 +3093,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
     }
   }
 
+  /* see superclass */
   @GET
   @Override
   @Path("/langpref")
@@ -3098,9 +3107,9 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
 
     final TranslationService translationService = new TranslationServiceJpa();
     try {
-      authorizeApp(securityService, authToken, "get lookup status",
+      // Authorize the call
+      authorizeApp(securityService, authToken, "get origin translation",
           UserRole.VIEWER);
-
       final List<LanguageDescriptionType> types = new ArrayList<>();
 
       final TranslationList list = translationService
@@ -3141,7 +3150,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
 
       // Add standard ones too
       for (String terminology : terminologies) {
-        types.addAll(translationService.getTerminologyHandler()
+        types.addAll(translationService
             .getStandardLanguageDescriptionTypes(terminology));
       }
 

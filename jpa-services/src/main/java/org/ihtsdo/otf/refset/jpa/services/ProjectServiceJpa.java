@@ -14,6 +14,7 @@ import javax.persistence.NoResultException;
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
+import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.ProjectList;
 import org.ihtsdo.otf.refset.jpa.ProjectJpa;
@@ -26,7 +27,8 @@ import org.ihtsdo.otf.refset.services.handlers.WorkflowListener;
 /**
  * JPA enabled implementation of {@link ProjectService}.
  */
-public class ProjectServiceJpa extends RootServiceJpa implements ProjectService {
+public class ProjectServiceJpa extends RootServiceJpa
+    implements ProjectService {
 
   /** The listeners enabled. */
   protected boolean listenersEnabled = true;
@@ -38,30 +40,28 @@ public class ProjectServiceJpa extends RootServiceJpa implements ProjectService 
   protected boolean assignIdentifiersFlag = true;
 
   /** The terminology handler . */
-  private static TerminologyHandler terminologyHandler;
+  private static Map<String, TerminologyHandler> terminologyHandlers = new HashMap<>();
 
   static {
     try {
       if (config == null)
         config = ConfigUtility.getConfigProperties();
       String key = "terminology.handler";
+
       for (String handlerName : config.getProperty(key).split(",")) {
         if (handlerName.isEmpty())
           continue;
-        if (!handlerName.equals(ConfigUtility.DEFAULT)) {
-          throw new Exception("terminology.handler." + ConfigUtility.DEFAULT
-              + " should be the only entry.");
-        }
         // Add handlers to map
         TerminologyHandler handlerService =
             ConfigUtility.newStandardHandlerInstanceWithConfiguration(key,
                 handlerName, TerminologyHandler.class);
-        terminologyHandler = handlerService;
+        terminologyHandlers.put(handlerName, handlerService);
       }
+
     } catch (Exception e) {
-      Logger.getLogger(ProjectServiceJpa.class).error(
-          "Failed to initialize terminology.handler - serious error", e);
-      terminologyHandler = null;
+      Logger.getLogger(ProjectServiceJpa.class)
+          .error("Failed to initialize terminology.handler - serious error", e);
+      terminologyHandlers = null;
     }
   }
 
@@ -114,7 +114,8 @@ public class ProjectServiceJpa extends RootServiceJpa implements ProjectService 
       }
     } catch (Exception e) {
       Logger.getLogger(ProjectServiceJpa.class).error(
-          "Failed to initialize identifier.assignment.handler - serious error", e);
+          "Failed to initialize identifier.assignment.handler - serious error",
+          e);
       idHandlerMap = null;
     }
   }
@@ -137,7 +138,7 @@ public class ProjectServiceJpa extends RootServiceJpa implements ProjectService 
           "Identifier assignment handler did not properly initialize, serious error.");
     }
 
-    if (terminologyHandler == null) {
+    if (terminologyHandlers == null) {
       throw new Exception(
           "Terminology handler did not properly initialize, serious error.");
     }
@@ -176,8 +177,8 @@ public class ProjectServiceJpa extends RootServiceJpa implements ProjectService 
   /* see superclass */
   @Override
   public Project addProject(Project project) throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Project Service - add project - " + project);
+    Logger.getLogger(getClass())
+        .debug("Project Service - add project - " + project);
 
     // Add component
     Project newProject = addHasLastModified(project);
@@ -188,8 +189,8 @@ public class ProjectServiceJpa extends RootServiceJpa implements ProjectService 
   /* see superclass */
   @Override
   public void updateProject(Project project) throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Project Service - update project - " + project);
+    Logger.getLogger(getClass())
+        .debug("Project Service - update project - " + project);
 
     // update component
     this.updateHasLastModified(project);
@@ -208,14 +209,13 @@ public class ProjectServiceJpa extends RootServiceJpa implements ProjectService 
   @Override
   public ProjectList findProjectsForQuery(String query, PfsParameter pfs)
     throws Exception {
-    Logger.getLogger(getClass()).info(
-        "Project Service - find projects " + "/" + query);
+    Logger.getLogger(getClass())
+        .info("Project Service - find projects " + "/" + query);
 
     int[] totalCt = new int[1];
-    List<Project> list =
-        (List<Project>) getQueryResults(query == null || query.isEmpty()
-            ? "id:[* TO *]" : query, ProjectJpa.class, ProjectJpa.class, pfs,
-            totalCt);
+    List<Project> list = (List<Project>) getQueryResults(
+        query == null || query.isEmpty() ? "id:[* TO *]" : query,
+        ProjectJpa.class, ProjectJpa.class, pfs, totalCt);
     ProjectList result = new ProjectListJpa();
     result.setTotalCount(totalCt[0]);
     result.setObjects(list);
@@ -292,11 +292,16 @@ public class ProjectServiceJpa extends RootServiceJpa implements ProjectService 
 
   /* see superclass */
   @Override
-  public TerminologyHandler getTerminologyHandler() throws Exception {
-    // Copy the template
-    TerminologyHandler handler = terminologyHandler.copy();
-    // configure it with the entity manager
-    // return it
+  public TerminologyHandler getTerminologyHandler(Project project)
+    throws Exception {
+    if (!terminologyHandlers.containsKey(project.getTerminologyHandlerKey())) {
+      throw new LocalException(
+          "No terminology handler exists for the specified key: "
+              + project.getTerminologyHandlerKey());
+    }
+    final TerminologyHandler handler =
+        terminologyHandlers.get(project.getTerminologyHandlerKey()).copy();
+    handler.setUrl(project.getTerminologyHandlerUrl());
     return handler;
   }
 

@@ -167,27 +167,43 @@ public interface ProjectServiceRest {
   /**
    * Returns the terminology editions.
    *
+   * @param project the project
    * @param authToken the auth token
    * @return the terminology editions
    * @throws Exception the exception
    */
-  public TerminologyList getTerminologyEditions(String authToken)
+  public TerminologyList getTerminologyEditions( ProjectJpa project, String authToken)
     throws Exception;
 
   /**
    * Returns the terminology versions.
    *
+   * @param project the project
    * @param terminology the terminology
    * @param authToken the auth token
    * @return the terminology versions
    * @throws Exception the exception
    */
-  public TerminologyList getTerminologyVersions(String terminology,
+  public TerminologyList getTerminologyVersions(ProjectJpa project, String terminology,
+    String authToken) throws Exception;
+
+  /**
+   * Returns the modules.
+   *
+   * @param project the project
+   * @param terminology the terminology
+   * @param version the version
+   * @param authToken the auth token
+   * @return the modules
+   * @throws Exception the exception
+   */
+  public ConceptList getModules(ProjectJpa project, String terminology, String version,
     String authToken) throws Exception;
 
   /**
    * Find concepts for query.
    *
+   * @param projectId the project id
    * @param query the query
    * @param terminology the terminology
    * @param version the version
@@ -196,12 +212,14 @@ public interface ProjectServiceRest {
    * @return the concept list
    * @throws Exception the exception
    */
-  public ConceptList findConceptsForQuery(String query, String terminology,
-    String version, PfsParameterJpa pfs, String authToken) throws Exception;
+  public ConceptList findConceptsForQuery(Long projectId, String query,
+    String terminology, String version, PfsParameterJpa pfs, String authToken)
+    throws Exception;
 
   /**
    * Returns the concept with descriptions.
    *
+   * @param projectId the project id
    * @param terminologyId the terminology id
    * @param terminology the terminology
    * @param version the version
@@ -210,12 +228,14 @@ public interface ProjectServiceRest {
    * @return the concept with descriptions
    * @throws Exception the exception
    */
-  public Concept getFullConcept(String terminologyId, String terminology,
-    String version, Long translationId, String authToken) throws Exception;
+  public Concept getFullConcept(Long projectId, String terminologyId,
+    String terminology, String version, Long translationId, String authToken)
+    throws Exception;
 
   /**
    * Returns the concept children.
    *
+   * @param projectId the project id
    * @param terminologyId the terminology id
    * @param terminology the terminology
    * @param version the version
@@ -225,13 +245,14 @@ public interface ProjectServiceRest {
    * @return the concept children
    * @throws Exception the exception
    */
-  public ConceptList getConceptChildren(String terminologyId,
-    String terminology, String version, Long translationId,
-    PfsParameterJpa pfs, String authToken) throws Exception;
+  public ConceptList getConceptChildren(Long projectId, String terminologyId,
+    String terminology, String version, Long translationId, PfsParameterJpa pfs,
+    String authToken) throws Exception;
 
   /**
    * Returns the concept parents.
    *
+   * @param projectId the project id
    * @param terminologyId the terminology id
    * @param terminology the terminology
    * @param version the version
@@ -240,7 +261,7 @@ public interface ProjectServiceRest {
    * @return the concept parents
    * @throws Exception the exception
    */
-  public ConceptList getConceptParents(String terminologyId,
+  public ConceptList getConceptParents(Long projectId, String terminologyId,
     String terminology, String version, Long translationId, String authToken)
     throws Exception;
 
@@ -256,17 +277,6 @@ public interface ProjectServiceRest {
   public DescriptionTypeList getStandardDescriptionTypes(String terminology,
     String version, String authToken) throws Exception;
 
-  /**
-   * Returns the modules.
-   *
-   * @param terminology the terminology
-   * @param version the version
-   * @param authToken the auth token
-   * @return the modules
-   * @throws Exception the exception
-   */
-  public ConceptList getModules(String terminology, String version,
-    String authToken) throws Exception;
 
   /**
    * Returns the log.
@@ -282,9 +292,9 @@ public interface ProjectServiceRest {
     String authToken) throws Exception;
 
   /**
-   * 
    * Returns the potential current concepts for retired concept.
    *
+   * @param projectId the project id
    * @param conceptId the concept id
    * @param terminology the terminology
    * @param version the version
@@ -292,6 +302,6 @@ public interface ProjectServiceRest {
    * @return the potential current concepts for retired concept
    * @throws Exception the exception
    */
-  public ConceptList getReplacementConcepts(String conceptId,
+  public ConceptList getReplacementConcepts(Long projectId, String conceptId,
     String terminology, String version, String authToken) throws Exception;
 }
