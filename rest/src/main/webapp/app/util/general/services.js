@@ -121,6 +121,14 @@ tsApp
           }
         };
 
+        // Compose a URL properly for opening new window
+        this.composeUrl = function(extension) {
+          var currentUrl = $location.absUrl();
+          var baseUrl = currentUrl.substring(0, currentUrl.indexOf('#') + 1);
+          var newUrl = baseUrl + extension;
+          return newUrl;
+        }
+
         // Convert date to a string
         var workDate = new Date();
         this.toDate = function(lastModified) {
