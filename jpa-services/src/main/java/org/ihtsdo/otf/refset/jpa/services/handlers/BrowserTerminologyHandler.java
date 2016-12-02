@@ -1076,7 +1076,7 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
         type.setTerminologyId("909a711e-b114-5543-841e-242aaa246363");
         type.setTypeId("900000000000013009");
         type.setAcceptabilityId("900000000000548007");
-        type.setName("PN");
+        type.setName("PT");
         type.setDescriptionLength(255);
       }
       if (i == 1) {

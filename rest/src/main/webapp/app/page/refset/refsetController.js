@@ -104,6 +104,8 @@ tsApp
           // Only save lastProjectRole if lastProject is the same
           if ($scope.user.userPreferences.lastProjectId != $scope.project.id) {
             $scope.user.userPreferences.lastProjectRole = null;
+            $scope.user.userPreferences.lastRefsetId = null;
+            $scope.user.userPreferences.lastTranslationId = null;
           }
           $scope.user.userPreferences.lastProjectId = $scope.project.id;
           // Empty PFS
@@ -137,15 +139,15 @@ tsApp
                     break;
                   }
                 }
-                $scope.user.userPreferences.lastProjectRole = $scope.projects.role;
-                securityService.updateUserPreferences($scope.user.userPreferences);
-                projectService.fireProjectChanged($scope.project);
+                $scope.setRole($scope.projects.role);
               });
         };
 
         $scope.setRole = function() {
-          $scope.user.userPreferences.lastProjectRole = $scope.projects.role;
-          securityService.updateUserPreferences($scope.user.userPreferences);
+          if ($scope.user.userPreferences.lastProjectRole != $scope.projects.role) {
+            $scope.user.userPreferences.lastProjectRole = $scope.projects.role;
+            securityService.updateUserPreferences($scope.user.userPreferences);
+          }
           projectService.fireProjectChanged($scope.project);
         };
 
@@ -208,8 +210,10 @@ tsApp
         // Set the current accordion
         $scope.setAccordion = function(data) {
           utilService.clearError();
-          if ($scope.user.userPreferences) {
+          if ($scope.user.userPreferences
+            && $scope.user.userPreferences.lastRefsetAccordion != data) {
             $scope.user.userPreferences.lastRefsetAccordion = data;
+            $scope.user.userPreferences.lastRefsetId = null;
             securityService.updateUserPreferences($scope.user.userPreferences);
           }
         };
@@ -220,10 +224,11 @@ tsApp
           if ($scope.user.userPreferences.lastRefsetAccordion) {
             $scope.accordionState[$scope.user.userPreferences.lastRefsetAccordion] = true;
           } else {
-            // default is published if nothing set
+            // default is available if nothing set
             $scope.accordionState['AVAILABLE'] = true;
+            $scope.user.userPreferences.lastRefsetAccordion = 'AVAILABLE';
+            securityService.updateUserPreferences($scope.user.userPreferences);
           }
-          securityService.updateUserPreferences($scope.user.userPreferences);
         };
 
         // Initialize some metadata first time

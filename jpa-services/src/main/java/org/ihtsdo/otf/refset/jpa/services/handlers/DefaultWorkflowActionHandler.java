@@ -799,7 +799,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     String queryStr = "select a from ConceptRefsetMemberJpa a, RefsetJpa b "
         + "where b.id = :refsetId and a.refset = b " + "and a.conceptId NOT IN "
         + "(select d.terminologyId from TranslationJpa c, ConceptJpa d "
-        + " where c.refset = b AND d.translation = c)";
+        + " where c.refset = b AND d.translation = c AND c.id = :translationId )";
 
     List<ConceptRefsetMember> results = null;
     final ConceptListJpa list = new ConceptListJpa();
@@ -813,12 +813,14 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
               + "where b.id = :refsetId and a.refset = b "
               + "and a.conceptId NOT IN "
               + "(select d.terminologyId from TranslationJpa c, ConceptJpa d "
-              + " where c.refset = b AND d.translation = c)");
+              + " where c.refset = b AND d.translation = c AND c.id = :translationId )");
       ctQuery.setParameter("refsetId", translation.getRefset().getId());
+      ctQuery.setParameter("translationId", translation.getId());
 
       final Query query =
           ((RootServiceJpa) service).applyPfsToJqlQuery(queryStr, localPfs);
       query.setParameter("refsetId", translation.getRefset().getId());
+      query.setParameter("translationId", translation.getId());
       results = query.getResultList();
       totalCount = ((Long) ctQuery.getSingleResult()).intValue();
     }
@@ -830,6 +832,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
       final Query query =
           ((RootServiceJpa) service).applyPfsToJqlQuery(queryStr, null);
       query.setParameter("refsetId", translation.getRefset().getId());
+      query.setParameter("translationId", translation.getId());
       int[] totalCt = new int[1];
       results = query.getResultList();
       results = service.applyPfsToList(results, ConceptRefsetMember.class,
@@ -922,7 +925,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     // workflow status does not have to be 'NEW' because sometimes work
     // that is in progress is unassigned
     // For sure, ready, beta, or published refsets are not available
-    final String queryStr = "select a from RefsetJpa a where " 
+    final String queryStr = "select a from RefsetJpa a where "
         + " a.project.id = :projectId " + "and a.provisional = false "
         + "and a not in (select refset from TrackingRecordJpa where refset is not null) "
         + "and workflowStatus not in ('BETA','PUBLISHED')";

@@ -209,24 +209,36 @@ tsApp
 
               // Reselect selected translation to refresh it
               $scope.reselect = function() {
+                // If no selected translation, use user preferences
+                if (!$scope.selected.translation && $scope.user.userPreferences.lastTranslationId
+                  && $scope.value == $scope.user.userPreferences.lastTranslationAccordion) {
+                  $scope.selected.translation = {
+                    id : $scope.user.userPreferences.lastTranslationId
+                  };
+                }
                 // if there is a selection...
                 if ($scope.selected.translation) {
                   // If $scope.selected.translation is in the list, select it,
                   // if not clear $scope.selected.translation
                   var found = false;
-                  if ($scope.selected.translation) {
-                    for (var i = 0; i < $scope.translations.length; i++) {
-                      if ($scope.selected.translation.id == $scope.translations[i].id) {
-                        $scope.selectTranslation($scope.translations[i]);
-                        found = true;
-                        break;
-                      }
+                  for (var i = 0; i < $scope.translations.length; i++) {
+                    if ($scope.selected.translation.id == $scope.translations[i].id) {
+                      $scope.selectTranslation($scope.translations[i]);
+                      found = true;
+                      break;
                     }
                   }
+
                   if (!found) {
                     $scope.selected.translation = null;
                     $scope.selected.concept = null;
+                    $scope.clearLastTranslationId();
                   }
+                }
+
+                // If still no selection, clear lastTranslationId
+                else {
+                  $scope.clearLastTranslationId();
                 }
 
                 // If 'lookup in progress' is set, get progress
@@ -237,6 +249,16 @@ tsApp
                   }
                 }
               };
+
+              // clear the last translation id
+              $scope.clearLastTranslationId = function() {
+                if ($scope.user.userPreferences.lastTranslationId
+                  && $scope.value == $scope.user.userPreferences.lastTranslationAccordion) {
+                  $scope.user.userPreferences.lastTranslationId = null;
+                  securityService.updateUserPreferences($scope.user.userPreferences);
+                }
+              }
+
               // Get $scope.selected.translation.concepts
               $scope.getConcepts = function(translation) {
 
@@ -493,6 +515,10 @@ tsApp
                 $scope.getAvailableConcepts(translation);
                 $scope.getAssignedConcepts(translation);
                 $scope.selected.concept = null;
+                if (translation.id != $scope.user.userPreferences.lastTranslationId) {
+                  $scope.user.userPreferences.lastTranslationId = translation.id;
+                  securityService.updateUserPreferences($scope.user.userPreferences);
+                }
               };
 
               // Selects a concepts (setting $scope.concept)
@@ -602,7 +628,7 @@ tsApp
               };
 
               // Unassign all concepts assigned to this user
-              $scope.unassignAll = function() {
+              $scope.unassignAll = function(userName) {
 
                 // load all concepts assigned to the user
                 var pfs = {
@@ -615,7 +641,7 @@ tsApp
 
                 if ($scope.projects.role == 'AUTHOR') {
                   workflowService.findAssignedEditingConcepts($scope.project.id,
-                    $scope.selected.translation.id, $scope.user.userName, pfs).then(
+                    $scope.selected.translation.id, userName, pfs).then(
                     // Success
                     function(data) {
 
@@ -1007,6 +1033,7 @@ tsApp
                 modalInstance.result.then(
                 // Success
                 function(data) {
+                  $scope.selected.translation = data;
                   translationService.fireTranslationChanged(data);
                 });
               };
@@ -2137,7 +2164,7 @@ tsApp
                   // Pick the last one by default (e.g. Synonym)
                   var types = $scope.getDescriptionTypes();
                   description.type = types.filter(function(item) {
-                    return item.name == 'PN';
+                    return item.name == 'PT';
                   })[0];
 
                   $scope.conceptTranslated.descriptions.unshift(description);
