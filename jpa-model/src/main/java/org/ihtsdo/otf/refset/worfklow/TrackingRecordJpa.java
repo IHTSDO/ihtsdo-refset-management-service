@@ -339,7 +339,7 @@ public class TrackingRecordJpa implements TrackingRecord {
    *
    * @return the concept id
    */
-  @XmlElement
+  @XmlTransient
   @FieldBridge(impl = LongBridge.class)
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   public Long getConceptId() {
