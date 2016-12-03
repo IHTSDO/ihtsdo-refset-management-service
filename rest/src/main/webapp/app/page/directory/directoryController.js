@@ -42,8 +42,7 @@ tsApp.controller('DirectoryCtrl',
         refsetTypes : [],
         importHandlers : [],
         exportHandlers : [],
-        workflowPaths : [],
-        terminologyNames : {}
+        workflowPaths : []
       };
 
       // Stats containers for refset-table sections

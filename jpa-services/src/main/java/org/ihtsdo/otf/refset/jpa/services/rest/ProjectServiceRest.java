@@ -33,6 +33,16 @@ public interface ProjectServiceRest {
   public KeyValuePairList getIconConfig(String authToken) throws Exception;
 
   /**
+   * Returns the terminology handlers.
+   *
+   * @param authToken the auth token
+   * @return the terminology handlers
+   * @throws Exception the exception
+   */
+  public KeyValuePairList getTerminologyHandlers(String authToken)
+    throws Exception;
+
+  /**
    * Returns the project roles.
    *
    * @param authToken the auth token
@@ -172,8 +182,8 @@ public interface ProjectServiceRest {
    * @return the terminology editions
    * @throws Exception the exception
    */
-  public TerminologyList getTerminologyEditions( ProjectJpa project, String authToken)
-    throws Exception;
+  public TerminologyList getTerminologyEditions(ProjectJpa project,
+    String authToken) throws Exception;
 
   /**
    * Returns the terminology versions.
@@ -184,8 +194,8 @@ public interface ProjectServiceRest {
    * @return the terminology versions
    * @throws Exception the exception
    */
-  public TerminologyList getTerminologyVersions(ProjectJpa project, String terminology,
-    String authToken) throws Exception;
+  public TerminologyList getTerminologyVersions(ProjectJpa project,
+    String terminology, String authToken) throws Exception;
 
   /**
    * Returns the modules.
@@ -197,8 +207,8 @@ public interface ProjectServiceRest {
    * @return the modules
    * @throws Exception the exception
    */
-  public ConceptList getModules(ProjectJpa project, String terminology, String version,
-    String authToken) throws Exception;
+  public ConceptList getModules(ProjectJpa project, String terminology,
+    String version, String authToken) throws Exception;
 
   /**
    * Find concepts for query.
@@ -277,7 +287,6 @@ public interface ProjectServiceRest {
   public DescriptionTypeList getStandardDescriptionTypes(String terminology,
     String version, String authToken) throws Exception;
 
-
   /**
    * Returns the log.
    *
@@ -304,4 +313,15 @@ public interface ProjectServiceRest {
    */
   public ConceptList getReplacementConcepts(Long projectId, String conceptId,
     String terminology, String version, String authToken) throws Exception;
+
+  /**
+   * Test handler url.
+   *
+   * @param key the key
+   * @param url the url
+   * @param authToken the auth token
+   * @return the boolean
+   * @throws Exception the exception
+   */
+  public Boolean testHandlerUrl(String key, String url, String authToken) throws Exception;
 }

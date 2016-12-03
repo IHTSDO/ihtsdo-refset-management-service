@@ -49,6 +49,7 @@ tsApp
         $scope.assignedUsers = null;
         $scope.unassignedUsers = null;
         $scope.languageDescriptionTypes = [];
+        $scope.terminologyHandlers = []
         $scope.pagedAvailableLdt = [];
 
         $scope.userPreferences = {
@@ -362,6 +363,15 @@ tsApp
           });
         };
 
+        // Get $scope.languageDescriptionTypes
+        $scope.getTerminologyHandlers = function() {
+          projectService.getTerminologyHandlers().then(
+          // Success
+          function(data) {
+            $scope.terminologyHandlers = data.keyValuePairs;
+          });
+        };
+
         // Get paged available language description types not already assigned
         $scope.getPagedAvailableLdt = function() {
           var available = [];
@@ -521,6 +531,9 @@ tsApp
               },
               validationChecks : function() {
                 return $scope.validationChecks;
+              },
+              terminologyHandlers : function() {
+                return $scope.terminologyHandlers;
               }
             }
           });
@@ -536,10 +549,14 @@ tsApp
         };
 
         // Add project controller
-        var AddProjectModalCtrl = function($scope, $uibModalInstance, metadata, user,
-          validationChecks) {
+        var AddProjectModalCtrl = function($scope, $uibModalInstance, $timeout, user,
+          validationChecks, terminologyHandlers) {
 
           $scope.action = 'Add';
+          $scope.user = user;
+          $scope.terminologyHandlers = terminologyHandlers;
+          $scope.url = terminologyHandlers[0].value;
+          $scope.urlTestSuccess = false;
           $scope.project = {
             moduleId : user.userPreferences.moduleId,
             namespace : user.userPreferences.namespace,
@@ -555,7 +572,7 @@ tsApp
             versions : {}
           };
           $scope.terminologies = [];
-          $scope.user = user;
+          $scope.version = null;
           $scope.validationChecks = validationChecks;
           $scope.modules = [];
           $scope.availableChecks = [];
@@ -571,46 +588,75 @@ tsApp
             }
           }
 
-          // Get $scope.metadata.terminologies
+          // Get $scope.terminologies
           $scope.getTerminologyEditions = function() {
-            projectService.getTerminologyEditions().then(function(data) {
-              $scope.metadata.terminologies = data.terminologies;
-              // Look up all versions
-              for (var i = 0; i < data.terminologies.length; i++) {
-                $scope.getTerminologyVersions(data.terminologies[i].terminology);
-              }
-            });
-
-          };
-
-          // Get $scope.metadata.versions
-          $scope.getTerminologyVersions = function(terminology) {
-            projectService.getTerminologyVersions(terminology).then(function(data) {
-              $scope.metadata.versions[terminology] = [];
-              for (var i = 0; i < data.terminologies.length; i++) {
-                $scope.metadata.versions[terminology].push(data.terminologies[i].version);
-              }
-            });
-          };
-          // Get $scope.modules
-          $scope.getModules = function() {
-            projectService.getModules($scope.project, $scope.project.terminology,
-              $scope.metadata.versions[$scope.project.terminology][0]).then(
+            projectService.getTerminologyEditions($scope.project).then(
             // Success
             function(data) {
-              $scope.modules = data.concepts;
+              $scope.terminologies = data.terminologies;
+              $scope.project.terminology = data.terminologies[0].terminology;
+              $scope.selectTerminology();
             });
           };
 
-          // Initialize modules if terminology/version set
-          if ($scope.project.terminology) {
-            $scope.getModules();
+          // Get $scope.modules
+          $scope.getModules = function() {
+            projectService.getModules($scope.project, $scope.project.terminology, $scope.version)
+              .then(
+              // Success
+              function(data) {
+                $scope.modules = data.concepts;
+
+              });
+          };
+
+          // Terminology handler selection
+          $scope.selectHandler = function(handler) {
+            $scope.project.terminologyHandlerKey = handler.key;
+            $scope.project.terminologyHandlerUrl = handler.value;
+          }
+
+          // Test the handler URL, if successful, mark as such
+          $scope.testHandlerUrl = function() {
+            $scope.errors = [];
+            projectService.testHandlerUrl($scope.project.terminologyHandlerKey,
+              $scope.project.terminologyHandlerUrl).then(
+            // Success
+            function(data) {
+              $scope.urlTestSuccess = true;
+              $scope.getTerminologyEditions();
+              // splash glass pane for 1 second
+              gpService.increment();
+              $timeout(function() {
+                gpService.decrement();
+              }, 2000);
+
+            },
+            // fail
+            function(data) {
+              utilService.handleDialogError($scope.errors, JSON.stringify(data + ''));
+            });
+          }
+
+          // Require re-test on url change
+          $scope.urlChanged = function() {
+            $scope.urlTestSuccess = false;
+            $scope.project.terminology = null;
           }
 
           // Handle terminology selected
-          $scope.terminologySelected = function(terminology) {
-            $scope.versions = $scope.metadata.versions[terminology].sort().reverse();
-            $scope.getModules();
+          $scope.selectTerminology = function() {
+            if (!$scope.project.terminology) {
+              return;
+            }
+            // $scope.project.terminology will already be set at this point
+            projectService.getTerminologyVersions($scope.project, $scope.project.terminology).then(
+            // Success
+            function(data) {
+              $scope.project.terminology = data.terminologies[0].terminology;
+              $scope.version = data.terminologies[0].version;
+              $scope.getModules();
+            });
           };
 
           // move a check from unselected to selected
@@ -631,6 +677,10 @@ tsApp
           $scope.submitProject = function(project) {
             if (!project || !project.name || !project.description || !project.terminology) {
               window.alert('The name, description, and terminology fields cannot be blank. ');
+              return;
+            }
+            if (!project.terminologyHandlerKey || !project.terminologyHandlerUrl) {
+              window.alert('The handler and URL fields cannot be blank. ');
               return;
             }
             // Connect validation checks
@@ -695,8 +745,14 @@ tsApp
               project : function() {
                 return lproject;
               },
+              user : function() {
+                return $scope.user;
+              },
               validationChecks : function() {
                 return $scope.validationChecks;
+              },
+              terminologyHandlers : function() {
+                return $scope.terminologyHandlers;
               }
             }
           });
@@ -708,76 +764,111 @@ tsApp
           });
         };
 
-        var EditProjectModalCtrl = function($scope, $uibModalInstance, project, metadata,
-          validationChecks) {
-
+        var EditProjectModalCtrl = function($scope, $uibModalInstance, $timeout, project, user,
+          validationChecks, terminologyHandlers) {
           $scope.action = 'Edit';
+          $scope.user = user;
+          $scope.project = project;
           $scope.clause = {
             value : project.exclusionClause
+          };
+          $scope.terminologyHandlers = terminologyHandlers;
+          $scope.handler = terminologyHandlers.filter(function(item) {
+            return item.key == project.terminologyHandlerKey
+          })[0];
+          $scope.url = terminologyHandlers[0].value;
+          $scope.urlTestSuccess = true;
+          $scope.clause = {
+            value : null
           };
           $scope.metadata = {
             terminologies : [],
             versions : {}
           };
-          $scope.project = project;
-          $scope.metadata = metadata;
+          $scope.terminologies = [];
+          $scope.version = null;
           $scope.validationChecks = validationChecks;
           $scope.modules = [];
           $scope.availableChecks = [];
           $scope.selectedChecks = [];
           $scope.errors = [];
 
+          // Wire default validation check 'on' by default
           for (var i = 0; i < $scope.validationChecks.length; i++) {
-            if (project.validationChecks.indexOf($scope.validationChecks[i].key) > -1) {
+            if ($scope.validationChecks[i].value == 'Default validation check') {
               $scope.selectedChecks.push($scope.validationChecks[i].value);
             } else {
               $scope.availableChecks.push($scope.validationChecks[i].value);
             }
           }
 
-          // Get $scope.metadata.terminologies
+          // Get $scope.terminologies
           $scope.getTerminologyEditions = function() {
-            projectService.getTerminologyEditions().then(function(data) {
-              $scope.metadata.terminologies = data.terminologies;
-              // Look up all versions
-              for (var i = 0; i < data.terminologies.length; i++) {
-                $scope.getTerminologyVersions(data.terminologies[i].terminology);
-              }
-            });
-
-          };
-
-          // Get $scope.metadata.versions
-          $scope.getTerminologyVersions = function(terminology) {
-            projectService.getTerminologyVersions(terminology).then(function(data) {
-              $scope.metadata.versions[terminology] = [];
-              for (var i = 0; i < data.terminologies.length; i++) {
-                $scope.metadata.versions[terminology].push(data.terminologies[i].version);
-              }
-            });
-          };
-          
-          // Get $scope.modules
-          $scope.getModules = function() {
-            projectService.getModules($scope.project, $scope.project.terminology,
-              $scope.metadata.versions[$scope.project.terminology][0]).then(
+            projectService.getTerminologyEditions($scope.project).then(
             // Success
             function(data) {
-              $scope.modules = data.concepts;
+              $scope.terminologies = data.terminologies;
+              if (!$scope.project.terminology) {
+                $scope.project.terminology = data.terminologies[0].terminology;
+              }
+              $scope.selectTerminology();
             });
           };
+          $scope.getTerminologyEditions();
 
-          // Initialize modules if terminology/version set
-          if ($scope.project.terminology) {
-            $scope.getModules();
+          // Get $scope.modules
+          $scope.getModules = function() {
+            projectService.getModules($scope.project, $scope.project.terminology, $scope.version)
+              .then(
+              // Success
+              function(data) {
+                $scope.modules = data.concepts;
+
+              });
+          };
+
+          // Terminology handler selection
+          $scope.selectHandler = function(handler) {
+            $scope.project.terminologyHandlerKey = handler.key;
+            $scope.project.terminologyHandlerUrl = handler.value;
+          }
+
+          // Test the handler URL, if successful, mark as such
+          $scope.testHandlerUrl = function() {
+            $scope.errors = [];
+            projectService.testHandlerUrl($scope.project.terminologyHandlerKey,
+              $scope.project.terminologyHandlerUrl).then(
+            // Success
+            function(data) {
+              $scope.urlTestSuccess = true;
+              $scope.getTerminologyEditions();
+            },
+            // fail
+            function(data) {
+              utilService.handleDialogError($scope.errors, JSON.stringify(data + ''));
+            });
+          }
+
+          // Require re-test on url change
+          $scope.urlChanged = function() {
+            $scope.urlTestSuccess = false;
+            $scope.project.terminology = null;
           }
 
           // Handle terminology selected
-          $scope.terminologySelected = function(terminology) {
-            $scope.versions = $scope.metadata.versions[terminology].sort().reverse();
-            $scope.getModules();
+          $scope.selectTerminology = function() {
+            if (!$scope.project.terminology) {
+              return;
+            }
+            // $scope.project.terminology will already be set at this point
+            projectService.getTerminologyVersions($scope.project, $scope.project.terminology).then(
+            // Success
+            function(data) {
+              $scope.project.terminology = data.terminologies[0].terminology;
+              $scope.version = data.terminologies[0].version;
+              $scope.getModules();
+            });
           };
-
           $scope.selectValidationCheck = function(check) {
             $scope.selectedChecks.push(check);
             var index = $scope.availableChecks.indexOf(check);
@@ -822,6 +913,11 @@ tsApp
             $uibModalInstance.dismiss('cancel');
           };
 
+          // splash glass pane for 1 second
+          gpService.increment();
+          $timeout(function() {
+            gpService.decrement();
+          }, 2000);
         };
 
         // Add user modal
@@ -977,6 +1073,7 @@ tsApp
         $scope.getProjectRoles();
         $scope.getValidationChecks();
         $scope.getLanguageDescriptionTypes();
+        $scope.getTerminologyHandlers();
 
         // Handle users with user preferences
         if ($scope.user.userPreferences) {

@@ -302,9 +302,12 @@
               <b>Actions</b>
             </td>
             <td>
-              <i
+              <i ng-show="selected.translation.feedbackEmail"
                 ng-click="openFeedbackModal(selected.translation); $event.stopPropagation()"
                 title="Submit feedback" class="noul material-icons md-18">speaker_notes</i>
+              <i ng-show="!selected.translation.feedbackEmail"
+                title="Feedback email not configured"
+                class="md-grey material-icons md-18">speaker_notes</i>
             </td>
           </tr>
 

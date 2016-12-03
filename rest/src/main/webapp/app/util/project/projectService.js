@@ -72,6 +72,52 @@ tsApp
           return iconConfig[key];
         };
 
+        // get terminology handlers
+        this.getTerminologyHandlers = function() {
+          console.debug('getTerminologyHandlers');
+          var deferred = $q.defer();
+
+          // Get projects
+          gpService.increment();
+          $http.get(projectUrl + 'handlers').then(
+          // success
+          function(response) {
+            console.debug('  handlers = ', response.data);
+            gpService.decrement();
+            deferred.resolve(response.data);
+          },
+          // error
+          function(response) {
+            utilService.handleError(response);
+            gpService.decrement();
+            deferred.reject(response.data);
+          });
+          return deferred.promise;
+        };
+
+        // test handler url
+        this.testHandlerUrl = function(key, url) {
+          console.debug('testHandlerUrl', key, url);
+          var deferred = $q.defer();
+
+          // Get projects
+          gpService.increment();
+          $http.get(projectUrl + 'test?key=' + key + '&url=' + encodeURIComponent(url)).then(
+          // success
+          function(response) {
+            console.debug('  test = ', response.data);
+            gpService.decrement();
+            deferred.resolve(response.data);
+          },
+          // error
+          function(response) {
+            // let this be handled elsewhere: utilService.handleError(response);
+            gpService.decrement();
+            deferred.reject(response.data);
+          });
+          return deferred.promise;
+        };
+
         // get all projects
         this.getProjects = function() {
           var deferred = $q.defer();
@@ -489,6 +535,7 @@ tsApp
           $http.post(projectUrl + 'terminology/all', project).then(
           // success
           function(response) {
+            console.debug('  editions = ', response.data);
             gpService.decrement();
             deferred.resolve(response.data);
           },
@@ -511,6 +558,7 @@ tsApp
           $http.post(projectUrl + 'terminology/' + terminology + '/all', project).then(
           // success
           function(response) {
+            console.debug('  version = ', response.data);
             gpService.decrement();
             deferred.resolve(response.data);
           },

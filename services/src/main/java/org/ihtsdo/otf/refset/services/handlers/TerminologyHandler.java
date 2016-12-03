@@ -35,6 +35,14 @@ public interface TerminologyHandler extends Configurable {
   public TerminologyHandler copy() throws Exception;
 
   /**
+   * Test.
+   *
+   * @return true, if successful
+   * @throws Exception the exception
+   */
+  public boolean test() throws Exception;
+
+  /**
    * Returns the terminology editions.
    *
    * @return the terminology editions

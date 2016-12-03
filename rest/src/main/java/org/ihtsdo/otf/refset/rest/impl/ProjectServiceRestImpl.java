@@ -641,6 +641,9 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     try {
       authorizeApp(securityService, authToken, "get terminology editions",
           UserRole.VIEWER);
+      if (project == null) {
+        throw new LocalException("Get modules requires a project");
+      }
 
       final List<Terminology> editions = projectService
           .getTerminologyHandler(project).getTerminologyEditions();
@@ -674,6 +677,9 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     try {
       authorizeApp(securityService, authToken, "get terminology versions",
           UserRole.VIEWER);
+      if (project == null) {
+        throw new LocalException("Get modules requires a project");
+      }
 
       final List<Terminology> versions = projectService
           .getTerminologyHandler(project).getTerminologyVersions(terminology);
@@ -690,7 +696,6 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     }
     return null;
   }
-
 
   /* see superclass */
   @Override
@@ -709,7 +714,9 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     final ProjectService projectService = new ProjectServiceJpa();
     try {
       authorizeApp(securityService, authToken, "get modules", UserRole.VIEWER);
-
+      if (project == null) {
+        throw new LocalException("Get modules requires a project");
+      }
       final List<Concept> types = projectService.getTerminologyHandler(project)
           .getModules(terminology, version);
 
@@ -726,6 +733,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     }
     return null;
   }
+
   /* see superclass */
   @Override
   @GET
@@ -756,6 +764,33 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     } catch (Exception e) {
       handleException(e, "trying to get icon info");
     } finally {
+      securityService.close();
+    }
+    return null;
+  }
+
+  /* see superclass */
+  @Override
+  @GET
+  @Path("/handlers")
+  @ApiOperation(value = "Get terminology handler map", notes = "Gets the supported terminology handlers and default URLs", response = KeyValuePairList.class)
+  public KeyValuePairList getTerminologyHandlers(
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(getClass()).info("RESTful POST call (Project): /handlers");
+
+    final ProjectService projectService = new ProjectServiceJpa();
+    try {
+      authorizeApp(securityService, authToken, "get terminology handlers",
+          UserRole.VIEWER);
+
+      return projectService.getTerminologyHandlers();
+
+    } catch (Exception e) {
+      handleException(e, "trying to get icon info");
+    } finally {
+      projectService.close();
       securityService.close();
     }
     return null;
@@ -1047,7 +1082,6 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     return null;
   }
 
-
   /* see superclass */
   @GET
   @Path("/log")
@@ -1139,6 +1173,39 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
       return null;
     } finally {
       refsetService.close();
+      securityService.close();
+    }
+  }
+
+  /* see superclass */
+  @Override
+  @GET
+  @Path("/test")
+  @ApiOperation(value = "Test handler URL", notes = "Tests the handler url for the specified key.", response = Boolean.class)
+  public Boolean testHandlerUrl(
+    @ApiParam(value = "Handler key to test, e.g. 'BROWSER'", required = true) @QueryParam("key") String key,
+    @ApiParam(value = "Handler URL to test, e.g. 'https://...'", required = true) @QueryParam("url") String url,
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass())
+        .info("RESTful GET call (Refset): /test " + url);
+
+    // Create service and configure transaction scope
+    final ProjectService projectService = new ProjectServiceJpa();
+    try {
+      authorizeApp(securityService, authToken, "get standard description types",
+          UserRole.VIEWER);
+
+      // This will fail if there is a problem
+      projectService.testHandlerUrl(key, url);
+
+      return true;
+
+    } catch (Exception e) {
+      handleException(e, "trying to test handler url");
+      return null;
+    } finally {
+      projectService.close();
       securityService.close();
     }
   }
@@ -1243,4 +1310,5 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
             .resolveLanguageDescriptionTypes(translation, prefs)));
 
   }
+
 }

@@ -411,7 +411,7 @@ tsApp.service('gpService', [ '$timeout', function($timeout) {
           glassPane.enabled = true;
         }
         glassPane.timeout = false;
-      }, 100);
+      }, 200);
     }
   };
 

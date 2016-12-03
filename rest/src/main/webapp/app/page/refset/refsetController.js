@@ -47,6 +47,8 @@ tsApp
           importHandlers : [],
           exportHandlers : [],
           workflowPaths : [],
+          terminologies : [],
+          versions : {},
           terminologyNames : {}
         };
 
@@ -99,6 +101,10 @@ tsApp
           if (!$scope.project) {
             return;
           }
+
+          // Lookup terminology info for this project
+          $scope.getTerminologyMetadata(project);
+
           // Only save lastProjectRole if lastProject is the same
           if ($scope.user.userPreferences.lastProjectId != $scope.project.id) {
             $scope.user.userPreferences.lastProjectRole = null;
@@ -147,6 +153,27 @@ tsApp
             securityService.updateUserPreferences($scope.user.userPreferences);
           }
           projectService.fireProjectChanged($scope.project);
+        };
+
+        // Lookup terminologies, names, and versions
+        $scope.getTerminologyMetadata = function(project) {
+          projectService.getTerminologyEditions(project).then(function(data) {
+            $scope.metadata.terminologies = data.terminologies;
+            // Look up all versions
+            for (var i = 0; i < data.terminologies.length; i++) {
+              var terminology = data.terminologies[i];
+              $scope.metadata.terminologyNames[terminology.terminology] = terminology.name
+              $scope.getTerminologyVersions(project, terminology.terminology);
+            }
+          });
+        };
+        $scope.getTerminologyVersions = function(project, terminology) {
+          projectService.getTerminologyVersions(project, terminology).then(function(data) {
+            $scope.metadata.versions[terminology] = [];
+            for (var i = 0; i < data.terminologies.length; i++) {
+              $scope.metadata.versions[terminology].push(data.terminologies[i].version);
+            }
+          });
         };
 
         // Determine whether the user is a project admin

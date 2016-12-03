@@ -14,6 +14,8 @@ import javax.persistence.NoResultException;
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
+import org.ihtsdo.otf.refset.helpers.KeyValuePair;
+import org.ihtsdo.otf.refset.helpers.KeyValuePairList;
 import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.ProjectList;
@@ -40,7 +42,8 @@ public class ProjectServiceJpa extends RootServiceJpa
   protected boolean assignIdentifiersFlag = true;
 
   /** The terminology handler . */
-  private static Map<String, TerminologyHandler> terminologyHandlers = new HashMap<>();
+  private static Map<String, TerminologyHandler> terminologyHandlers =
+      new HashMap<>();
 
   static {
     try {
@@ -303,6 +306,28 @@ public class ProjectServiceJpa extends RootServiceJpa
         terminologyHandlers.get(project.getTerminologyHandlerKey()).copy();
     handler.setUrl(project.getTerminologyHandlerUrl());
     return handler;
+  }
+
+  @Override
+  public KeyValuePairList getTerminologyHandlers() throws Exception {
+    final KeyValuePairList list = new KeyValuePairList();
+    for (final String key : terminologyHandlers.keySet()) {
+      list.addKeyValuePair(
+          new KeyValuePair(key, terminologyHandlers.get(key).getDefaultUrl()));
+    }
+    return list;
+  }
+
+  @Override
+  public boolean testHandlerUrl(String key, String url) throws Exception {
+    if (!terminologyHandlers.containsKey(key)) {
+      throw new LocalException(
+          "No terminology handler exists for the specified key: " + key);
+    }
+    final TerminologyHandler handler = terminologyHandlers.get(key).copy();
+    handler.setUrl(url);
+    handler.test();
+    return true;
   }
 
 }
