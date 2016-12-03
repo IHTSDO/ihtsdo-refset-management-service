@@ -3,13 +3,14 @@ tsApp.controller('DirectoryCtrl',
   [
     '$scope',
     '$http',
+    '$routeParams',
     'tabService',
     'utilService',
     'securityService',
     'projectService',
     'refsetService',
     'workflowService',
-    function($scope, $http, tabService, utilService, securityService, projectService,
+    function($scope, $http, $routeParams, tabService, utilService, securityService, projectService,
       refsetService, workflowService) {
       console.debug('configure DirectoryCtrl');
 
@@ -140,6 +141,25 @@ tsApp.controller('DirectoryCtrl',
         refsetService.getExportRefsetHandlers().then(function(data) {
           $scope.metadata.exportHandlers = data.handlers;
         });
+      };
+
+      // Configure tab and accordion
+      $scope.configureTab = function() {
+        // skip guest user
+        if ($http.defaults.headers.common.Authorization == 'guest') {
+          $scope.accordionState['PUBLISHED'] = true;
+          return;
+        }
+        $scope.user.userPreferences.lastTab = '/directory';
+        if ($routeParams.refsetId) {
+          $scope.accordionState['PUBLISHED'] = true;
+        } else if ($scope.user.userPreferences.lastDirectoryAccordion) {
+          $scope.accordionState[$scope.user.userPreferences.lastDirectoryAccordion] = true;
+        } else {
+          // default is published if nothing set
+          $scope.accordionState['PUBLISHED'] = true;
+          securityService.updateUserPreferences($scope.user.userPreferences);
+        }
       };
 
       // Initialize

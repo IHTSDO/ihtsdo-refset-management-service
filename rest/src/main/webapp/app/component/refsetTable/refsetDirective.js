@@ -73,7 +73,7 @@ tsApp
               $scope.paging = {};
               $scope.paging['refset'] = {
                 page : 1,
-                filter : '',
+                filter : $routeParams.refsetId ? 'id:' + $routeParams.refsetId : '',
                 sortField : $scope.value == 'ASSIGNED' ? 'refsetName' : 'name',
                 ascending : null
               };
@@ -272,14 +272,22 @@ tsApp
               // Reselect selected refset to refresh
               $scope.reselect = function() {
                 // If no selected refset, use user preferences
+                if (!$scope.selected.refset && $routeParams.refsetId
+                  && $scope.value == 'PUBLISHED') {
+                  $scope.selected.refset = {
+                    id : $routeParams.refsetId
+                  };
+                }
+
+               // If no selected refset, use user preferences
                 if (!$scope.selected.refset && $scope.user.userPreferences.lastRefsetId
                   && $scope.value == $scope.user.userPreferences.lastRefsetAccordion) {
+                  
                   $scope.selected.refset = {
                     id : $scope.user.userPreferences.lastRefsetId
                   };
                 }
 
-                // if there is a selection...
                 if ($scope.selected.refset) {
                   // If $scope.selected.refset is in the list, select it, if not
                   // clear $scope.selected.refset
@@ -321,6 +329,7 @@ tsApp
                 }
               }
 
+              
               // Get $scope.filters
               $scope.getFilters = function() {
                 var projectId = $scope.project ? $scope.project.id : null;
@@ -529,6 +538,7 @@ tsApp
                 $scope.getRefsetReleaseInfo(refset);
                 $scope.getMembers(refset);
                 $scope.getStandardDescriptionTypes(refset.terminology, refset.version);
+                $scope.getLink(refset);
                 if (refset.id != $scope.user.userPreferences.lastRefsetId) {
                   $scope.user.userPreferences.lastRefsetId = refset.id;
                   securityService.updateUserPreferences($scope.user.userPreferences);
@@ -796,6 +806,10 @@ tsApp
                 }
                 return $sce.trustAsHtml('');
               };
+              
+              $scope.getLink = function(refset) {
+                $scope.link = utilService.composeUrl('/directory?refsetId=' + refset.id)
+              }
 
               // lookup and add replacement concepts
               $scope.replace = function(refset, member) {
