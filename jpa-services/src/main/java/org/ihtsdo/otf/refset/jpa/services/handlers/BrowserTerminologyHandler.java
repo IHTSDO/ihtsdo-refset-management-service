@@ -26,6 +26,7 @@ import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.Terminology;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
+import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.jpa.TerminologyJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptListJpa;
@@ -47,6 +48,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 /**
  * Implementation of {@link TerminologyHandler} that leverages the IHTSDO
  * Browser API.
+ * 
+ * Languages are only available for "descriptions" and "concept" lookups.
+ * par/chd/expr are not language aware yet. For possible values, look at the
+ * "filters" metadata in a tester query and it provides options.
  */
 public class BrowserTerminologyHandler implements TerminologyHandler {
 
@@ -78,18 +83,25 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
 
   /* see superclass */
   @Override
+  public boolean test() throws Exception {
+    getTerminologyEditions();
+    return true;
+  }
+
+  /* see superclass */
+  @Override
   public void setProperties(Properties p) throws Exception {
     if (p.containsKey("defaultUrl")) {
       defaultUrl = p.getProperty("defaultUrl");
     } else {
-      throw new Exception("Required property defaultUrl not specified.");
+      throw new LocalException("Required property defaultUrl not specified.");
     }
   }
 
   /* see superclass */
   @Override
   public String getName() {
-    return "IHTSDO browser terminology handler";
+    return "IHTSDO Browser Handler";
   }
 
   /* see superclass */
@@ -106,7 +118,7 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
     } else {
-      throw new Exception(
+      throw new LocalException(
           "Unexpected terminology server failure. Message = " + resultString);
     }
 
@@ -148,7 +160,7 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
     } else {
-      throw new Exception(
+      throw new LocalException(
           "Unexpected terminology server failure. Message = " + resultString);
     }
 
@@ -206,7 +218,7 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
         return new ConceptListJpa();
       }
 
-      throw new Exception(
+      throw new LocalException(
           "Unexpected terminology server failure. Message = " + resultString);
     }
 
@@ -288,7 +300,7 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
         return new ConceptListJpa();
       }
 
-      throw new Exception(
+      throw new LocalException(
           "Unexpected terminology server failure. Message = " + resultString);
     }
 
@@ -332,7 +344,7 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
       if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
         // n/a
       } else {
-        throw new Exception(
+        throw new LocalException(
             "Unexpected terminology server failure. Message = " + resultString);
       }
       mapper = new ObjectMapper();
@@ -416,7 +428,7 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
         return new ConceptListJpa();
       }
 
-      throw new Exception(
+      throw new LocalException(
           "Unexpected terminology server failure. Message = " + resultString);
     }
 
@@ -465,7 +477,7 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
       if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
         // n/a
       } else {
-        throw new Exception(
+        throw new LocalException(
             "Unexpected terminology server failure. Message = " + resultString);
       }
       mapper = new ObjectMapper();
@@ -532,7 +544,7 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
         return 0;
       }
 
-      throw new Exception(
+      throw new LocalException(
           "Unexpected terminology server failure. Message = " + resultString);
     }
 
@@ -579,7 +591,7 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
         return 0;
       }
 
-      throw new Exception(
+      throw new LocalException(
           "Unexpected terminology server failure. Message = " + resultString);
     }
 
@@ -611,7 +623,7 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
       if (resultString.contains("loop did not match anything")) {
         return null;
       }
-      throw new Exception(
+      throw new LocalException(
           "Unexpected terminology server failure. Message = " + resultString);
     }
 
@@ -764,7 +776,7 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
       }
     } else {
 
-      throw new Exception(
+      throw new LocalException(
           "Unexpected terminology server failure. Message = " + resultString);
     }
 
@@ -866,7 +878,7 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
     } else {
-      throw new Exception(
+      throw new LocalException(
           "Unexpected terminology server failure. Message = " + resultString);
     }
 
@@ -976,7 +988,7 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
     } else {
-      throw new Exception(
+      throw new LocalException(
           "Unexpected terminology server failure. Message = " + resultString);
     }
 
@@ -1024,7 +1036,7 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
     } else {
-      throw new Exception(
+      throw new LocalException(
           "Unexpected terminology server failure. Message = " + resultString);
     }
 

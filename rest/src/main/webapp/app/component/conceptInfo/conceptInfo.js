@@ -38,7 +38,8 @@ tsApp.directive('conceptInfo', [
           } else if ($scope.data.translation) {
             $scope.projectId = $scope.data.translation.projectId;            
           } else {
-            window.alert('unexpected data object, no refset or translation');
+            //window.alert('unexpected data object, no refset or translation');
+            // This can happen in the closed accordions.
           }
           $scope.concept = null;
           $scope.orderedDescriptions = null;
