@@ -1094,6 +1094,10 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
     final RefsetService refsetService = new RefsetServiceJpa();
     try {
       final ConceptRefsetMember member = refsetService.getMember(memberId);
+      // If the member to delete is already gone, do nothing
+      if (member == null) {
+        return;
+      }
       final Refset refset = member.getRefset();
       final String userName =
           authorizeProject(refsetService, refset.getProject().getId(),
