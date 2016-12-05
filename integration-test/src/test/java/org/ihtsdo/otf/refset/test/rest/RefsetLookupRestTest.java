@@ -183,6 +183,7 @@ public class RefsetLookupRestTest extends RestSupport {
     refset.setVersion("20150131");
     refset.setWorkflowPath("DFEAULT");
     refset.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
+    refset.setLocalSet(false);
 
     if (type == Refset.Type.EXTERNAL) {
       refset.setExternalUrl("http://www.example.com/some/other/refset.txt");

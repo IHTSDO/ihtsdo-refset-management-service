@@ -2474,6 +2474,9 @@ tsApp
                       negated : false
                     } ];
                   }
+                  if (refset.localSet) {
+                    refset.moduleId = 0;
+                  }
 
                   // validate refset before adding it
                   validationService
@@ -2499,9 +2502,14 @@ tsApp
                         } else {
                           $scope.warnings = [];
                         }
+                        
+                        if (!refset.localSet && !refset.moduleId) {
+                          $scope.errors[0] = 'ModuleId must not be empty.';
+                          return;
+                        }
 
-                        if (!refset.name || !refset.description || !refset.moduleId) {
-                          $scope.errors[0] = 'Refset name, description and moduleId must not be empty.';
+                        if (!refset.name || !refset.description) {
+                          $scope.errors[0] = 'Refset name and description must not be empty.';
                           return;
                         }
 

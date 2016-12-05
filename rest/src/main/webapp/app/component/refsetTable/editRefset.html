@@ -18,13 +18,21 @@
       </tr>
       <tr>
         <td>
+          <b>Local Set</b>
+        </td>
+        <td>
+          <input type="checkbox" title="Local set" ng-model="refset.localSet">     
+        </td>
+      </tr>
+      <tr>
+        <td>
           <b>Refset Id</b>
         </td>
         <td>
           <input ng-model="refset.terminologyId" placeholder="Optional" />
           <button confirm="Are you sure you want to assign an id to the refset?"
             class="btn btn-xs btn-primary"
-            ng-show="refset.namespace && refset.terminology"
+            ng-show="refset.namespace && refset.terminology && !refset.localSet"
             ng-click="assignRefsetTerminologyId(refset)">Assign</button>
         </td>
       </tr>
@@ -66,7 +74,7 @@
             ng-options="item for item in versions"></select>
         </td>
       </tr>
-      <tr>
+      <tr ng-show="!refset.localSet">
         <td>
           <b>Namespace</b>
         </td>
@@ -75,7 +83,7 @@
             placeholder="e.g. 1000124" />
         </td>
       </tr>
-      <tr>
+      <tr ng-show="!refset.localSet">
         <td>
           <b>Module Id</b>
         </td>
@@ -151,6 +159,7 @@
           <input ng-model="refset.externalUrl">
         </td>
       </tr>
+
       <tr ng-show="refset.type == 'INTENSIONAL'">
         <td>
           <b>Definition</b>
@@ -236,7 +245,7 @@
       ng-click="submitRefset(refset); ">Save</button>
     <button ng-show="action == 'Clone' && comments.length == 0"
       class="btn btn-primary" ng-click="submitRefset(refset); ">Clone</button>
-    <button ng-show="comments.length == 0" class="btn btn-warning"
+    <button class="btn btn-warning"
       ng-click="cancel()">Cancel</button>
     <button ng-show="comments.length > 0" class="btn btn-warning"
       ng-click="close()">Close</button>
