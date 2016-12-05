@@ -7,6 +7,7 @@ tsApp
       '$uibModal',
       '$location',
       '$window',
+      '$route',
       '$routeParams',
       '$sce',
       '$interval',
@@ -17,7 +18,7 @@ tsApp
       'releaseService',
       'workflowService',
       'validationService',
-      function($uibModal, $location, $window, $routeParams, $sce, $interval, utilService,
+      function($uibModal, $location, $window, $route, $routeParams, $sce, $interval, utilService,
         securityService, projectService, refsetService, releaseService, workflowService,
         validationService) {
         console.debug('configure refsetTable directive', $routeParams);
@@ -269,6 +270,21 @@ tsApp
                 return refsets;
               };
 
+              
+              $scope.clearUrlParams = function() {
+                var index = $scope.link.indexOf("?");
+                if (index != -1) {
+                  $scope.link = $scope.link.substring(0, index);
+                  window.location.href = $scope.link;
+                }
+              }
+              
+              $scope.loadNewRoute = function(refset) {
+                $scope.getLink(refset);
+                window.location.href = $scope.link;
+                $route.reload();
+             }
+              
               // Reselect selected refset to refresh
               $scope.reselect = function() {
                 // If no selected refset, use user preferences
