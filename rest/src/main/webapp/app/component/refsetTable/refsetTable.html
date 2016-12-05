@@ -28,7 +28,7 @@
       </datalist>
 
       <button class="btn btn-xs btn-warning" ng-show="paging['refset'].filter"
-        ng-click="paging['refset'].filter = ''; getRefsets()"
+        ng-click="paging['refset'].filter = ''; clearUrlParams(); getRefsets()"
         title="Click to clear filter text">Clear</button>
 
       <!-- No need to show for BETA, there should be only one -->
@@ -493,9 +493,9 @@
 
             </td>
           </tr>
-          <tr>
-            <td>External URL</td>
-            <td><a href="{{link}}">{{link}}</a></td>
+          <tr ng-show="value == 'PUBLISHED'">
+            <td>Url</td>
+            <td ><a ng-href="{{link}}" ng-click="loadNewRoute(selected.refset)">{{link}}</a></td>
           </tr>
           <tr ng-show="selected.refset.type == 'INTENSIONAL'">
             <td>
