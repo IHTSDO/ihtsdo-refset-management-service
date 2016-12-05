@@ -365,9 +365,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
             "Adding members based on an expression can only be done for EXTENSIONAL refsets.");
       }
       final ConceptList resolvedFromExpression =
-          refsetService.getTerminologyHandler().resolveExpression(
-              refset.computeExpression(expression), refset.getTerminology(),
-              refset.getVersion(), null);
+          refsetService.getTerminologyHandler(refset.getProject())
+              .resolveExpression(refset.computeExpression(expression),
+                  refset.getTerminology(), refset.getVersion(), null);
 
       final Set<String> conceptIds = new HashSet<>();
       for (final ConceptRefsetMember member : refset.getMembers()) {
@@ -434,9 +434,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       }
 
       final ConceptList resolvedFromExpression =
-          refsetService.getTerminologyHandler().resolveExpression(
-              refset.computeExpression(expression), refset.getTerminology(),
-              refset.getVersion(), null);
+          refsetService.getTerminologyHandler(refset.getProject())
+              .resolveExpression(refset.computeExpression(expression),
+                  refset.getTerminology(), refset.getVersion(), null);
       final Set<String> conceptIds = new HashSet<>();
       for (final Concept concept : resolvedFromExpression.getObjects()) {
         conceptIds.add(concept.getTerminologyId());
@@ -814,9 +814,10 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
           member.setRefset(refset);
 
           // Look up concept name and active status
-          final Concept concept = refsetService.getTerminologyHandler()
-              .getConcept(member.getConceptId(), refset.getTerminology(),
-                  refset.getVersion());
+          final Concept concept =
+              refsetService.getTerminologyHandler(refset.getProject())
+                  .getConcept(member.getConceptId(), refset.getTerminology(),
+                      refset.getVersion());
           if (concept != null) {
             member.setConceptName(concept.getName());
             member.setConceptActive(concept.isActive());
@@ -1048,8 +1049,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
 
       // Look up concept name and active
       if (member.getConceptName() == null) {
-        final Concept concept = refsetService.getTerminologyHandler()
-            .getConcept(member.getConceptId(), refset.getTerminology(),
+        final Concept concept =
+            refsetService.getTerminologyHandler(refset.getProject()).getConcept(
+                member.getConceptId(), refset.getTerminology(),
                 refset.getVersion());
         if (concept != null) {
           member.setConceptName(concept.getName());
@@ -1226,8 +1228,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       // Lookup concept name and active if not already set
       // Look up concept name and active
       if (inclusion.getConceptName() == null) {
-        final Concept concept = refsetService.getTerminologyHandler()
-            .getConcept(inclusion.getConceptId(), refset.getTerminology(),
+        final Concept concept =
+            refsetService.getTerminologyHandler(refset.getProject()).getConcept(
+                inclusion.getConceptId(), refset.getTerminology(),
                 refset.getVersion());
         if (concept != null) {
           inclusion.setConceptName(concept.getName());
@@ -1478,9 +1481,10 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         // add members from expression results
         // No need to "resolvExpression" because definition computation includes
         // project exclude logic
-        ConceptList conceptList = refsetService.getTerminologyHandler()
-            .resolveExpression(refsetCopy.computeDefinition(null, null),
-                refsetCopy.getTerminology(), refsetCopy.getVersion(), null);
+        ConceptList conceptList =
+            refsetService.getTerminologyHandler(refset.getProject())
+                .resolveExpression(refsetCopy.computeDefinition(null, null),
+                    refsetCopy.getTerminology(), refsetCopy.getVersion(), null);
 
         // do this to re-use the terminology id
         final Map<String, ConceptRefsetMember> conceptIdMap = new HashMap<>();
@@ -1530,8 +1534,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       }
 
       // If we're going to call lookupNames, set lookupInProgress first
-      boolean assignNames = refsetService.getTerminologyHandler().assignNames();
-      if (assignNames) {
+      if (ConfigUtility.isAssignNames()) {
         refsetCopy.setLookupInProgress(true);
       }
       refsetCopy.setLastModifiedBy(userName);
@@ -1818,9 +1821,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       refsetService.commit();
 
       // Lookup member names should always happen after commit
-      final boolean assignNames =
-          refsetService.getTerminologyHandler().assignNames();
-      if (assignNames) {
+      if (ConfigUtility.isAssignNames()) {
         refsetService.lookupMemberNames(refset.getId(), oldNotNew,
             "cancel migration", true, ConfigUtility.isBackgroundLookup());
       }
@@ -2252,9 +2253,10 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
           posClauses.add(clause);
         }
         // No need to "resolvExpression" because it doesn't affect the logic
-        final ConceptList concepts = refsetService.getTerminologyHandler()
-            .resolveExpression(clause.getValue(), refset.getTerminology(),
-                refset.getVersion(), null);
+        final ConceptList concepts =
+            refsetService.getTerminologyHandler(refset.getProject())
+                .resolveExpression(clause.getValue(), refset.getTerminology(),
+                    refset.getVersion(), null);
         clauseToConceptsMap.put(clause.getValue(), concepts);
       }
 
@@ -2675,9 +2677,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       // Remove the staged refset change and set staging type back to null
       refsetService.removeStagedRefsetChange(change.getId());
       refset.setStagingType(null);
-      final boolean assignNames =
-          refsetService.getTerminologyHandler().assignNames();
-      if (assignNames) {
+      if (ConfigUtility.isAssignNames()) {
         refset.setLookupInProgress(true);
       }
       refset.setLastModifiedBy(userName);
@@ -2694,7 +2694,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       refsetService.commit();
 
       // With contents committed, can now lookup Names/Statuses of members
-      if (assignNames) {
+      if (ConfigUtility.isAssignNames()) {
         // Lookup member names should always happen after commit
         refsetService.lookupMemberNames(refsetId, "finish import members",
             ConfigUtility.isBackgroundLookup());
@@ -3054,6 +3054,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
   @Path("/expression/count")
   @ApiOperation(value = "Count expression", notes = "Gets the total count of items in the expression provided by the refset definition clauses.", response = Integer.class)
   public Integer countExpression(
+    @ApiParam(value = "Project id, e.g. 12345'", required = true) @QueryParam("projectId") Long projectId,
     @ApiParam(value = "Expression, e.g. '<<58427002 | Antibiotic measurement (procedure) |'", required = true) String expression,
     @ApiParam(value = "Terminology, e.g. SNOMEDCT", required = true) @QueryParam("terminology") String terminology,
     @ApiParam(value = "Version, e.g. 20150131", required = true) @QueryParam("version") String version,
@@ -3065,11 +3066,12 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
 
     final RefsetService refsetService = new RefsetServiceJpa();
     try {
+      authorizeProject(refsetService, projectId, securityService, authToken,
+          "count expression", UserRole.AUTHOR);
+      final Project project = refsetService.getProject(projectId);
 
-      authorizeApp(securityService, authToken, "count expression",
-          UserRole.VIEWER);
-
-      return refsetService.countExpression(terminology, version, expression);
+      return refsetService.countExpression(project, terminology, version,
+          expression);
     } catch (Exception e) {
       handleException(e, "trying to count items in resolved expression");
     } finally {
@@ -3121,6 +3123,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
   @Path("/expression/valid")
   @ApiOperation(value = "Indicates if an expression is valid", notes = "Gets true if the expression is valid, false otherwise", response = Boolean.class)
   public Boolean isExpressionValid(
+    @ApiParam(value = "Project id, e.g. 12345'", required = true) @QueryParam("projectId") Long projectId,
     @ApiParam(value = "Expression, e.g. '<<58427002 | Antibiotic measurement (procedure) |'", required = true) String expression,
     @ApiParam(value = "Terminology, e.g. SNOMEDCT", required = true) @QueryParam("terminology") String terminology,
     @ApiParam(value = "Version, e.g. 20150131", required = true) @QueryParam("version") String version,
@@ -3133,13 +3136,14 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
     // Create service and configure transaction scope
     final RefsetService refsetService = new RefsetServiceJpa();
     try {
-      authorizeApp(securityService, authToken, "check expression validity",
-          UserRole.VIEWER);
+      authorizeProject(refsetService, projectId, securityService, authToken,
+          "is expression valid", UserRole.AUTHOR);
+      final Project project = refsetService.getProject(projectId);
 
       final PfsParameter pfs = new PfsParameterJpa();
       pfs.setStartIndex(0);
       pfs.setMaxResults(1);
-      refsetService.getTerminologyHandler().countExpression(expression,
+      refsetService.getTerminologyHandler(project).countExpression(expression,
           terminology, version);
       return true;
 

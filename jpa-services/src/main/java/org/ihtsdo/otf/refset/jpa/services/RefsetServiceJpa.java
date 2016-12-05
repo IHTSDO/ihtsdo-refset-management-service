@@ -23,6 +23,7 @@ import org.hibernate.envers.query.AuditEntity;
 import org.hibernate.envers.query.AuditQuery;
 import org.ihtsdo.otf.refset.DefinitionClause;
 import org.ihtsdo.otf.refset.Note;
+import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.ReleaseInfo;
 import org.ihtsdo.otf.refset.StagedRefsetChange;
@@ -852,7 +853,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
     Logger.getLogger(getClass()).info("Release Service - lookup member names - "
         + refsetId + ", " + background);
     // Only launch process if refset not already looked-up
-    if (getTerminologyHandler().assignNames()) {
+    if (ConfigUtility.isAssignNames()) {
       if (!lookupProgressMap.containsKey(refsetId)) {
         // Create new thread
         Runnable lookup = new LookupMemberNamesThread(refsetId, label);
@@ -876,7 +877,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
         .info("Release Service - lookup member names (2) - " + refsetId + ", "
             + background);
     // Only launch process if refset not already looked-up
-    if (getTerminologyHandler().assignNames()) {
+    if (ConfigUtility.isAssignNames()) {
       if (!lookupProgressMap.containsKey(refsetId)) {
         // Create new thread
         Runnable lookup =
@@ -945,7 +946,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
      * @throws Exception the exception
      */
     public LookupMemberNamesThread(Long id, String label) throws Exception {
-      refsetId = id;
+      this.refsetId = id;
       this.label = label;
     }
 
@@ -961,7 +962,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
      */
     public LookupMemberNamesThread(Long id, List<ConceptRefsetMember> members,
         String label, boolean saveMembers) throws Exception {
-      refsetId = id;
+      this.refsetId = id;
       this.members = members;
       this.label = label;
       this.saveMembers = saveMembers;
@@ -1044,7 +1045,8 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
               termIds.add(members.get(i).getConceptId());
             }
             // Get concepts from Term Server based on list
-            final TerminologyHandler handler = getTerminologyHandler();
+            final TerminologyHandler handler =
+                getTerminologyHandler(refset.getProject());
             final ConceptList cons =
                 handler.getConcepts(termIds, terminology, version);
 
@@ -1141,12 +1143,12 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
 
   /* see superclass */
   @Override
-  public Integer countExpression(String terminology, String version,
-    String expression) throws Exception {
+  public Integer countExpression(Project project, String terminology,
+    String version, String expression) throws Exception {
     int total = 0;
     try {
-      total = getTerminologyHandler().countExpression(expression, terminology,
-          version);
+      total = getTerminologyHandler(project).countExpression(expression,
+          terminology, version);
     } catch (Exception e) {
       throw new LocalException(
           "Unable to count total expression items, the expression could not be resolved - "
@@ -1183,8 +1185,9 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
     }
     ConceptList resolvedFromExpression = null;
     try {
-      resolvedFromExpression = getTerminologyHandler().resolveExpression(
-          definition, refset.getTerminology(), refset.getVersion(), null);
+      resolvedFromExpression =
+          getTerminologyHandler(refset.getProject()).resolveExpression(
+              definition, refset.getTerminology(), refset.getVersion(), null);
 
       // Save concepts
       for (final Concept concept : resolvedFromExpression.getObjects()) {

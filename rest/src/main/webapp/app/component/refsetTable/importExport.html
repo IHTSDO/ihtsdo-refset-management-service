@@ -5,8 +5,7 @@
 <div class="modal-body">
   <div>
     <!-- Refset info -->
-    <div refset-info refset="refset" form="long"></div>
-
+    <div refset-info refset="refset" form="long" metadata="metadata"></div>
     <table class="table">
       <tr>
         <td class="col-md-4 col-xs-4">
@@ -82,6 +81,9 @@
   <button class="btn btn-primary"
     ng-show="operation == 'Import' && errors.length > 0"
     ng-click="continueImport(file);">Continue With Import</button>
-  <button class="btn btn-warning" ng-show="importStarted && !importFinished && comments.length == 0" ng-click="cancel()">Cancel</button>
-  <button class="btn btn-warning" ng-show="importFinished || !importStarted" ng-click="close()">Close</button>
+  <button class="btn btn-warning"
+    ng-show="importStarted && !importFinished && comments.length == 0"
+    ng-click="cancel()">Cancel</button>
+  <button class="btn btn-warning" ng-show="importFinished || !importStarted"
+    ng-click="close()">Close</button>
 </div>

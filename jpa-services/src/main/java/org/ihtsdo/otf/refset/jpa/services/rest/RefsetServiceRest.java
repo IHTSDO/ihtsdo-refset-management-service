@@ -554,6 +554,7 @@ public interface RefsetServiceRest {
   /**
    * Is expression valid.
    *
+   * @param projectId the project id
    * @param expression the expression
    * @param terminology the terminology
    * @param version the version
@@ -561,8 +562,8 @@ public interface RefsetServiceRest {
    * @return the boolean
    * @throws Exception the exception
    */
-  public Boolean isExpressionValid(String expression, String terminology,
-    String version, String authToken) throws Exception;
+  public Boolean isExpressionValid(Long projectId, String expression,
+    String terminology, String version, String authToken) throws Exception;
 
   /**
    * Recover removed refset.
@@ -590,6 +591,7 @@ public interface RefsetServiceRest {
   /**
    * Count expression.
    *
+   * @param projectId the project id
    * @param expression the expression
    * @param terminology the terminology
    * @param version the version
@@ -597,8 +599,8 @@ public interface RefsetServiceRest {
    * @return the integer
    * @throws Exception the exception
    */
-  public Integer countExpression(String expression, String terminology,
-    String version, String authToken) throws Exception;
+  public Integer countExpression(Long projectId, String expression,
+    String terminology, String version, String authToken) throws Exception;
 
   /**
    * Returns values for various refset fields that can be used as easy picklist

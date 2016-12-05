@@ -1246,6 +1246,9 @@ tsApp
                     concept : function() {
                       return lconcept;
                     },
+                    metadata : function() {
+                      return $scope.metadata;
+                    },
                     action : function() {
                       return laction;
                     },
@@ -1283,14 +1286,15 @@ tsApp
               };
 
               // Assign concept controller
-              var AssignConceptModalCtrl = function($scope, $uibModalInstance, concept, action,
-                translation, currentUser, assignedUsers, project, role, tinymceOptions) {
+              var AssignConceptModalCtrl = function($scope, $uibModalInstance, concept, metadata,
+                action, translation, currentUser, assignedUsers, project, role, tinymceOptions) {
 
                 console.debug('Entered assign concept modal control', concept);
 
+                $scope.concept = concept;
+                $scope.metadata = metadata;
                 $scope.note;
                 $scope.translation = translation;
-                $scope.concept = concept;
                 $scope.action = action;
                 $scope.project = project;
                 $scope.role = role;
@@ -1443,6 +1447,9 @@ tsApp
                     translation : function() {
                       return $scope.selected.translation;
                     },
+                    metadata : function() {
+                      return $scope.metadata;
+                    },
                     currentUser : function() {
                       return $scope.user;
                     },
@@ -1471,10 +1478,11 @@ tsApp
 
               // Batch assign concept controller
               var BatchAssignConceptModalCtrl = function($scope, $uibModalInstance, translation,
-                currentUser, assignedUsers, project, role, paging) {
+                metadata, currentUser, assignedUsers, project, role, paging) {
                 console.debug('Entered assign concept modal control', assignedUsers, project.id);
 
                 $scope.translation = translation;
+                $scope.metadata = metadata;
                 $scope.batchSize = 10;
                 $scope.project = project;
                 $scope.role = role;
@@ -2348,6 +2356,9 @@ tsApp
                     translation : function() {
                       return ltranslation;
                     },
+                    metadata : function() {
+                      return $scope.metadata;
+                    },
                     operation : function() {
                       return loperation;
                     },
@@ -2381,12 +2392,13 @@ tsApp
 
               // Import/Export controller
               var ImportExportModalCtrl = function($scope, $uibModalInstance, translation,
-                operation, type, ioHandlers, query, pfs) {
+                metadata, operation, type, ioHandlers, query, pfs) {
                 console.debug('Entered import export modal control');
 
+                $scope.translation = translation;
+                $scope.metadata = metadata;
                 $scope.query = query;
                 $scope.pfs = pfs;
-                $scope.translation = translation;
                 $scope.ioHandlers = ioHandlers;
                 $scope.selectedIoHandler = null;
                 for (var i = 0; i < ioHandlers.length; i++) {
@@ -2842,6 +2854,9 @@ tsApp
                     translation : function() {
                       return ltranslation;
                     },
+                    metadata : function() {
+                      return $scope.metadata;
+                    },
                     tinymceOptions : function() {
                       return utilService.tinymceOptions;
                     }
@@ -2857,12 +2872,13 @@ tsApp
               };
 
               // Feedback controller
-              var FeedbackModalCtrl = function($scope, $uibModalInstance, translation,
+              var FeedbackModalCtrl = function($scope, $uibModalInstance, translation, metadata,
                 tinymceOptions) {
                 console.debug('Entered feedback modal control', translation);
 
-                $scope.errors = [];
                 $scope.translation = JSON.parse(JSON.stringify(translation));
+                $scope.metadata = metadata;
+                $scope.errors = [];
                 $scope.tinymceOptions = tinymceOptions;
 
                 $scope.addFeedback = function(translation, name, email, message) {

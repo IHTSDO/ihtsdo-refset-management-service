@@ -829,8 +829,8 @@ tsApp
 
               // lookup and add replacement concepts
               $scope.replace = function(refset, member) {
-                projectService.getReplacementConcepts(member.conceptId, refset.terminology,
-                  refset.version).then(
+                projectService.getReplacementConcepts($scope.project.id, member.conceptId,
+                  refset.terminology, refset.version).then(
                 // Success
                 function(data) {
 
@@ -1012,6 +1012,9 @@ tsApp
                     refset : function() {
                       return lrefset;
                     },
+                    metadata : function() {
+                      return $scope.metadata;
+                    },
                     value : function() {
                       return lvalue;
                     }
@@ -1027,10 +1030,12 @@ tsApp
               };
 
               // Definition clauses controller
-              var DefinitionClausesModalCtrl = function($scope, $uibModalInstance, refset, value) {
+              var DefinitionClausesModalCtrl = function($scope, $uibModalInstance, refset,
+                metadata, value) {
                 console.debug('Entered definition clauses modal control', refset, value);
 
                 $scope.refset = refset;
+                $scope.metadata = metadata;
                 $scope.value = value;
                 $scope.newClause = null;
 
@@ -1096,8 +1101,8 @@ tsApp
                     $scope.warningFlag = false;
                     for (var i = 0; i < $scope.newClauses.length; i++) {
                       refsetService
-                        .countExpression($scope.newClauses[i].value, refset.terminology,
-                          refset.version)
+                        .countExpression($scope.project.id, $scope.newClauses[i].value,
+                          refset.terminology, refset.version)
                         .then(
                           // Success - count expression
                           function(data) {
@@ -1136,7 +1141,8 @@ tsApp
                     }
                   }
                   refsetService
-                    .isExpressionValid(clause.value, refset.terminology, refset.version)
+                    .isExpressionValid($scope.project.id, clause.value, refset.terminology,
+                      refset.version)
                     .then(
                       // Success - add refset
                       function(data) {
@@ -1147,7 +1153,8 @@ tsApp
                           $scope.warnings = {};
                           $scope.warningFlag = false;
                           refsetService
-                            .countExpression(clause.value, refset.terminology, refset.version)
+                            .countExpression($scope.project.id, clause.value, refset.terminology,
+                              refset.version)
                             .then(
                               // Success - count expression
                               function(data) {
@@ -1366,6 +1373,9 @@ tsApp
                   controller : CloneRefsetModalCtrl,
                   backdrop : 'static',
                   resolve : {
+                    project : function() {
+                      return $scope.project;
+                    },
                     refset : function() {
                       return lrefset;
                     },
@@ -1405,16 +1415,19 @@ tsApp
               };
 
               // Clone Refset controller
-              var CloneRefsetModalCtrl = function($scope, $uibModalInstance, refset, filters,
-                metadata, projects) {
+              var CloneRefsetModalCtrl = function($scope, $uibModalInstance, project, refset,
+                filters, metadata, projects) {
                 console.debug('Entered clone refset modal control', refset, projects);
 
                 $scope.action = 'Clone';
+                $scope.project = project;
                 $scope.projects = projects;
                 $scope.metadata = metadata;
                 $scope.filters = filters;
-                $scope.versions = angular.copy(metadata.versions[refset.terminology].sort()
-                  .reverse());
+                $scope.versionsMap = {};
+                $scope.terminologies = [];
+                $scope.versions = [];
+
                 // Copy refset and clear terminology id
                 $scope.refset = JSON.parse(JSON.stringify(refset));
                 $scope.newRefset = null;
@@ -1427,26 +1440,68 @@ tsApp
                 $scope.projectSelected = function(project) {
                   $scope.refset.namespace = project.namespace;
                   $scope.refset.moduleId = project.moduleId;
+                  $scope.getTerminologyEditions();
+                };
+
+                // Get $scope.terminologies
+                $scope.getTerminologyEditions = function() {
+                  projectService.getTerminologyEditions(project).then(function(data) {
+                    $scope.terminologies = data.terminologies;
+                    // Look up all versions
+                    for (var i = 0; i < data.terminologies.length; i++) {
+                      $scope.getTerminologyVersions(project, data.terminologies[i].terminology);
+                    }
+                    $scope.refset.terminology = project.terminology;
+                    if (!$scope.refset.terminology) {
+                      $scope.refset.terminology = data.terminologies[0];
+                    }
+                  });
+
+                };
+
+                // Get $scope.versions
+                $scope.getTerminologyVersions = function(project, terminology) {
+                  projectService.getTerminologyVersions(project, terminology).then(
+                    function(data) {
+                      $scope.versionsMap[terminology] = [];
+                      found = false;
+                      for (var i = 0; i < data.terminologies.length; i++) {
+                        $scope.versionsMap[terminology].push(data.terminologies[i].version);
+                        if ($scope.refset.terminology == terminology) {
+                          $scope.refset.version = data.terminologies[i].version;
+                          found = true;
+                        }
+                      }
+                      if ($scope.refset.terminology == terminology) {
+                        $scope.versions = angular.copy($scope.versionsMap[terminology].sort()
+                          .reverse());
+                        if (!found) {
+                          $scope.refset.version = data.terminologies[0].version;
+                        }
+                      }
+
+                    });
+
                 };
 
                 // Get $scope.modules
                 $scope.getModules = function() {
-                  projectService.getModules($scope.refset.terminology, $scope.refset.version).then(
+                  projectService.getModules(project, $scope.refset.terminology,
+                    $scope.refset.version).then(
                   // Success
                   function(data) {
                     $scope.modules = data.concepts;
                   });
                 };
 
-                // Initialize modules if terminology/version set
+                // Initialize terminology/version/module
                 if ($scope.refset.terminology && $scope.refset.version) {
                   $scope.getModules();
                 }
 
                 // Handle terminology selected
                 $scope.terminologySelected = function(terminology) {
-                  $scope.versions = angular.copy($scope.metadata.versions[terminology].sort()
-                    .reverse());
+                  $scope.versions = angular.copy($scope.versionsMap[terminology].sort().reverse());
                   $scope.refset.version = $scope.versions[0];
                   $scope.getModules();
                 };
@@ -1549,6 +1604,9 @@ tsApp
                     refset : function() {
                       return lrefset;
                     },
+                    metadata : function() {
+                      return $scope.metadata;
+                    },
                     operation : function() {
                       return loperation;
                     },
@@ -1585,13 +1643,14 @@ tsApp
               };
 
               // Import/Export controller
-              var ImportExportModalCtrl = function($scope, $uibModalInstance, refset, operation,
-                type, ioHandlers, query, pfs) {
+              var ImportExportModalCtrl = function($scope, $uibModalInstance, refset, metadata,
+                operation, type, ioHandlers, query, pfs) {
                 console.debug('Entered import export modal control', refset.id, ioHandlers,
                   operation, type);
+                $scope.refset = refset;
+                $scope.metadata = metadata;
                 $scope.query = query;
                 $scope.pfs = pfs;
-                $scope.refset = refset;
                 $scope.ioHandlers = [];
                 // Skip "with name" handlers if user is not logged in
                 // IHTSDO-specific, may be able make this more data driven
@@ -1893,6 +1952,9 @@ tsApp
                     refset : function() {
                       return lrefset;
                     },
+                    metadata : function() {
+                      return $scope.metadata;
+                    },
                     action : function() {
                       return laction;
                     },
@@ -1927,10 +1989,11 @@ tsApp
               };
 
               // Assign refset controller
-              var AssignRefsetModalCtrl = function($scope, $uibModalInstance, $sce, refset, action,
-                currentUser, assignedUsers, project, role, tinymceOptions) {
+              var AssignRefsetModalCtrl = function($scope, $uibModalInstance, $sce, refset,
+                metadata, action, currentUser, assignedUsers, project, role, tinymceOptions) {
                 console.debug('Entered assign refset modal control', assignedUsers, project.id);
                 $scope.refset = refset;
+                $scope.metadata = metadata;
                 $scope.action = action;
                 $scope.project = project;
                 $scope.role = role;
@@ -2325,16 +2388,18 @@ tsApp
               // Add Refset controller
               var AddRefsetModalCtrl = function($scope, $uibModalInstance, metadata, filters,
                 project, projects) {
-                console.debug('Entered add refset modal control', metadata);
+                console.debug('Entered add refset modal control', metadata, project);
 
                 $scope.action = 'Add';
-                $scope.definition = null;
-                $scope.metadata = metadata;
-                $scope.filters = filters;
                 $scope.project = project;
                 $scope.projects = projects;
-                $scope.versions = angular.copy(metadata.versions[$scope.project.terminology].sort()
-                  .reverse());
+                $scope.definition = null;
+                $scope.metadata = metadata;
+                $scope.terminologies = metadata.terminologies;
+                $scope.versions = angular.copy($scope.metadata.versions[$scope.project.terminology]
+                  .sort().reverse());
+                $scope.filters = filters;
+
                 $scope.clause = {
                   value : null
                 };
@@ -2356,7 +2421,8 @@ tsApp
 
                 // Get $scope.modules
                 $scope.getModules = function() {
-                  projectService.getModules($scope.refset.terminology, $scope.refset.version).then(
+                  projectService.getModules($scope.project, $scope.refset.terminology,
+                    $scope.refset.version).then(
                   // Success
                   function(data) {
                     $scope.modules = data.concepts;
@@ -2370,7 +2436,8 @@ tsApp
 
                 // Handle terminology selected
                 $scope.terminologySelected = function(terminology) {
-                  $scope.versions = angular.copy(metadata.versions[terminology].sort().reverse());
+                  $scope.versions = angular.copy($scope.metadata.versions[terminology].sort()
+                    .reverse());
                   $scope.refset.version = $scope.versions[0];
                   $scope.getModules();
                 };
@@ -2502,7 +2569,7 @@ tsApp
               // Edit refset controller
               var EditRefsetModalCtrl = function($scope, $uibModalInstance, refset, metadata,
                 filters, project, projects) {
-                console.debug('Entered edit refset modal control');
+                console.debug('Entered edit refset modal control', refset);
 
                 $scope.action = 'Edit';
                 $scope.refset = refset;
@@ -2511,6 +2578,9 @@ tsApp
                 $scope.refset.project = project;
                 $scope.projects = projects;
                 $scope.metadata = metadata;
+                $scope.terminologies = metadata.terminologies;
+                $scope.versionsMap = {};
+                $scope.terminologies = [];
                 $scope.versions = angular.copy($scope.metadata.versions[refset.terminology].sort()
                   .reverse());
                 $scope.modules = [];
@@ -2518,20 +2588,23 @@ tsApp
 
                 // Get $scope.modules
                 $scope.getModules = function() {
-                  projectService.getModules($scope.refset.terminology, $scope.refset.version).then(
+                  projectService.getModules($scope.project, $scope.refset.terminology,
+                    $scope.refset.version).then(
                   // Success
                   function(data) {
                     $scope.modules = data.concepts;
                   });
-                }; // Initialize modules if terminology/version set
+                };
+
+                // Initialize modules if terminology/version set
                 if ($scope.refset.terminology && $scope.refset.version) {
                   $scope.getModules();
                 }
 
                 // Handle terminology selected
                 $scope.terminologySelected = function(terminology) {
-                  $scope.versions = angular.copy($scope.metadata.versions[terminology].sort()
-                    .reverse());
+                  $scope.versions = angular.copy($scope.metadata.versions[refset.terminology]
+                    .sort().reverse());
                   $scope.refset.version = $scope.versions[0];
                   $scope.getModules();
                 };
@@ -2764,8 +2837,8 @@ tsApp
                     console.debug('active only');
                     pfs.activeOnly = true;
                   }
-                  projectService.findConceptsForQuery(search, refset.terminology, refset.version,
-                    pfs).then(
+                  projectService.findConceptsForQuery(project.id, search, refset.terminology,
+                    refset.version, pfs).then(
                   // Success
                   function(data) {
                     $scope.searchResults = data.concepts;
@@ -2836,6 +2909,9 @@ tsApp
                   size : 'lg',
                   resolve : {
 
+                    project : function() {
+                      return $scope.project;
+                    },
                     refset : function() {
                       return lrefset;
                     },
@@ -2858,18 +2934,20 @@ tsApp
 
               // Migration modal controller
               var MigrationModalCtrl = function($scope, $uibModalInstance, $interval, gpService,
-                refset, paging, metadata) {
+                project, refset, paging, metadata) {
                 console.debug('Entered migration modal control');
 
                 // set up variables
+                $scope.project = project;
                 $scope.refset = refset;
                 $scope.newTerminology = refset.terminology;
                 $scope.membersInCommon = null;
                 $scope.pageSize = 5;
                 $scope.paging = paging;
                 $scope.metadata = metadata;
-                $scope.versions = angular.copy(metadata.versions[$scope.newTerminology].sort()
-                  .reverse());
+                $scope.versionsMap = {};
+                $scope.terminologies = [];
+                $scope.versions = [];
                 $scope.newVersion = $scope.versions[0];
                 $scope.errors = [];
                 $scope.statusTypes = [ 'Active', 'Inactive' ];
@@ -2976,8 +3054,8 @@ tsApp
 
                 // Handle terminology selected
                 $scope.terminologySelected = function() {
-                  $scope.versions = angular.copy($scope.metadata.versions[$scope.newTerminology]
-                    .sort().reverse());
+                  $scope.versions = angular.copy($scope.versionsMap[$scope.newTerminology].sort()
+                    .reverse());
                   $scope.newVersion = $scope.versions[0];
                 };
 
@@ -3353,7 +3431,7 @@ tsApp
                 $scope.include = function(member, staged, lookup) {
                   // if inactive, find if there are replacement concepts
                   if (lookup) {
-                    projectService.getReplacementConcepts(member.conceptId,
+                    projectService.getReplacementConcepts($scope.project.id, member.conceptId,
                       $scope.refset.terminology, $scope.refset.version).then(
                       // Success
                       function(data) {
@@ -3732,6 +3810,9 @@ tsApp
                     refset : function() {
                       return lrefset;
                     },
+                    metadata : function() {
+                      return $scope.metadata;
+                    },
                     tinymceOptions : function() {
                       return utilService.tinymceOptions;
                     }
@@ -3747,9 +3828,11 @@ tsApp
               };
 
               // Feedback controller
-              var FeedbackModalCtrl = function($scope, $uibModalInstance, refset, tinymceOptions) {
+              var FeedbackModalCtrl = function($scope, $uibModalInstance, refset, metadata,
+                tinymceOptions) {
                 console.debug('Entered feedback modal control', refset);
 
+                $scope.metadata = metadata;
                 $scope.refset = JSON.parse(JSON.stringify(refset));
                 $scope.tinymceOptions = tinymceOptions;
                 $scope.errors = [];

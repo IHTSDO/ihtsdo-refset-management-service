@@ -7,6 +7,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.ihtsdo.otf.refset.Note;
+import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.ReleaseInfo;
 import org.ihtsdo.otf.refset.StagedRefsetChange;
@@ -268,8 +269,8 @@ public interface RefsetService extends ReleaseService {
    * @return the release history for refset
    * @throws Exception the exception
    */
-  public ReleaseInfoList findRefsetReleasesForQuery(Long refsetId,
-    String query, PfsParameter pfs) throws Exception;
+  public ReleaseInfoList findRefsetReleasesForQuery(Long refsetId, String query,
+    PfsParameter pfs) throws Exception;
 
   /**
    * Handle lazy initialization for a refset.
@@ -393,13 +394,14 @@ public interface RefsetService extends ReleaseService {
   /**
    * Count expression.
    *
+   * @param project the project
    * @param terminology the terminology
    * @param version the version
    * @param expression the expression
    * @return the integer
    * @throws Exception the exception
    */
-  public Integer countExpression(String terminology, String version, String expression) throws Exception;
+  public Integer countExpression(Project project, String terminology,
+    String version, String expression) throws Exception;
 
-  
 }

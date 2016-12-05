@@ -15,9 +15,8 @@ tsApp
       'validationService',
       'refsetService',
       'translationService',
-      function($scope, $http, $location, $uibModal, gpService, utilService,
-        tabService, securityService, projectService, validationService,
-        refsetService, translationService) {
+      function($scope, $http, $location, $uibModal, gpService, utilService, tabService,
+        securityService, projectService, validationService, refsetService, translationService) {
         console.debug('configure AdminCtrl');
 
         // Clear error
@@ -50,13 +49,8 @@ tsApp
         $scope.assignedUsers = null;
         $scope.unassignedUsers = null;
         $scope.languageDescriptionTypes = [];
+        $scope.terminologyHandlers = []
         $scope.pagedAvailableLdt = [];
-
-        // Metadata for refsets, projects, etc.
-        $scope.metadata = {
-          terminologies : [],
-          versions : {}
-        };
 
         $scope.userPreferences = {
           moduleId : $scope.user.userPreferences.moduleId,
@@ -127,12 +121,12 @@ tsApp
           if ($scope.user.applicationRole == 'ADMIN') {
             pfs.queryRestriction = null;
           }
-          projectService.findProjectsAsList($scope.paging['project'].filter,
-            pfs).then(function(data) {
-            $scope.projects = data.projects;
-            $scope.projects.totalCount = data.totalCount;
+          projectService.findProjectsAsList($scope.paging['project'].filter, pfs).then(
+            function(data) {
+              $scope.projects = data.projects;
+              $scope.projects.totalCount = data.totalCount;
 
-          });
+            });
 
         };
 
@@ -142,8 +136,7 @@ tsApp
         $scope.getCandidateProjects = function() {
 
           var pfs = {
-            startIndex : ($scope.paging['candidateProject'].page - 1)
-              * $scope.pageSize,
+            startIndex : ($scope.paging['candidateProject'].page - 1) * $scope.pageSize,
             maxResults : $scope.pageSize,
             sortField : $scope.paging['candidateProject'].sortField,
             ascending : $scope.paging['candidateProject'].ascending == null ? true
@@ -155,11 +148,11 @@ tsApp
             pfs.queryRestriction = null;
           }
 
-          projectService.findProjectsAsList(
-            $scope.paging['candidateProject'].filter, pfs).then(function(data) {
-            $scope.candidateProjects = data.projects;
-            $scope.candidateProjects.totalCount = data.totalCount;
-          });
+          projectService.findProjectsAsList($scope.paging['candidateProject'].filter, pfs).then(
+            function(data) {
+              $scope.candidateProjects = data.projects;
+              $scope.candidateProjects.totalCount = data.totalCount;
+            });
 
         };
 
@@ -176,11 +169,10 @@ tsApp
             queryRestriction : null
           };
 
-          securityService.findUsersAsList($scope.paging['user'].filter, pfs)
-            .then(function(data) {
-              $scope.users = data.users;
-              $scope.users.totalCount = data.totalCount;
-            });
+          securityService.findUsersAsList($scope.paging['user'].filter, pfs).then(function(data) {
+            $scope.users = data.users;
+            $scope.users.totalCount = data.totalCount;
+          });
 
         };
 
@@ -189,8 +181,7 @@ tsApp
         // assigned to the selected project
         $scope.getUnassignedUsers = function() {
           var pfs = {
-            startIndex : ($scope.paging['candidateUser'].page - 1)
-              * $scope.pageSize,
+            startIndex : ($scope.paging['candidateUser'].page - 1) * $scope.pageSize,
             maxResults : $scope.pageSize,
             sortField : $scope.paging['candidateUser'].sortField,
             ascending : $scope.paging['candidateUser'].ascending == null ? true
@@ -198,9 +189,8 @@ tsApp
             queryRestriction : '(applicationRole:USER OR applicationRole:ADMIN)'
           };
 
-          projectService.findUnassignedUsersForProject(
-            $scope.selectedProject.id, $scope.paging['candidateUser'].filter,
-            pfs).then(function(data) {
+          projectService.findUnassignedUsersForProject($scope.selectedProject.id,
+            $scope.paging['candidateUser'].filter, pfs).then(function(data) {
             $scope.unassignedUsers = data.users;
             $scope.unassignedUsers.totalCount = data.totalCount;
           });
@@ -212,8 +202,7 @@ tsApp
         $scope.getAssignedUsers = function() {
 
           var pfs = {
-            startIndex : ($scope.paging['assignedUser'].page - 1)
-              * $scope.pageSize,
+            startIndex : ($scope.paging['assignedUser'].page - 1) * $scope.pageSize,
             maxResults : $scope.pageSize,
             sortField : $scope.paging['assignedUser'].sortField,
             ascending : $scope.paging['assignedUser'].ascending == null ? true
@@ -240,30 +229,6 @@ tsApp
           projectService.getProjectRoles().then(function(data) {
             $scope.projectRoles = data.strings;
           });
-        };
-
-        // Get $scope.metadata.terminologies
-        $scope.getTerminologyEditions = function() {
-          projectService.getTerminologyEditions().then(function(data) {
-            $scope.metadata.terminologies = data.terminologies;
-            // Look up all versions
-            for (var i = 0; i < data.terminologies.length; i++) {
-              $scope.getTerminologyVersions(data.terminologies[i].terminology);
-            }
-          });
-
-        };
-
-        // Get $scope.metadata.versions
-        $scope.getTerminologyVersions = function(terminology) {
-          projectService.getTerminologyVersions(terminology).then(
-            function(data) {
-              $scope.metadata.versions[terminology] = [];
-              for (var i = 0; i < data.terminologies.length; i++) {
-                $scope.metadata.versions[terminology]
-                  .push(data.terminologies[i].version);
-              }
-            });
         };
 
         // Sets the selected project
@@ -324,11 +289,9 @@ tsApp
 
         // Removes a user
         $scope.removeUser = function(user) {
-          if (user.projectRoleMap
-            && Object.keys(user.projectRoleMap).length > 0) {
-            window
-              .alert('You can not delete a user that is assigned to a project -'
-                + 'Remove this user from all projects before deleting it');
+          if (user.projectRoleMap && Object.keys(user.projectRoleMap).length > 0) {
+            window.alert('You can not delete a user that is assigned to a project -'
+              + 'Remove this user from all projects before deleting it');
             return;
           }
           securityService.removeUser(user).then(function() {
@@ -366,13 +329,12 @@ tsApp
 
         // Save the user preferences
         $scope.saveUserPreferences = function() {
-          securityService.updateUserPreferences($scope.user.userPreferences)
-            .then(
-            // Success
-            function(data) {
-              $scope.user.userPreferences = data;
-              $scope.getPagedAvailableLdt();
-            });
+          securityService.updateUserPreferences($scope.user.userPreferences).then(
+          // Success
+          function(data) {
+            $scope.user.userPreferences = data;
+            $scope.getPagedAvailableLdt();
+          });
         };
 
         // indicate that a user preference value has changed
@@ -401,6 +363,15 @@ tsApp
           });
         };
 
+        // Get $scope.languageDescriptionTypes
+        $scope.getTerminologyHandlers = function() {
+          projectService.getTerminologyHandlers().then(
+          // Success
+          function(data) {
+            $scope.terminologyHandlers = data.keyValuePairs;
+          });
+        };
+
         // Get paged available language description types not already assigned
         $scope.getPagedAvailableLdt = function() {
           var available = [];
@@ -417,8 +388,8 @@ tsApp
               available.push($scope.languageDescriptionTypes[i]);
             }
           }
-          $scope.pagedAvailableLdt = utilService.getPagedArray(available,
-            $scope.paging['lang'], $scope.pageSize);
+          $scope.pagedAvailableLdt = utilService.getPagedArray(available, $scope.paging['lang'],
+            $scope.pageSize);
         };
 
         // equivalent test for language description types
@@ -437,8 +408,7 @@ tsApp
         // Remove an LDT from user prefs
         $scope.removeLanguageDescriptionType = function(ldt) {
           for (var i = 0; i < $scope.user.userPreferences.languageDescriptionTypes.length; i++) {
-            if ($scope.isEquivalent(ldt,
-              $scope.user.userPreferences.languageDescriptionTypes[i])) {
+            if ($scope.isEquivalent(ldt, $scope.user.userPreferences.languageDescriptionTypes[i])) {
               $scope.user.userPreferences.languageDescriptionTypes.splice(i, 1);
             }
           }
@@ -449,11 +419,9 @@ tsApp
         $scope.moveLanguageDescriptionTypeUp = function(ldt) {
           // Start at index 1 because we can't move the top one up
           for (var i = 1; i < $scope.user.userPreferences.languageDescriptionTypes.length; i++) {
-            if ($scope.isEquivalent(ldt,
-              $scope.user.userPreferences.languageDescriptionTypes[i])) {
+            if ($scope.isEquivalent(ldt, $scope.user.userPreferences.languageDescriptionTypes[i])) {
               $scope.user.userPreferences.languageDescriptionTypes.splice(i, 1);
-              $scope.user.userPreferences.languageDescriptionTypes.splice(
-                i - 1, 0, ldt);
+              $scope.user.userPreferences.languageDescriptionTypes.splice(i - 1, 0, ldt);
             }
           }
           $scope.saveUserPreferences();
@@ -463,11 +431,9 @@ tsApp
         $scope.moveLanguageDescriptionTypeDown = function(ldt) {
           // end at index -11 because we can't move the last one down
           for (var i = 0; i < $scope.user.userPreferences.languageDescriptionTypes.length - 1; i++) {
-            if ($scope.isEquivalent(ldt,
-              $scope.user.userPreferences.languageDescriptionTypes[i])) {
+            if ($scope.isEquivalent(ldt, $scope.user.userPreferences.languageDescriptionTypes[i])) {
               $scope.user.userPreferences.languageDescriptionTypes.splice(i, 2,
-                $scope.user.userPreferences.languageDescriptionTypes[i + 1],
-                ldt);
+                $scope.user.userPreferences.languageDescriptionTypes[i + 1], ldt);
               break;
             }
           }
@@ -506,29 +472,27 @@ tsApp
             return;
           }
           // call service
-          projectService.assignUserToProject(projectId, userName, projectRole)
-            .then(function(data) {
-              // Update 'anyrole'
-              projectService.getUserHasAnyRole();
-              $scope.getProjects();
-              $scope.selectedProject = data;
-              $scope.getAssignedUsers();
-              $scope.getUnassignedUsers();
-            });
+          projectService.assignUserToProject(projectId, userName, projectRole).then(function(data) {
+            // Update 'anyrole'
+            projectService.getUserHasAnyRole();
+            $scope.getProjects();
+            $scope.selectedProject = data;
+            $scope.getAssignedUsers();
+            $scope.getUnassignedUsers();
+          });
         };
 
         // remove user from project
         $scope.unassignUserFromProject = function(projectId, userName) {
-          projectService.unassignUserFromProject(projectId, userName).then(
-            function(data) {
-              // Update 'anyrole' in case user removed themselves from the
-              // project
-              projectService.getUserHasAnyRole();
-              $scope.getProjects();
-              $scope.selectedProject = data;
-              $scope.getAssignedUsers();
-              $scope.getUnassignedUsers();
-            });
+          projectService.unassignUserFromProject(projectId, userName).then(function(data) {
+            // Update 'anyrole' in case user removed themselves from the
+            // project
+            projectService.getUserHasAnyRole();
+            $scope.getProjects();
+            $scope.selectedProject = data;
+            $scope.getAssignedUsers();
+            $scope.getUnassignedUsers();
+          });
         };
 
         // reset paging for all tables to page 1
@@ -562,14 +526,14 @@ tsApp
             backdrop : 'static',
             controller : AddProjectModalCtrl,
             resolve : {
-              metadata : function() {
-                return $scope.metadata;
-              },
               user : function() {
                 return $scope.user;
               },
               validationChecks : function() {
                 return $scope.validationChecks;
+              },
+              terminologyHandlers : function() {
+                return $scope.terminologyHandlers;
               }
             }
           });
@@ -585,12 +549,15 @@ tsApp
         };
 
         // Add project controller
-        var AddProjectModalCtrl = function($scope, $uibModalInstance, metadata,
-          user, validationChecks) {
+        var AddProjectModalCtrl = function($scope, $uibModalInstance, $timeout, user,
+          validationChecks, terminologyHandlers) {
 
           $scope.action = 'Add';
+          $scope.user = user;
+          $scope.terminologyHandlers = terminologyHandlers;
+          $scope.url = terminologyHandlers[0].value;
+          $scope.urlTestSuccess = false;
           $scope.project = {
-            terminology : metadata.terminologies[0].terminology,
             moduleId : user.userPreferences.moduleId,
             namespace : user.userPreferences.namespace,
             organization : user.userPreferences.organization,
@@ -600,9 +567,12 @@ tsApp
           $scope.clause = {
             value : null
           };
-          $scope.terminologies = metadata.terminologies;
-          $scope.metadata = metadata;
-          $scope.user = user;
+          $scope.metadata = {
+            terminologies : [],
+            versions : {}
+          };
+          $scope.terminologies = [];
+          $scope.version = null;
           $scope.validationChecks = validationChecks;
           $scope.modules = [];
           $scope.availableChecks = [];
@@ -618,26 +588,75 @@ tsApp
             }
           }
 
-          // Get $scope.modules
-          $scope.getModules = function() {
-            projectService.getModules($scope.project.terminology,
-              $scope.metadata.versions[$scope.project.terminology][0]).then(
+          // Get $scope.terminologies
+          $scope.getTerminologyEditions = function() {
+            projectService.getTerminologyEditions($scope.project).then(
             // Success
             function(data) {
-              $scope.modules = data.concepts;
+              $scope.terminologies = data.terminologies;
+              $scope.project.terminology = data.terminologies[0].terminology;
+              $scope.selectTerminology();
             });
           };
 
-          // Initialize modules if terminology/version set
-          if ($scope.project.terminology) {
-            $scope.getModules();
+          // Get $scope.modules
+          $scope.getModules = function() {
+            projectService.getModules($scope.project, $scope.project.terminology, $scope.version)
+              .then(
+              // Success
+              function(data) {
+                $scope.modules = data.concepts;
+
+              });
+          };
+
+          // Terminology handler selection
+          $scope.selectHandler = function(handler) {
+            $scope.project.terminologyHandlerKey = handler.key;
+            $scope.project.terminologyHandlerUrl = handler.value;
+          }
+
+          // Test the handler URL, if successful, mark as such
+          $scope.testHandlerUrl = function() {
+            $scope.errors = [];
+            projectService.testHandlerUrl($scope.project.terminologyHandlerKey,
+              $scope.project.terminologyHandlerUrl).then(
+            // Success
+            function(data) {
+              $scope.urlTestSuccess = true;
+              $scope.getTerminologyEditions();
+              // splash glass pane for 1 second
+              gpService.increment();
+              $timeout(function() {
+                gpService.decrement();
+              }, 2000);
+
+            },
+            // fail
+            function(data) {
+              utilService.handleDialogError($scope.errors, JSON.stringify(data + ''));
+            });
+          }
+
+          // Require re-test on url change
+          $scope.urlChanged = function() {
+            $scope.urlTestSuccess = false;
+            $scope.project.terminology = null;
           }
 
           // Handle terminology selected
-          $scope.terminologySelected = function(terminology) {
-            $scope.versions = $scope.metadata.versions[terminology].sort()
-              .reverse();
-            $scope.getModules();
+          $scope.selectTerminology = function() {
+            if (!$scope.project.terminology) {
+              return;
+            }
+            // $scope.project.terminology will already be set at this point
+            projectService.getTerminologyVersions($scope.project, $scope.project.terminology).then(
+            // Success
+            function(data) {
+              $scope.project.terminology = data.terminologies[0].terminology;
+              $scope.version = data.terminologies[0].version;
+              $scope.getModules();
+            });
           };
 
           // move a check from unselected to selected
@@ -656,24 +675,24 @@ tsApp
 
           // Add the project
           $scope.submitProject = function(project) {
-            if (!project || !project.name || !project.description
-              || !project.terminology) {
-              window
-                .alert('The name, description, and terminology fields cannot be blank. ');
+            if (!project || !project.name || !project.description || !project.terminology) {
+              window.alert('The name, description, and terminology fields cannot be blank. ');
+              return;
+            }
+            if (!project.terminologyHandlerKey || !project.terminologyHandlerUrl) {
+              window.alert('The handler and URL fields cannot be blank. ');
               return;
             }
             // Connect validation checks
             project.validationChecks = [];
             for (var i = 0; i < $scope.validationChecks.length; i++) {
-              if ($scope.selectedChecks
-                .indexOf($scope.validationChecks[i].value) != -1) {
+              if ($scope.selectedChecks.indexOf($scope.validationChecks[i].value) != -1) {
                 project.validationChecks.push($scope.validationChecks[i].key);
               }
             }
 
             // copy clause - don't allow negation - it's implicitly negated
-            project.exclusionClause = $scope.clause == null ? null
-              : $scope.clause.value;
+            project.exclusionClause = $scope.clause == null ? null : $scope.clause.value;
 
             // Add project - this will validate the expression
             projectService.addProject(project).then(
@@ -682,16 +701,14 @@ tsApp
                 // if not an admin, add user as a project admin
                 if ($scope.user.applicationRole != 'ADMIN') {
                   var projectId = data.id;
-                  projectService.assignUserToProject(data.id,
-                    $scope.user.userName, 'ADMIN').then(
+                  projectService.assignUserToProject(data.id, $scope.user.userName, 'ADMIN').then(
                     function(data) {
                       // Update 'anyrole'
                       projectService.getUserHasAnyRole();
 
                       // Set the "last project" setting to this project
                       $scope.user.userPreferences.lastProjectId = projectId;
-                      securityService
-                        .updateUserPreferences($scope.user.userPreferences);
+                      securityService.updateUserPreferences($scope.user.userPreferences);
                       $uibModalInstance.close(data);
                     },
                     // Error
@@ -728,11 +745,14 @@ tsApp
               project : function() {
                 return lproject;
               },
-              metadata : function() {
-                return $scope.metadata;
+              user : function() {
+                return $scope.user;
               },
               validationChecks : function() {
                 return $scope.validationChecks;
+              },
+              terminologyHandlers : function() {
+                return $scope.terminologyHandlers;
               }
             }
           });
@@ -744,52 +764,111 @@ tsApp
           });
         };
 
-        var EditProjectModalCtrl = function($scope, $uibModalInstance, project,
-          metadata, validationChecks) {
-
+        var EditProjectModalCtrl = function($scope, $uibModalInstance, $timeout, project, user,
+          validationChecks, terminologyHandlers) {
           $scope.action = 'Edit';
+          $scope.user = user;
+          $scope.project = project;
           $scope.clause = {
             value : project.exclusionClause
           };
-          $scope.project = project;
-          $scope.metadata = metadata;
+          $scope.terminologyHandlers = terminologyHandlers;
+          $scope.handler = terminologyHandlers.filter(function(item) {
+            return item.key == project.terminologyHandlerKey
+          })[0];
+          $scope.url = terminologyHandlers[0].value;
+          $scope.urlTestSuccess = true;
+          $scope.clause = {
+            value : null
+          };
+          $scope.metadata = {
+            terminologies : [],
+            versions : {}
+          };
+          $scope.terminologies = [];
+          $scope.version = null;
           $scope.validationChecks = validationChecks;
           $scope.modules = [];
           $scope.availableChecks = [];
           $scope.selectedChecks = [];
           $scope.errors = [];
 
+          // Wire default validation check 'on' by default
           for (var i = 0; i < $scope.validationChecks.length; i++) {
-            if (project.validationChecks
-              .indexOf($scope.validationChecks[i].key) > -1) {
+            if ($scope.validationChecks[i].value == 'Default validation check') {
               $scope.selectedChecks.push($scope.validationChecks[i].value);
             } else {
               $scope.availableChecks.push($scope.validationChecks[i].value);
             }
           }
 
-          // Get $scope.modules
-          $scope.getModules = function() {
-            projectService.getModules($scope.project.terminology,
-              $scope.metadata.versions[$scope.project.terminology][0]).then(
+          // Get $scope.terminologies
+          $scope.getTerminologyEditions = function() {
+            projectService.getTerminologyEditions($scope.project).then(
             // Success
             function(data) {
-              $scope.modules = data.concepts;
+              $scope.terminologies = data.terminologies;
+              if (!$scope.project.terminology) {
+                $scope.project.terminology = data.terminologies[0].terminology;
+              }
+              $scope.selectTerminology();
             });
           };
+          $scope.getTerminologyEditions();
 
-          // Initialize modules if terminology/version set
-          if ($scope.project.terminology) {
-            $scope.getModules();
+          // Get $scope.modules
+          $scope.getModules = function() {
+            projectService.getModules($scope.project, $scope.project.terminology, $scope.version)
+              .then(
+              // Success
+              function(data) {
+                $scope.modules = data.concepts;
+
+              });
+          };
+
+          // Terminology handler selection
+          $scope.selectHandler = function(handler) {
+            $scope.project.terminologyHandlerKey = handler.key;
+            $scope.project.terminologyHandlerUrl = handler.value;
+          }
+
+          // Test the handler URL, if successful, mark as such
+          $scope.testHandlerUrl = function() {
+            $scope.errors = [];
+            projectService.testHandlerUrl($scope.project.terminologyHandlerKey,
+              $scope.project.terminologyHandlerUrl).then(
+            // Success
+            function(data) {
+              $scope.urlTestSuccess = true;
+              $scope.getTerminologyEditions();
+            },
+            // fail
+            function(data) {
+              utilService.handleDialogError($scope.errors, JSON.stringify(data + ''));
+            });
+          }
+
+          // Require re-test on url change
+          $scope.urlChanged = function() {
+            $scope.urlTestSuccess = false;
+            $scope.project.terminology = null;
           }
 
           // Handle terminology selected
-          $scope.terminologySelected = function(terminology) {
-            $scope.versions = $scope.metadata.versions[terminology].sort()
-              .reverse();
-            $scope.getModules();
+          $scope.selectTerminology = function() {
+            if (!$scope.project.terminology) {
+              return;
+            }
+            // $scope.project.terminology will already be set at this point
+            projectService.getTerminologyVersions($scope.project, $scope.project.terminology).then(
+            // Success
+            function(data) {
+              $scope.project.terminology = data.terminologies[0].terminology;
+              $scope.version = data.terminologies[0].version;
+              $scope.getModules();
+            });
           };
-
           $scope.selectValidationCheck = function(check) {
             $scope.selectedChecks.push(check);
             var index = $scope.availableChecks.indexOf(check);
@@ -803,24 +882,20 @@ tsApp
           };
 
           $scope.submitProject = function(project) {
-            if (!project || !project.name || !project.description
-              || !project.terminology) {
-              window
-                .alert('The name, description, and terminology fields cannot be blank. ');
+            if (!project || !project.name || !project.description || !project.terminology) {
+              window.alert('The name, description, and terminology fields cannot be blank. ');
               return;
             }
 
             project.validationChecks = [];
             for (var i = 0; i < $scope.validationChecks.length; i++) {
-              if ($scope.selectedChecks
-                .indexOf($scope.validationChecks[i].value) != -1) {
+              if ($scope.selectedChecks.indexOf($scope.validationChecks[i].value) != -1) {
                 project.validationChecks.push($scope.validationChecks[i].key);
               }
             }
 
             // copy clause - don't allow negation - it's implicitly negated
-            project.exclusionClause = $scope.clause == null ? null
-              : $scope.clause.value;
+            project.exclusionClause = $scope.clause == null ? null : $scope.clause.value;
             // Update project - this will validate the expression
             projectService.updateProject(project).then(
             // Success
@@ -838,6 +913,11 @@ tsApp
             $uibModalInstance.dismiss('cancel');
           };
 
+          // splash glass pane for 1 second
+          gpService.increment();
+          $timeout(function() {
+            gpService.decrement();
+          }, 2000);
         };
 
         // Add user modal
@@ -869,8 +949,8 @@ tsApp
         };
 
         // Add user controller
-        var AddUserModalCtrl = function($scope, $uibModalInstance, user,
-          applicationRole, applicationRoles) {
+        var AddUserModalCtrl = function($scope, $uibModalInstance, user, applicationRole,
+          applicationRoles) {
           $scope.action = 'Add';
           $scope.user = user;
           $scope.applicationRole = applicationRole;
@@ -935,15 +1015,14 @@ tsApp
           });
         };
 
-        var EditUserModalCtrl = function($scope, $uibModalInstance, user,
-          applicationRole, applicationRoles) {
+        var EditUserModalCtrl = function($scope, $uibModalInstance, user, applicationRole,
+          applicationRoles) {
 
           $scope.action = 'Edit';
           $scope.user = user;
           // copy data structure so it will be fresh each time modal is opened
           $scope.applicationRole = applicationRole;
-          $scope.applicationRoles = JSON
-            .parse(JSON.stringify(applicationRoles));
+          $scope.applicationRoles = JSON.parse(JSON.stringify(applicationRoles));
           $scope.errors = [];
 
           // those without application admin roles, can't give themselves admin
@@ -956,8 +1035,7 @@ tsApp
           $scope.submitUser = function(user) {
 
             if (!user || !user.name || !user.userName || !user.applicationRole) {
-              window
-                .alert('The name, user name, and application role fields cannot be blank. ');
+              window.alert('The name, user name, and application role fields cannot be blank. ');
               return;
             }
 
@@ -993,9 +1071,9 @@ tsApp
         $scope.getCandidateProjects();
         $scope.getApplicationRoles();
         $scope.getProjectRoles();
-        $scope.getTerminologyEditions();
         $scope.getValidationChecks();
         $scope.getLanguageDescriptionTypes();
+        $scope.getTerminologyHandlers();
 
         // Handle users with user preferences
         if ($scope.user.userPreferences) {
