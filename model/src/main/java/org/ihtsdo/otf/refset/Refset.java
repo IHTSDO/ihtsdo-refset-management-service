@@ -485,4 +485,18 @@ public interface Refset extends Component, Searchable {
    * @param domain the domain
    */
   public void setDomain(String domain);
+
+  /**
+   * Local set.
+   *
+   * @return true, if successful
+   */
+  public boolean isLocalSet();
+
+  /**
+   * Sets the local set.
+   *
+   * @param localSet the new local set
+   */
+  public void setLocalSet(boolean localSet);
 }

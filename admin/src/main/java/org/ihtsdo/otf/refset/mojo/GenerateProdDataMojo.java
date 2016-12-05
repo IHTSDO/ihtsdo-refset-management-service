@@ -342,6 +342,7 @@ public class GenerateProdDataMojo extends AbstractMojo {
     refset.setVersion(version);
     refset.setWorkflowPath("DEFAULT");
     refset.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
+    refset.setLocalSet(false);
 
     RefsetServiceRest refsetService = new RefsetServiceRestImpl();
 

@@ -853,6 +853,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
     if (type == Refset.Type.EXTERNAL) {
       refset.setExternalUrl("http://www.example.com/some/other/refset.txt");
     }
+    refset.setLocalSet(false);
 
     RefsetServiceRest refsetService = new RefsetServiceRestImpl();
 
@@ -951,6 +952,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
     refset.setVersion("20150131");
     refset.setWorkflowPath("DEFAULT");
     refset.setWorkflowStatus(WorkflowStatus.PUBLISHED);
+    refset.setLocalSet(false);
     RefsetServiceRest refsetService = new RefsetServiceRestImpl();
     ValidationServiceRest validation = new ValidationServiceRestImpl();
     // Validate refset
