@@ -182,7 +182,7 @@ public class ProjectServiceRestRoleCheckTest extends ProjectTestSupport {
   }
 
   /**
-   * Test retrieving terminology editions and versions
+   * Test retrieving terminology editions and versions.
    *
    * @throws Exception the exception
    */
@@ -190,18 +190,23 @@ public class ProjectServiceRestRoleCheckTest extends ProjectTestSupport {
   public void testGetTerminologyVersionsEditions() throws Exception {
     Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
 
+    final ProjectJpa project = new ProjectJpa();
+    project.setTerminologyHandlerKey("BROWSER");
+    project.setTerminologyHandlerUrl("https://sct-rest.ihtsdotools.org/api");
+
     // Verify have at least one Terminology (specifically SNOMEDCT)
     TerminologyList editions =
-        projectService.getTerminologyEditions(adminAuthToken);
+        projectService.getTerminologyEditions(project, adminAuthToken);
     assertTrue(editions.getCount() > 0);
 
     // Verify return multiple versions of SNOMEDCT
-    TerminologyList versions = projectService.getTerminologyVersions(
+    TerminologyList versions = projectService.getTerminologyVersions(project,
         editions.getObjects().get(0).getTerminology(), adminAuthToken);
     assertTrue(versions.getCount() > 0);
 
     // Verify that a nonsensical terminology will not retrieve any versions
-    versions = projectService.getTerminologyVersions("XYZABC", adminAuthToken);
+    versions = projectService.getTerminologyVersions(project, "XYZABC",
+        adminAuthToken);
     assertTrue(versions.getCount() == 0);
   }
 
@@ -230,8 +235,8 @@ public class ProjectServiceRestRoleCheckTest extends ProjectTestSupport {
     assertTrue(pngFound);
 
     /* Test Accessing Project Description Types */
-    DescriptionTypeList types = projectService
-        .getStandardDescriptionTypes("en-edition", "2016-01-31", adminAuthToken);
+    DescriptionTypeList types = projectService.getStandardDescriptionTypes(
+        "en-edition", "2016-01-31", adminAuthToken);
     assertTrue(types.getCount() > 3);
 
     // verify FSN returned

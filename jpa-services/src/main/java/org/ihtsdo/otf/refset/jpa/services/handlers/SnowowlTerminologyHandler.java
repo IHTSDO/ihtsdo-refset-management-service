@@ -53,14 +53,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * sv-SE-x-46011000052107;q=0.8,en-US;q=0.5 Can find language reference sets
  * descendants of 900000000000506000
  */
-public class DefaultTerminologyHandler implements TerminologyHandler {
+public class SnowowlTerminologyHandler implements TerminologyHandler {
 
   /**
-   * Instantiates an empty {@link DefaultTerminologyHandler}.
+   * Instantiates an empty {@link SnowowlTerminologyHandler}.
    *
    * @throws Exception the exception
    */
-  public DefaultTerminologyHandler() throws Exception {
+  public SnowowlTerminologyHandler() throws Exception {
     super();
   }
 
@@ -80,7 +80,7 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
   /* see superclass */
   @Override
   public TerminologyHandler copy() throws Exception {
-    final DefaultTerminologyHandler handler = new DefaultTerminologyHandler();
+    final SnowowlTerminologyHandler handler = new SnowowlTerminologyHandler();
     handler.defaultUrl = this.defaultUrl;
     handler.authHeader = this.authHeader;
     return handler;
@@ -98,7 +98,7 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
     } else {
-      throw new Exception(
+      throw new LocalException(
           "Unexpected terminology server failure. Message = " + resultString);
     }
     return true;
@@ -110,12 +110,12 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
     if (p.containsKey("defaultUrl")) {
       defaultUrl = p.getProperty("defaultUrl");
     } else {
-      throw new Exception("Required property defaultUrl not specified.");
+      throw new LocalException("Required property defaultUrl not specified.");
     }
     if (p.containsKey("authHeader")) {
       authHeader = p.getProperty("authHeader");
     } else {
-      throw new Exception("Required property url not specified.");
+      throw new LocalException("Required property url not specified.");
     }
 
   }
@@ -123,7 +123,7 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
   /* see superclass */
   @Override
   public String getName() {
-    return "Default terminology handler";
+    return "Snowowl Terminology handler";
   }
 
   /* see superclass */
@@ -131,7 +131,7 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
   public List<Terminology> getTerminologyEditions() throws Exception {
     List<Terminology> result = new ArrayList<>();
     Terminology t = new TerminologyJpa();
-    t.setTerminology("SNOMED SCA");
+    t.setTerminology("SNOMEDCT");
     result.add(t);
     return result;
   }
@@ -141,50 +141,10 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
   public List<Terminology> getTerminologyVersions(String edition)
     throws Exception {
     final List<Terminology> list = new ArrayList<Terminology>();
-    if (edition.equals("SNOMEDCT")) {
-      // Make a webservice call to SnowOwl
-      final Client client = ClientBuilder.newClient();
-      final WebTarget target = client.target(url + "/branches");
-      final Response response =
-          target.request(accept).header("Authorization", authHeader)
-              .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6").get();
-      final String resultString = response.readEntity(String.class);
-      if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-        // n/a
-      } else {
-        throw new Exception(
-            "Unexpected terminology server failure. Message = " + resultString);
-      }
-
-      /**
-       * <pre>
-       * "items": [
-       *     {
-       *       "name": "2013-01-31",
-       *       "baseTimestamp": 1443341090129,
-       *       "headTimestamp": 1443341090129,
-       *       "deleted": false,
-       *       "path": "MAIN/2013-01-31",
-       *       "state": "BEHIND"
-       *     }, ...
-       * }
-       * </pre>
-       */
-      final ObjectMapper mapper = new ObjectMapper();
-      final JsonNode doc = mapper.readTree(resultString);
-      if (doc.get("items") == null) {
-        return list;
-      }
-      for (final JsonNode item : doc.get("items")) {
-        final String version = item.get("name").asText();
-        if (version.matches("\\d\\d\\d\\d-\\d\\d-\\d\\d")) {
-          Terminology terminology = new TerminologyJpa();
-          terminology.setTerminology(edition);
-          terminology.setVersion(version);
-          list.add(terminology);
-        }
-      }
-    }
+    final Terminology main = new TerminologyJpa();
+    main.setTerminology("SNOMEDCT");
+    main.setVersion("MAIN");
+    main.setName("SNOMEDCT");
     return list;
   }
 
@@ -213,7 +173,7 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
         return new ConceptListJpa();
       }
 
-      throw new Exception(
+      throw new LocalException(
           "Unexpected terminology server failure. Message = " + resultString);
     }
 
@@ -325,7 +285,7 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
         return new ConceptListJpa();
       }
 
-      throw new Exception(
+      throw new LocalException(
           "Unexpected terminology server failure. Message = " + resultString);
     }
 
@@ -410,7 +370,7 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
       if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
         // n/a
       } else {
-        throw new Exception(
+        throw new LocalException(
             "Unexpected terminology server failure. Message = " + resultString);
       }
       mapper = new ObjectMapper();
@@ -475,7 +435,7 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
         return 0;
       }
 
-      throw new Exception(
+      throw new LocalException(
           "Unexpected terminology server failure. Message = " + resultString);
     }
 
@@ -507,7 +467,7 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
       if (resultString.contains("loop did not match anything")) {
         return null;
       }
-      throw new Exception(
+      throw new LocalException(
           "Unexpected terminology server failure. Message = " + resultString);
     }
 
@@ -731,7 +691,7 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
         throw new LocalException("Badly formatted concept id.");
       }
 
-      throw new Exception(
+      throw new LocalException(
           "Unexpected terminology server failure. Message = " + resultString);
     }
 
@@ -781,7 +741,7 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
     }
     final JsonNode conceptNode = concepts.next();
     if (concepts.hasNext()) {
-      throw new Exception(
+      throw new LocalException(
           "Multiple concepts found for same conceptId - " + terminologyId);
     }
     final Concept concept = new ConceptJpa();
@@ -880,7 +840,7 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
     } else {
-      throw new Exception(
+      throw new LocalException(
           "Unexpected terminology server failure. Message = " + resultString);
     }
 
@@ -1002,7 +962,7 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
     } else {
-      throw new Exception(
+      throw new LocalException(
           "Unexpected terminology server failure. Message = " + resultString);
     }
 
@@ -1062,7 +1022,7 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
     } else {
-      throw new Exception(
+      throw new LocalException(
           "Unexpected terminology server failure. Message = " + resultString);
     }
 

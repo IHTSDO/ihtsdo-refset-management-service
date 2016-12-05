@@ -1233,14 +1233,15 @@ tsApp.service('refsetService', [
     };
 
     // get the count of items in the resolved expression
-    this.countExpression = function(expression, terminology, version) {
-      console.debug('count expression');
+    this.countExpression = function(projectId, expression, terminology, version) {
+      console.debug('count expression', projectId, expression, terminology, version);
       // Setup deferred
       var deferred = $q.defer();
 
       gpService.increment();
-      $http.post(refsetUrl + 'expression/count?terminology=' + terminology + '&version=' + version,
-        expression, {
+      $http.post(
+        refsetUrl + 'expression/count?projectId=' + projectId + '&terminology=' + terminology
+          + '&version=' + version, expression, {
           headers : {
             'Content-type' : 'text/plain'
           }
@@ -1261,14 +1262,15 @@ tsApp.service('refsetService', [
     };
 
     // checks if expression is valid
-    this.isExpressionValid = function(expression, terminology, version) {
-      console.debug('isExpressionValid');
+    this.isExpressionValid = function(projectId, expression, terminology, version) {
+      console.debug('isExpressionValid', projectId, expression, terminology, version);
       var deferred = $q.defer();
 
       // Get project roles
       gpService.increment();
-      $http.post(refsetUrl + 'expression/valid?terminology=' + terminology + '&version=' + version,
-        expression, {
+      $http.post(
+        refsetUrl + 'expression/valid?projectId=' + projectId + '&terminology=' + terminology
+          + '&version=' + version, expression, {
           headers : {
             'Content-type' : 'text/plain'
           }

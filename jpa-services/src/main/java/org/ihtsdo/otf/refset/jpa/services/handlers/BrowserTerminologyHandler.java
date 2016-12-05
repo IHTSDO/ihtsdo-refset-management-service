@@ -26,6 +26,7 @@ import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.Terminology;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
+import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.jpa.TerminologyJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptListJpa;
@@ -33,14 +34,10 @@ import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.services.RootServiceJpa;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.Description;
-import org.ihtsdo.otf.refset.rf2.DescriptionType;
-import org.ihtsdo.otf.refset.rf2.LanguageDescriptionType;
 import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
 import org.ihtsdo.otf.refset.rf2.Relationship;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.DescriptionJpa;
-import org.ihtsdo.otf.refset.rf2.jpa.DescriptionTypeJpa;
-import org.ihtsdo.otf.refset.rf2.jpa.LanguageDescriptionTypeJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.LanguageRefsetMemberJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.RelationshipJpa;
 import org.ihtsdo.otf.refset.services.handlers.TerminologyHandler;
@@ -51,6 +48,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 /**
  * Implementation of {@link TerminologyHandler} that leverages the IHTSDO
  * Browser API.
+ * 
+ * Languages are only available for "descriptions" and "concept" lookups.
+ * par/chd/expr are not language aware yet. For possible values, look at the
+ * "filters" metadata in a tester query and it provides options.
  */
 public class BrowserTerminologyHandler implements TerminologyHandler {
 
@@ -69,38 +70,38 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
   /** The url. */
   private String url;
 
-  /** The assign names. */
-  private boolean assignNames = false;
+  /** The default url. */
+  private String defaultUrl;
 
   /* see superclass */
   @Override
   public TerminologyHandler copy() throws Exception {
     final BrowserTerminologyHandler handler = new BrowserTerminologyHandler();
-    handler.url = this.url;
-    handler.assignNames = this.assignNames;
+    handler.defaultUrl = this.defaultUrl;
     return handler;
   }
 
   /* see superclass */
   @Override
-  public void setProperties(Properties p) throws Exception {
-    if (p.containsKey("url")) {
-      url = p.getProperty("url");
-    } else {
-      throw new Exception("Required property url not specified.");
-    }
+  public boolean test() throws Exception {
+    getTerminologyEditions();
+    return true;
+  }
 
-    if (ConfigUtility.getConfigProperties()
-        .containsKey("terminology.handler.DEFAULT.assignNames")) {
-      assignNames = Boolean.valueOf(ConfigUtility.getConfigProperties()
-          .getProperty("terminology.handler.DEFAULT.assignNames"));
+  /* see superclass */
+  @Override
+  public void setProperties(Properties p) throws Exception {
+    if (p.containsKey("defaultUrl")) {
+      defaultUrl = p.getProperty("defaultUrl");
+    } else {
+      throw new LocalException("Required property defaultUrl not specified.");
     }
   }
 
   /* see superclass */
   @Override
   public String getName() {
-    return "IHTSDO browser terminology handler";
+    return "IHTSDO Browser Handler";
   }
 
   /* see superclass */
@@ -117,7 +118,7 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
     } else {
-      throw new Exception(
+      throw new LocalException(
           "Unexpected terminology server failure. Message = " + resultString);
     }
 
@@ -159,7 +160,7 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
     } else {
-      throw new Exception(
+      throw new LocalException(
           "Unexpected terminology server failure. Message = " + resultString);
     }
 
@@ -217,7 +218,7 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
         return new ConceptListJpa();
       }
 
-      throw new Exception(
+      throw new LocalException(
           "Unexpected terminology server failure. Message = " + resultString);
     }
 
@@ -299,7 +300,7 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
         return new ConceptListJpa();
       }
 
-      throw new Exception(
+      throw new LocalException(
           "Unexpected terminology server failure. Message = " + resultString);
     }
 
@@ -343,7 +344,7 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
       if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
         // n/a
       } else {
-        throw new Exception(
+        throw new LocalException(
             "Unexpected terminology server failure. Message = " + resultString);
       }
       mapper = new ObjectMapper();
@@ -375,7 +376,16 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
     return conceptList;
   }
 
-  @SuppressWarnings("javadoc")
+  /**
+   * Resolve expression browser.
+   *
+   * @param expr the expr
+   * @param terminology the terminology
+   * @param version the version
+   * @param pfs the pfs
+   * @return the concept list
+   * @throws Exception the exception
+   */
   public ConceptList resolveExpressionBrowser(String expr, String terminology,
     String version, PfsParameter pfs) throws Exception {
     Logger.getLogger(getClass()).debug("  resolve expression - " + terminology
@@ -418,7 +428,7 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
         return new ConceptListJpa();
       }
 
-      throw new Exception(
+      throw new LocalException(
           "Unexpected terminology server failure. Message = " + resultString);
     }
 
@@ -467,7 +477,7 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
       if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
         // n/a
       } else {
-        throw new Exception(
+        throw new LocalException(
             "Unexpected terminology server failure. Message = " + resultString);
       }
       mapper = new ObjectMapper();
@@ -534,7 +544,7 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
         return 0;
       }
 
-      throw new Exception(
+      throw new LocalException(
           "Unexpected terminology server failure. Message = " + resultString);
     }
 
@@ -546,8 +556,16 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
 
   }
 
+  /**
+   * Count expression browser.
+   *
+   * @param expr the expr
+   * @param terminology the terminology
+   * @param version the version
+   * @return the int
+   * @throws Exception the exception
+   */
   /* see superclass */
-  @SuppressWarnings("javadoc")
   public int countExpressionBrowser(String expr, String terminology,
     String version) throws Exception {
     Logger.getLogger(getClass()).debug(
@@ -573,7 +591,7 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
         return 0;
       }
 
-      throw new Exception(
+      throw new LocalException(
           "Unexpected terminology server failure. Message = " + resultString);
     }
 
@@ -605,7 +623,7 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
       if (resultString.contains("loop did not match anything")) {
         return null;
       }
-      throw new Exception(
+      throw new LocalException(
           "Unexpected terminology server failure. Message = " + resultString);
     }
 
@@ -758,7 +776,7 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
       }
     } else {
 
-      throw new Exception(
+      throw new LocalException(
           "Unexpected terminology server failure. Message = " + resultString);
     }
 
@@ -794,10 +812,13 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
 
     final StringBuilder query = new StringBuilder();
     for (final String terminologyId : terminologyIds) {
-      if (query.length() != 0) {
-        query.append(" OR ");
+      // Only lookup stuff with actual digits
+      if (terminologyId.matches("[0-9]*")) {
+        if (query.length() != 0) {
+          query.append(" OR ");
+        }
+        query.append(terminologyId);
       }
-      query.append(terminologyId);
     }
 
     return resolveExpression(query.toString(), terminology, version, null);
@@ -857,7 +878,7 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
     } else {
-      throw new Exception(
+      throw new LocalException(
           "Unexpected terminology server failure. Message = " + resultString);
     }
 
@@ -967,7 +988,7 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
     } else {
-      throw new Exception(
+      throw new LocalException(
           "Unexpected terminology server failure. Message = " + resultString);
     }
 
@@ -1015,7 +1036,7 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
     } else {
-      throw new Exception(
+      throw new LocalException(
           "Unexpected terminology server failure. Message = " + resultString);
     }
 
@@ -1052,96 +1073,13 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
 
   /* see superclass */
   @Override
-  public boolean assignNames() throws Exception {
-    return ConfigUtility.isAssignNames();
+  public void setUrl(String url) {
+    this.url = url;
   }
 
   /* see superclass */
   @Override
-  public List<DescriptionType> getStandardDescriptionTypes(String terminology)
-    throws Exception {
-    final List<DescriptionType> list = new ArrayList<>();
-    /**
-     * <pre>
-     * 0f928c01-b245-5907-9758-a46cbeed2674    20020131        1       900000000000207008      900000000000538005      900000000000003001      900000000000540000      255
-     * 807f775b-1d66-5069-b58e-a37ace985dcf    20140131        1       900000000000207008      900000000000538005      900000000000550004      900000000000540000      4096
-     * 909a711e-b114-5543-841e-242aaa246363    20020131        1       900000000000207008      900000000000538005      900000000000013009      900000000000540000      255
-     * </pre>
-     */
-    for (int i = 0; i < 4; i++) {
-      final DescriptionType type = new DescriptionTypeJpa();
-      type.setRefsetId("900000000000538005");
-      type.setDescriptionFormat("900000000000540000");
-      if (i == 0) {
-        type.setTerminologyId("909a711e-b114-5543-841e-242aaa246363");
-        type.setTypeId("900000000000013009");
-        type.setAcceptabilityId("900000000000548007");
-        type.setName("PT");
-        type.setDescriptionLength(255);
-      }
-      if (i == 1) {
-        type.setTerminologyId("0f928c01-b245-5907-9758-a46cbeed2674");
-        type.setTypeId("900000000000003001");
-        type.setAcceptabilityId("900000000000548007");
-        type.setName("FSN");
-        type.setDescriptionLength(255);
-      }
-      if (i == 2) {
-        type.setTerminologyId("909a711e-b114-5543-841e-242aaa246362");
-        type.setTypeId("900000000000013009");
-        type.setAcceptabilityId("900000000000549004");
-        type.setName("SY");
-        type.setDescriptionLength(255);
-      }
-      if (i == 3) {
-        type.setTerminologyId("807f775b-1d66-5069-b58e-a37ace985dcf");
-        type.setTypeId("900000000000550004");
-        type.setAcceptabilityId("900000000000548007");
-        type.setName("DEF");
-        type.setDescriptionLength(4096);
-      }
-      list.add(type);
-    }
-    return list;
+  public String getDefaultUrl() {
+    return defaultUrl;
   }
-
-  /* see superclass */
-  @Override
-  public List<LanguageDescriptionType> getStandardLanguageDescriptionTypes(
-    String terminology) throws Exception {
-
-    // Assume these are in the correct order (see above)
-    final List<DescriptionType> descriptionTypes =
-        getStandardDescriptionTypes(terminology);
-    final List<LanguageDescriptionType> types = new ArrayList<>();
-    for (final DescriptionType descriptionType : descriptionTypes) {
-      // don't include definition
-      if (descriptionType.getName().equals("DEF")) {
-        continue;
-      }
-      final LanguageDescriptionType type = new LanguageDescriptionTypeJpa();
-      type.setDescriptionType(descriptionType);
-      type.setName("US English");
-      type.setRefsetId("900000000000509007");
-      type.setLanguage("en");
-      types.add(type);
-    }
-
-    return types;
-  }
-
-  /* see superclass */
-  @Override
-  public Map<String, String> getStandardCaseSensitivityTypes(String terminology)
-    throws Exception {
-    final Map<String, String> map = new HashMap<>();
-
-    // For now this is hard-coded but could be looked up if term server had an
-    // API
-    map.put("900000000000017005", "Case sensitive");
-    map.put("900000000000448009", "Case insensitive");
-    map.put("900000000000020002", "Initial character case insensitive");
-    return map;
-  }
-
 }

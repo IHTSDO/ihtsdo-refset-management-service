@@ -1212,13 +1212,13 @@ tsApp.service('translationService', [
     };
 
     // get the available language description types
-    this.getLanguageDescriptionTypes = function() {
-      console.debug('getLanguageDescriptionTypes');
+    this.getLanguageDescriptionTypes = function(projectId) {
+      console.debug('getLanguageDescriptionTypes', projectId);
       // Setup deferred
       var deferred = $q.defer();
 
       gpService.increment();
-      $http.get(translationUrl + 'langpref').then(
+      $http.get(translationUrl + 'langpref?projectId=' + projectId).then(
       // success
       function(response) {
         console.debug('  language desc types = ', response.data);

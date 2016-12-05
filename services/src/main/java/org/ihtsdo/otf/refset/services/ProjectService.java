@@ -4,6 +4,7 @@
 package org.ihtsdo.otf.refset.services;
 
 import org.ihtsdo.otf.refset.Project;
+import org.ihtsdo.otf.refset.helpers.KeyValuePairList;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.ProjectList;
 import org.ihtsdo.otf.refset.services.handlers.IdentifierAssignmentHandler;
@@ -114,9 +115,28 @@ public interface ProjectService extends RootService {
   /**
    * Returns the terminology handler.
    *
+   * @param project the project
    * @return the terminology handler
    * @throws Exception the exception
    */
-  public TerminologyHandler getTerminologyHandler() throws Exception;
+  public TerminologyHandler getTerminologyHandler(Project project)
+    throws Exception;
 
+  /**
+   * Returns the terminology handlers.
+   *
+   * @return the terminology handlers
+   * @throws Exception the exception
+   */
+  public KeyValuePairList getTerminologyHandlers() throws Exception;
+
+  /**
+   * Test handler url.
+   *
+   * @param key the key
+   * @param url the url
+   * @return true, if successful
+   * @throws Exception the exception
+   */
+  public boolean testHandlerUrl(String key, String url) throws Exception;
 }

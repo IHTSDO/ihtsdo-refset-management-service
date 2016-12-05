@@ -391,9 +391,13 @@
               <b>Actions</b>
             </td>
             <td class="nobreak">
-              <i
+              <i ng-show="selected.refset.feedbackEmail"
                 ng-click="openFeedbackModal(selected.refset); $event.stopPropagation()"
                 title="Submit feedback" class="noul material-icons md-18">speaker_notes</i>
+              <i ng-show="!selected.refset.feedbackEmail"
+                ng-click="openFeedbackModal(selected.refset); $event.stopPropagation()"
+                title="Feedback email not configured"
+                class="md-grey material-icons md-18">speaker_notes</i>
               <i
                 ng-show="userProjectsInfo.anyRole && selected.refset.type != 'EXTERNAL'"
                 ng-click="openCloneRefsetModal(selected.refset); $event.stopPropagation()"
