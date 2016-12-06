@@ -157,7 +157,9 @@ tsApp
 
         // Lookup terminologies, names, and versions
         $scope.getTerminologyMetadata = function(project) {
-          projectService.getTerminologyEditions(project).then(function(data) {
+          projectService.getTerminologyEditions(project).then(
+          // Success
+          function(data) {
             $scope.metadata.terminologies = data.terminologies;
             // Look up all versions
             for (var i = 0; i < data.terminologies.length; i++) {

@@ -866,12 +866,6 @@ tsApp
                 }
               };
 
-              // Initialize if project setting isn't used
-              if ($scope.value == 'BETA' || $scope.value == 'PUBLISHED') {
-                $scope.getTranslations();
-              }
-              $scope.getFilters();
-
               // 
               // MODALS
               //
@@ -2952,6 +2946,14 @@ tsApp
                 }
 
               };
+
+              //
+              // Initialize if project setting isn't used
+              //
+              if ($scope.value == 'BETA' || $scope.value == 'PUBLISHED') {
+                $scope.getTranslations();
+              }
+              $scope.getFilters();
 
               // end
 
