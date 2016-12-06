@@ -29,7 +29,7 @@
 
       <button class="btn btn-xs btn-warning"
         ng-show="paging['translation'].filter"
-        ng-click="paging['translation'].filter = ''; getTranslations()"
+        ng-click="paging['translation'].filter = ''; clearUrlParams(); getTranslations()"
         title="Click to clear filter text">Clear</button>
 
       <!-- No need to show for BETA, there should be only one -->
@@ -377,6 +377,12 @@
             </td>
             <td>{{getTerminologyName(selected.translation.terminology)}}
               {{selected.translation.version}}</td>
+          </tr>
+          <tr ng-show="value == 'PUBLISHED'">
+            <td>Url</td>
+            <td>
+              <a href="{{link}}" target="_blank">{{link}}</a>
+            </td>
           </tr>
           <tr
             ng-show="selected.translation.workflowStatus != 'BETA' && selected.translation.workflowStatus != 'PUBLISHED'">
