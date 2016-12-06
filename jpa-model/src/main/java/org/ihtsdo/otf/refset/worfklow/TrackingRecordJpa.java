@@ -406,6 +406,17 @@ public class TrackingRecordJpa implements TrackingRecord {
   public String getRefsetType() {
     return refset == null ? "" : refset.getType().toString();
   }
+  
+  /**
+   * Checks if is local set.  For indexing.
+   *
+   * @return true, if is local set
+   */
+  @XmlTransient
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  public boolean isLocalSet() {
+    return refset == null ? false : refset.isLocalSet();
+  }
 
   /**
    * Returns the workflow status. For indexing.

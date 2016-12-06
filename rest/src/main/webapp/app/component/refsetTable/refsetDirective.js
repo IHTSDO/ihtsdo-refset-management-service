@@ -62,7 +62,8 @@ tsApp
 
               // Page metadata
               $scope.memberTypes = [ 'Member', 'Exclusion', 'Inclusion', 'Active', 'Inactive' ];
-
+              $scope.refsetTypes = [ 'Refset', 'Local', 'Extensional', 'Intensional' ];
+              
               // Used for project admin to know what users are assigned to
               // something.
               $scope.refsetAuthorsMap = {};
@@ -75,6 +76,7 @@ tsApp
               $scope.paging['refset'] = {
                 page : 1,
                 filter : $routeParams.refsetId ? 'id:' + $routeParams.refsetId : '',
+                typeFilter : '',
                 sortField : $scope.value == 'ASSIGNED' ? 'refsetName' : 'name',
                 ascending : null
               };
@@ -157,8 +159,46 @@ tsApp
                   latestOnly : false
                 };
 
+                if ($scope.paging['refset'].typeFilter) {
+                  var value = $scope.paging['refset'].typeFilter;
+
+                  // Handle query restrictions
+                  if (value == 'Local' && ($scope.value == 'ASSIGNED' || 
+                    $scope.value == 'RELEASE' || $scope.value == 'PUBLISHED' || $scope.value == 'BETA')) {
+                    pfs.queryRestriction = 'localSet:true';
+                  } else if (value == 'Local') {
+                    pfs.queryRestriction = 'localSet=true';
+                  } else if (value == 'Refset' && ($scope.value == 'ASSIGNED' || 
+                      $scope.value == 'RELEASE' || $scope.value == 'PUBLISHED' || $scope.value == 'BETA')) {
+                      pfs.queryRestriction = 'localSet:false';
+                  } else if (value == 'Refset') {
+                      pfs.queryRestriction = 'localSet=false';
+                  } else if (value == 'Intensional' && 
+                    ($scope.value == 'RELEASE' || $scope.value == 'PUBLISHED' || $scope.value == 'BETA')) {
+                    pfs.queryRestriction = 'type:INTENSIONAL';
+                  } else if (value == 'Extensional' && 
+                    ($scope.value == 'RELEASE' || $scope.value == 'PUBLISHED' || $scope.value == 'BETA')) {
+                    pfs.queryRestriction = 'type:EXTENSIONAL';
+                  } else if (value == 'Intensional' && $scope.value == 'ASSIGNED') {
+                    pfs.queryRestriction = 'refsetType:INTENSIONAL';
+                  } else if (value == 'Extensional' && $scope.value == 'ASSIGNED') {
+                    pfs.queryRestriction = 'refsetType:EXTENSIONAL';
+                  } else if (value == 'Intensional') {
+                    pfs.queryRestriction = 'Intensional';
+                  } else if (value == 'Extensional') {
+                    pfs.queryRestriction = 'Extensional';
+                  } else if (value == 'All') {
+                    pfs.queryRestriction = '';
+                  }
+                }
+                
                 if ($scope.value == 'PUBLISHED' || $scope.value == 'BETA') {
-                  pfs.queryRestriction = 'workflowStatus:' + $scope.value;
+                  if (pfs.queryRestriction) {
+                    pfs.queryRestriction = pfs.queryRestriction + " AND ";
+                  } else {
+                    pfs.queryRestriction = '';
+                  }
+                  pfs.queryRestriction = pfs.queryRestriction + 'workflowStatus:' + $scope.value;
                   pfs.latestOnly = $scope.showLatest;
                   refsetService.findRefsetsForQuery($scope.paging['refset'].filter, pfs).then(
                     function(data) {
@@ -170,7 +210,10 @@ tsApp
                 }
 
                 if ($scope.value == 'AVAILABLE' && $scope.projects.role == 'AUTHOR') {
-                  pfs.queryRestriction = $scope.paging['refset'].filter;
+                  if (pfs.queryRestriction && $scope.paging['refset'].filter) {
+                    pfs.queryRestriction = pfs.queryRestriction + " AND ";
+                  }
+                  pfs.queryRestriction = pfs.queryRestriction + $scope.paging['refset'].filter;
                   workflowService.findAvailableEditingRefsets($scope.project.id,
                     $scope.user.userName, pfs).then(function(data) {
                     $scope.refsets = data.refsets;
@@ -180,7 +223,10 @@ tsApp
                   });
                 }
                 if ($scope.value == 'AVAILABLE' && $scope.projects.role == 'REVIEWER') {
-                  pfs.queryRestriction = $scope.paging['refset'].filter;
+                  if (pfs.queryRestriction && $scope.paging['refset'].filter) {
+                    pfs.queryRestriction = pfs.queryRestriction + " AND ";
+                  }
+                  pfs.queryRestriction = pfs.queryRestriction + $scope.paging['refset'].filter;
                   workflowService.findAvailableReviewRefsets($scope.project.id,
                     $scope.user.userName, pfs).then(function(data) {
                     $scope.refsets = data.refsets;
@@ -190,7 +236,10 @@ tsApp
                   });
                 }
                 if ($scope.value == 'AVAILABLE' && $scope.projects.role == 'ADMIN') {
-                  pfs.queryRestriction = $scope.paging['refset'].filter;
+                  if (pfs.queryRestriction &&  $scope.paging['refset'].filter) {
+                    pfs.queryRestriction = pfs.queryRestriction + " AND ";
+                  }
+                  pfs.queryRestriction = pfs.queryRestriction + $scope.paging['refset'].filter;
                   workflowService.findAllAvailableRefsets($scope.project.id, pfs).then(
                     function(data) {
                       $scope.refsets = data.refsets;
@@ -199,8 +248,15 @@ tsApp
                       $scope.reselect();
                     });
                 }
+                // TODO: type picklist is not working on ASSIGNED accordion because it does a lucene search
+                // on TrackingRecords, not on Refsets table
                 if ($scope.value == 'ASSIGNED' && $scope.projects.role == 'ADMIN') {
-                  pfs.queryRestriction = $scope.paging['refset'].filter;
+                  if (pfs.queryRestriction &&  $scope.paging['refset'].filter) {
+                    pfs.queryRestriction = pfs.queryRestriction + " AND ";
+                  }
+                  if ($scope.paging['refset'].filter) {
+                    pfs.queryRestriction = pfs.queryRestriction + $scope.paging['refset'].filter;
+                  }
                   workflowService
                     .findAllAssignedRefsets($scope.project.id, pfs)
                     .then(
@@ -223,7 +279,12 @@ tsApp
                       });
                 }
                 if ($scope.value == 'ASSIGNED' && $scope.projects.role == 'AUTHOR') {
-                  pfs.queryRestriction = $scope.paging['refset'].filter;
+                  if (pfs.queryRestriction &&  $scope.paging['refset'].filter) {
+                    pfs.queryRestriction = pfs.queryRestriction + " AND ";
+                  }
+                  if ($scope.paging['refset'].filter) {
+                    pfs.queryRestriction = pfs.queryRestriction + $scope.paging['refset'].filter;
+                  }
                   workflowService.findAssignedEditingRefsets($scope.project.id,
                     $scope.user.userName, pfs).then(
                   // Success
@@ -235,7 +296,12 @@ tsApp
                   });
                 }
                 if ($scope.value == 'ASSIGNED' && $scope.projects.role == 'REVIEWER') {
-                  pfs.queryRestriction = $scope.paging['refset'].filter;
+                  if (pfs.queryRestriction &&  $scope.paging['refset'].filter) {
+                    pfs.queryRestriction = pfs.queryRestriction + " AND ";
+                  }
+                  if ($scope.paging['refset'].filter) {  
+                    pfs.queryRestriction = pfs.queryRestriction + $scope.paging['refset'].filter;
+                  }
                   workflowService.findAssignedReviewRefsets($scope.project.id,
                     $scope.user.userName, pfs).then(
                   // Success
@@ -247,7 +313,12 @@ tsApp
                   });
                 }
                 if ($scope.value == 'RELEASE') {
-                  pfs.queryRestriction = 'projectId:'
+                  if (pfs.queryRestriction) {
+                    pfs.queryRestriction = pfs.queryRestriction + " AND ";
+                  } else {
+                    pfs.queryRestriction = '';
+                  }
+                  pfs.queryRestriction = pfs.queryRestriction + 'projectId:'
                     + $scope.project.id
                     + ' AND revision:false AND (workflowStatus:READY_FOR_PUBLICATION OR workflowStatus:BETA  OR workflowStatus:PUBLISHED)';
                   pfs.latestOnly = $scope.showLatest;
@@ -2354,7 +2425,7 @@ tsApp
               };
 
               // Add Refset modal
-              $scope.openAddRefsetModal = function() {
+              $scope.openAddRefsetModal = function(localSet) {
                 console.debug('openAddRefsetModal ');
 
                 var modalInstance = $uibModal.open({
@@ -2373,6 +2444,9 @@ tsApp
                     },
                     projects : function() {
                       return $scope.projects;
+                    },
+                    localSet : function() {
+                      return localSet;
                     }
                   }
                 });
@@ -2387,7 +2461,7 @@ tsApp
 
               // Add Refset controller
               var AddRefsetModalCtrl = function($scope, $uibModalInstance, metadata, filters,
-                project, projects) {
+                project, projects, localSet) {
                 console.debug('Entered add refset modal control', metadata, project);
 
                 $scope.action = 'Add';
@@ -2399,6 +2473,7 @@ tsApp
                 $scope.versions = angular.copy($scope.metadata.versions[$scope.project.terminology]
                   .sort().reverse());
                 $scope.filters = filters;
+                $scope.localSet = localSet;
 
                 $scope.clause = {
                   value : null
@@ -2413,7 +2488,8 @@ tsApp
                   feedbackEmail : $scope.project.feedbackEmail,
                   type : metadata.refsetTypes[0],
                   definitionClauses : [],
-                  project : $scope.project
+                  project : $scope.project,
+                  localSet : $scope.localSet
                 };
                 $scope.modules = [];
                 $scope.errors = [];
@@ -2585,6 +2661,7 @@ tsApp
                 $scope.project = project;
                 $scope.refset.project = project;
                 $scope.projects = projects;
+                $scope.localSet = refset.localSet;
                 $scope.metadata = metadata;
                 $scope.terminologies = metadata.terminologies;
                 $scope.versionsMap = {};

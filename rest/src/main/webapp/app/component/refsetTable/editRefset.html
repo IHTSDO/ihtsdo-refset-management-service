@@ -1,5 +1,6 @@
 <div class="modal-header">
-  <h4>{{action}} Refset</h4>
+  <h4 ng-show="!localSet">{{action}} Refset</h4>
+  <h4 ng-show="localSet">{{action}} Local Set</h4>
 </div>
 
 <div class="modal-body">
@@ -14,14 +15,6 @@
             ng-change="projectSelected(refset.project)"
             ng-options="item.name.concat(' (',item.id,')') for item in projects.data">
           </select>
-        </td>
-      </tr>
-      <tr>
-        <td>
-          <b>Local Set</b>
-        </td>
-        <td>
-          <input type="checkbox" title="Local set" ng-model="refset.localSet">     
         </td>
       </tr>
       <tr>
