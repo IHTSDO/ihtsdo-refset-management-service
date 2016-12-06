@@ -823,7 +823,6 @@ tsApp
                 return $sce.trustAsHtml('');
               };
 
-
               // lookup and add replacement concepts
               $scope.replace = function(refset, member) {
                 projectService.getReplacementConcepts($scope.project.id, member.conceptId,
@@ -2476,57 +2475,55 @@ tsApp
                   }
 
                   // validate refset before adding it
-                  validationService
-                    .validateRefset(refset)
-                    .then(
+                  validationService.validateRefset(refset).then(
+                    function(data) {
+
+                      // If there are errors, make them available and stop.
+                      if (data.errors && data.errors.length > 0) {
+                        $scope.errors = data.errors;
+                        return;
+                      } else {
+                        $scope.errors = [];
+                      }
+
+                      // if $scope.warnings is empty, and data.warnings is
+                      // not,
+                      // show warnings and stop
+                      if (data.warnings && data.warnings.length > 0
+                        && $scope.warnings.join() !== data.warnings.join()) {
+                        $scope.warnings = data.warnings;
+                        return;
+                      } else {
+                        $scope.warnings = [];
+                      }
+
+                      if (!refset.localSet && !refset.moduleId) {
+                        $scope.errors[0] = 'ModuleId must not be empty.';
+                        return;
+                      }
+
+                      if (!refset.name || !refset.description) {
+                        $scope.errors[0] = 'Refset name and description must not be empty.';
+                        return;
+                      }
+
+                      // Success - validate refset
+                      refsetService.addRefset(refset).then(
+                      // Success - add refset
                       function(data) {
-
-                        // If there are errors, make them available and stop.
-                        if (data.errors && data.errors.length > 0) {
-                          $scope.errors = data.errors;
-                          return;
-                        } else {
-                          $scope.errors = [];
-                        }
-
-                        // if $scope.warnings is empty, and data.warnings is
-                        // not,
-                        // show warnings and stop
-                        if (data.warnings && data.warnings.length > 0
-                          && $scope.warnings.join() !== data.warnings.join()) {
-                          $scope.warnings = data.warnings;
-                          return;
-                        } else {
-                          $scope.warnings = [];
-                        }
-                        
-                        if (!refset.localSet && !refset.moduleId) {
-                          $scope.errors[0] = 'ModuleId must not be empty.';
-                          return;
-                        }
-
-                        if (!refset.name || !refset.description) {
-                          $scope.errors[0] = 'Refset name and description must not be empty.';
-                          return;
-                        }
-
-                        // Success - validate refset
-                        refsetService.addRefset(refset).then(
-                        // Success - add refset
-                        function(data) {
-                          var newRefset = data;
-                          $uibModalInstance.close(newRefset);
-                        },
-                        // Error - add refset
-                        function(data) {
-                          handleError($scope.errors, data);
-                        });
-
+                        var newRefset = data;
+                        $uibModalInstance.close(newRefset);
                       },
-                      // Error - validate refset
+                      // Error - add refset
                       function(data) {
                         handleError($scope.errors, data);
                       });
+
+                    },
+                    // Error - validate refset
+                    function(data) {
+                      handleError($scope.errors, data);
+                    });
                 };
 
                 // Dismiss modal
@@ -2574,7 +2571,7 @@ tsApp
               // Edit refset controller
               var EditRefsetModalCtrl = function($scope, $uibModalInstance, refset, metadata,
                 filters, project, projects) {
-                console.debug('Entered edit refset modal control', refset);
+                console.debug('Entered edit refset modal control', refset, metadata);
 
                 $scope.action = 'Edit';
                 $scope.refset = refset;
@@ -2585,7 +2582,6 @@ tsApp
                 $scope.metadata = metadata;
                 $scope.terminologies = metadata.terminologies;
                 $scope.versionsMap = {};
-                $scope.terminologies = [];
                 $scope.versions = angular.copy($scope.metadata.versions[refset.terminology].sort()
                   .reverse());
                 $scope.modules = [];
@@ -2613,6 +2609,8 @@ tsApp
                   $scope.refset.version = $scope.versions[0];
                   $scope.getModules();
                 };
+                // Init terminology/version
+                $scope.terminologySelected($scope.refset.terminology);
 
                 // Handle version selected
                 $scope.versionSelected = function(version) {

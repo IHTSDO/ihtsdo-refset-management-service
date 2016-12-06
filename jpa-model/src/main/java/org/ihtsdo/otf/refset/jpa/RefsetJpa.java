@@ -150,7 +150,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   /** The domain (content area). */
   @Column(nullable = true)
   private String domain;
-  
+
   /** The is local set. */
   @Column(nullable = false)
   private boolean localSet;
@@ -305,7 +305,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   public void setPublic(boolean isPublic) {
     this.isPublic = isPublic;
   }
-  
+
   /* see superclass */
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   @Override
@@ -510,7 +510,8 @@ public class RefsetJpa extends AbstractComponent implements Refset {
 
   /* see superclass */
   @Override
-  public void setEnabledFeedbackEvents(Set<FeedbackEvent> enabledFeedbackEvents) {
+  public void setEnabledFeedbackEvents(
+    Set<FeedbackEvent> enabledFeedbackEvents) {
     this.enabledFeedbackEvents = enabledFeedbackEvents;
   }
 
@@ -655,8 +656,8 @@ public class RefsetJpa extends AbstractComponent implements Refset {
       if (positiveClauses.size() > 1 && negativeClauses.size() > 0) {
         computedDefinition.append("(");
       }
-      computedDefinition.append(getClauseValue(positiveClauses.get(0)
-          .getValue(), groupSize));
+      computedDefinition
+          .append(getClauseValue(positiveClauses.get(0).getValue(), groupSize));
       for (int i = 1; i < positiveClauses.size(); i++) {
         computedDefinition.append(" OR ").append(
             getClauseValue(positiveClauses.get(i).getValue(), groupSize));
@@ -671,8 +672,8 @@ public class RefsetJpa extends AbstractComponent implements Refset {
       if (negativeClauses.size() > 1) {
         computedDefinition.append("(");
       }
-      computedDefinition.append(getClauseValue(negativeClauses.get(0)
-          .getValue(), groupSize));
+      computedDefinition
+          .append(getClauseValue(negativeClauses.get(0).getValue(), groupSize));
       for (int i = 1; i < negativeClauses.size(); i++) {
         computedDefinition.append(" OR ").append(
             getClauseValue(negativeClauses.get(i).getValue(), groupSize));
@@ -699,7 +700,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
     // e.g. .. 19829001 : 116676008 ...
         (clause.matches(".*\\d\\s*:\\s*\\d.*") ||
         // e.g. .. 19829001 |abc| : 116676008 ...
-        clause.matches(".*\\|\\s*:\\s*\\d.*"))) {
+            clause.matches(".*\\|\\s*:\\s*\\d.*"))) {
       return "(" + clause + ")";
     }
     if (clause.matches(".* AND .*")) {
@@ -817,9 +818,8 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   public int hashCode() {
     final int prime = 31;
     int result = super.hashCode();
-    result =
-        prime * result
-            + ((definitionClauses == null) ? 0 : definitionClauses.hashCode());
+    result = prime * result
+        + ((definitionClauses == null) ? 0 : definitionClauses.hashCode());
     result =
         prime * result + ((description == null) ? 0 : description.hashCode());
     result =
@@ -878,7 +878,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
     if (isPublic != other.isPublic)
       return false;
     if (localSet != other.localSet)
-        return false;
+      return false;
     if (name == null) {
       if (other.name != null)
         return false;
@@ -924,8 +924,8 @@ public class RefsetJpa extends AbstractComponent implements Refset {
         + (project == null ? null : project.getId())
         + ", enabledFeedbackEvents=" + enabledFeedbackEvents
         + ", inPublicationProcess=" + inPublicationProcess
-        + ", lookupInProgress=" + lookupInProgress 
-        + ", localSet=" + localSet + "]";
+        + ", lookupInProgress=" + lookupInProgress + ", localSet=" + localSet
+        + "]";
   }
 
 }
