@@ -21,7 +21,7 @@ tsApp
       function($uibModal, $location, $window, $route, $routeParams, $sce, $interval, utilService,
         securityService, projectService, refsetService, releaseService, workflowService,
         validationService) {
-        console.debug('configure refsetTable directive', $routeParams);
+        console.debug('configure refsetTable directive');
         return {
           restrict : 'A',
           scope : {
@@ -270,35 +270,34 @@ tsApp
                 return refsets;
               };
 
-              
+              // Set the scope link
+              $scope.getLink = function(refset) {
+                $scope.link = utilService.composeUrl('/directory?refsetId=' + refset.id)
+              }
+
+              // Clear the url params when "clear" gets clicked
               $scope.clearUrlParams = function() {
                 var index = $scope.link.indexOf("?");
                 if (index != -1) {
                   $scope.link = $scope.link.substring(0, index);
-                  window.location.href = $scope.link;
+                  $window.location.href = $scope.link;
+                  $route.reload();
                 }
               }
-              
-              $scope.loadNewRoute = function(refset) {
-                $scope.getLink(refset);
-                window.location.href = $scope.link;
-                $route.reload();
-             }
-              
+
               // Reselect selected refset to refresh
               $scope.reselect = function() {
                 // If no selected refset, use user preferences
-                if (!$scope.selected.refset && $routeParams.refsetId
-                  && $scope.value == 'PUBLISHED') {
+                if (!$scope.selected.refset && $routeParams.refsetId && $scope.value == 'PUBLISHED') {
                   $scope.selected.refset = {
                     id : $routeParams.refsetId
                   };
                 }
 
-               // If no selected refset, use user preferences
+                // If no selected refset, use user preferences
                 if (!$scope.selected.refset && $scope.user.userPreferences.lastRefsetId
                   && $scope.value == $scope.user.userPreferences.lastRefsetAccordion) {
-                  
+
                   $scope.selected.refset = {
                     id : $scope.user.userPreferences.lastRefsetId
                   };
@@ -345,7 +344,6 @@ tsApp
                 }
               }
 
-              
               // Get $scope.filters
               $scope.getFilters = function() {
                 var projectId = $scope.project ? $scope.project.id : null;
@@ -487,7 +485,9 @@ tsApp
 
               // Return the name for a terminology
               $scope.getTerminologyName = function(terminology) {
-                return $scope.metadata.terminologyNames[terminology];
+                if ($scope.metadata && $scope.metadata.terminologyNames) {
+                  return $scope.metadata.terminologyNames[terminology];
+                }
               };
 
               // Get ordered definition clauses
@@ -822,10 +822,7 @@ tsApp
                 }
                 return $sce.trustAsHtml('');
               };
-              
-              $scope.getLink = function(refset) {
-                $scope.link = utilService.composeUrl('/directory?refsetId=' + refset.id)
-              }
+
 
               // lookup and add replacement concepts
               $scope.replace = function(refset, member) {

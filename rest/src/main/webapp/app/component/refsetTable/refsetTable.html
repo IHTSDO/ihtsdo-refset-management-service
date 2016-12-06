@@ -495,7 +495,9 @@
           </tr>
           <tr ng-show="value == 'PUBLISHED'">
             <td>Url</td>
-            <td ><a ng-href="{{link}}" ng-click="loadNewRoute(selected.refset)">{{link}}</a></td>
+            <td>
+              <a href="{{link}}" target="_blank">{{link}}</a>
+            </td>
           </tr>
           <tr ng-show="selected.refset.type == 'INTENSIONAL'">
             <td>

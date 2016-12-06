@@ -773,7 +773,7 @@ public class SnowowlTerminologyHandler implements TerminologyHandler {
       // Only lookup stuff with actual digits
       if (terminologyId.matches("[0-9]*")) {
         if (query.length() != 0) {
-          query.append(" OR ");
+          query.append(" UNION ");
         }
         query.append(terminologyId);
       }
