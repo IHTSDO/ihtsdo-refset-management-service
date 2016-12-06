@@ -40,10 +40,15 @@
         <span ng-hide="showLatest" title="Click to show only most recent">All</span>
       </button>
 
+	  <span ng-show="value == 'AVAILABLE'" style="float: right;">
+	    <button ng-click="openAddRefsetModal(true); $event.stopPropagation()"
+            title="Add local set" class="btn btn-xs btn-primary">Add
+            Local Set</button></span>
+
       <!-- Admins shouldn't add projects -->
       <h4 ng-show="value == 'AVAILABLE' && refsets.totalCount == 0">
         <span style="float: right;">
-          <button ng-click="openAddRefsetModal(); $event.stopPropagation()"
+          <button ng-click="openAddRefsetModal(false); $event.stopPropagation()"
             title="Add refset" class="btn btn-xs btn-primary">Add
             Refset</button>
         </span>
@@ -51,10 +56,8 @@
     </div>
 
     <!-- Basic Refset info -->
-    <span ng-show="refsets.totalCount == 0" style="display: block;"
-      class="alert alert-warning">No refsets.</span>
-
-    <table ng-show="refsets.totalCount > 0" class="table">
+    
+    <table class="table">
       <thead class="table-select-row">
         <tr>
           <th class="col-md-2 col-xs-2"><span
@@ -116,11 +119,19 @@
               <span ng-bind="getSortIndicator('refset','workflowStatus')"></span>
             </span></th>
 
-          <th class="col-md-1 col-xs-1"><span
+          <!-- <th class="col-md-1 col-xs-1"><span
               ng-click="setSortField('refset','type')">
               Type
               <span ng-bind="getSortIndicator('refset','type')"></span>
-            </span></th>
+            </span></th> -->
+
+		  <th class="col-md-2 col-xs-2"><select
+                title="Filter by refset type" style="width: 80px;"
+                ng-model="paging['refset'].typeFilter"
+                ng-options="item for item in refsetTypes"
+                ng-change="getRefsets()">
+                  <option value="">All</option>
+              </select></th>
 
           <!-- Actions header -->
 
@@ -129,8 +140,8 @@
           <!-- not PUBLISHED/BETA -->
           <th class="col-md-2 col-xs-2" ng-show="!isDirectory()"><span
               ng-show="value == 'AVAILABLE'" style="float: right;">
-              <button ng-click="openAddRefsetModal();" title="Add refset"
-                class="btn btn-xs btn-primary">Add</button>
+              <button ng-click="openAddRefsetModal(false);" title="Add refset"
+                class="btn btn-xs btn-primary">Add Refset</button>
             </span></th>
 
         </tr>
@@ -367,6 +378,9 @@
         </tr>
       </tbody>
     </table>
+    <span ng-show="refsets.totalCount == 0" style="display: block;"
+      class="alert alert-warning">No refsets.</span>
+    
     <!-- End R1C1 -->
   </div>
 
