@@ -293,6 +293,7 @@ public class TranslationTest extends RestSupport {
     refset.setVersion("20150131");
     refset.setWorkflowPath("DFEAULT");
     refset.setWorkflowStatus(WorkflowStatus.PUBLISHED);
+    refset.setLocalSet(false);
 
     if (type == Refset.Type.EXTERNAL) {
       refset.setExternalUrl("http://www.example.com/some/other/refset.txt");

@@ -194,6 +194,7 @@ public class WorkflowTest extends RestSupport {
     refset.setVersion("20150131");
     refset.setWorkflowPath("DEFAULT");
     refset.setWorkflowStatus(WorkflowStatus.NEW);
+    refset.setLocalSet(false);
 
     if (type == Refset.Type.INTENSIONAL && definition == null) {
       refset.setDefinitionClauses(new ArrayList<DefinitionClause>());
