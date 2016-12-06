@@ -6,6 +6,8 @@ tsApp
     [
       '$uibModal',
       '$window',
+      '$route',
+      '$routeParams',
       '$sce',
       '$interval',
       'utilService',
@@ -16,8 +18,9 @@ tsApp
       'releaseService',
       'workflowService',
       'validationService',
-      function($uibModal, $window, $sce, $interval, utilService, securityService, projectService,
-        translationService, refsetService, releaseService, workflowService, validationService) {
+      function($uibModal, $window, $route, $routeParams, $sce, $interval, utilService,
+        securityService, projectService, translationService, refsetService, releaseService,
+        workflowService, validationService) {
         console.debug('configure translationTable directive');
         return {
           restrict : 'A',
@@ -66,7 +69,7 @@ tsApp
               $scope.paging = {};
               $scope.paging['translation'] = {
                 page : 1,
-                filter : '',
+                filter : $routeParams.translationId ? 'id:' + $routeParams.translationId : '',
                 sortField : 'name',
                 ascending : null
               };
@@ -207,8 +210,31 @@ tsApp
 
               };
 
+              // Set the scope link
+              $scope.getLink = function(translation) {
+                $scope.link = utilService.composeUrl('/directory?translationId=' + translation.id)
+              }
+
+              // Clear the url params when "clear" gets clicked
+              $scope.clearUrlParams = function() {
+                var index = $scope.link.indexOf("?");
+                if (index != -1) {
+                  $scope.link = $scope.link.substring(0, index);
+                  $window.location.href = $scope.link;
+                  $route.reload();
+                }
+              }
+
               // Reselect selected translation to refresh it
               $scope.reselect = function() {
+                // If no selected translation, use route params
+                if (!$scope.selected.translation && $routeParams.translationId
+                  && $scope.value == 'PUBLISHED') {
+                  $scope.selected.translation = {
+                    id : $routeParams.translationId
+                  };
+                }
+
                 // If no selected translation, use user preferences
                 if (!$scope.selected.translation && $scope.user.userPreferences.lastTranslationId
                   && $scope.value == $scope.user.userPreferences.lastTranslationAccordion) {
@@ -476,7 +502,9 @@ tsApp
 
               // Return the name for a terminology
               $scope.getTerminologyName = function(terminology) {
-                return $scope.metadata.terminologyNames[terminology];
+                if ($scope.metadata && $scope.metadata.terminologyNames) {
+                  return $scope.metadata.terminologyNames[terminology];
+                }
               };
 
               // Table sorting mechanism
@@ -519,6 +547,7 @@ tsApp
                   $scope.user.userPreferences.lastTranslationId = translation.id;
                   securityService.updateUserPreferences($scope.user.userPreferences);
                 }
+                $scope.getLink(translation);
               };
 
               // Selects a concepts (setting $scope.concept)
@@ -836,12 +865,6 @@ tsApp
                   });
                 }
               };
-
-              // Initialize if project setting isn't used
-              if ($scope.value == 'BETA' || $scope.value == 'PUBLISHED') {
-                $scope.getTranslations();
-              }
-              $scope.getFilters();
 
               // 
               // MODALS
@@ -2923,6 +2946,14 @@ tsApp
                 }
 
               };
+
+              //
+              // Initialize if project setting isn't used
+              //
+              if ($scope.value == 'BETA' || $scope.value == 'PUBLISHED') {
+                $scope.getTranslations();
+              }
+              $scope.getFilters();
 
               // end
 

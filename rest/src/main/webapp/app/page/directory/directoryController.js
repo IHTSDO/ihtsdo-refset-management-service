@@ -153,6 +153,8 @@ tsApp.controller('DirectoryCtrl',
         $scope.user.userPreferences.lastTab = '/directory';
         if ($routeParams.refsetId) {
           $scope.accordionState['PUBLISHED'] = true;
+        } else if ($routeParams.translationId) {
+          $scope.accordionState['TRANSLATION_PUBLISHED'] = true;
         } else if ($scope.user.userPreferences.lastDirectoryAccordion) {
           $scope.accordionState[$scope.user.userPreferences.lastDirectoryAccordion] = true;
         } else {

@@ -374,8 +374,8 @@ public class ProjectClientRest extends RootClientRest
 
   /* see superclass */
   @Override
-  public TerminologyList getTerminologyEditions(ProjectJpa project, String authToken)
-    throws Exception {
+  public TerminologyList getTerminologyEditions(ProjectJpa project,
+    String authToken) throws Exception {
     Logger.getLogger(getClass()).debug("Project Client - get terminologies");
 
     Client client = ClientBuilder.newClient();
@@ -401,8 +401,8 @@ public class ProjectClientRest extends RootClientRest
 
   /* see superclass */
   @Override
-  public TerminologyList getTerminologyVersions(ProjectJpa project, String terminology,
-    String authToken) throws Exception {
+  public TerminologyList getTerminologyVersions(ProjectJpa project,
+    String terminology, String authToken) throws Exception {
     Logger.getLogger(getClass()).debug("Project Client - get terminologies");
     validateNotEmpty(terminology, "terminology");
 
@@ -629,8 +629,8 @@ public class ProjectClientRest extends RootClientRest
 
   /* see superclass */
   @Override
-  public ConceptList getModules(ProjectJpa project, String terminology, String version,
-    String authToken) throws Exception {
+  public ConceptList getModules(ProjectJpa project, String terminology,
+    String version, String authToken) throws Exception {
     Logger.getLogger(getClass()).debug("Project Client - get modules");
     validateNotEmpty(terminology, "terminology");
     validateNotEmpty(version, "version");
@@ -716,4 +716,52 @@ public class ProjectClientRest extends RootClientRest
         ConceptList.class);
   }
 
+  @Override
+  public KeyValuePairList getTerminologyHandlers(String authToken)
+    throws Exception {
+    Logger.getLogger(getClass())
+        .debug("Refset Client - get terminology handlers");
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url") + "/handlers");
+
+    Response response = target.request(MediaType.APPLICATION_XML)
+        .header("Authorization", authToken).get();
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+
+    // converting to object
+    return (KeyValuePairList) ConfigUtility.getGraphForString(resultString,
+        KeyValuePairList.class);
+  }
+
+  @Override
+  public Boolean testHandlerUrl(String key, String url, String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).debug("Refset Client - test handler URL ");
+    validateNotEmpty(key, "key");
+    validateNotEmpty(url, "url");
+    Client client = ClientBuilder.newClient();
+    WebTarget target = client
+        .target(config.getProperty("base.url") + "/test?key=" + key + "&url="
+            + URLEncoder.encode(url, "UTF-8").replaceAll("\\+", "%20"));
+
+    Response response = target.request(MediaType.APPLICATION_XML)
+        .header("Authorization", authToken).get();
+
+    response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+
+    // always return true
+    return true;
+  }
 }
