@@ -1011,6 +1011,7 @@ public class GenerateSampleDataMojo extends AbstractMojo {
     // This is an opportunity to use "branch"
     refset.setVersion("20150131");
     refset.setWorkflowPath("DEFAULT");
+    refset.setLocalSet(false);
     if (importMembers) {
       refset.setWorkflowStatus(WorkflowStatus.PUBLISHED);
       refset.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse("20150131"));

@@ -150,6 +150,10 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   /** The domain (content area). */
   @Column(nullable = true)
   private String domain;
+  
+  /** The is local set. */
+  @Column(nullable = false)
+  private boolean localSet;
 
   /**
    * The refset descriptors.
@@ -228,6 +232,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
     workflowStatus = refset.getWorkflowStatus();
     workflowPath = refset.getWorkflowPath();
     project = refset.getProject();
+    localSet = refset.isLocalSet();
     enabledFeedbackEvents = new HashSet<>(refset.getEnabledFeedbackEvents());
     for (DefinitionClause definitionClause : refset.getDefinitionClauses()) {
       getDefinitionClauses().add(new DefinitionClauseJpa(definitionClause));
@@ -299,6 +304,19 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   @Override
   public void setPublic(boolean isPublic) {
     this.isPublic = isPublic;
+  }
+  
+  /* see superclass */
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  @Override
+  public boolean isLocalSet() {
+    return localSet;
+  }
+
+  /* see superclass */
+  @Override
+  public void setLocalSet(boolean localSet) {
+    this.localSet = localSet;
   }
 
   /* see superclass */
@@ -811,6 +829,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
     result = prime * result + (lookupInProgress ? 1231 : 1237);
     result = prime * result + (isPublic ? 1231 : 1237);
     result = prime * result + (revision ? 1231 : 1237);
+    result = prime * result + (localSet ? 1231 : 1237);
     result =
         prime * result + ((terminology == null) ? 0 : terminology.hashCode());
     // not version
@@ -858,6 +877,8 @@ public class RefsetJpa extends AbstractComponent implements Refset {
       return false;
     if (isPublic != other.isPublic)
       return false;
+    if (localSet != other.localSet)
+        return false;
     if (name == null) {
       if (other.name != null)
         return false;
@@ -903,7 +924,8 @@ public class RefsetJpa extends AbstractComponent implements Refset {
         + (project == null ? null : project.getId())
         + ", enabledFeedbackEvents=" + enabledFeedbackEvents
         + ", inPublicationProcess=" + inPublicationProcess
-        + ", lookupInProgress=" + lookupInProgress + "]";
+        + ", lookupInProgress=" + lookupInProgress 
+        + ", localSet=" + localSet + "]";
   }
 
 }
