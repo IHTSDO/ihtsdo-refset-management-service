@@ -1048,7 +1048,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
             final TerminologyHandler handler =
                 getTerminologyHandler(refset.getProject());
             final ConceptList cons =
-                handler.getConcepts(termIds, terminology, version, "");
+                handler.getConcepts(termIds, terminology, version);
 
             // IF the number of concepts returned doesn't match
             // the size of termIds, there was a problem
@@ -1148,7 +1148,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
     int total = 0;
     try {
       total = getTerminologyHandler(project).countExpression(expression,
-          terminology, version, "");
+          terminology, version);
     } catch (Exception e) {
       throw new LocalException(
           "Unable to count total expression items, the expression could not be resolved - "
@@ -1186,9 +1186,8 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
     ConceptList resolvedFromExpression = null;
     try {
       Project project = this.getProject(refset.getProject().getId());
-      resolvedFromExpression =
-          getTerminologyHandler(project).resolveExpression(
-              definition, refset.getTerminology(), refset.getVersion(), null, "");
+      resolvedFromExpression = getTerminologyHandler(project).resolveExpression(
+          definition, refset.getTerminology(), refset.getVersion(), null);
 
       // Save concepts
       for (final Concept concept : resolvedFromExpression.getObjects()) {

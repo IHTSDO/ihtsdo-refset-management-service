@@ -63,7 +63,7 @@ tsApp
               // Page metadata
               $scope.memberTypes = [ 'Member', 'Exclusion', 'Inclusion', 'Active', 'Inactive' ];
               $scope.refsetTypes = [ 'Refset', 'Local', 'Extensional', 'Intensional', 'External' ];
-              
+
               // Used for project admin to know what users are assigned to
               // something.
               $scope.refsetAuthorsMap = {};
@@ -163,24 +163,26 @@ tsApp
                   var value = $scope.paging['refset'].typeFilter;
 
                   // Handle query restrictions
-                  if (value == 'Local' && ($scope.value == 'ASSIGNED' || 
-                    $scope.value == 'RELEASE' || $scope.value == 'PUBLISHED' || $scope.value == 'BETA')) {
+                  if (value == 'Local'
+                    && ($scope.value == 'ASSIGNED' || $scope.value == 'RELEASE'
+                      || $scope.value == 'PUBLISHED' || $scope.value == 'BETA')) {
                     pfs.queryRestriction = 'localSet:true';
                   } else if (value == 'Local') {
                     pfs.queryRestriction = 'localSet=true';
-                  } else if (value == 'Refset' && ($scope.value == 'ASSIGNED' || 
-                      $scope.value == 'RELEASE' || $scope.value == 'PUBLISHED' || $scope.value == 'BETA')) {
-                      pfs.queryRestriction = 'localSet:false';
+                  } else if (value == 'Refset'
+                    && ($scope.value == 'ASSIGNED' || $scope.value == 'RELEASE'
+                      || $scope.value == 'PUBLISHED' || $scope.value == 'BETA')) {
+                    pfs.queryRestriction = 'localSet:false';
                   } else if (value == 'Refset') {
-                      pfs.queryRestriction = 'localSet=false';
-                  } else if (value == 'Intensional' && 
-                    ($scope.value == 'RELEASE' || $scope.value == 'PUBLISHED' || $scope.value == 'BETA')) {
+                    pfs.queryRestriction = 'localSet=false';
+                  } else if (value == 'Intensional'
+                    && ($scope.value == 'RELEASE' || $scope.value == 'PUBLISHED' || $scope.value == 'BETA')) {
                     pfs.queryRestriction = 'type:INTENSIONAL';
-                  } else if (value == 'Extensional' && 
-                    ($scope.value == 'RELEASE' || $scope.value == 'PUBLISHED' || $scope.value == 'BETA')) {
+                  } else if (value == 'Extensional'
+                    && ($scope.value == 'RELEASE' || $scope.value == 'PUBLISHED' || $scope.value == 'BETA')) {
                     pfs.queryRestriction = 'type:EXTENSIONAL';
-                  } else if (value == 'External' && 
-                    ($scope.value == 'RELEASE' || $scope.value == 'PUBLISHED' || $scope.value == 'BETA')) {
+                  } else if (value == 'External'
+                    && ($scope.value == 'RELEASE' || $scope.value == 'PUBLISHED' || $scope.value == 'BETA')) {
                     pfs.queryRestriction = 'type:EXTERNAL';
                   } else if (value == 'Intensional' && $scope.value == 'ASSIGNED') {
                     pfs.queryRestriction = 'refsetType:INTENSIONAL';
@@ -198,7 +200,7 @@ tsApp
                     pfs.queryRestriction = '';
                   }
                 }
-                
+
                 if ($scope.value == 'PUBLISHED' || $scope.value == 'BETA') {
                   if (pfs.queryRestriction) {
                     pfs.queryRestriction = pfs.queryRestriction + " AND ";
@@ -243,7 +245,7 @@ tsApp
                   });
                 }
                 if ($scope.value == 'AVAILABLE' && $scope.projects.role == 'ADMIN') {
-                  if (pfs.queryRestriction &&  $scope.paging['refset'].filter) {
+                  if (pfs.queryRestriction && $scope.paging['refset'].filter) {
                     pfs.queryRestriction = pfs.queryRestriction + " AND ";
                   }
                   pfs.queryRestriction = pfs.queryRestriction + $scope.paging['refset'].filter;
@@ -255,10 +257,11 @@ tsApp
                       $scope.reselect();
                     });
                 }
-                // TODO: type picklist is not working on ASSIGNED accordion because it does a lucene search
+                // TODO: type picklist is not working on ASSIGNED accordion
+                // because it does a lucene search
                 // on TrackingRecords, not on Refsets table
                 if ($scope.value == 'ASSIGNED' && $scope.projects.role == 'ADMIN') {
-                  if (pfs.queryRestriction &&  $scope.paging['refset'].filter) {
+                  if (pfs.queryRestriction && $scope.paging['refset'].filter) {
                     pfs.queryRestriction = pfs.queryRestriction + " AND ";
                   }
                   if ($scope.paging['refset'].filter) {
@@ -286,7 +289,7 @@ tsApp
                       });
                 }
                 if ($scope.value == 'ASSIGNED' && $scope.projects.role == 'AUTHOR') {
-                  if (pfs.queryRestriction &&  $scope.paging['refset'].filter) {
+                  if (pfs.queryRestriction && $scope.paging['refset'].filter) {
                     pfs.queryRestriction = pfs.queryRestriction + " AND ";
                   }
                   if ($scope.paging['refset'].filter) {
@@ -303,10 +306,10 @@ tsApp
                   });
                 }
                 if ($scope.value == 'ASSIGNED' && $scope.projects.role == 'REVIEWER') {
-                  if (pfs.queryRestriction &&  $scope.paging['refset'].filter) {
+                  if (pfs.queryRestriction && $scope.paging['refset'].filter) {
                     pfs.queryRestriction = pfs.queryRestriction + " AND ";
                   }
-                  if ($scope.paging['refset'].filter) {  
+                  if ($scope.paging['refset'].filter) {
                     pfs.queryRestriction = pfs.queryRestriction + $scope.paging['refset'].filter;
                   }
                   workflowService.findAssignedReviewRefsets($scope.project.id,
@@ -325,7 +328,8 @@ tsApp
                   } else {
                     pfs.queryRestriction = '';
                   }
-                  pfs.queryRestriction = pfs.queryRestriction + 'projectId:'
+                  pfs.queryRestriction = pfs.queryRestriction
+                    + 'projectId:'
                     + $scope.project.id
                     + ' AND revision:false AND (workflowStatus:READY_FOR_PUBLICATION OR workflowStatus:BETA  OR workflowStatus:PUBLISHED)';
                   pfs.latestOnly = $scope.showLatest;
@@ -2666,8 +2670,8 @@ tsApp
                 $scope.metadata = metadata;
                 $scope.terminologies = metadata.terminologies;
                 $scope.versionsMap = {};
-                $scope.versions = angular.copy($scope.metadata.versions[refset.terminology].sort()
-                  .reverse());
+                $scope.versions = $scope.metadata.versions[refset.terminology] ? angular
+                  .copy($scope.metadata.versions[refset.terminology].sort().reverse()) : [];
                 $scope.modules = [];
                 $scope.errors = [];
 

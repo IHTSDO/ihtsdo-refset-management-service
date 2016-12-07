@@ -351,7 +351,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
           pfs.setStartIndex(0);
           pfs.setMaxResults(1);
           projectService.getTerminologyHandler(project).resolveExpression(
-              project.getExclusionClause(), project.getTerminology(), "", pfs, "");
+              project.getExclusionClause(), project.getTerminology(), "", pfs);
         } catch (Exception e) {
           throw new LocalException("Project has invalid exclusion clause");
         }
@@ -410,7 +410,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
           pfs.setStartIndex(0);
           pfs.setMaxResults(1);
           projectService.getTerminologyHandler(project).resolveExpression(
-              project.getExclusionClause(), project.getTerminology(), "", pfs, "");
+              project.getExclusionClause(), project.getTerminology(), "", pfs);
         } catch (Exception e) {
           throw new LocalException("Project has invalid exclusion clause");
         }
@@ -646,7 +646,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
       }
 
       final List<Terminology> editions = projectService
-          .getTerminologyHandler(project).getTerminologyEditions(authToken);
+          .getTerminologyHandler(project).getTerminologyEditions();
       final TerminologyList list = new TerminologyListJpa();
       list.setObjects(editions);
       list.setTotalCount(list.getCount());
@@ -682,7 +682,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
       }
 
       final List<Terminology> versions = projectService
-          .getTerminologyHandler(project).getTerminologyVersions(terminology, authToken);
+          .getTerminologyHandler(project).getTerminologyVersions(terminology);
       final TerminologyList list = new TerminologyListJpa();
       list.setObjects(versions);
       list.setTotalCount(list.getCount());
@@ -718,7 +718,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
         throw new LocalException("Get modules requires a project");
       }
       final List<Concept> types = projectService.getTerminologyHandler(project)
-          .getModules(terminology, version, authToken);
+          .getModules(terminology, version);
 
       final ConceptList list = new ConceptListJpa();
       list.setObjects(types);
@@ -825,7 +825,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
       }
 
       final ConceptList concepts = projectService.getTerminologyHandler(project)
-          .findConceptsForQuery(query, terminology, version, pfs, authToken);
+          .findConceptsForQuery(query, terminology, version, pfs);
 
       return concepts;
     } catch (Exception e) {
@@ -870,7 +870,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
 
       try {
         concept = translationService.getTerminologyHandler(project)
-            .getFullConcept(terminologyId, terminology, version, authToken);
+            .getFullConcept(terminologyId, terminology, version);
       } catch (Exception e) {
         Logger.getLogger(getClass()).info(
             "No results in call to Terminology Handler with terminologyId: "
@@ -936,7 +936,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
 
       final ConceptList concepts =
           translationService.getTerminologyHandler(project)
-              .getConceptParents(terminologyId, terminology, version, authToken);
+              .getConceptParents(terminologyId, terminology, version);
 
       // If translationId is set, include descriptions from the translation
       if (translationId != null) {
@@ -1015,7 +1015,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
 
       final ConceptList concepts =
           translationService.getTerminologyHandler(project)
-              .getConceptChildren(terminologyId, terminology, version, authToken);
+              .getConceptChildren(terminologyId, terminology, version);
 
       // If translationId is set, include descriptions from the translation
       if (translationId != null) {
@@ -1164,7 +1164,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
         throw new LocalException("Invalid project id: " + projectId);
       }
       final ConceptList concepts = refsetService.getTerminologyHandler(project)
-          .getReplacementConcepts(conceptId, terminology, version, authToken);
+          .getReplacementConcepts(conceptId, terminology, version);
       return concepts;
 
     } catch (Exception e) {
@@ -1185,6 +1185,8 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
   public Boolean testHandlerUrl(
     @ApiParam(value = "Handler key to test, e.g. 'BROWSER'", required = true) @QueryParam("key") String key,
     @ApiParam(value = "Handler URL to test, e.g. 'https://...'", required = true) @QueryParam("url") String url,
+    @ApiParam(value = "Terminology, e.g. 'SNOMEDCT'", required = false) @QueryParam("terminology") String terminology,
+    @ApiParam(value = "Version, e.g. '20160731'", required = false) @QueryParam("version") String version,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass())
@@ -1197,7 +1199,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
           UserRole.VIEWER);
 
       // This will fail if there is a problem
-      projectService.testHandlerUrl(key, url);
+      projectService.testHandlerUrl(key, url, terminology, version);
 
       return true;
 

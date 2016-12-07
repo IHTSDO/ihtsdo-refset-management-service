@@ -367,7 +367,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       final ConceptList resolvedFromExpression =
           refsetService.getTerminologyHandler(refset.getProject())
               .resolveExpression(refset.computeExpression(expression),
-                  refset.getTerminology(), refset.getVersion(), null, authToken);
+                  refset.getTerminology(), refset.getVersion(), null);
 
       final Set<String> conceptIds = new HashSet<>();
       for (final ConceptRefsetMember member : refset.getMembers()) {
@@ -436,7 +436,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       final ConceptList resolvedFromExpression =
           refsetService.getTerminologyHandler(refset.getProject())
               .resolveExpression(refset.computeExpression(expression),
-                  refset.getTerminology(), refset.getVersion(), null, authToken);
+                  refset.getTerminology(), refset.getVersion(), null);
       final Set<String> conceptIds = new HashSet<>();
       for (final Concept concept : resolvedFromExpression.getObjects()) {
         conceptIds.add(concept.getTerminologyId());
@@ -817,7 +817,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
           final Concept concept =
               refsetService.getTerminologyHandler(refset.getProject())
                   .getConcept(member.getConceptId(), refset.getTerminology(),
-                      refset.getVersion(), authToken);
+                      refset.getVersion());
           if (concept != null) {
             member.setConceptName(concept.getName());
             member.setConceptActive(concept.isActive());
@@ -1052,7 +1052,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         final Concept concept =
             refsetService.getTerminologyHandler(refset.getProject()).getConcept(
                 member.getConceptId(), refset.getTerminology(),
-                refset.getVersion(), authToken);
+                refset.getVersion());
         if (concept != null) {
           member.setConceptName(concept.getName());
           member.setConceptActive(concept.isActive());
@@ -1235,7 +1235,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         final Concept concept =
             refsetService.getTerminologyHandler(refset.getProject()).getConcept(
                 inclusion.getConceptId(), refset.getTerminology(),
-                refset.getVersion(), authToken);
+                refset.getVersion());
         if (concept != null) {
           inclusion.setConceptName(concept.getName());
           inclusion.setConceptActive(concept.isActive());
@@ -1488,7 +1488,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         ConceptList conceptList =
             refsetService.getTerminologyHandler(refset.getProject())
                 .resolveExpression(refsetCopy.computeDefinition(null, null),
-                    refsetCopy.getTerminology(), refsetCopy.getVersion(), null, authToken);
+                    refsetCopy.getTerminology(), refsetCopy.getVersion(), null);
 
         // do this to re-use the terminology id
         final Map<String, ConceptRefsetMember> conceptIdMap = new HashMap<>();
@@ -2260,7 +2260,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         final ConceptList concepts =
             refsetService.getTerminologyHandler(refset.getProject())
                 .resolveExpression(clause.getValue(), refset.getTerminology(),
-                    refset.getVersion(), null, authToken);
+                    refset.getVersion(), null);
         clauseToConceptsMap.put(clause.getValue(), concepts);
       }
 
@@ -3148,7 +3148,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       pfs.setStartIndex(0);
       pfs.setMaxResults(1);
       refsetService.getTerminologyHandler(project).countExpression(expression,
-          terminology, version, authToken);
+          terminology, version);
       return true;
 
     } catch (Exception e) {

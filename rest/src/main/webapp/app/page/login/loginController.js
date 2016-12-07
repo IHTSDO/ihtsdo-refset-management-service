@@ -2,16 +2,17 @@
 tsApp.controller('LoginCtrl', [
   '$scope',
   '$http',
+  '$window',
   '$location',
-  '$cookieStore',
+  '$cookies',
   'securityService',
   'gpService',
   'utilService',
   'tabService',
   'projectService',
   'appConfig',
-  function($scope, $http, $location, $cookieStore, securityService, gpService, utilService,
-    tabService, projectService, appConfig) {
+  function($scope, $http, $window, $location, $cookies, securityService, gpService,
+    utilService, tabService, projectService, appConfig) {
     console.debug('configure LoginCtrl');
 
     $scope.appConfig = appConfig;
@@ -38,8 +39,8 @@ tsApp.controller('LoginCtrl', [
       // then obtain the IHTSDO cookies and send those in as the password
       // INSTEAD
       // of the user-typed password.
-      console.debug('xxxlocation=', $location.path());
-      console.debug('xxxcookies=', $cookieStore);
+      console.debug('xxxlocation=', $location.url(), $window.location.href);
+      console.debug('xxxcookies=', $cookies.getAll());
 
       // login
       gpService.increment();

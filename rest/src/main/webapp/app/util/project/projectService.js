@@ -96,13 +96,16 @@ tsApp
         };
 
         // test handler url
-        this.testHandlerUrl = function(key, url) {
-          console.debug('testHandlerUrl', key, url);
+        this.testHandlerUrl = function(key, url, terminology, version) {
+          console.debug('testHandlerUrl', key, url, terminology, version);
           var deferred = $q.defer();
 
           // Get projects
           gpService.increment();
-          $http.get(projectUrl + 'test?key=' + key + '&url=' + encodeURIComponent(url)).then(
+          $http.get(
+            projectUrl + 'test?key=' + key + '&url=' + encodeURIComponent(url)
+              + (terminology ? '&terminology=' + terminology : '')
+              + (version ? '&version =' + version : '')).then(
           // success
           function(response) {
             console.debug('  test = ', response.data);
@@ -665,6 +668,30 @@ tsApp
             deferred.reject(response.data);
           });
           return deferred.promise;
+        };
+
+        // Dynamically load terminology handler
+        this.loadTerminologyHandler = function(project) {
+          if (type === undefined)
+            type = 'text/javascript';
+          if (url) {
+            var script = document.querySelector("script[src*='" + url + "']");
+            if (!script) {
+              var heads = document.getElementsByTagName("head");
+              if (heads && heads.length) {
+                var head = heads[0];
+                if (head) {
+                  script = document.createElement('script');
+                  script.setAttribute('src', url);
+                  script.setAttribute('type', type);
+                  if (charset)
+                    script.setAttribute('charset', charset);
+                  head.appendChild(script);
+                }
+              }
+            }
+            return script;
+          }
         };
         // end
       } ]);

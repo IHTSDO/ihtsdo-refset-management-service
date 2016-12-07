@@ -436,11 +436,11 @@ tsApp.service('securityService', [
   '$http',
   '$location',
   '$q',
-  '$cookieStore',
+  '$cookies',
   'utilService',
   'gpService',
   'appConfig',
-  function($http, $location, $q, $cookieStore, utilService, gpService, appConfig) {
+  function($http, $location, $q, $cookies, utilService, gpService, appConfig) {
     console.debug('configure securityService');
 
     // Declare the user
@@ -466,8 +466,8 @@ tsApp.service('securityService', [
       if (!$http.defaults.headers.common.Authorization) {
         console.debug('no header');
         // Retrieve cookie
-        if ($cookieStore.get('user')) {
-          var cookieUser = JSON.parse($cookieStore.get('user'));
+        if ($cookies.get('user')) {
+          var cookieUser = JSON.parse($cookies.get('user'));
           // If there is a user cookie, load it
           if (cookieUser) {
             this.setUser(cookieUser);
@@ -493,7 +493,7 @@ tsApp.service('securityService', [
       user.userPreferences = data.userPreferences;
 
       // Whenver set user is called, we should save a cookie
-      $cookieStore.put('user', JSON.stringify(user));
+      $cookies.put('user', JSON.stringify(user));
 
     };
 
@@ -506,7 +506,7 @@ tsApp.service('securityService', [
       user.userPreferences = {};
 
       // Whenever set user is called, we should save a cookie
-      $cookieStore.put('user', JSON.stringify(user));
+      $cookies.put('user', JSON.stringify(user));
 
     };
 
@@ -518,7 +518,7 @@ tsApp.service('securityService', [
       user.password = null;
       user.applicationRole = null;
       user.userPreferences = null;
-      $cookieStore.remove('user');
+      $cookies.remove('user');
     };
 
     var httpClearUser = this.clearUser;
@@ -742,7 +742,7 @@ tsApp.service('securityService', [
       }
 
       // Whenever we update user preferences, we need to update the cookie
-      $cookieStore.put('user', JSON.stringify(user));
+      $cookies.put('user', JSON.stringify(user));
 
       var deferred = $q.defer();
 

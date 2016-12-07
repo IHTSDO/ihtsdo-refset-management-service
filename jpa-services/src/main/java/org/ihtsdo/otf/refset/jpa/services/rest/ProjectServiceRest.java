@@ -319,9 +319,12 @@ public interface ProjectServiceRest {
    *
    * @param key the key
    * @param url the url
+   * @param terminology the terminology
+   * @param version the version
    * @param authToken the auth token
    * @return the boolean
    * @throws Exception the exception
    */
-  public Boolean testHandlerUrl(String key, String url, String authToken) throws Exception;
+  public Boolean testHandlerUrl(String key, String url, String terminology,
+    String version, String authToken) throws Exception;
 }

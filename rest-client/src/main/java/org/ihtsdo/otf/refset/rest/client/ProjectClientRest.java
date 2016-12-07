@@ -741,15 +741,18 @@ public class ProjectClientRest extends RootClientRest
   }
 
   @Override
-  public Boolean testHandlerUrl(String key, String url, String authToken)
-    throws Exception {
+  public Boolean testHandlerUrl(String key, String url, String authToken,
+    String terminology, String version) throws Exception {
     Logger.getLogger(getClass()).debug("Refset Client - test handler URL ");
     validateNotEmpty(key, "key");
     validateNotEmpty(url, "url");
+
     Client client = ClientBuilder.newClient();
-    WebTarget target = client
-        .target(config.getProperty("base.url") + "/test?key=" + key + "&url="
-            + URLEncoder.encode(url, "UTF-8").replaceAll("\\+", "%20"));
+    WebTarget target =
+        client.target(config.getProperty("base.url") + "/test?key=" + key
+            + "&url=" + URLEncoder.encode(url, "UTF-8").replaceAll("\\+", "%20")
+            + (terminology != null ? "&terminology=" + terminology : "")
+            + (version != null ? "&version=" + version : ""));
 
     Response response = target.request(MediaType.APPLICATION_XML)
         .header("Authorization", authToken).get();
