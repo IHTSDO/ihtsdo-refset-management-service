@@ -1185,7 +1185,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
     }
     ConceptList resolvedFromExpression = null;
     try {
-      Project project = this.getProject(refset.getProject().getId());
+      final Project project = this.getProject(refset.getProject().getId());
       resolvedFromExpression = getTerminologyHandler(project).resolveExpression(
           definition, refset.getTerminology(), refset.getVersion(), null);
 
