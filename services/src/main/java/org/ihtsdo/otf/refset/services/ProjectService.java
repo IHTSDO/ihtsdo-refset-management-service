@@ -135,8 +135,11 @@ public interface ProjectService extends RootService {
    *
    * @param key the key
    * @param url the url
+   * @param terminology the terminology
+   * @param version the version
    * @return true, if successful
    * @throws Exception the exception
    */
-  public boolean testHandlerUrl(String key, String url) throws Exception;
+  public boolean testHandlerUrl(String key, String url, String terminology,
+    String version) throws Exception;
 }

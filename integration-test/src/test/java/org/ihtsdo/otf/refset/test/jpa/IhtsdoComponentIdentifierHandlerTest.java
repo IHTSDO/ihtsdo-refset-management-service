@@ -11,7 +11,7 @@ import org.ihtsdo.otf.refset.jpa.ProjectJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
 import org.ihtsdo.otf.refset.jpa.services.ProjectServiceJpa;
-import org.ihtsdo.otf.refset.jpa.services.handlers.DefaultTerminologyHandler;
+import org.ihtsdo.otf.refset.jpa.services.handlers.IhtsdoComponentIdentifierServiceHandler;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.Description;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
@@ -26,8 +26,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
- * Some initial testing for {@link DefaultTerminologyHandler}. Assumes stock dev
- * load.
+ * Some initial testing for {@link IhtsdoComponentIdentifierServiceHandler}. Assumes
+ * stock dev load.
  */
 public class IhtsdoComponentIdentifierHandlerTest extends JpaSupport {
 
@@ -71,37 +71,31 @@ public class IhtsdoComponentIdentifierHandlerTest extends JpaSupport {
     concept.setTranslation(translation);
     Description description = new DescriptionJpa();
     description.setConcept(concept);
-    String terminologyId =
-        service.getIdentifierAssignmentHandler("DEFAULT").getTerminologyId(
-            concept);
+    String terminologyId = service.getIdentifierAssignmentHandler("DEFAULT")
+        .getTerminologyId(concept);
     Logger.getLogger(getClass()).info("  concept = " + terminologyId);
 
-    terminologyId =
-        service.getIdentifierAssignmentHandler("DEFAULT").getTerminologyId(
-            description);
+    terminologyId = service.getIdentifierAssignmentHandler("DEFAULT")
+        .getTerminologyId(description);
     Logger.getLogger(getClass()).info("  description = " + terminologyId);
 
-    terminologyId =
-        service.getIdentifierAssignmentHandler("DEFAULT").getTerminologyId(
-            refset);
+    terminologyId = service.getIdentifierAssignmentHandler("DEFAULT")
+        .getTerminologyId(refset);
     Logger.getLogger(getClass()).info("  refset = " + terminologyId);
 
-    terminologyId =
-        service.getIdentifierAssignmentHandler("DEFAULT").getTerminologyId(
-            translation);
+    terminologyId = service.getIdentifierAssignmentHandler("DEFAULT")
+        .getTerminologyId(translation);
     Logger.getLogger(getClass()).info("  translation = " + terminologyId);
 
-    terminologyId =
-        service.getIdentifierAssignmentHandler("DEFAULT").getTerminologyId(
-            new ConceptRefsetMemberJpa());
-    Logger.getLogger(getClass()).info(
-        "  concept refset member = " + terminologyId);
+    terminologyId = service.getIdentifierAssignmentHandler("DEFAULT")
+        .getTerminologyId(new ConceptRefsetMemberJpa());
+    Logger.getLogger(getClass())
+        .info("  concept refset member = " + terminologyId);
 
-    terminologyId =
-        service.getIdentifierAssignmentHandler("DEFAULT").getTerminologyId(
-            new LanguageRefsetMemberJpa());
-    Logger.getLogger(getClass()).info(
-        "  language refset member = " + terminologyId);
+    terminologyId = service.getIdentifierAssignmentHandler("DEFAULT")
+        .getTerminologyId(new LanguageRefsetMemberJpa());
+    Logger.getLogger(getClass())
+        .info("  language refset member = " + terminologyId);
 
     service.close();
   }

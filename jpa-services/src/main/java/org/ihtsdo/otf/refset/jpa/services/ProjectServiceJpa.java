@@ -318,15 +318,26 @@ public class ProjectServiceJpa extends RootServiceJpa
     return list;
   }
 
+  /**
+   * Test handler url.
+   *
+   * @param key the key
+   * @param url the url
+   * @param terminology the terminology
+   * @param version the version
+   * @return true, if successful
+   * @throws Exception the exception
+   */
   @Override
-  public boolean testHandlerUrl(String key, String url) throws Exception {
+  public boolean testHandlerUrl(String key, String url, String terminology,
+    String version) throws Exception {
     if (!terminologyHandlers.containsKey(key)) {
       throw new LocalException(
           "No terminology handler exists for the specified key: " + key);
     }
     final TerminologyHandler handler = terminologyHandlers.get(key).copy();
     handler.setUrl(url);
-    handler.test();
+    handler.test(terminology, version);
     return true;
   }
 

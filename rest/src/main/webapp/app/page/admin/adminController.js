@@ -567,10 +567,6 @@ tsApp
           $scope.clause = {
             value : null
           };
-          $scope.metadata = {
-            terminologies : [],
-            versions : {}
-          };
           $scope.terminologies = [];
           $scope.version = null;
           $scope.validationChecks = validationChecks;
@@ -624,6 +620,9 @@ tsApp
             // Success
             function(data) {
               $scope.urlTestSuccess = true;
+              // Clear the terminology setting because a new URL means new
+              // terminology choices
+              $scope.project.terminology = null;
               $scope.getTerminologyEditions();
               // splash glass pane for 1 second
               gpService.increment();
@@ -781,10 +780,6 @@ tsApp
           $scope.clause = {
             value : null
           };
-          $scope.metadata = {
-            terminologies : [],
-            versions : {}
-          };
           $scope.terminologies = [];
           $scope.version = null;
           $scope.validationChecks = validationChecks;
@@ -841,6 +836,8 @@ tsApp
             // Success
             function(data) {
               $scope.urlTestSuccess = true;
+              // Clear the terminology setting
+              $scope.project.terminology = null;
               $scope.getTerminologyEditions();
             },
             // fail
