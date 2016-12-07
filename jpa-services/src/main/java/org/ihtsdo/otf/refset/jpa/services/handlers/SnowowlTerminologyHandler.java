@@ -128,7 +128,7 @@ public class SnowowlTerminologyHandler implements TerminologyHandler {
 
   /* see superclass */
   @Override
-  public List<Terminology> getTerminologyEditions() throws Exception {
+  public List<Terminology> getTerminologyEditions(String authToken) throws Exception {
     List<Terminology> result = new ArrayList<>();
     Terminology t = new TerminologyJpa();
     t.setTerminology("SNOMEDCT");
@@ -138,7 +138,7 @@ public class SnowowlTerminologyHandler implements TerminologyHandler {
 
   /* see superclass */
   @Override
-  public List<Terminology> getTerminologyVersions(String edition)
+  public List<Terminology> getTerminologyVersions(String edition, String authToken)
     throws Exception {
     final List<Terminology> list = new ArrayList<Terminology>();
     final Terminology main = new TerminologyJpa();
@@ -151,7 +151,7 @@ public class SnowowlTerminologyHandler implements TerminologyHandler {
   /* see superclass */
   @Override
   public ConceptList getReplacementConcepts(String conceptId,
-    String terminology, String version) throws Exception {
+    String terminology, String version, String authToken) throws Exception {
     Logger.getLogger(getClass()).info(
         "  get potential current concepts for retired concept - " + conceptId);
     // Make a webservice call to SnowOwl to get concept
@@ -234,7 +234,7 @@ public class SnowowlTerminologyHandler implements TerminologyHandler {
     // inactivation
     // probably need a better placeholder for this, but for now - good enough
     ConceptList list = this.getConcepts(new ArrayList<>(reasonMap.keySet()),
-        terminology, version);
+        terminology, version, authToken);
     for (final Concept concept : list.getObjects()) {
       concept.setDefinitionStatusId(reasonMap.get(concept.getTerminologyId()));
     }
@@ -244,7 +244,7 @@ public class SnowowlTerminologyHandler implements TerminologyHandler {
   /* see superclass */
   @Override
   public ConceptList resolveExpression(String expr, String terminology,
-    String version, PfsParameter pfs) throws Exception {
+    String version, PfsParameter pfs, String authToken) throws Exception {
     Logger.getLogger(getClass()).info("  resolve expression - " + terminology
         + ", " + version + ", " + expr + ", " + pfs);
     // Make a webservice call to SnowOwl to get concept
@@ -411,7 +411,7 @@ public class SnowowlTerminologyHandler implements TerminologyHandler {
 
   /* see superclass */
   @Override
-  public int countExpression(String expr, String terminology, String version)
+  public int countExpression(String expr, String terminology, String version, String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
         "  expression count - " + terminology + ", " + version + ", " + expr);
@@ -450,7 +450,7 @@ public class SnowowlTerminologyHandler implements TerminologyHandler {
   /* see superclass */
   @Override
   public Concept getFullConcept(String terminologyId, String terminology,
-    String version) throws Exception {
+    String version, String authToken) throws Exception {
     // Make a webservice call to SnowOwl to get concept
     final Client client = ClientBuilder.newClient();
     final WebTarget target = client
@@ -662,7 +662,7 @@ public class SnowowlTerminologyHandler implements TerminologyHandler {
   /* see superclass */
   @Override
   public Concept getConcept(String terminologyId, String terminology,
-    String version) throws Exception {
+    String version, String authToken) throws Exception {
     // if terminologyId is too short ,term server fails
     if (terminologyId == null) {
       return null;
@@ -766,7 +766,7 @@ public class SnowowlTerminologyHandler implements TerminologyHandler {
   /* see superclass */
   @Override
   public ConceptList getConcepts(List<String> terminologyIds,
-    String terminology, String version) throws Exception {
+    String terminology, String version, String authToken) throws Exception {
 
     final StringBuilder query = new StringBuilder();
     for (final String terminologyId : terminologyIds) {
@@ -779,7 +779,7 @@ public class SnowowlTerminologyHandler implements TerminologyHandler {
       }
     }
 
-    return resolveExpression(query.toString(), terminology, version, null);
+    return resolveExpression(query.toString(), terminology, version, null, authToken);
   }
 
   /* see superclass */
@@ -791,7 +791,7 @@ public class SnowowlTerminologyHandler implements TerminologyHandler {
   /* see superclass */
   @Override
   public ConceptList findConceptsForQuery(String query, String terminology,
-    String version, PfsParameter pfs) throws Exception {
+    String version, PfsParameter pfs, String authToken) throws Exception {
     final ConceptList conceptList = new ConceptListJpa();
     // Make a webservice call to SnowOwl
     final Client client = ClientBuilder.newClient();
@@ -913,11 +913,11 @@ public class SnowowlTerminologyHandler implements TerminologyHandler {
   /* see superclass */
   @Override
   public ConceptList findRefsetsForQuery(String query, String terminology,
-    String version, PfsParameter pfs) throws Exception {
+    String version, PfsParameter pfs, String authToken) throws Exception {
     if (query != null && !query.isEmpty()) {
       List<Concept> list = resolveExpression(
           "<< 900000000000496009 | Simple map type reference set  |",
-          terminology, version, pfs).getObjects();
+          terminology, version, pfs, authToken).getObjects();
 
       final RootServiceJpa service = new RootServiceJpa() {
         // n/a
@@ -933,23 +933,23 @@ public class SnowowlTerminologyHandler implements TerminologyHandler {
     } else {
       return resolveExpression(
           "<< 900000000000496009 | Simple map type reference set  |",
-          terminology, version, pfs);
+          terminology, version, pfs, authToken);
     }
   }
 
   /* see superclass */
   @Override
-  public List<Concept> getModules(String terminology, String version)
+  public List<Concept> getModules(String terminology, String version, String authToken)
     throws Exception {
     return resolveExpression(
         "< 900000000000443000 | Module (core metadata concept) |", terminology,
-        version, null).getObjects();
+        version, null, authToken).getObjects();
   }
 
   /* see superclass */
   @Override
   public ConceptList getConceptParents(String terminologyId, String terminology,
-    String version) throws Exception {
+    String version, String authToken) throws Exception {
     final ConceptList conceptList = new ConceptListJpa();
     // Make a webservice call to SnowOwl
     final Client client = ClientBuilder.newClient();
@@ -1009,7 +1009,7 @@ public class SnowowlTerminologyHandler implements TerminologyHandler {
   /* see superclass */
   @Override
   public ConceptList getConceptChildren(String terminologyId,
-    String terminology, String version) throws Exception {
+    String terminology, String version, String authToken) throws Exception {
     final ConceptList conceptList = new ConceptListJpa();
     // Make a webservice call to SnowOwl
     final Client client = ClientBuilder.newClient();
