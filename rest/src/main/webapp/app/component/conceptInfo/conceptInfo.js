@@ -510,7 +510,7 @@ tsApp.directive('conceptInfo', [
                   negated : false
                 };
                 refset.definitionClauses.push(clause);
-                refsetService.countExpression(value, refset.terminology, refset.version).then(
+                refsetService.countExpression(refset.projectId, value, refset.terminology, refset.version).then(
                 // Success - count expression
                 function(data) {
                   var count = data;
@@ -530,7 +530,7 @@ tsApp.directive('conceptInfo', [
               // if extensional and clause defined, call
               // addRefsetMembersForExpression
               else if (refset.type == 'EXTENSIONAL' && definitionClause) {
-                refsetService.countExpression(value, refset.terminology, refset.version).then(
+                refsetService.countExpression(refset.projectId, value, refset.terminology, refset.version).then(
                 // Success - count expression
                 function(data) {
                   var count = data;

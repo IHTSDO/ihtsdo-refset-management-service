@@ -245,6 +245,8 @@ public class SnowowlTerminologyHandler implements TerminologyHandler {
   @Override
   public ConceptList resolveExpression(String expr, String terminology,
     String version, PfsParameter pfs, String authToken) throws Exception {
+		// TODO resolve this date conversion 20150131 -> 2015-01-31
+	    version = "MAIN/2015-01-31";
     Logger.getLogger(getClass()).info("  resolve expression - " + terminology
         + ", " + version + ", " + expr + ", " + pfs);
     // Make a webservice call to SnowOwl to get concept
@@ -415,6 +417,8 @@ public class SnowowlTerminologyHandler implements TerminologyHandler {
     throws Exception {
     Logger.getLogger(getClass()).info(
         "  expression count - " + terminology + ", " + version + ", " + expr);
+	// TODO resolve this date conversion 20150131 -> 2015-01-31
+    version = "MAIN/2015-01-31";
     // Make a webservice call to SnowOwl to get concept
     final Client client = ClientBuilder.newClient();
 
@@ -451,10 +455,12 @@ public class SnowowlTerminologyHandler implements TerminologyHandler {
   @Override
   public Concept getFullConcept(String terminologyId, String terminology,
     String version, String authToken) throws Exception {
+	  // TODO resolve this date conversion 20150131 -> 2015-01-31
+	    version = "MAIN/2015-01-31";
     // Make a webservice call to SnowOwl to get concept
     final Client client = ClientBuilder.newClient();
     final WebTarget target = client
-        .target(url + "browser/" + version + "/concepts/" + terminologyId);
+        .target(url + "/browser/" + version + "/concepts/" + terminologyId);
     final Response response =
         target.request("*/*").header("Authorization", authHeader)
             .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6").get();
@@ -792,6 +798,8 @@ public class SnowowlTerminologyHandler implements TerminologyHandler {
   @Override
   public ConceptList findConceptsForQuery(String query, String terminology,
     String version, PfsParameter pfs, String authToken) throws Exception {
+		// TODO resolve this date conversion 20150131 -> 2015-01-31
+	    version = "MAIN/2015-01-31";
     final ConceptList conceptList = new ConceptListJpa();
     // Make a webservice call to SnowOwl
     final Client client = ClientBuilder.newClient();
@@ -951,10 +959,13 @@ public class SnowowlTerminologyHandler implements TerminologyHandler {
   public ConceptList getConceptParents(String terminologyId, String terminology,
     String version, String authToken) throws Exception {
     final ConceptList conceptList = new ConceptListJpa();
+    
+    // TODO resolve this date conversion 20150131 -> 2015-01-31
+    version = "MAIN/2015-01-31";
     // Make a webservice call to SnowOwl
     final Client client = ClientBuilder.newClient();
     final WebTarget target = client.target(
-        url + "browser/" + version + "/concepts/" + terminologyId + "/parents");
+        url + "/browser/" + version + "/concepts/" + terminologyId + "/parents");
     final Response response =
         target.request("*/*").header("Authorization", authHeader)
             .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6").get();
@@ -1010,10 +1021,12 @@ public class SnowowlTerminologyHandler implements TerminologyHandler {
   @Override
   public ConceptList getConceptChildren(String terminologyId,
     String terminology, String version, String authToken) throws Exception {
-    final ConceptList conceptList = new ConceptListJpa();
+	// TODO resolve this date conversion 20150131 -> 2015-01-31
+	    version = "MAIN/2015-01-31";
+	    final ConceptList conceptList = new ConceptListJpa();
     // Make a webservice call to SnowOwl
     final Client client = ClientBuilder.newClient();
-    final WebTarget target = client.target(url + "browser/" + version
+    final WebTarget target = client.target(url + "/browser/" + version
         + "/concepts/" + terminologyId + "/children?form=inferred");
     final Response response =
         target.request("*/*").header("Authorization", authHeader)
