@@ -32,7 +32,7 @@
         <td>
           <b>Terminology Handler</b>
         </td>
-        <td>
+        <td ng-if="action=='Add'">
           <select ng-model="handler" ng-change="selectHandler(handler)"
             ng-options="item.key for item in terminologyHandlers"></select>
           &nbsp;
@@ -40,18 +40,20 @@
             uib-tooltip="Choose the handler and URL before picking terminology and module."
             class="noul material-icons md-18">info</i>
         </td>
+        <td ng-if="action=='Edit'">{{project.terminologyHandlerKey}}</td>
       </tr>
       <tr>
         <td>
           <b>Handler URL</b>
         </td>
-        <td>
+        <td ng-if="action=='Add'">
           <input type="text" ng-model="project.terminologyHandlerUrl" size="40"
             ng-change="urlChanged()" />
           <span ng-disabled="!project.terminologyHandlerUrl"
             title="Test handler URL" ng-click="testHandlerUrl()"
             class="btn btn-xs btn-primary">Test</span>
         </td>
+        <td ng-if="action=='Edit'">{{project.terminologyHandlerUrl}}</td>
       </tr>
       <tr>
         <td>
