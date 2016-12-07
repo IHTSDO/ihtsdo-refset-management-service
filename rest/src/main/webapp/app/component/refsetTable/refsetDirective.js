@@ -62,7 +62,7 @@ tsApp
 
               // Page metadata
               $scope.memberTypes = [ 'Member', 'Exclusion', 'Inclusion', 'Active', 'Inactive' ];
-              $scope.refsetTypes = [ 'Refset', 'Local', 'Extensional', 'Intensional' ];
+              $scope.refsetTypes = [ 'Refset', 'Local', 'Extensional', 'Intensional', 'External' ];
               
               // Used for project admin to know what users are assigned to
               // something.
@@ -179,14 +179,21 @@ tsApp
                   } else if (value == 'Extensional' && 
                     ($scope.value == 'RELEASE' || $scope.value == 'PUBLISHED' || $scope.value == 'BETA')) {
                     pfs.queryRestriction = 'type:EXTENSIONAL';
+                  } else if (value == 'External' && 
+                    ($scope.value == 'RELEASE' || $scope.value == 'PUBLISHED' || $scope.value == 'BETA')) {
+                    pfs.queryRestriction = 'type:EXTERNAL';
                   } else if (value == 'Intensional' && $scope.value == 'ASSIGNED') {
                     pfs.queryRestriction = 'refsetType:INTENSIONAL';
                   } else if (value == 'Extensional' && $scope.value == 'ASSIGNED') {
                     pfs.queryRestriction = 'refsetType:EXTENSIONAL';
+                  } else if (value == 'External' && $scope.value == 'ASSIGNED') {
+                    pfs.queryRestriction = 'refsetType:EXTERNAL';
                   } else if (value == 'Intensional') {
                     pfs.queryRestriction = 'Intensional';
                   } else if (value == 'Extensional') {
                     pfs.queryRestriction = 'Extensional';
+                  } else if (value == 'External') {
+                    pfs.queryRestriction = 'External';
                   } else if (value == 'All') {
                     pfs.queryRestriction = '';
                   }

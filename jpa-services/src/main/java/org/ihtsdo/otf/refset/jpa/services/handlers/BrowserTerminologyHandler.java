@@ -84,7 +84,7 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
   /* see superclass */
   @Override
   public boolean test() throws Exception {
-    getTerminologyEditions();
+    getTerminologyEditions("");
     return true;
   }
 
@@ -106,7 +106,7 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
 
   /* see superclass */
   @Override
-  public List<Terminology> getTerminologyEditions() throws Exception {
+  public List<Terminology> getTerminologyEditions(String authToken) throws Exception {
     final Set<Terminology> set = new HashSet<>();
     // Make a webservice call
     final Client client = ClientBuilder.newClient();
@@ -147,7 +147,7 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
 
   /* see superclass */
   @Override
-  public List<Terminology> getTerminologyVersions(String edition)
+  public List<Terminology> getTerminologyVersions(String edition, String authToken)
     throws Exception {
     final List<Terminology> list = new ArrayList<Terminology>();
     // Make a webservice call
@@ -196,7 +196,7 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
   /* see superclass */
   @Override
   public ConceptList getReplacementConcepts(String conceptId,
-    String terminology, String version) throws Exception {
+    String terminology, String version, String authToken) throws Exception {
     Logger.getLogger(getClass()).debug(
         "  get potential current concepts for retired concept - " + conceptId);
 
@@ -258,7 +258,7 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
   /* see superclass */
   @Override
   public ConceptList resolveExpression(String expr, String terminology,
-    String version, PfsParameter pfs) throws Exception {
+    String version, PfsParameter pfs, String authToken) throws Exception {
     Logger.getLogger(getClass()).debug("  resolve expression - " + terminology
         + ", " + version + ", " + expr + ", " + pfs);
     final Client client = ClientBuilder.newClient();
@@ -519,7 +519,7 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
 
   /* see superclass - connected to Kai's server */
   @Override
-  public int countExpression(String expr, String terminology, String version)
+  public int countExpression(String expr, String terminology, String version, String authToken)
     throws Exception {
     Logger.getLogger(getClass()).debug(
         "  expression count - " + terminology + ", " + version + ", " + expr);
@@ -606,7 +606,7 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
   /* see superclass */
   @Override
   public Concept getFullConcept(String terminologyId, String terminology,
-    String version) throws Exception {
+    String version, String authToken) throws Exception {
 
     final Client client = ClientBuilder.newClient();
     final String targetUrl = url + "/snomed/" + terminology + "/v" + version
@@ -753,7 +753,7 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
   /* see superclass */
   @Override
   public Concept getConcept(String terminologyId, String terminology,
-    String version) throws Exception {
+    String version, String authToken) throws Exception {
     // if terminologyId is too short ,term server fails
     if (terminologyId == null) {
       return null;
@@ -808,7 +808,7 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
   /* see superclass */
   @Override
   public ConceptList getConcepts(List<String> terminologyIds,
-    String terminology, String version) throws Exception {
+    String terminology, String version, String authToken) throws Exception {
 
     final StringBuilder query = new StringBuilder();
     for (final String terminologyId : terminologyIds) {
@@ -821,7 +821,7 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
       }
     }
 
-    return resolveExpression(query.toString(), terminology, version, null);
+    return resolveExpression(query.toString(), terminology, version, null, authToken);
   }
 
   /* see superclass */
@@ -833,7 +833,7 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
   /* see superclass */
   @Override
   public ConceptList findConceptsForQuery(String query, String terminology,
-    String version, PfsParameter pfs) throws Exception {
+    String version, PfsParameter pfs, String authToken) throws Exception {
 
     final ConceptList conceptList = new ConceptListJpa();
     // Make a webservice call to browser api
@@ -868,7 +868,7 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
     final WebTarget target = client.target(targetUrl);
 
     if (isConceptId(query)) {
-      Concept idConcept = getConcept(query, terminology, version);
+      Concept idConcept = getConcept(query, terminology, version, authToken);
       conceptList.addObject(idConcept);
       return conceptList;
     }
@@ -939,11 +939,11 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
   /* see superclass */
   @Override
   public ConceptList findRefsetsForQuery(String query, String terminology,
-    String version, PfsParameter pfs) throws Exception {
+    String version, PfsParameter pfs, String authToken) throws Exception {
     if (query != null && !query.isEmpty()) {
       List<Concept> list = resolveExpression(
           "<< 900000000000496009 | Simple map type reference set  |",
-          terminology, version, pfs).getObjects();
+          terminology, version, pfs, authToken).getObjects();
 
       final RootServiceJpa service = new RootServiceJpa() {
         // n/a
@@ -959,23 +959,23 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
     } else {
       return resolveExpression(
           "< 900000000000496009 | Simple map type reference set  |",
-          terminology, version, pfs);
+          terminology, version, pfs, authToken);
     }
   }
 
   /* see superclass */
   @Override
-  public List<Concept> getModules(String terminology, String version)
+  public List<Concept> getModules(String terminology, String version, String authToken)
     throws Exception {
     return resolveExpression(
         "< 900000000000443000 | Module (core metadata concept) |", terminology,
-        version, null).getObjects();
+        version, null, authToken).getObjects();
   }
 
   /* see superclass */
   @Override
   public ConceptList getConceptParents(String terminologyId, String terminology,
-    String version) throws Exception {
+    String version, String authToken) throws Exception {
     final ConceptList conceptList = new ConceptListJpa();
 
     final Client client = ClientBuilder.newClient();
@@ -1023,7 +1023,7 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
   /* see superclass */
   @Override
   public ConceptList getConceptChildren(String terminologyId,
-    String terminology, String version) throws Exception {
+    String terminology, String version, String authToken) throws Exception {
     final ConceptList conceptList = new ConceptListJpa();
 
     final Client client = ClientBuilder.newClient();
