@@ -13,7 +13,7 @@
     <uib-accordion
       ng-show="user.applicationRole == 'ADMIN' || user.applicationRole == 'USER'">
 
-    <!-- A1 - Projects --> <uib-accordion-group> <uib-accordion-heading>
+    <!-- A1 - Projects --> <uib-accordion-group ng-show="user.applicationRole == 'ADMIN'"> <uib-accordion-heading>
     <h5>
       <span uib-tooltip="Add, edit, and remove projects">Projects</span>
     </h5>

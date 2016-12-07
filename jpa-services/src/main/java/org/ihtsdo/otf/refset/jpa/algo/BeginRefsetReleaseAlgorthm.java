@@ -75,7 +75,7 @@ public class BeginRefsetReleaseAlgorthm extends RefsetServiceJpa implements
     }
 
     // Check that refset id isn't "TMP"
-    if (refset.getTerminologyId().startsWith("TMP")) {
+    if (!refset.isLocalSet() && refset.getTerminologyId().startsWith("TMP")) {
       throw new LocalException("Refset should not be released "
           + "with a temporary id - " + refset.getTerminologyId());
     }
