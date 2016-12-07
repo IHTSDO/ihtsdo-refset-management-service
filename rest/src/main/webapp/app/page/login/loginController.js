@@ -3,17 +3,19 @@ tsApp.controller('LoginCtrl', [
   '$scope',
   '$http',
   '$location',
+  '$cookieStore',
   'securityService',
   'gpService',
   'utilService',
   'tabService',
-  'projectService', 'appConfig',
-  function($scope, $http, $location, securityService, gpService, utilService, tabService,
-    projectService, appConfig) {
+  'projectService',
+  'appConfig',
+  function($scope, $http, $location, $cookieStore, securityService, gpService, utilService,
+    tabService, projectService, appConfig) {
     console.debug('configure LoginCtrl');
 
     $scope.appConfig = appConfig;
-    
+
     // Clear user info
     securityService.clearUser();
     console.debug("user = ", securityService.getUser());
@@ -30,6 +32,14 @@ tsApp.controller('LoginCtrl', [
         alert('You must specify a password');
         return;
       }
+
+      // If this is the dev environment and we have a "local.ihtsdotools.org"
+      // URL,
+      // then obtain the IHTSDO cookies and send those in as the password
+      // INSTEAD
+      // of the user-typed password.
+      console.debug('xxxlocation=', $location.path());
+      console.debug('xxxcookies=', $cookieStore);
 
       // login
       gpService.increment();

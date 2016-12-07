@@ -115,7 +115,7 @@ public class SnowowlTerminologyHandler implements TerminologyHandler {
     if (p.containsKey("authHeader")) {
       authHeader = p.getProperty("authHeader");
     } else {
-      throw new LocalException("Required property url not specified.");
+      // If no auth header, we know we'll be sending "auth tokens" as cookies with each call.
     }
 
   }
