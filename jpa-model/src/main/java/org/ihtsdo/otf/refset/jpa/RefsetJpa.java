@@ -916,7 +916,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   public String toString() {
     return "RefsetJpa [name=" + name + ", description=" + description
         + ", isPublic=" + isPublic + ", stagingType=" + stagingType + ", type="
-        + type + ", definitionClauses=" + definitionClauses + ", externalUrl="
+        + type + ", definitionClauses=" + definitionClauses + ", extUrl="
         + externalUrl + ", forTranslation=" + forTranslation
         + ", workflowStatus=" + workflowStatus + ", workflowPath="
         + workflowPath + ", namespace=" + namespace + ", domain=" + domain

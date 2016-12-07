@@ -45,14 +45,6 @@
             title="Add local set" class="btn btn-xs btn-primary">Add
             Local Set</button></span>
 
-      <!-- Admins shouldn't add projects -->
-      <h4 ng-show="value == 'AVAILABLE' && refsets.totalCount == 0">
-        <span style="float: right;">
-          <button ng-click="openAddRefsetModal(false); $event.stopPropagation()"
-            title="Add refset" class="btn btn-xs btn-primary">Add
-            Refset</button>
-        </span>
-      </h4>
     </div>
 
     <!-- Basic Refset info -->
@@ -119,14 +111,8 @@
               <span ng-bind="getSortIndicator('refset','workflowStatus')"></span>
             </span></th>
 
-          <!-- <th class="col-md-1 col-xs-1"><span
-              ng-click="setSortField('refset','type')">
-              Type
-              <span ng-bind="getSortIndicator('refset','type')"></span>
-            </span></th> -->
-
-		  <th class="col-md-2 col-xs-2"><select
-                title="Filter by refset type" style="width: 80px;"
+		  <th class="col-md-1 col-xs-1"><select
+                title="Filter by type" style="width: 80px;"
                 ng-model="paging['refset'].typeFilter"
                 ng-options="item for item in refsetTypes"
                 ng-change="getRefsets()">
@@ -165,7 +151,10 @@
 
           <!-- PUBLISHED/BETA -->
           <td ng-show="isDirectory()">
-            <span style="word-break: break-word;"> {{refset.moduleId}}</span>
+            <span style="word-break: break-word;" ng-show="refset.moduleId != 0"> {{refset.moduleId}}</span>
+            <span style="word-break: break-word;" ng-show="refset.moduleId == 0" class="md-grey">
+              <small>no module id</small>
+            </span>
             <span flag-icon obj="refset"></span>
             <!-- Mobile friendly line-break -->
             <br class="visible-xs-inline" />
@@ -183,7 +172,10 @@
 
           <!-- not PUBLISHED/BETA -->
           <td ng-show="!isDirectory()">
-            <span style="word-break: break-word;"> {{refset.moduleId}}</span>
+            <span style="word-break: break-word;" ng-show="refset.moduleId != 0" > {{refset.moduleId}}</span>
+            <span style="word-break: break-word;" ng-show="refset.moduleId == 0" class="md-grey">
+              <small>no module id</small>
+            </span>
             <span flag-icon obj="refset"></span>
             <br />
             <span>{{getTerminologyName(refset.terminology)}}
@@ -455,7 +447,7 @@
             </td>
             <td>{{selected.refset.terminologyId}}</td>
           </tr>
-          <tr>
+          <tr ng-show="selected.refset.moduleId != 0" >
             <td>
               <b>Module Id</b>
             </td>
@@ -508,7 +500,7 @@
             </td>
           </tr>
           <tr ng-show="value == 'PUBLISHED'">
-            <td>Url</td>
+            <td><b>Url</b></td>
             <td>
               <a href="{{link}}" target="_blank">{{link}}</a>
             </td>

@@ -11,6 +11,7 @@ import org.ihtsdo.otf.refset.helpers.Configurable;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.rf2.Concept;
 
+// TODO: Auto-generated Javadoc
 /**
  * Generically represents a handler for accessing terminology objects.
  */
@@ -45,19 +46,21 @@ public interface TerminologyHandler extends Configurable {
   /**
    * Returns the terminology editions.
    *
+   * @param authToken the auth token
    * @return the terminology editions
    * @throws Exception the exception
    */
-  public List<Terminology> getTerminologyEditions() throws Exception;
+  public List<Terminology> getTerminologyEditions(String authToken) throws Exception;
 
   /**
    * Returns the terminology versions.
    *
    * @param edition the edition
+   * @param authToken the auth token
    * @return the terminology versions
    * @throws Exception the exception
    */
-  public List<Terminology> getTerminologyVersions(String edition)
+  public List<Terminology> getTerminologyVersions(String edition, String authToken)
     throws Exception;
 
   /**
@@ -67,11 +70,12 @@ public interface TerminologyHandler extends Configurable {
    * @param terminolgy the terminolgy
    * @param version the version
    * @param pfs the pfs
+   * @param authToken the auth token
    * @return the concept list
    * @throws Exception the exception
    */
   public ConceptList resolveExpression(String expr, String terminolgy,
-    String version, PfsParameter pfs) throws Exception;
+    String version, PfsParameter pfs, String authToken) throws Exception;
 
   /**
    * Returns the concept with descriptions and relationships. Inactive
@@ -81,11 +85,12 @@ public interface TerminologyHandler extends Configurable {
    * @param terminologyId the terminology id
    * @param terminology the terminology
    * @param version the version
+   * @param authToken the auth token
    * @return the concept with descriptions
    * @throws Exception the exception
    */
   public Concept getFullConcept(String terminologyId, String terminology,
-    String version) throws Exception;
+    String version, String authToken) throws Exception;
 
   /**
    * Returns the concept with terminologyId and name.
@@ -93,11 +98,12 @@ public interface TerminologyHandler extends Configurable {
    * @param terminologyId the terminology id
    * @param terminology the terminology
    * @param version the version
+   * @param authToken the auth token
    * @return the concept
    * @throws Exception the exception
    */
   public Concept getConcept(String terminologyId, String terminology,
-    String version) throws Exception;
+    String version, String authToken) throws Exception;
 
   /**
    * Returns the concepts.
@@ -105,11 +111,12 @@ public interface TerminologyHandler extends Configurable {
    * @param terminologyIds the terminology ids
    * @param terminology the terminology
    * @param version the version
+   * @param authToken the auth token
    * @return the concepts
    * @throws Exception the exception
    */
   public ConceptList getConcepts(List<String> terminologyIds,
-    String terminology, String version) throws Exception;
+    String terminology, String version, String authToken) throws Exception;
 
   /**
    * Find concepts for query.
@@ -118,11 +125,12 @@ public interface TerminologyHandler extends Configurable {
    * @param terminology the terminology
    * @param version the version
    * @param pfs the pfs
+   * @param authToken the auth token
    * @return the concept list
    * @throws Exception the exception
    */
   public ConceptList findConceptsForQuery(String query, String terminology,
-    String version, PfsParameter pfs) throws Exception;
+    String version, PfsParameter pfs, String authToken) throws Exception;
 
   /**
    * Find refsets for query.
@@ -131,21 +139,23 @@ public interface TerminologyHandler extends Configurable {
    * @param terminology the terminology
    * @param version the version
    * @param pfs the pfs
+   * @param authToken the auth token
    * @return the concept list
    * @throws Exception the exception
    */
   public ConceptList findRefsetsForQuery(String query, String terminology,
-    String version, PfsParameter pfs) throws Exception;
+    String version, PfsParameter pfs, String authToken) throws Exception;
 
   /**
    * Get modules.
    *
    * @param terminology the terminology
    * @param version the version
+   * @param authToken the auth token
    * @return the concept list
    * @throws Exception the exception
    */
-  public List<Concept> getModules(String terminology, String version)
+  public List<Concept> getModules(String terminology, String version, String authToken)
     throws Exception;
 
   /**
@@ -154,11 +164,12 @@ public interface TerminologyHandler extends Configurable {
    * @param terminologyId the terminology id
    * @param terminology the terminology
    * @param version the version
+   * @param authToken the auth token
    * @return the concept parents
    * @throws Exception the exception
    */
   public ConceptList getConceptParents(String terminologyId, String terminology,
-    String version) throws Exception;
+    String version, String authToken) throws Exception;
 
   /**
    * Returns the concept children.
@@ -166,11 +177,12 @@ public interface TerminologyHandler extends Configurable {
    * @param terminologyId the terminology id
    * @param terminology the terminology
    * @param version the version
+   * @param authToken the auth token
    * @return the concept children
    * @throws Exception the exception
    */
   public ConceptList getConceptChildren(String terminologyId,
-    String terminology, String version) throws Exception;
+    String terminology, String version, String authToken) throws Exception;
 
   /**
    * Returns the potential current concepts for retired concept.
@@ -178,11 +190,12 @@ public interface TerminologyHandler extends Configurable {
    * @param conceptId the concept id
    * @param terminology the terminology
    * @param version the version
+   * @param authToken the auth token
    * @return the potential current concepts for retired concept
    * @throws Exception the exception
    */
   public ConceptList getReplacementConcepts(String conceptId,
-    String terminology, String version) throws Exception;
+    String terminology, String version, String authToken) throws Exception;
 
   /**
    * Count expression.
@@ -190,10 +203,11 @@ public interface TerminologyHandler extends Configurable {
    * @param expr the expr
    * @param terminology the terminology
    * @param version the version
+   * @param authToken the auth token
    * @return the int
    * @throws Exception the exception
    */
-  public int countExpression(String expr, String terminology, String version)
+  public int countExpression(String expr, String terminology, String version, String authToken)
     throws Exception;
 
   /**

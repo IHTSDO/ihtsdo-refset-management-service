@@ -70,7 +70,7 @@ public class DefaultTerminologyHandlerTest extends JpaSupport {
     ProjectService service = new ProjectServiceJpa();
 
     Concept concept = service.getTerminologyHandler(project)
-        .getConcept("126880001", "en-edition", "20150131");
+        .getConcept("126880001", "en-edition", "20150131", "");
     assertTrue(concept.getName().startsWith("Neoplasm of kidney"));
     service.close();
   }
@@ -89,7 +89,7 @@ public class DefaultTerminologyHandlerTest extends JpaSupport {
     pfs.setStartIndex(5);
     ConceptList conceptList = service.getTerminologyHandler(project)
         .resolveExpression("<<284009009|Route of administration|", "en-edition",
-            "20150131", pfs);
+            "20150131", pfs, "");
     assertEquals(143, conceptList.getTotalCount());
     service.close();
   }
@@ -105,7 +105,7 @@ public class DefaultTerminologyHandlerTest extends JpaSupport {
     ProjectService service = new ProjectServiceJpa();
 
     Concept concept = service.getTerminologyHandler(project)
-        .getFullConcept("126880001", "en-edition", "20150131");
+        .getFullConcept("126880001", "en-edition", "20150131", "");
     assertTrue(concept.getName().startsWith("Neoplasm of kidney"));
     assertEquals(6, concept.getDescriptions().size());
     assertEquals(2, concept.getRelationships().size());
@@ -124,7 +124,7 @@ public class DefaultTerminologyHandlerTest extends JpaSupport {
     ProjectService service = new ProjectServiceJpa();
 
     ConceptList concepts = service.getTerminologyHandler(project)
-        .getReplacementConcepts("150606004", "en-edition", "20150131");
+        .getReplacementConcepts("150606004", "en-edition", "20150131", "");
     assertEquals(2, concepts.getObjects().size());
     service.close();
   }
@@ -140,7 +140,7 @@ public class DefaultTerminologyHandlerTest extends JpaSupport {
     ProjectService service = new ProjectServiceJpa();
 
     ConceptList concepts = service.getTerminologyHandler(project)
-        .getConceptParents("108369006", "en-edition", "20150131");
+        .getConceptParents("108369006", "en-edition", "20150131", "");
     assertEquals(1, concepts.getObjects().size());
     assertEquals(concepts.getObjects().get(0).getName(),
         "Neoplasm and/or hamartoma (morphologic abnormality)");
@@ -159,7 +159,7 @@ public class DefaultTerminologyHandlerTest extends JpaSupport {
     ProjectService service = new ProjectServiceJpa();
 
     ConceptList concepts = service.getTerminologyHandler(project)
-        .getConceptChildren("108369006", "en-edition", "20150131");
+        .getConceptChildren("108369006", "en-edition", "20150131", "");
     assertEquals(40, concepts.getObjects().size());
 
     service.close();
@@ -179,13 +179,13 @@ public class DefaultTerminologyHandlerTest extends JpaSupport {
     pfs.setStartIndex(0);
     pfs.setMaxResults(50);
     ConceptList concepts = service.getTerminologyHandler(project)
-        .findConceptsForQuery("tumor", "en-edition", "20150131", pfs);
+        .findConceptsForQuery("tumor", "en-edition", "20150131", pfs, "");
     assertEquals(50, concepts.getObjects().size());
     assertEquals(8889, concepts.getTotalCount());
 
     // check someing with no results
     concepts = service.getTerminologyHandler(project)
-        .findConceptsForQuery("tmuor", "en-edition", "20150131", pfs);
+        .findConceptsForQuery("tmuor", "en-edition", "20150131", pfs, "");
     assertEquals(0, concepts.getObjects().size());
     service.close();
   }
@@ -203,18 +203,18 @@ public class DefaultTerminologyHandlerTest extends JpaSupport {
     // Bogus ids, term server produces failures
     try {
       Concept c = service.getTerminologyHandler(project).getConcept("12345",
-          "abc", "20150131");
+          "abc", "20150131", "");
       assertNull(c);
     } catch (Exception e) {
       fail("unexpected exception");
     }
 
     ConceptList list = service.getTerminologyHandler(project)
-        .getConceptChildren("12345", "abc", "20150131");
+        .getConceptChildren("12345", "abc", "20150131", "");
     assertEquals(0, list.getCount());
 
     list = service.getTerminologyHandler(project).getConceptParents("12345",
-        "abc", "20150131");
+        "abc", "20150131", "");
     assertEquals(0, list.getCount());
 
     try {
@@ -222,7 +222,7 @@ public class DefaultTerminologyHandlerTest extends JpaSupport {
       ids.add("1234");
       ids.add("5679");
       list = service.getTerminologyHandler(project).getConcepts(ids, "abc",
-          "20150131");
+          "20150131", "");
       fail("Exception expected.");
     } catch (Exception e) {
       // n/a, expected result
@@ -242,7 +242,7 @@ public class DefaultTerminologyHandlerTest extends JpaSupport {
     ProjectService service = new ProjectServiceJpa();
     try {
       Concept c =
-          service.getTerminologyHandler(project).getConcept(null, "abc", "def");
+          service.getTerminologyHandler(project).getConcept(null, "abc", "def", "");
       assertNull(c);
     } catch (Exception e) {
       fail("Unexpected failure");
@@ -250,14 +250,14 @@ public class DefaultTerminologyHandlerTest extends JpaSupport {
 
     try {
       Concept c =
-          service.getTerminologyHandler(project).getConcept("abc", null, "def");
+          service.getTerminologyHandler(project).getConcept("abc", null, "def", "");
       assertNull(c);
     } catch (Exception e) {
       fail("Unexpected failure");
     }
 
     try {
-      service.getTerminologyHandler(project).getConcept("abcabc", "abc", null);
+      service.getTerminologyHandler(project).getConcept("abcabc", "abc", null, "");
     } catch (Exception e) {
       fail("Exception expected.");
     }
