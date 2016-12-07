@@ -1219,7 +1219,7 @@ tsApp
                     }
                   }
                   refsetService
-                    .isExpressionValid($scope.project.id, clause.value, refset.terminology,
+                    .isExpressionValid($scope.refset.projectId, clause.value, refset.terminology,
                       refset.version)
                     .then(
                       // Success - add refset
@@ -1231,8 +1231,8 @@ tsApp
                           $scope.warnings = {};
                           $scope.warningFlag = false;
                           refsetService
-                            .countExpression($scope.project.id, clause.value, refset.terminology,
-                              refset.version)
+                            .countExpression($scope.refset.projectId, clause.value,
+                              refset.terminology, refset.version)
                             .then(
                               // Success - count expression
                               function(data) {
@@ -1631,7 +1631,7 @@ tsApp
                         $scope.warnings = [];
                       }
                       $scope.comments = [];
-                      refsetService.cloneRefset(refset.project.id, refset).then(
+                      refsetService.cloneRefset(refset.projectId, refset).then(
                         // Success - clone refset
                         function(data) {
                           $scope.newRefset = data;
@@ -2721,6 +2721,7 @@ tsApp
                 // Update refset
                 $scope.submitRefset = function(refset) {
 
+                  // the model for the "project" in editRefset is refset.project
                   refset.projectId = refset.project.id;
 
                   // Validate refset
