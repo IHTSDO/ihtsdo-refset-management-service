@@ -788,7 +788,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
       return projectService.getTerminologyHandlers();
 
     } catch (Exception e) {
-      handleException(e, "trying to get icon info");
+      handleException(e, "trying to get terminology handlers");
     } finally {
       projectService.close();
       securityService.close();

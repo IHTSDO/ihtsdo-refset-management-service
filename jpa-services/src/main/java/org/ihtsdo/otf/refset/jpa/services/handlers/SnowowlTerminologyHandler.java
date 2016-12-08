@@ -249,8 +249,6 @@ public class SnowowlTerminologyHandler implements TerminologyHandler {
   @Override
   public ConceptList resolveExpression(String expr, String terminology,
     String version, PfsParameter pfs) throws Exception {
-    // TODO resolve this date conversion 20150131 -> 2015-01-31
-    // version = "MAIN/2015-01-31";
     Logger.getLogger(getClass()).info("  resolve expression - " + terminology
         + ", " + version + ", " + expr + ", " + pfs);
     // Make a webservice call to SnowOwl to get concept
@@ -421,8 +419,7 @@ public class SnowowlTerminologyHandler implements TerminologyHandler {
     throws Exception {
     Logger.getLogger(getClass()).info(
         "  expression count - " + terminology + ", " + version + ", " + expr);
-    // TODO resolve this date conversion 20150131 -> 2015-01-31
-    // version = "MAIN/2015-01-31";
+
     // Make a webservice call to SnowOwl to get concept
     final Client client = ClientBuilder.newClient();
 
@@ -783,6 +780,7 @@ public class SnowowlTerminologyHandler implements TerminologyHandler {
       // Only lookup stuff with actual digits
       if (terminologyId.matches("[0-9]*")) {
         if (query.length() != 0) {
+          // TODO will change to OR with ecl
           query.append(" UNION ");
         }
         query.append(terminologyId);
@@ -798,12 +796,158 @@ public class SnowowlTerminologyHandler implements TerminologyHandler {
     return query.matches("\\d+[01]0\\d");
   }
 
+  
   /* see superclass */
   @Override
   public ConceptList findConceptsForQuery(String query, String terminology,
     String version, PfsParameter pfs) throws Exception {
-    // TODO resolve this date conversion 20150131 -> 2015-01-31
-    // version = "MAIN/2015-01-31";
+
+    final ConceptList conceptList = new ConceptListJpa();
+    // Make a webservice call to browser api
+    final Client client = ClientBuilder.newClient();
+
+    PfsParameter localPfs = pfs;
+    if (localPfs == null) {
+      localPfs = new PfsParameterJpa();
+    } else {
+      // need to copy it because we might change it here
+      localPfs = new PfsParameterJpa(pfs);
+    }
+    if (localPfs.getStartIndex() == -1) {
+      localPfs.setStartIndex(0);
+      localPfs.setMaxResults(Integer.MAX_VALUE);
+    }
+
+    boolean useTerm = true;
+    String localQuery = query;
+    if (localQuery.matches("\\d+[01]0\\d")) {
+      useTerm = false;
+    } else if (localQuery.matches("\\d+[01]0\\d\\*")) {
+      localQuery = localQuery.replace("*", "");
+      useTerm = false;
+    }
+
+    // Use "escg" if it's a concept id, otherwise search term
+    final WebTarget target =
+        useTerm ? client.target(url + "/browser/" + version
+                + "/descriptions?query="
+            + URLEncoder.encode(localQuery, "UTF-8").replaceAll(" ", "%20")
+            + "&offset=" + localPfs.getStartIndex() + "&limit="
+            + (localPfs.getMaxResults() * 3) + "&expand=pt()")
+
+            :
+
+            	client
+                .target(url + "/" + version + "/concepts?escg="
+                    + URLEncoder.encode(localQuery, "UTF-8").replaceAll(" ",
+                        "%20")
+                    + "&offset=" + localPfs.getStartIndex() + "&limit="
+                    + localPfs.getMaxResults() + "&expand=pt()");
+
+    final Response response =
+        target.request("*/*").header("Authorization", authHeader)
+            .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6").get();
+    final String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new LocalException(
+          "Unexpected terminology server failure. Message = " + resultString);
+    }
+
+
+    // Support grouping by concept
+    final Map<String, Concept> conceptMap = new HashMap<>();
+    int conceptCt = 0;
+
+    final ObjectMapper mapper = new ObjectMapper();
+    
+    final JsonNode doc = mapper.readTree(resultString);
+
+    if (useTerm) {
+      JsonNode entry = null;
+      int index = 0;
+      while ((entry = doc.get(index++)) != null) {
+      // Get concept id
+      final String conceptId = entry.get("concept").get("conceptId").asText();
+      JsonNode conceptNode = entry.get("concept");
+
+      final Description desc = new DescriptionJpa();
+      desc.setActive(conceptNode.get("active").asText().equals("true"));
+      desc.setTerm(entry.get("term").asText());
+      if (conceptMap.containsKey(conceptId)) {
+        final Concept concept = conceptMap.get(conceptId);
+        if (desc.isActive() || !localPfs.getActiveOnly()) {
+          concept.getDescriptions().add(desc);
+        }
+      }
+
+      else {
+        // Skip any new concepts past the limit
+        if (conceptCt++ < localPfs.getMaxResults()) {
+          final Concept concept = new ConceptJpa();
+          concept.setActive(
+              entry.get("active").asText().equals("true"));
+          concept.setDefinitionStatusId(
+              conceptNode.get("definitionStatus").asText());
+          concept.setTerminologyId(conceptId);
+          concept.setModuleId(conceptNode.get("moduleId").asText());
+          concept.setName(conceptNode.get("fsn").asText());
+          concept.setPublishable(true);
+          concept.setPublished(true);
+
+          // Add the description
+          concept.getDescriptions().add(desc);
+
+          conceptList.addObject(concept);
+          conceptMap.put(conceptId, concept);
+          Logger.getLogger(getClass()).debug("  concept = " + concept);
+        }
+      }
+
+      }
+
+    // Set total count
+    // TODO
+    /*conceptList.setTotalCount(
+        Integer.parseInt(doc.get("details").get("total").asText()));*/
+    conceptList.setTotalCount(200);
+
+    } else { // lookup was conceptId, not term
+    	if (doc.get("items") == null) {
+    	      return conceptList;
+    	    }
+    	    for (final JsonNode conceptNode : doc.get("items")) {
+
+    	      final Concept concept = new ConceptJpa();
+    	      concept.setActive(conceptNode.get("active").asText().equals("true"));
+
+    	      concept.setTerminologyId(conceptNode.get("id").asText());
+    	      concept.setEffectiveTime(ConfigUtility.DATE_FORMAT
+    	          .parse(conceptNode.get("effectiveTime").asText()));
+    	      concept.setLastModified(concept.getEffectiveTime());
+    	      concept.setLastModifiedBy(terminology);
+    	      concept.setModuleId(conceptNode.get("moduleId").asText());
+    	      concept
+    	          .setDefinitionStatusId(conceptNode.get("definitionStatus").asText());
+    	      concept.setName(conceptNode.get("pt").get("term").asText());
+
+    	      concept.setPublishable(true);
+    	      concept.setPublished(true);
+    	      Logger.getLogger(getClass()).debug("  concept = " + concept);
+    	      conceptList.addObject(concept);
+    	    }
+
+    	    // Set total count
+    	    conceptList.setTotalCount(Integer.parseInt(doc.get("total").asText()));
+    }
+    return conceptList;
+  }
+  
+  /* see superclass */
+  public ConceptList findConceptsForQueryInitialTechnique(String query, String terminology,
+    String version, PfsParameter pfs) throws Exception {
+
     final ConceptList conceptList = new ConceptListJpa();
     // Make a webservice call to SnowOwl
     final Client client = ClientBuilder.newClient();
@@ -964,8 +1108,7 @@ public class SnowowlTerminologyHandler implements TerminologyHandler {
     String version) throws Exception {
     final ConceptList conceptList = new ConceptListJpa();
 
-    // TODO resolve this date conversion 20150131 -> 2015-01-31
-    // version = "MAIN/2015-01-31";
+
     // Make a webservice call to SnowOwl
     final Client client = ClientBuilder.newClient();
     final WebTarget target = client.target(url + "/browser/" + version
@@ -1025,8 +1168,7 @@ public class SnowowlTerminologyHandler implements TerminologyHandler {
   @Override
   public ConceptList getConceptChildren(String terminologyId,
     String terminology, String version) throws Exception {
-    // TODO resolve this date conversion 20150131 -> 2015-01-31
-    // version = "MAIN/2015-01-31";
+
     final ConceptList conceptList = new ConceptListJpa();
     // Make a webservice call to SnowOwl
     final Client client = ClientBuilder.newClient();
