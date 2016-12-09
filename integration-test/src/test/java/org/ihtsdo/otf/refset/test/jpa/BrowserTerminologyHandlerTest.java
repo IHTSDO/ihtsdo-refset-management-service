@@ -68,7 +68,7 @@ public class BrowserTerminologyHandlerTest extends JpaSupport {
     Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
     ProjectService service = new ProjectServiceJpa();
 
-    Concept concept = service.getTerminologyHandler(project)
+    Concept concept = service.getTerminologyHandler(project, null)
         .getConcept("126880001", "en-edition", "20160131");
     assertEquals(concept.getName(), "Neoplasm of kidney (disorder)");
     service.close();
@@ -84,10 +84,10 @@ public class BrowserTerminologyHandlerTest extends JpaSupport {
     Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
     ProjectService service = new ProjectServiceJpa();
 
-    ConceptList list = service.getTerminologyHandler(project)
+    ConceptList list = service.getTerminologyHandler(project, null)
         .getReplacementConcepts("136709000", "en-edition", "20160131");
     assertEquals(list.getTotalCount(), 1);
-    list = service.getTerminologyHandler(project)
+    list = service.getTerminologyHandler(project, null)
         .getReplacementConcepts("150606004", "en-edition", "20160131");
     assertEquals(list.getTotalCount(), 2);
 
@@ -107,7 +107,7 @@ public class BrowserTerminologyHandlerTest extends JpaSupport {
     List<String> concepts = new ArrayList<>();
     concepts.add("126880001");
     concepts.add("72938002");
-    ConceptList conceptList = service.getTerminologyHandler(project)
+    ConceptList conceptList = service.getTerminologyHandler(project, null)
         .getConcepts(concepts, "en-edition", "20160131");
     assertEquals(conceptList.getCount(), 2);
     service.close();
@@ -125,7 +125,7 @@ public class BrowserTerminologyHandlerTest extends JpaSupport {
     PfsParameter pfs = new PfsParameterJpa();
     pfs.setMaxResults(25);
     pfs.setStartIndex(5);
-    ConceptList conceptList = service.getTerminologyHandler(project)
+    ConceptList conceptList = service.getTerminologyHandler(project, null)
         .resolveExpression("<<284009009|Route of administration|", "en-edition",
             "20160131", pfs);
     assertEquals(148, conceptList.getTotalCount());
@@ -141,39 +141,39 @@ public class BrowserTerminologyHandlerTest extends JpaSupport {
     // (<<195967001 OR <<304527002 OR <<370218001) MINUS (<<370218001 OR
     // <<389145006 OR <<195967001)
 
-    service.getTerminologyHandler(project).resolveExpression("<<195967001",
-        "en-edition", "20160131", pfs);
-    service.getTerminologyHandler(project).resolveExpression(
+    service.getTerminologyHandler(project, null)
+        .resolveExpression("<<195967001", "en-edition", "20160131", pfs);
+    service.getTerminologyHandler(project, null).resolveExpression(
         "<<195967001 MINUS <<304527002", "en-edition", "20160131", pfs);
-    service.getTerminologyHandler(project).resolveExpression(
+    service.getTerminologyHandler(project, null).resolveExpression(
         "<<195967001 OR <<304527002", "en-edition", "20160131", pfs);
-    service.getTerminologyHandler(project).resolveExpression(
+    service.getTerminologyHandler(project, null).resolveExpression(
         "(<<195967001 OR <<304527002) MINUS <<370218001", "en-edition",
         "20160131", pfs);
-    service.getTerminologyHandler(project).resolveExpression(
+    service.getTerminologyHandler(project, null).resolveExpression(
         "(<<195967001 OR <<304527002) MINUS (<<370218001 OR <<389145006)",
         "en-edition", "20160131", pfs);
-    service.getTerminologyHandler(project).resolveExpression(
+    service.getTerminologyHandler(project, null).resolveExpression(
         "<<195967001 MINUS (<<370218001 OR <<389145006)", "en-edition",
         "20160131", pfs);
-    service.getTerminologyHandler(project).resolveExpression(
+    service.getTerminologyHandler(project, null).resolveExpression(
         "(<<195967001 OR <<304527002 OR <<370218001) MINUS (<<370218001 OR <<389145006 OR <<195967001)",
         "en-edition", "20160131", pfs);
 
-    service.getTerminologyHandler(project).resolveExpression(
+    service.getTerminologyHandler(project, null).resolveExpression(
         "< 19829001 |disorder of lung|: 116676008 |associated morphology| = 79654002 |edema|",
         "en-edition", "20160131", pfs);
 
-    service.getTerminologyHandler(project).resolveExpression(
+    service.getTerminologyHandler(project, null).resolveExpression(
         "(< 19829001 |disorder of lung|: 116676008 |associated morphology| = 79654002 |edema|) "
             + "OR <<409623005 | Respiratory insufficiency (disorder) |",
         "en-edition", "20160131", pfs);
 
-    service.getTerminologyHandler(project).resolveExpression(
+    service.getTerminologyHandler(project, null).resolveExpression(
         "(< 19829001 |disorder of lung|: 116676008 |associated morphology| = 79654002 |edema|) MINUS <<304527002",
         "en-edition", "20160131", pfs);
 
-    service.getTerminologyHandler(project).resolveExpression(
+    service.getTerminologyHandler(project, null).resolveExpression(
         "((< 19829001 |disorder of lung|: 116676008 |associated morphology| = 79654002 |edema|) "
             + "OR <<409623005 | Respiratory insufficiency (disorder) |) MINUS <<304527002",
         "en-edition", "20160131", pfs);
@@ -182,7 +182,7 @@ public class BrowserTerminologyHandlerTest extends JpaSupport {
     // < 65801008|Excision (procedure)| AND < 118673008|Procedure on digestive
     // system (procedure)| OR < 233604007|Pneumonia (disorder)| MINUS <<
     // 64667001|Interstitial pneumonia (disorder)|
-    service.getTerminologyHandler(project).resolveExpression(
+    service.getTerminologyHandler(project, null).resolveExpression(
         "(< 65801008|Excision (procedure)| AND < 118673008|Procedure on digestive system (procedure)|) "
             + "OR (< 233604007|Pneumonia (disorder)| MINUS << 64667001|Interstitial pneumonia (disorder)|)",
         "en-edition", "20160131", pfs);
@@ -192,19 +192,19 @@ public class BrowserTerminologyHandlerTest extends JpaSupport {
         "< 65801008|Excision (procedure)| AND < 118673008|Procedure on digestive system (procedure)|";
     String b =
         "< 233604007|Pneumonia (disorder)| MINUS << 64667001|Interstitial pneumonia (disorder)|";
-    service.getTerminologyHandler(project).resolveExpression(
+    service.getTerminologyHandler(project, null).resolveExpression(
         "((" + a + ") OR (" + a + ")) MINUS ((" + b + ") OR (" + b + "))",
         "en-edition", "20160131", pfs);
 
-    service.getTerminologyHandler(project).resolveExpression(
+    service.getTerminologyHandler(project, null).resolveExpression(
         "(65801008 OR (" + a + ")) MINUS ((" + b + ") OR (" + b + "))",
         "en-edition", "20160131", pfs);
 
-    service.getTerminologyHandler(project).resolveExpression(
+    service.getTerminologyHandler(project, null).resolveExpression(
         "(65801008 OR (" + a + ")) MINUS ((" + b + ") OR 233604007)",
         "en-edition", "20160131", pfs);
 
-    service.getTerminologyHandler(project).resolveExpression(
+    service.getTerminologyHandler(project, null).resolveExpression(
         "65801008 OR (" + a + ") OR (" + b + ") OR 233604007", "en-edition",
         "20160131", pfs);
 
@@ -220,7 +220,7 @@ public class BrowserTerminologyHandlerTest extends JpaSupport {
   public void testCountExpression() throws Exception {
     Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
     ProjectService service = new ProjectServiceJpa();
-    int ct = service.getTerminologyHandler(project).countExpression(
+    int ct = service.getTerminologyHandler(project, null).countExpression(
         "<<284009009|Route of administration|", "en-edition", "20160131");
     assertEquals(148, ct);
     service.close();
@@ -235,8 +235,9 @@ public class BrowserTerminologyHandlerTest extends JpaSupport {
   public void testGetTerminologyVersions() throws Exception {
     Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
     ProjectService service = new ProjectServiceJpa();
-    List<Terminology> terminologyList = service.getTerminologyHandler(project)
-        .getTerminologyVersions("en-edition");
+    List<Terminology> terminologyList =
+        service.getTerminologyHandler(project, null)
+            .getTerminologyVersions("en-edition");
     assertEquals(3, terminologyList.size());
     service.close();
   }
@@ -250,7 +251,7 @@ public class BrowserTerminologyHandlerTest extends JpaSupport {
   public void testGetTerminologyEditions() throws Exception {
     Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
     ProjectService service = new ProjectServiceJpa();
-    service.getTerminologyHandler(project).getTerminologyEditions();
+    service.getTerminologyHandler(project, null).getTerminologyEditions();
     // Just making sure it doesn't fail.
     service.close();
   }
@@ -265,7 +266,7 @@ public class BrowserTerminologyHandlerTest extends JpaSupport {
     Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
     ProjectService service = new ProjectServiceJpa();
 
-    Concept concept = service.getTerminologyHandler(project)
+    Concept concept = service.getTerminologyHandler(project, null)
         .getFullConcept("126880001", "en-edition", "20160131");
     assertEquals(concept.getName(), "Neoplasm of kidney (disorder)");
     assertEquals(6, concept.getDescriptions().size());
@@ -283,7 +284,7 @@ public class BrowserTerminologyHandlerTest extends JpaSupport {
     Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
     ProjectService service = new ProjectServiceJpa();
 
-    ConceptList concepts = service.getTerminologyHandler(project)
+    ConceptList concepts = service.getTerminologyHandler(project, null)
         .getConceptParents("108369006", "en-edition", "20160131");
     assertEquals(1, concepts.getObjects().size());
     assertEquals(concepts.getObjects().get(0).getName(),
@@ -302,7 +303,7 @@ public class BrowserTerminologyHandlerTest extends JpaSupport {
     Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
     ProjectService service = new ProjectServiceJpa();
 
-    ConceptList concepts = service.getTerminologyHandler(project)
+    ConceptList concepts = service.getTerminologyHandler(project, null)
         .getConceptChildren("108369006", "en-edition", "20160131");
     assertEquals(40, concepts.getObjects().size());
 
@@ -322,21 +323,20 @@ public class BrowserTerminologyHandlerTest extends JpaSupport {
     PfsParameter pfs = new PfsParameterJpa();
     pfs.setStartIndex(0);
     pfs.setMaxResults(50);
-    ConceptList concepts = service.getTerminologyHandler(project)
+    ConceptList concepts = service.getTerminologyHandler(project, null)
         .findConceptsForQuery("tumor", "en-edition", "20160131", pfs);
     assertEquals(50, concepts.getObjects().size());
     assertEquals(8985, concepts.getTotalCount());
 
     /*
-     * concepts =
-     * service.getTerminologyHandler(project).findConceptsForQuery("tumor*",
-     * "en-edition", "20160131", pfs); assertEquals(50,
-     * concepts.getObjects().size()); assertEquals(6897,
+     * concepts = service.getTerminologyHandler(project,
+     * null).findConceptsForQuery("tumor*", "en-edition", "20160131", pfs);
+     * assertEquals(50, concepts.getObjects().size()); assertEquals(6897,
      * concepts.getTotalCount());
      */
 
     // check someing with no results
-    concepts = service.getTerminologyHandler(project)
+    concepts = service.getTerminologyHandler(project, null)
         .findConceptsForQuery("tmuor", "en-edition", "20160131", pfs);
     assertEquals(0, concepts.getObjects().size());
     service.close();
@@ -354,27 +354,27 @@ public class BrowserTerminologyHandlerTest extends JpaSupport {
 
     // Bogus ids, term server produces failures
     try {
-      Concept c = service.getTerminologyHandler(project).getConcept("12345",
-          "abc", "20150131");
+      Concept c = service.getTerminologyHandler(project, null)
+          .getConcept("12345", "abc", "20150131");
       assertNull(c);
     } catch (Exception e) {
       fail("unexpected exception");
     }
 
-    ConceptList list = service.getTerminologyHandler(project)
+    ConceptList list = service.getTerminologyHandler(project, null)
         .getConceptChildren("12345", "abc", "20150131");
     assertEquals(0, list.getCount());
 
-    list = service.getTerminologyHandler(project).getConceptParents("12345",
-        "abc", "20150131");
+    list = service.getTerminologyHandler(project, null)
+        .getConceptParents("12345", "abc", "20150131");
     assertEquals(0, list.getCount());
 
     try {
       List<String> ids = new ArrayList<>();
       ids.add("1234");
       ids.add("5679");
-      list = service.getTerminologyHandler(project).getConcepts(ids, "abc",
-          "20150131");
+      list = service.getTerminologyHandler(project, null).getConcepts(ids,
+          "abc", "20150131");
       fail("Exception expected.");
     } catch (Exception e) {
       // n/a, expected result
@@ -393,23 +393,24 @@ public class BrowserTerminologyHandlerTest extends JpaSupport {
 
     ProjectService service = new ProjectServiceJpa();
     try {
-      Concept c =
-          service.getTerminologyHandler(project).getConcept(null, "abc", "def");
+      Concept c = service.getTerminologyHandler(project, null).getConcept(null,
+          "abc", "def");
       assertNull(c);
     } catch (Exception e) {
       fail("Unexpected failure");
     }
 
     try {
-      Concept c =
-          service.getTerminologyHandler(project).getConcept("abc", null, "def");
+      Concept c = service.getTerminologyHandler(project, null).getConcept("abc",
+          null, "def");
       assertNull(c);
     } catch (Exception e) {
       fail("Unexpected failure");
     }
 
     try {
-      service.getTerminologyHandler(project).getConcept("abcabc", "abc", null);
+      service.getTerminologyHandler(project, null).getConcept("abcabc", "abc",
+          null);
     } catch (Exception e) {
       fail("Exception not expected.");
     }

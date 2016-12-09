@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import javax.persistence.NoResultException;
+import javax.ws.rs.core.HttpHeaders;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.Project;
@@ -123,6 +124,9 @@ public class ProjectServiceJpa extends RootServiceJpa
     }
   }
 
+  /** The headers. */
+  HttpHeaders headers;
+
   /**
    * Instantiates an empty {@link ProjectServiceJpa}.
    *
@@ -146,6 +150,17 @@ public class ProjectServiceJpa extends RootServiceJpa
           "Terminology handler did not properly initialize, serious error.");
     }
 
+  }
+
+  /**
+   * Instantiates a {@link ProjectServiceJpa} from the specified parameters.
+   *
+   * @param headers the headers
+   * @throws Exception the exception
+   */
+  public ProjectServiceJpa(HttpHeaders headers) throws Exception {
+    this();
+    this.headers = headers;
   }
 
   /* see superclass */
@@ -295,8 +310,8 @@ public class ProjectServiceJpa extends RootServiceJpa
 
   /* see superclass */
   @Override
-  public TerminologyHandler getTerminologyHandler(Project project)
-    throws Exception {
+  public TerminologyHandler getTerminologyHandler(Project project,
+    HttpHeaders headers) throws Exception {
     if (!terminologyHandlers.containsKey(project.getTerminologyHandlerKey())) {
       throw new LocalException(
           "No terminology handler exists for the specified key: "
@@ -305,6 +320,7 @@ public class ProjectServiceJpa extends RootServiceJpa
     final TerminologyHandler handler =
         terminologyHandlers.get(project.getTerminologyHandlerKey()).copy();
     handler.setUrl(project.getTerminologyHandlerUrl());
+    handler.setHeaders(headers);
     return handler;
   }
 
@@ -337,6 +353,7 @@ public class ProjectServiceJpa extends RootServiceJpa
     }
     final TerminologyHandler handler = terminologyHandlers.get(key).copy();
     handler.setUrl(url);
+    handler.setHeaders(headers);
     handler.test(terminology, version);
     return true;
   }

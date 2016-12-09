@@ -19,6 +19,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 
 import org.apache.log4j.Logger;
@@ -88,6 +90,10 @@ import com.wordnik.swagger.annotations.ApiParam;
 public class ProjectServiceRestImpl extends RootServiceRestImpl
     implements ProjectServiceRest {
 
+  /** Security context */
+  @Context
+  HttpHeaders headers;
+
   /** The security service. */
   private SecurityService securityService;
 
@@ -111,6 +117,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     Logger.getLogger(getClass()).info("RESTful POST call (Project): /roles");
 
     try {
+
       authorizeApp(securityService, authToken, "get roles", UserRole.VIEWER);
       final StringList list = new StringList();
       list.setTotalCount(3);
@@ -350,8 +357,9 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
           final PfsParameter pfs = new PfsParameterJpa();
           pfs.setStartIndex(0);
           pfs.setMaxResults(1);
-          projectService.getTerminologyHandler(project).resolveExpression(
-              project.getExclusionClause(), project.getTerminology(), "", pfs);
+          projectService.getTerminologyHandler(project, headers)
+              .resolveExpression(project.getExclusionClause(),
+                  project.getTerminology(), "", pfs);
         } catch (Exception e) {
           throw new LocalException("Project has invalid exclusion clause");
         }
@@ -409,8 +417,9 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
           final PfsParameter pfs = new PfsParameterJpa();
           pfs.setStartIndex(0);
           pfs.setMaxResults(1);
-          projectService.getTerminologyHandler(project).resolveExpression(
-              project.getExclusionClause(), project.getTerminology(), "", pfs);
+          projectService.getTerminologyHandler(project, headers)
+              .resolveExpression(project.getExclusionClause(),
+                  project.getTerminology(), "", pfs);
         } catch (Exception e) {
           throw new LocalException("Project has invalid exclusion clause");
         }
@@ -646,7 +655,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
       }
 
       final List<Terminology> editions = projectService
-          .getTerminologyHandler(project).getTerminologyEditions();
+          .getTerminologyHandler(project, headers).getTerminologyEditions();
       final TerminologyList list = new TerminologyListJpa();
       list.setObjects(editions);
       list.setTotalCount(list.getCount());
@@ -681,8 +690,9 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
         throw new LocalException("Get modules requires a project");
       }
 
-      final List<Terminology> versions = projectService
-          .getTerminologyHandler(project).getTerminologyVersions(terminology);
+      final List<Terminology> versions =
+          projectService.getTerminologyHandler(project, headers)
+              .getTerminologyVersions(terminology);
       final TerminologyList list = new TerminologyListJpa();
       list.setObjects(versions);
       list.setTotalCount(list.getCount());
@@ -717,8 +727,9 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
       if (project == null) {
         throw new LocalException("Get modules requires a project");
       }
-      final List<Concept> types = projectService.getTerminologyHandler(project)
-          .getModules(terminology, version);
+      final List<Concept> types =
+          projectService.getTerminologyHandler(project, headers)
+              .getModules(terminology, version);
 
       final ConceptList list = new ConceptListJpa();
       list.setObjects(types);
@@ -824,8 +835,9 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
         throw new LocalException("Invalid project id: " + projectId);
       }
 
-      final ConceptList concepts = projectService.getTerminologyHandler(project)
-          .findConceptsForQuery(query, terminology, version, pfs);
+      final ConceptList concepts =
+          projectService.getTerminologyHandler(project, headers)
+              .findConceptsForQuery(query, terminology, version, pfs);
 
       return concepts;
     } catch (Exception e) {
@@ -869,7 +881,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
       Concept concept = null;
 
       try {
-        concept = translationService.getTerminologyHandler(project)
+        concept = translationService.getTerminologyHandler(project, headers)
             .getFullConcept(terminologyId, terminology, version);
       } catch (Exception e) {
         Logger.getLogger(getClass()).info(
@@ -935,7 +947,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
       }
 
       final ConceptList concepts =
-          translationService.getTerminologyHandler(project)
+          translationService.getTerminologyHandler(project, headers)
               .getConceptParents(terminologyId, terminology, version);
 
       // If translationId is set, include descriptions from the translation
@@ -1014,7 +1026,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
       }
 
       final ConceptList concepts =
-          translationService.getTerminologyHandler(project)
+          translationService.getTerminologyHandler(project, headers)
               .getConceptChildren(terminologyId, terminology, version);
 
       // If translationId is set, include descriptions from the translation
@@ -1163,8 +1175,9 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
       if (project == null) {
         throw new LocalException("Invalid project id: " + projectId);
       }
-      final ConceptList concepts = refsetService.getTerminologyHandler(project)
-          .getReplacementConcepts(conceptId, terminology, version);
+      final ConceptList concepts =
+          refsetService.getTerminologyHandler(project, headers)
+              .getReplacementConcepts(conceptId, terminology, version);
       return concepts;
 
     } catch (Exception e) {
@@ -1193,7 +1206,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
         .info("RESTful GET call (Refset): /test " + url);
 
     // Create service and configure transaction scope
-    final ProjectService projectService = new ProjectServiceJpa();
+    final ProjectService projectService = new ProjectServiceJpa(headers);
     try {
       authorizeApp(securityService, authToken, "get standard description types",
           UserRole.VIEWER);

@@ -129,6 +129,14 @@ tsApp
           return newUrl;
         }
 
+        // Return the time for a YYYYMMDD string
+        function parseYYYYMMDD(str) {
+          if (!/^(\d){8}$/.test(str))
+            return 0;
+          var y = str.substr(0, 4), m = str.substr(4, 2) - 1, d = str.substr(6, 2);
+          return new Date(y, m, d).getTime();
+        }
+
         // Convert date to a string
         var workDate = new Date();
         this.toDate = function(lastModified) {

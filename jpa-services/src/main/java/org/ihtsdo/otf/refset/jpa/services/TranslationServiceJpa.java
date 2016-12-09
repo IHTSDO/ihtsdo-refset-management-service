@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.persistence.NoResultException;
+import javax.ws.rs.core.HttpHeaders;
 
 import org.apache.log4j.Logger;
 import org.hibernate.envers.AuditReader;
@@ -110,6 +111,9 @@ public class TranslationServiceJpa extends RefsetServiceJpa
     }
   }
 
+  /** The headers. */
+  HttpHeaders headers;
+
   /**
    * Instantiates an empty {@link TranslationServiceJpa}.
    *
@@ -125,6 +129,17 @@ public class TranslationServiceJpa extends RefsetServiceJpa
       throw new Exception(
           "Export translation handlers did not properly initialize, serious error.");
     }
+  }
+
+  /**
+   * Instantiates a {@link TranslationServiceJpa} from the specified parameters.
+   *
+   * @param headers the headers
+   * @throws Exception
+   */
+  public TranslationServiceJpa(HttpHeaders headers) throws Exception {
+    this();
+    this.headers = headers;
   }
 
   /* see superclass */
@@ -1293,7 +1308,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa
             }
             // Get concepts from Term Server based on list
             final ConceptList cons =
-                getTerminologyHandler(translation.getProject())
+                getTerminologyHandler(translation.getProject(), headers)
                     .getConcepts(termIds, terminology, version);
 
             // IF the number of concepts returned doesn't match

@@ -2929,7 +2929,7 @@ tsApp
                     console.debug('active only');
                     pfs.activeOnly = true;
                   }
-                  projectService.findConceptsForQuery(project.id, search, refset.terminology,
+                  projectService.findConceptsForQuery(project, search, refset.terminology,
                     refset.version, pfs).then(
                   // Success
                   function(data) {
@@ -3530,7 +3530,10 @@ tsApp
                         $scope.concepts = data.concepts;
 
                         // if no replacements, just add the inclusion
-                        if ($scope.concepts.length == 0) {
+                        if ($scope.concepts.length == 0
+                          // the second clause here is because intensional
+                          // refsets never have inactive members in common
+                          && $scope.stagedRefset.type == 'INTENSIONAL') {
                           $scope.addRefsetInclusion($scope.stagedRefset, member, staged);
                         } else {
                           $scope.openReplacementConceptsModal(member, staged, $scope.concepts,

@@ -5,6 +5,8 @@ package org.ihtsdo.otf.refset.services.handlers;
 
 import java.util.List;
 
+import javax.ws.rs.core.HttpHeaders;
+
 import org.ihtsdo.otf.refset.Terminology;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.Configurable;
@@ -223,4 +225,12 @@ public interface TerminologyHandler extends Configurable {
    * @throws Exception the exception
    */
   public String getDefaultUrl() throws Exception;
+
+  /**
+   * Sets the headers.
+   *
+   * @param headers the headers
+   * @throws Exception the exception
+   */
+  public void setHeaders(HttpHeaders headers) throws Exception;
 }
