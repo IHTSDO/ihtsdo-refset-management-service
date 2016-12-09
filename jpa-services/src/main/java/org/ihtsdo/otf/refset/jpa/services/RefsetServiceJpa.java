@@ -15,6 +15,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.persistence.NoResultException;
+import javax.ws.rs.core.HttpHeaders;
 
 import org.apache.log4j.Logger;
 import org.hibernate.envers.AuditReader;
@@ -116,6 +117,9 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
     }
   }
 
+  /** The headers. */
+  HttpHeaders headers;
+
   /**
    * Instantiates an empty {@link RefsetServiceJpa}.
    *
@@ -131,6 +135,17 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
       throw new Exception(
           "Export refset handlers did not properly initialize, serious error.");
     }
+  }
+
+  /**
+   * Instantiates a {@link RefsetServiceJpa} from the specified parameters.
+   *
+   * @param headers the headers
+   * @throws Exception
+   */
+  public RefsetServiceJpa(HttpHeaders headers) throws Exception {
+    this();
+    this.headers = headers;
   }
 
   /**
@@ -1046,7 +1061,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
             }
             // Get concepts from Term Server based on list
             final TerminologyHandler handler =
-                getTerminologyHandler(refset.getProject());
+                getTerminologyHandler(refset.getProject(), headers);
             final ConceptList cons =
                 handler.getConcepts(termIds, terminology, version);
 
@@ -1147,8 +1162,8 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
     String version, String expression) throws Exception {
     int total = 0;
     try {
-      total = getTerminologyHandler(project).countExpression(expression,
-          terminology, version);
+      total = getTerminologyHandler(project, headers)
+          .countExpression(expression, terminology, version);
     } catch (Exception e) {
       throw new LocalException(
           "Unable to count total expression items, the expression could not be resolved - "
@@ -1186,8 +1201,9 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
     ConceptList resolvedFromExpression = null;
     try {
       final Project project = this.getProject(refset.getProject().getId());
-      resolvedFromExpression = getTerminologyHandler(project).resolveExpression(
-          definition, refset.getTerminology(), refset.getVersion(), null);
+      resolvedFromExpression =
+          getTerminologyHandler(project, headers).resolveExpression(definition,
+              refset.getTerminology(), refset.getVersion(), null);
 
       // Save concepts
       for (final Concept concept : resolvedFromExpression.getObjects()) {
