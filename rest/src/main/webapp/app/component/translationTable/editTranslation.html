@@ -65,6 +65,13 @@
       </tr>
       <tr>
         <td>
+          <b>Server Endpoint</b>
+        </td>
+        <td>{{project.terminologyHandlerKey}}
+          {{project.terminologyHandlerUrl}}</td>
+      </tr>
+      <tr>
+        <td>
           <b>Terminology</b>
         </td>
         <td>{{getTerminologyName(translation.terminology)}}</td>
@@ -121,9 +128,12 @@
   </div>
 
   <div class="modal-footer">
-    <button class="btn btn-primary"
-      ng-click="submitTranslation(translation); 
-    ">{{action}}</button>
+
+    <button ng-show="action == 'Add'" class="btn btn-primary"
+      ng-click="submitTranslation(translation); ">Add</button>
+    <button ng-show="action == 'Edit'" class="btn btn-primary"
+      ng-click="submitTranslation(translation); ">Save</button>
+
     <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
   </div>
 </div>

@@ -5,7 +5,8 @@
 <div class="modal-body">
 
   <!-- Translation info -->
-  <div translation-info translation="translation" form="short" metadata="metadata"></div>
+  <div translation-info translation="translation" form="short"
+    metadata="metadata"></div>
 
   <table class="table">
     <tr>
@@ -13,11 +14,7 @@
         <b>Batch size</b>
       </td>
       <td class="col-md-8 col-xs-8">
-        <select ng-model="batchSize">
-          <option>5</option>
-          <option>10</option>
-          <option>25</option>
-          <option>100</option>
+        <select ng-model="batchSize" ng-options="size for size in batchSizes">
         </select>
       </td>
     </tr>
@@ -44,8 +41,10 @@
         <div class="alert alert-danger alert-error">
           {{errors[0]}}
           <div style="display: inline; float: right;">
-            <i ng-show="errors[1]" title="{{error.expand ? 'Show' : 'Hide'}} long eror"
-              class="noul material-icons md-18" ng-click="error.expand = !error.expand;">attach_file</i>
+            <i ng-show="errors[1]"
+              title="{{error.expand ? 'Show' : 'Hide'}} long eror"
+              class="noul material-icons md-18"
+              ng-click="error.expand = !error.expand;">attach_file</i>
           </div>
           <p ng-show="errors[1] && error.expand">
             <br />{{errors[1]}}
