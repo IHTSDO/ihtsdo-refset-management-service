@@ -610,13 +610,13 @@ tsApp
           $scope.selectHandler = function(handler) {
             $scope.project.terminologyHandlerKey = handler.key;
             $scope.project.terminologyHandlerUrl = handler.value;
+            $scope.terminologies = [];
           }
 
           // Test the handler URL, if successful, mark as such
           $scope.testHandlerUrl = function() {
             $scope.errors = [];
-            projectService.testHandlerUrl($scope.project.terminologyHandlerKey,
-              $scope.project.terminologyHandlerUrl).then(
+            projectService.testHandlerUrl($scope.project).then(
             // Success
             function(data) {
               $scope.urlTestSuccess = true;
@@ -831,8 +831,7 @@ tsApp
           // Test the handler URL, if successful, mark as such
           $scope.testHandlerUrl = function() {
             $scope.errors = [];
-            projectService.testHandlerUrl($scope.project.terminologyHandlerKey,
-              $scope.project.terminologyHandlerUrl).then(
+            projectService.testHandlerUrl($scope.project).then(
             // Success
             function(data) {
               $scope.urlTestSuccess = true;

@@ -2670,7 +2670,6 @@ tsApp
                 $scope.localSet = refset.localSet;
                 $scope.metadata = metadata;
                 $scope.terminologies = metadata.terminologies;
-                $scope.versionsMap = {};
                 $scope.versions = $scope.metadata.versions[refset.terminology] ? angular
                   .copy($scope.metadata.versions[refset.terminology].sort().reverse()) : [];
                 $scope.modules = [];
@@ -2930,7 +2929,7 @@ tsApp
                     console.debug('active only');
                     pfs.activeOnly = true;
                   }
-                  projectService.findConceptsForQuery(project.id, search, refset.terminology,
+                  projectService.findConceptsForQuery(project, search, refset.terminology,
                     refset.version, pfs).then(
                   // Success
                   function(data) {
@@ -3038,9 +3037,9 @@ tsApp
                 $scope.pageSize = 5;
                 $scope.paging = paging;
                 $scope.metadata = metadata;
-                $scope.versionsMap = {};
                 $scope.terminologies = [];
-                $scope.versions = [];
+                $scope.versions = angular.copy($scope.metadata.versions[$scope.newTerminology]
+                  .sort().reverse());
                 $scope.newVersion = $scope.versions[0];
                 $scope.errors = [];
                 $scope.statusTypes = [ 'Active', 'Inactive' ];
@@ -3147,8 +3146,8 @@ tsApp
 
                 // Handle terminology selected
                 $scope.terminologySelected = function() {
-                  $scope.versions = angular.copy($scope.versionsMap[$scope.newTerminology].sort()
-                    .reverse());
+                  $scope.versions = angular.copy($scope.metadata.versions[$scope.newTerminology]
+                    .sort().reverse());
                   $scope.newVersion = $scope.versions[0];
                 };
 
@@ -3402,7 +3401,7 @@ tsApp
                   $scope.errors = [];
                   if (newTerminology == $scope.refset.terminology
                     && newVersion == $scope.refset.version) {
-                    $scope.errors[0] = 'New terminology and version cannot match existing values';
+                    $scope.errors[0] = 'New terminology and version must not exactly match original values';
                     return;
                   }
                   if (newTerminology == $scope.refset.terminology
@@ -3531,7 +3530,10 @@ tsApp
                         $scope.concepts = data.concepts;
 
                         // if no replacements, just add the inclusion
-                        if ($scope.concepts.length == 0) {
+                        if ($scope.concepts.length == 0
+                        // the second clause here is because intensional
+                        // refsets never have inactive members in common
+                        && $scope.stagedRefset.type == 'INTENSIONAL') {
                           $scope.addRefsetInclusion($scope.stagedRefset, member, staged);
                         } else {
                           $scope.openReplacementConceptsModal(member, staged, $scope.concepts,

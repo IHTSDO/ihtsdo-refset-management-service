@@ -3,6 +3,7 @@
  */
 package org.ihtsdo.otf.refset.jpa.services.handlers;
 
+import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Date;
@@ -16,6 +17,7 @@ import java.util.Properties;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status.Family;
 
@@ -41,6 +43,7 @@ import org.ihtsdo.otf.refset.services.handlers.TerminologyHandler;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.net.InternetDomainName;
 
 /**
  * Default implementation of {@link TerminologyHandler}. Leverages the IHTSDO
@@ -71,11 +74,17 @@ public class SnowowlTerminologyHandler implements TerminologyHandler {
   /** The url. */
   private String url;
 
+  /** The domain. */
+  private String domain;
+
   /** The default url. */
   private String defaultUrl;
 
   /** The auth header. */
   private String authHeader;
+
+  /** The headers. */
+  private HttpHeaders headers;
 
   /* see superclass */
   @Override
@@ -86,6 +95,34 @@ public class SnowowlTerminologyHandler implements TerminologyHandler {
     return handler;
   }
 
+  /**
+   * Returns the cookie header.
+   *
+   * @return the cookie header
+   */
+  private String getCookieHeader() {
+    final List<String> referers = headers.getRequestHeader("Referer");
+    if (referers != null && referers.size() == 1) {
+      final String referer = referers.get(0);
+      if (referer.contains(domain)) {
+        List<String> cookies = headers.getRequestHeader("Cookie");
+        if (cookies != null && cookies.size() == 1) {
+          return cookies.get(0);
+        } else {
+          Logger.getLogger(getClass())
+              .warn("UNEXPECTED number of Cookie headers = " + cookies.size());
+        }
+      } else {
+        Logger.getLogger(getClass())
+            .warn("UNEXPECTED referer not matching url domain = " + referer);
+      }
+    } else {
+      Logger.getLogger(getClass())
+          .warn("UNEXPECTED number of Referer headers = " + referers.size());
+    }
+    return "";
+  }
+
   /* see superclass */
   @Override
   public boolean test(String terminology, String version) throws Exception {
@@ -94,7 +131,8 @@ public class SnowowlTerminologyHandler implements TerminologyHandler {
     final WebTarget target = client.target(url + "/branches/" + localVersion);
     final Response response =
         target.request(accept).header("Authorization", authHeader)
-            .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6").get();
+            .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
+            .header("Cookie", getCookieHeader()).get();
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -166,7 +204,8 @@ public class SnowowlTerminologyHandler implements TerminologyHandler {
 
     Response response =
         target.request(accept).header("Authorization", authHeader)
-            .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6").get();
+            .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
+            .header("Cookie", getCookieHeader()).get();
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -278,7 +317,8 @@ public class SnowowlTerminologyHandler implements TerminologyHandler {
 
     Response response =
         target.request(accept).header("Authorization", authHeader)
-            .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6").get();
+            .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
+            .header("Cookie", getCookieHeader()).get();
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -369,7 +409,8 @@ public class SnowowlTerminologyHandler implements TerminologyHandler {
           + (total - initialMaxLimit) + "&offset="
           + (initialMaxLimit + localPfs.getStartIndex()) + "&expand=pt()");
       response = target.request(accept).header("Authorization", authHeader)
-          .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6").get();
+          .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
+          .header("Cookie", getCookieHeader()).get();
       resultString = response.readEntity(String.class);
       if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
         // n/a
@@ -429,7 +470,8 @@ public class SnowowlTerminologyHandler implements TerminologyHandler {
 
     Response response =
         target.request(accept).header("Authorization", authHeader)
-            .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6").get();
+            .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
+            .header("Cookie", getCookieHeader()).get();
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -464,7 +506,8 @@ public class SnowowlTerminologyHandler implements TerminologyHandler {
         .target(url + "/browser/" + version + "/concepts/" + terminologyId);
     final Response response =
         target.request("*/*").header("Authorization", authHeader)
-            .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6").get();
+            .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
+            .header("Cookie", getCookieHeader()).get();
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -683,7 +726,8 @@ public class SnowowlTerminologyHandler implements TerminologyHandler {
         + "/concepts?escg=" + terminologyId + "&expand=pt()");
     final Response response =
         target.request("*/*").header("Authorization", authHeader)
-            .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6").get();
+            .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
+            .header("Cookie", getCookieHeader()).get();
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -991,7 +1035,8 @@ public class SnowowlTerminologyHandler implements TerminologyHandler {
 
     final Response response =
         target.request("*/*").header("Authorization", authHeader)
-            .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6").get();
+            .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
+            .header("Cookie", getCookieHeader()).get();
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -1115,7 +1160,8 @@ public class SnowowlTerminologyHandler implements TerminologyHandler {
         + "/concepts/" + terminologyId + "/parents");
     final Response response =
         target.request("*/*").header("Authorization", authHeader)
-            .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6").get();
+            .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
+            .header("Cookie", getCookieHeader()).get();
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -1176,7 +1222,8 @@ public class SnowowlTerminologyHandler implements TerminologyHandler {
         + "/concepts/" + terminologyId + "/children?form=inferred");
     final Response response =
         target.request("*/*").header("Authorization", authHeader)
-            .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6").get();
+            .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
+            .header("Cookie", getCookieHeader()).get();
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -1235,14 +1282,22 @@ public class SnowowlTerminologyHandler implements TerminologyHandler {
 
   /* see superclass */
   @Override
-  public void setUrl(String url) {
+  public void setUrl(String url) throws Exception {
     this.url = url;
+    this.domain = InternetDomainName.from(new URL(url).getHost())
+        .topPrivateDomain().toString();
   }
 
   /* see superclass */
   @Override
   public String getDefaultUrl() {
     return defaultUrl;
+  }
+
+  /* see superclass */
+  @Override
+  public void setHeaders(HttpHeaders headers) throws Exception {
+    this.headers = headers;
   }
 
 }

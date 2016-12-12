@@ -96,14 +96,15 @@ tsApp
         };
 
         // test handler url
-        this.testHandlerUrl = function(key, url, terminology, version) {
-          console.debug('testHandlerUrl', key, url, terminology, version);
+        this.testHandlerUrl = function(project, terminology, version) {
+          console.debug('testHandlerUrl', project, terminology, version);
           var deferred = $q.defer();
 
           // Get projects
           gpService.increment();
           $http.get(
-            projectUrl + 'test?key=' + key + '&url=' + encodeURIComponent(url)
+            projectUrl + 'test?key=' + project.terminologyHandlerKey + '&url='
+              + encodeURIComponent(project.terminologyHandlerUrl)
               + (terminology ? '&terminology=' + terminology : '')
               + (version ? '&version =' + version : '')).then(
           // success
@@ -409,15 +410,15 @@ tsApp
         };
 
         // Find concepts
-        this.findConceptsForQuery = function(projectId, query, terminology, version, pfs) {
-          console.debug('findConceptsForQuery', projectId, query, pfs);
+        this.findConceptsForQuery = function(project, query, terminology, version, pfs) {
+          console.debug('findConceptsForQuery', project, query, pfs);
           // Setup deferred
           var deferred = $q.defer();
 
           // Make POST call
           gpService.increment();
           $http.post(
-            projectUrl + 'concepts?projectId=' + projectId + '&query='
+            projectUrl + 'concepts?projectId=' + project.id + '&query='
               + utilService.prepQuery(query, true) + '&terminology=' + terminology + '&version='
               + version, utilService.prepPfs(pfs))
 
