@@ -622,15 +622,22 @@ tsApp
         };
 
         // get log for project and refset/translation
-        this.getLog = function(projectId, objectId) {
+        this.getLog = function(projectId, objectId, filter) {
           console.debug('getLog');
           var deferred = $q.defer();
 
           // Assign user to project
           gpService.increment();
+         
           $http.get(
-            projectUrl + 'log?projectId=' + projectId + '&objectId=' + objectId + '&lines=1000')
-            .then(
+            projectUrl + 'log?projectId=' + projectId + '&objectId=' + objectId + '&lines=1000' 
+            + (filter != '' ? '&query=' + filter : ''), {
+              transformResponse : [ function(data) {
+                // Data response is plain text at this point
+                // So just return it, or do your parsing here
+                return data;
+              } ]
+            }).then(
             // success
             function(response) {
               gpService.decrement();

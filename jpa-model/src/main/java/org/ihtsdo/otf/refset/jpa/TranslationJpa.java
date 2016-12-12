@@ -675,8 +675,8 @@ public class TranslationJpa extends AbstractComponent implements Translation {
         + (refset == null ? null : refset.getId())
         + ", project ="
         + (refset != null && refset.getProject() != null ? refset.getProject()
-            .getId() : null) + ", descriptionTypes=" + descriptionTypes
-        + ", caseSensitiveTypes=" + caseSensitiveTypes + "]";
+            .getId() : null)  + "]";
+    // Note: removed DescriptionTypes and CaseSensitiveTypes because they make the LogEntries too lengthy
   }
 
   /* see superclass */

@@ -2232,12 +2232,13 @@ tsApp
               var LogModalCtrl = function($scope, $uibModalInstance, refset, project) {
                 console.debug('Entered log modal control', refset, project);
 
+                $scope.filter = '';
                 $scope.errors = [];
                 $scope.warnings = [];
 
                 // Get log to display
                 $scope.getLog = function() {
-                  projectService.getLog(project.id, refset.id).then(
+                  projectService.getLog(project.id, refset.id, $scope.filter).then(
                   // Success
                   function(data) {
                     $scope.log = data;

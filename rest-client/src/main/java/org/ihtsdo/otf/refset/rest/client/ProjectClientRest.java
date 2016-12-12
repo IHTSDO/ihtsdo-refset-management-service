@@ -659,7 +659,7 @@ public class ProjectClientRest extends RootClientRest
 
   /* see superclass */
   @Override
-  public String getLog(Long projectId, Long objectId, int lines,
+  public String getLog(Long projectId, Long objectId, int lines, String query,
     String authToken) throws Exception {
     Logger.getLogger(getClass()).debug("Project Client - get terminologies");
     validateNotEmpty(projectId, "projectId");

@@ -321,6 +321,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         addLogEntry(refsetService, userName, "  definition = ",
             newRefset.getProject().getId(), newRefset.getId(),
             newRefset.getDefinitionClauses().toString());
+        
+        addLogEntry(refsetService, userName, "ADD refset",
+                refset.getProject().getId(), refset.getId(), refset.toString());
       }
 
       refsetService.commit();
@@ -478,6 +481,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
           authorizeProject(translationService, refset.getProject().getId(),
               securityService, authToken, "update refset", UserRole.AUTHOR);
 
+      Refset oldRefset = getRefset(refset.getId(), authToken);
+      
       // Check preconditions
       // No refset with same terminologyId, project id, provisional,
       // effectiveTime
@@ -556,7 +561,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
 
       addLogEntry(translationService, userName, "UPDATE refset",
           refset.getProject().getId(), refset.getId(),
-          refset.getTerminologyId() + ": " + refset.getName());
+          "\n  old " + oldRefset.toString() +
+          "\n  new " + refset.toString());
 
       translationService.commit();
     } catch (Exception e) {
@@ -643,7 +649,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       refsetService.removeRefset(refsetId, cascade);
       addLogEntry(refsetService, userName, "REMOVE refset",
           refset.getProject().getId(), refset.getId(),
-          refset.getTerminologyId() + ": " + refset.getName());
+          refset.toString());
 
     } catch (Exception e) {
       handleException(e, "trying to remove a refset");
@@ -1026,6 +1032,56 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
 
   }
 
+  /* see superclass */
+  @POST
+  @Override
+  @Produces("application/octet-stream")
+  @Path("/export/report")
+  @ApiOperation(value = "Export diff report", notes = "Exports the report during migration of a refset", response = InputStream.class)
+  public InputStream exportDiffReport(
+    @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
+    @ApiParam(value = "Import handler id, e.g. \"DEFAULT\"", required = true) @QueryParam("handlerId") String ioHandlerInfoId,
+    @ApiParam(value = "Query, e.g. \"aspirin\"", required = true) @QueryParam("query") String query,
+    @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(getClass())
+        .info("RESTful call GET (Refset): /export/report " + refsetId + ", "
+            + ioHandlerInfoId);
+
+    final RefsetService refsetService = new RefsetServiceJpa();
+    try {
+      // Load refset
+      final Refset refset = refsetService.getRefset(refsetId);
+      if (refset == null) {
+        throw new Exception("Invalid refset id " + refsetId);
+      }
+
+      // Authorize the call
+      authorizeApp(securityService, authToken, "export report",
+          UserRole.VIEWER);
+
+      // Obtain the export handler
+      final ExportRefsetHandler handler =
+          refsetService.getExportRefsetHandler(ioHandlerInfoId);
+      if (handler == null) {
+        throw new Exception("invalid handler id " + ioHandlerInfoId);
+      }
+
+      // export the members
+      return handler.exportDiffReport(refset, null, null);
+
+    } catch (Exception e) {
+      handleException(e, "trying to export diff report");
+    } finally {
+      refsetService.close();
+      securityService.close();
+    }
+    return null;
+
+  }
+  
   /* see superclass */
   @Override
   @PUT

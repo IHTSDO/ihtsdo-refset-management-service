@@ -1476,4 +1476,11 @@ public class RefsetClientRest extends RootClientRest
     return refsetId;
   }
 
+@Override
+public InputStream exportDiffReport(Long refsetId, String ioHandlerInfoId, String query, PfsParameterJpa pfs,
+		String authToken) throws Exception {
+	// TODO Auto-generated method stub
+	return null;
+}
+
 }

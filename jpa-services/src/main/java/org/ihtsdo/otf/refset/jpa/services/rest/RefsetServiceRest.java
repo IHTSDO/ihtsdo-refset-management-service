@@ -636,4 +636,18 @@ public interface RefsetServiceRest {
    */
   public String assignRefsetTerminologyId(Long projectId, RefsetJpa refset,
     String authToken) throws Exception;
+
+  /**
+   * Export diff report.
+   *
+   * @param refsetId the refset id
+   * @param ioHandlerInfoId the io handler info id
+   * @param query the query
+   * @param pfs the pfs
+   * @param authToken the auth token
+   * @return the input stream
+   * @throws Exception the exception
+   */
+  public InputStream exportDiffReport(Long refsetId, String ioHandlerInfoId, String query, PfsParameterJpa pfs, String authToken)
+		throws Exception;
 }

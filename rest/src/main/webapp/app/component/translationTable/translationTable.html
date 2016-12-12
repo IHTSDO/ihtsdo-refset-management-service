@@ -618,7 +618,20 @@
               title="Reassign back to author" class="noul material-icons md-18">assignment_returned</i>
 
             <!-- Unassign - n/a - these are available concepts -->
-
+            
+            <!-- Notes -->
+                <i
+                  ng-show="projects.role != 'ADMIN' && concept.notes.length > 0"
+                  ng-click="openNotesModal(concept, 'Concept'); $event.stopPropagation()"
+                  title="Edit concept notes" class="noul material-icons md-18">assignment</i>
+                <i
+                  ng-show="projects.role != 'ADMIN' && concept.notes.length == 0"
+                  ng-click="openNotesModal(concept, 'Concept'); $event.stopPropagation()"
+                  title="Add concept notes" class="md-grey material-icons md-18">assignment</i>
+            
+            <!--  Log -->
+			<i ng-click="openLogModal()" title="Retrieve log"
+                  class="noul material-icons md-18">event_note</i>
           </td>
         </tr>
       </tbody>
@@ -771,6 +784,8 @@
               ng-click="openNotesModal(record.concept, 'Concept');"
               title="Add concept notes (no notes yet)"
               class="md-grey material-icons md-18">assignment</i>
+            <i ng-click="openLogModal()" title="Retrieve log"
+                  class="noul material-icons md-18">event_note</i>
 
             <br>
           </td>
@@ -930,7 +945,9 @@
                   ng-click="startLookup(selected.translation); $event.stopPropagation()"
                   ng-show="concept.name == 'name lookup in progress' && !selected.translation.lookupInProgress"
                   title="Restart name lookup" class="noul material-icons md-18">play_arrow</i>
-
+				<!-- log -->
+				<i ng-click="openLogModal()" title="Retrieve log"
+                  class="noul material-icons md-18">event_note</i>
               </td>
             </tr>
           </tbody>
