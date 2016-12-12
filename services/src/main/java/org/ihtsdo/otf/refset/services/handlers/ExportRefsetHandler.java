@@ -79,4 +79,16 @@ public interface ExportRefsetHandler extends Configurable {
     List<ConceptRefsetMember> inclusions, List<ConceptRefsetMember> exclusions)
     throws Exception;
 
+  /**
+   * Export diff report.
+   *
+   * @param refset the refset
+   * @param inclusions the inclusions
+   * @param exclusions the exclusions
+   * @return the input stream
+   * @throws Exception the exception
+   */
+  public InputStream exportDiffReport(Refset refset, List<ConceptRefsetMember> inclusions, List<ConceptRefsetMember> exclusions)
+		throws Exception;
+
 }

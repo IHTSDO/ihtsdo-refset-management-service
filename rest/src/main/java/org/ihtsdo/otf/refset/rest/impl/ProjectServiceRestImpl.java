@@ -1092,10 +1092,11 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     @ApiParam(value = "Project id, e.g. 5", required = true) @QueryParam("projectId") Long projectId,
     @ApiParam(value = "Object id, e.g. 5", required = true) @QueryParam("objectId") Long objectId,
     @ApiParam(value = "Lines, e.g. 5", required = false) @QueryParam("lines") int lines,
+    @ApiParam(value = "Query, e.g. UPDATE", required = false) @QueryParam("query") String query,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
-        "RESTful POST call (Project): /log/" + projectId + ", " + objectId);
+        "RESTful POST call (Project): /log/" + projectId + ", " + objectId + ", " + query);
 
     final ProjectService projectService = new ProjectServiceJpa();
     try {
@@ -1107,6 +1108,9 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
       pfs.setMaxResults(lines);
       pfs.setAscending(false);
       pfs.setSortField("lastModified");
+      if (query != null) {
+    	  pfs.setQueryRestriction(query);
+      }
 
       final List<LogEntry> entries =
           projectService.findLogEntriesForQuery("objectId:" + objectId, pfs);

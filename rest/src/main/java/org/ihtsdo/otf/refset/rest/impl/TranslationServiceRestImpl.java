@@ -346,7 +346,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
 
       addLogEntry(translationService, userName, "ADD translation",
           newTranslation.getProject().getId(), newTranslation.getId(),
-          newTranslation.getTerminologyId() + ": " + newTranslation.getName());
+          newTranslation.toString());
 
       translationService.commit();
 
@@ -378,6 +378,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
       final String userName = authorizeProject(translationService,
           translation.getProjectId(), securityService, authToken,
           "update translation", UserRole.AUTHOR);
+      Translation oldTranslation = this.getTranslation(translation.getId(), authToken);
       // Check preconditions
       // No translation with same terminologyId, name, description, project id,
       // provisional, effectiveTime
@@ -413,7 +414,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
 
       addLogEntry(translationService, userName, "UPDATE translation",
           translation.getProject().getId(), translation.getId(),
-          translation.getTerminologyId() + ": " + translation.getName());
+          "\n  old " + oldTranslation.toString() +
+          "\n  new " + translation.toString());
 
     } catch (Exception e) {
       handleException(e, "trying to update a translation");
@@ -508,7 +510,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
 
       addLogEntry(translationService, userName, "REMOVE translation",
           translation.getProject().getId(), translationId,
-          translation.getTerminologyId() + ": " + translation.getName());
+          translation.toString());
 
     } catch (Exception e) {
       handleException(e, "trying to remove a translation");
@@ -611,7 +613,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
 
       addLogEntry(translationService, userName,
           "REMOVE all translation concepts", translation.getProject().getId(),
-          translation.getId(), ": ");
+          translation.getId(), "id=" + translation.getTerminologyId() + " name=" + translation.getName() + 
+          " language=" + translation.getLanguage() + " description=" + translation.getDescription());
 
       translationService.commit();
 
@@ -780,7 +783,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
 
       addLogEntry(translationService, userName, "BEGIN IMPORT translation",
           translation.getProject().getId(), translation.getId(),
-          translation.getTerminologyId() + ": " + translation.getName());
+          "id=" + translation.getTerminologyId() + " name=" + translation.getName() + 
+          " language=" + translation.getLanguage() + " description=" + translation.getDescription());
 
       return result;
 
@@ -1323,9 +1327,18 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
       newConcept.setLastModifiedBy(userName);
       translationService.updateConcept(newConcept);
 
+      // compute log entry
+      StringBuilder sb = new StringBuilder();
+      for (Description d : newConcept.getDescriptions()) {
+    	  sb.append("\nADD description ").append(d.toString());
+      }
       addLogEntry(translationService, userName, "ADD concept",
           translation.getProject().getId(), translation.getId(),
-          newConcept.getTerminologyId() + ": " + newConcept.getName());
+          sb.toString());
+      
+      addLogEntry(translationService, userName, "ADD concept",
+              translation.getProject().getId(), newConcept.getId(),
+              sb.toString());
 
       translationService.commit();
       return newConcept;
@@ -1372,6 +1385,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
         oldTermMap.put(oldDesc.getId(), oldDesc.getTerm());
       }
 
+      StringBuilder sb = new StringBuilder();
+      
       // Add descriptions/languages that haven't been added yet.
       for (final Description desc : concept.getDescriptions()) {
 
@@ -1389,6 +1404,14 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
         // description
         if (desc.getId() == null || (desc.getId() != null
             && !oldTermMap.get(desc.getId()).equals(desc.getTerm()))) {
+          // compile logEntry indicating if ADD or UPDATE
+          if (desc.getId() == null) {
+              sb.append("\nADD description ").append(desc.toString());
+          } else {
+              sb.append("\nUPDATE description ").append(desc.toString());
+              sb.append("\n  old " + oldTermMap.get(desc.getId()));
+              sb.append("\n  new " + desc.getTerm());
+          }
           // clear ID in case this is a term-change case
           desc.setId(null);
           desc.setConcept(concept);
@@ -1466,6 +1489,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
           }
           // remove desc
           translationService.removeDescription(oldDesc.getId());
+          sb.append("\nREMOVE description ").append(oldDesc.toString());
         }
       }
 
@@ -1475,7 +1499,12 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
 
       addLogEntry(translationService, userName, "UPDATE concept",
           translation.getProject().getId(), translation.getId(),
-          concept.getTerminologyId() + ": " + concept.getName());
+          concept.toString() + "\n" + sb.toString());
+      
+      addLogEntry(translationService, userName, "UPDATE concept",
+              translation.getProject().getId(), concept.getId(),
+              concept.toString() + "\n" + sb.toString());
+
 
       // finish transaction
       translationService.commit();
@@ -1526,6 +1555,11 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
       addLogEntry(translationService, userName, "REMOVE concept",
           translation.getProject().getId(), translation.getId(),
           concept.getTerminologyId() + ": " + concept.getName());
+      
+      addLogEntry(translationService, userName, "REMOVE concept",
+              translation.getProject().getId(), concept.getId(), 
+              concept.getTerminologyId() + ": " + concept.getName());
+
 
       translationService.commit();
     } catch (Exception e) {

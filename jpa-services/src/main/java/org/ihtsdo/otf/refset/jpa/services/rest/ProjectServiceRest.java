@@ -297,7 +297,7 @@ public interface ProjectServiceRest {
    * @return the log
    * @throws Exception the exception
    */
-  public String getLog(Long projectId, Long objectId, int lines,
+  public String getLog(Long projectId, Long objectId, int lines, String query,
     String authToken) throws Exception;
 
   /**
