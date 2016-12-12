@@ -19,6 +19,7 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status.Family;
 
@@ -72,6 +73,10 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
 
   /** The default url. */
   private String defaultUrl;
+
+  /** The headers. */
+  @SuppressWarnings("unused")
+  private HttpHeaders headers;
 
   /* see superclass */
   @Override
@@ -1094,4 +1099,12 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
   public String getDefaultUrl() {
     return defaultUrl;
   }
+
+  /* see superclass */
+  @Override
+  public void setHeaders(HttpHeaders headers) throws Exception {
+    // n/a - don't really need to use this
+    this.headers = headers;
+  }
+
 }

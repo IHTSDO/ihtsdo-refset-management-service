@@ -23,6 +23,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 
 import org.apache.log4j.Logger;
@@ -107,6 +109,10 @@ import com.wordnik.swagger.annotations.ApiParam;
 public class TranslationServiceRestImpl extends RootServiceRestImpl
     implements TranslationServiceRest {
 
+  /** Security context */
+  @Context
+  HttpHeaders headers;
+
   /** The commit ct. */
   final int commitCt = 2000;
 
@@ -147,7 +153,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
     @ApiParam(value = "Translation id, e.g. 2", required = true) @PathParam("translationId") Long translationId,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    final TranslationService translationService = new TranslationServiceJpa();
+    final TranslationService translationService =
+        new TranslationServiceJpa(headers);
     try {
       Logger.getLogger(getClass()).info(
           "RESTful call GET (Translation): get translation, translationId:"
@@ -181,7 +188,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
     @ApiParam(value = "Concept id, e.g. 2", required = true) @PathParam("conceptId") Long conceptId,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    final TranslationService translationService = new TranslationServiceJpa();
+    final TranslationService translationService =
+        new TranslationServiceJpa(headers);
     try {
       Logger.getLogger(getClass())
           .info("RESTful call GET (Translation): get concept, conceptId:"
@@ -218,7 +226,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
         "RESTful call GET (Translation): get translations for refset, refsetId:"
             + refsetId);
 
-    final TranslationService translationService = new TranslationServiceJpa();
+    final TranslationService translationService =
+        new TranslationServiceJpa(headers);
     try {
       authorizeApp(securityService, authToken, "get translations for refset",
           UserRole.VIEWER);
@@ -256,7 +265,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
     Logger.getLogger(getClass())
         .info("RESTful call POST (Translation): translations");
 
-    final TranslationService translationService = new TranslationServiceJpa();
+    final TranslationService translationService =
+        new TranslationServiceJpa(headers);
     try {
       authorizeApp(securityService, authToken, "find translations",
           UserRole.VIEWER);
@@ -297,7 +307,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
         || translation.getRefset().getId() == null) {
       throw new LocalException("A translation must have an associated refset");
     }
-    final TranslationService translationService = new TranslationServiceJpa();
+    final TranslationService translationService =
+        new TranslationServiceJpa(headers);
     translationService.setTransactionPerOperation(false);
     translationService.beginTransaction();
     try {
@@ -373,7 +384,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
         .info("RESTful call POST (Translation): /update " + translation);
 
     // Create service and configure transaction scope
-    final TranslationService translationService = new TranslationServiceJpa();
+    final TranslationService translationService =
+        new TranslationServiceJpa(headers);
     try {
       final String userName = authorizeProject(translationService,
           translation.getProjectId(), securityService, authToken,
@@ -439,7 +451,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
     Logger.getLogger(getClass())
         .info("RESTful call DELETE (Translation): /remove/" + translationId);
 
-    final TranslationService translationService = new TranslationServiceJpa();
+    final TranslationService translationService =
+        new TranslationServiceJpa(headers);
     try {
       final Translation translation =
           translationService.getTranslation(translationId);
@@ -538,7 +551,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
     Logger.getLogger(getClass()).info("RESTful call GET (Translation): /export "
         + translationId + ", " + ioHandlerInfoId);
 
-    final TranslationService translationService = new TranslationServiceJpa();
+    final TranslationService translationService =
+        new TranslationServiceJpa(headers);
     try {
       // Load translation
       final Translation translation =
@@ -642,7 +656,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
     Logger.getLogger(getClass()).info(
         "RESTful call POST (Translation): find translation concepts, translationId:"
             + translationId + " query:" + query + " " + pfs);
-    final TranslationService translationService = new TranslationServiceJpa();
+    final TranslationService translationService =
+        new TranslationServiceJpa(headers);
     try {
       authorizeApp(securityService, authToken, "find translation concepts",
           UserRole.VIEWER);
@@ -674,7 +689,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
     throws Exception {
     Logger.getLogger(getClass()).info(
         "RESTful call GET (Translation): get import translation handlers:");
-    final TranslationService translationService = new TranslationServiceJpa();
+    final TranslationService translationService =
+        new TranslationServiceJpa(headers);
     try {
       authorizeApp(securityService, authToken,
           "get import translation handlers", UserRole.VIEWER);
@@ -700,7 +716,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
     throws Exception {
     Logger.getLogger(getClass()).info(
         "RESTful call GET (Translation): get export translation handlers:");
-    final TranslationService translationService = new TranslationServiceJpa();
+    final TranslationService translationService =
+        new TranslationServiceJpa(headers);
     try {
       authorizeApp(securityService, authToken,
           "get export translation handlers", UserRole.VIEWER);
@@ -731,7 +748,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
         .info("RESTful call GET (Translation): /import/begin " + translationId
             + ", " + ioHandlerInfoId);
 
-    final TranslationService translationService = new TranslationServiceJpa();
+    final TranslationService translationService =
+        new TranslationServiceJpa(headers);
     try {
       // Load translation
       final Translation translation =
@@ -812,7 +830,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
         .info("RESTful call GET (Translation): /import/resume " + translationId
             + ", " + ioHandlerInfoId);
 
-    final TranslationService translationService = new TranslationServiceJpa();
+    final TranslationService translationService =
+        new TranslationServiceJpa(headers);
     try {
       // Load translation
       final Translation translation =
@@ -870,7 +889,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
         .info("RESTful call POST (Translation): /import/finish " + translationId
             + ", " + ioHandlerInfoId);
 
-    final TranslationService translationService = new TranslationServiceJpa();
+    final TranslationService translationService =
+        new TranslationServiceJpa(headers);
     translationService.setTransactionPerOperation(false);
     translationService.beginTransaction();
     try {
@@ -1213,7 +1233,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
     Logger.getLogger(getClass()).info(
         "RESTful call GET (Translation): /import/cancel " + translationId);
 
-    final TranslationService translationService = new TranslationServiceJpa();
+    final TranslationService translationService =
+        new TranslationServiceJpa(headers);
     try {
       // Load translation
       final Translation translation =
@@ -1261,7 +1282,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
     Logger.getLogger(getClass())
         .info("RESTful call PUT (Translation): /concept/add " + concept);
 
-    final TranslationService translationService = new TranslationServiceJpa();
+    final TranslationService translationService =
+        new TranslationServiceJpa(headers);
     translationService.setTransactionPerOperation(false);
     translationService.beginTransaction();
     try {
@@ -1365,7 +1387,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
         .info("RESTful call POST (Translation): /concept/update " + concept);
 
     // Create service and configure transaction scope
-    final TranslationService translationService = new TranslationServiceJpa();
+    final TranslationService translationService =
+        new TranslationServiceJpa(headers);
     translationService.setTransactionPerOperation(false);
     translationService.beginTransaction();
     try {
@@ -1533,7 +1556,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
     Logger.getLogger(getClass()).info(
         "RESTful call DELETE (Translation): /concept/remove/" + conceptId);
 
-    final TranslationService translationService = new TranslationServiceJpa();
+    final TranslationService translationService =
+        new TranslationServiceJpa(headers);
     translationService.setTransactionPerOperation(false);
     translationService.beginTransaction();
     try {
@@ -1582,7 +1606,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
     Logger.getLogger(getClass())
         .info("RESTful call GET (Translation): /translations/dictionary");
 
-    final TranslationService translationService = new TranslationServiceJpa();
+    final TranslationService translationService =
+        new TranslationServiceJpa(headers);
     try {
       authorizeApp(securityService, authToken,
           "get translations with spelling dictionary", UserRole.VIEWER);
@@ -1623,7 +1648,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
         .info("RESTful call GET (Translation): /spelling/copy/"
             + fromTranslationId + " " + toTranslationId);
 
-    final TranslationService translationService = new TranslationServiceJpa();
+    final TranslationService translationService =
+        new TranslationServiceJpa(headers);
     translationService.setTransactionPerOperation(false);
     translationService.beginTransaction();
     try {
@@ -1710,7 +1736,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
         .info("RESTful call PUT (Translation): /spelling/add/" + translationId
             + " " + entry);
 
-    final TranslationService translationService = new TranslationServiceJpa();
+    final TranslationService translationService =
+        new TranslationServiceJpa(headers);
 
     try {
       final Translation translation =
@@ -1766,7 +1793,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
         .info("RESTful call POST (Translation): /spelling/add/batch "
             + translationId + ", " + entries);
 
-    final TranslationService translationService = new TranslationServiceJpa();
+    final TranslationService translationService =
+        new TranslationServiceJpa(headers);
 
     try {
       Translation translation =
@@ -1831,7 +1859,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
         .info("RESTful call DELETE (Translation): /spelling/remove/"
             + translationId + " " + entry);
 
-    final TranslationService translationService = new TranslationServiceJpa();
+    final TranslationService translationService =
+        new TranslationServiceJpa(headers);
 
     try {
       final Translation translation =
@@ -1889,7 +1918,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
     Logger.getLogger(getClass()).info(
         "RESTful call DELETE (Translation): /spelling/clear/" + translationId);
 
-    final TranslationService translationService = new TranslationServiceJpa();
+    final TranslationService translationService =
+        new TranslationServiceJpa(headers);
 
     try {
       final Translation translation =
@@ -1945,7 +1975,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
     Logger.getLogger(getClass())
         .info("RESTful call GET (Translation): /translations/memory");
 
-    final TranslationService translationService = new TranslationServiceJpa();
+    final TranslationService translationService =
+        new TranslationServiceJpa(headers);
     try {
       authorizeApp(securityService, authToken,
           "get translations with phrase memory", UserRole.VIEWER);
@@ -1985,7 +2016,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
         .info("RESTful call GET (Translation): /memory/copy/"
             + fromTranslationId + " " + toTranslationId);
 
-    final TranslationService translationService = new TranslationServiceJpa();
+    final TranslationService translationService =
+        new TranslationServiceJpa(headers);
     translationService.setTransactionPerOperation(false);
     translationService.beginTransaction();
     try {
@@ -2059,7 +2091,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
         .info("RESTful call PUT (Translation): /memory/add/" + translationId
             + " " + name + " " + translatedName);
 
-    final TranslationService translationService = new TranslationServiceJpa();
+    final TranslationService translationService =
+        new TranslationServiceJpa(headers);
 
     try {
 
@@ -2109,7 +2142,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
         .info("RESTful call DELETE (Translation): /memory/remove/name "
             + translationId + ", " + name + ", " + translatedName);
 
-    final TranslationService translationService = new TranslationServiceJpa();
+    final TranslationService translationService =
+        new TranslationServiceJpa(headers);
     try {
       final Translation translation =
           translationService.getTranslation(translationId);
@@ -2163,7 +2197,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
         .info("RESTful call GET (Translation): /translation/memory/suggest"
             + translationId + " " + name);
 
-    final TranslationService translationService = new TranslationServiceJpa();
+    final TranslationService translationService =
+        new TranslationServiceJpa(headers);
 
     try {
       // Load translation
@@ -2205,7 +2240,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
         .info("RESTful call POST (Translation): /memory/suggest/batch/"
             + translationId + ", " + phrases);
 
-    final TranslationService translationService = new TranslationServiceJpa();
+    final TranslationService translationService =
+        new TranslationServiceJpa(headers);
     try {
       // Load translation
       Translation translation =
@@ -2265,7 +2301,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
     Logger.getLogger(getClass()).info(
         "RESTful call DELETE (Translation): /memory/clear/" + translationId);
 
-    final TranslationService translationService = new TranslationServiceJpa();
+    final TranslationService translationService =
+        new TranslationServiceJpa(headers);
     try {
       final Translation translation =
           translationService.getTranslation(translationId);
@@ -2313,7 +2350,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
     Logger.getLogger(getClass()).info(
         "RESTful call POST (Translation): /spelling/import" + translationId);
 
-    final TranslationService translationService = new TranslationServiceJpa();
+    final TranslationService translationService =
+        new TranslationServiceJpa(headers);
 
     try {
       // Load translation
@@ -2379,7 +2417,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
     Logger.getLogger(getClass()).info(
         "RESTful call GET (Translation):  /spelling/export/" + translationId);
 
-    final TranslationService translationService = new TranslationServiceJpa();
+    final TranslationService translationService =
+        new TranslationServiceJpa(headers);
 
     try {
       // Load translation
@@ -2431,7 +2470,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
     Logger.getLogger(getClass()).info(
         "RESTful call POST (Translation): /import/memory " + translationId);
 
-    final TranslationService translationService = new TranslationServiceJpa();
+    final TranslationService translationService =
+        new TranslationServiceJpa(headers);
     try {
       // Load translation
       final Translation translation =
@@ -2496,7 +2536,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
     Logger.getLogger(getClass()).info(
         "RESTful call GET (Translation): /export/memory " + translationId);
 
-    final TranslationService translationService = new TranslationServiceJpa();
+    final TranslationService translationService =
+        new TranslationServiceJpa(headers);
     try {
       // Load translation
       final Translation translation =
@@ -2539,7 +2580,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
         .info("RESTful call GET (Translation): /spelling/suggest/"
             + translationId + " " + entry);
 
-    final TranslationService translationService = new TranslationServiceJpa();
+    final TranslationService translationService =
+        new TranslationServiceJpa(headers);
     try {
       // Load translation
       final Translation translation =
@@ -2587,7 +2629,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
         .info("RESTful call POST (Translation): /spelling/suggest/batch/"
             + translationId);
 
-    final TranslationService translationService = new TranslationServiceJpa();
+    final TranslationService translationService =
+        new TranslationServiceJpa(headers);
     try {
       // Load translation
       Translation translation =
@@ -2656,7 +2699,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
     Logger.getLogger(getClass())
         .info("RESTful call GET (Translation): compare");
 
-    final TranslationService translationService = new TranslationServiceJpa();
+    final TranslationService translationService =
+        new TranslationServiceJpa(headers);
     try {
       authorizeApp(securityService, authToken, "compare translations",
           UserRole.VIEWER);
@@ -2731,7 +2775,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
     Logger.getLogger(getClass())
         .info("RESTful call POST (Translation): common/concepts");
 
-    final TranslationService translationService = new TranslationServiceJpa();
+    final TranslationService translationService =
+        new TranslationServiceJpa(headers);
     try {
       authorizeApp(securityService, authToken, "find concepts in common",
           UserRole.VIEWER);
@@ -2777,7 +2822,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
     Logger.getLogger(getClass())
         .info("RESTful call GET (Translation): diff/concepts");
 
-    final TranslationService translationService = new TranslationServiceJpa();
+    final TranslationService translationService =
+        new TranslationServiceJpa(headers);
     try {
       authorizeApp(securityService, authToken, "returns diff report",
           UserRole.VIEWER);
@@ -2813,7 +2859,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
     Logger.getLogger(getClass()).info(
         "RESTful call GET (Translation): /release/report: " + reportToken);
 
-    final TranslationService translationService = new TranslationServiceJpa();
+    final TranslationService translationService =
+        new TranslationServiceJpa(headers);
     try {
       authorizeApp(securityService, authToken, "releases a report",
           UserRole.VIEWER);
@@ -2843,7 +2890,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
         .info("RESTful POST call (Translation): /add/note " + translationId
             + ", " + note);
 
-    final TranslationService translationService = new TranslationServiceJpa();
+    final TranslationService translationService =
+        new TranslationServiceJpa(headers);
     try {
       final Translation translation =
           translationService.getTranslation(translationId);
@@ -2899,7 +2947,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
         .info("RESTful call DELETE (Translation): /remove/note " + translationId
             + ", " + noteId);
 
-    final TranslationService translationService = new TranslationServiceJpa();
+    final TranslationService translationService =
+        new TranslationServiceJpa(headers);
     try {
       final Translation translation =
           translationService.getTranslation(translationId);
@@ -2954,7 +3003,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
         .info("RESTful POST call (Translation): /concept/add/note "
             + translationId + "," + conceptId + ", " + note);
 
-    final TranslationService translationService = new TranslationServiceJpa();
+    final TranslationService translationService =
+        new TranslationServiceJpa(headers);
     try {
       final Translation translation =
           translationService.getTranslation(translationId);
@@ -3017,7 +3067,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
         .info("RESTful call DELETE (Translation): /concept/remove/note "
             + conceptId + ", " + noteId);
 
-    final TranslationService translationService = new TranslationServiceJpa();
+    final TranslationService translationService =
+        new TranslationServiceJpa(headers);
     try {
       final Concept concept = translationService.getConcept(conceptId);
       final Translation translation = concept.getTranslation();
@@ -3069,7 +3120,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
     Logger.getLogger(getClass()).info(
         "RESTful call GET (Translation): /lookup/status " + translationId);
 
-    final TranslationService translationService = new TranslationServiceJpa();
+    final TranslationService translationService =
+        new TranslationServiceJpa(headers);
     try {
       final Translation translation =
           translationService.getTranslation(translationId);
@@ -3105,7 +3157,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
     Logger.getLogger(getClass())
         .info("RESTful call GET (Translation): /lookup/start " + translationId);
 
-    final TranslationService translationService = new TranslationServiceJpa();
+    final TranslationService translationService =
+        new TranslationServiceJpa(headers);
     try {
       final Translation translation =
           translationService.getTranslation(translationId);
@@ -3139,7 +3192,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
     Logger.getLogger(getClass())
         .info("RESTful call GET (Translation): /langpref");
 
-    final TranslationService translationService = new TranslationServiceJpa();
+    final TranslationService translationService =
+        new TranslationServiceJpa(headers);
     try {
       // Authorize the call
       authorizeApp(securityService, authToken, "get origin translation",
@@ -3271,7 +3325,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
         "RESTful call GET (Translation): recover translation for id, translationId:"
             + translationId);
 
-    final TranslationService translationService = new TranslationServiceJpa();
+    final TranslationService translationService =
+        new TranslationServiceJpa(headers);
     translationService.setTransactionPerOperation(false);
     translationService.beginTransaction();
     try {
@@ -3307,7 +3362,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
     Logger.getLogger(getClass())
         .info("RESTful call GET (Translation): origin, " + stagedTranslationId);
 
-    final TranslationService translationService = new TranslationServiceJpa();
+    final TranslationService translationService =
+        new TranslationServiceJpa(headers);
     try {
       authorizeApp(securityService, authToken, "get origin translation",
           UserRole.VIEWER);
@@ -3349,7 +3405,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
     throws Exception {
     Logger.getLogger(getClass()).info("RESTful call (Translation): filters");
 
-    final TranslationService translationService = new TranslationServiceJpa();
+    final TranslationService translationService =
+        new TranslationServiceJpa(headers);
     try {
       authorizeApp(securityService, authToken, "get filters", UserRole.VIEWER);
 

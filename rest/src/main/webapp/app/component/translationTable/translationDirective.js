@@ -1507,6 +1507,7 @@ tsApp
                 $scope.translation = translation;
                 $scope.metadata = metadata;
                 $scope.batchSize = 10;
+                $scope.batchSizes = [ 5, 10, 25, 100 ];
                 $scope.project = project;
                 $scope.role = role;
                 $scope.assignedUsers = [];

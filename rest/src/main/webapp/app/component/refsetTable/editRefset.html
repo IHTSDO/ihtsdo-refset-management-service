@@ -49,6 +49,13 @@
       </tr>
       <tr>
         <td>
+          <b>Server Endpoint</b>
+        </td>
+        <td>{{project.terminologyHandlerKey}}
+          {{project.terminologyHandlerUrl}}</td>
+      </tr>
+      <tr>
+        <td>
           <b>Terminology</b>
         </td>
         <td>
@@ -238,8 +245,7 @@
       ng-click="submitRefset(refset); ">Save</button>
     <button ng-show="action == 'Clone' && comments.length == 0"
       class="btn btn-primary" ng-click="submitRefset(refset); ">Clone</button>
-    <button class="btn btn-warning"
-      ng-click="cancel()">Cancel</button>
+    <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
     <button ng-show="comments.length > 0" class="btn btn-warning"
       ng-click="close()">Close</button>
   </div>

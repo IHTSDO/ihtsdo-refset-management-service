@@ -67,5 +67,7 @@ tsApp.controller('LoginCtrl',
           window.location.href = $scope.appConfig['security.handler.IMS.url']
             + '/#/login?serviceReferer=' + appConfig['base.url'] + '%2F%23%2Flogin';
         });
+      
+      // end
 
     } ])

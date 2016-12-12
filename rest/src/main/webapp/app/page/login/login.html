@@ -6,6 +6,8 @@
   <div class="col-md-1 col-xs-0"></div>
 
   <div class="col-md-10 col-xs-10">
+    <div ng-show="ssoWarning" class="alert alert-warning">{{ssoWarning}}</div>
+    <div ng-show="ssoMessage" class="alert alert-success">{{ssoMessage}}</div>
     <strong>Enter User and Password</strong><br>
     <form>
       <input autofocus class="login-field" id="userField"
