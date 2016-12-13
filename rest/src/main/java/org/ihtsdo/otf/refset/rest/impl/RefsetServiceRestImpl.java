@@ -6,7 +6,6 @@ package org.ihtsdo.otf.refset.rest.impl;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -71,7 +70,6 @@ import org.ihtsdo.otf.refset.jpa.services.ReleaseServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.TranslationServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.WorkflowServiceJpa;
-import org.ihtsdo.otf.refset.jpa.services.handlers.ExportRefsetRf2WithNameExcelHandler;
 import org.ihtsdo.otf.refset.jpa.services.rest.RefsetServiceRest;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
@@ -1797,10 +1795,6 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
           refset.getProject().getId(), securityService, authToken,
           "begin refset conversion", UserRole.AUTHOR);
 
-      // CHECK PRECONDITIONS
-
-      
-
       // Check refset type
       if (refset.getType() == Refset.Type.EXTERNAL || refset.getType() == Refset.Type.EXTENSIONAL) {
         throw new LocalException(
@@ -1815,21 +1809,16 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       refset.setDefinitionClauses(null);
       
       refsetService.updateRefset(refset);
-      
 
-        for (final ConceptRefsetMember member : refset.getMembers()) {
-          if(MemberType.EXCLUSION == member.getMemberType()) {
-        	  refset.removeMember(member);
-        	  refsetService.updateMember(member);
-          }
-          else if(MemberType.INCLUSION == member.getMemberType()) {
-        	  member.setMemberType(MemberType.MEMBER);
-        	  refsetService.updateMember(member);
-          }
+      for (final ConceptRefsetMember member : refset.getMembers()) {
+        if (MemberType.EXCLUSION == member.getMemberType()) {
+          refsetService.removeMember(member.getId());
+        } else if (MemberType.INCLUSION == member.getMemberType()) {
+          member.setMemberType(MemberType.MEMBER);
+          refsetService.updateMember(member);
         }
- 
+      }
 
- 
       refsetService.commit();
 
       addLogEntry(refsetService, userName, "CONVERT REFSET",
