@@ -408,6 +408,11 @@
                 ng-show="userProjectsInfo.anyRole && selected.refset.type != 'EXTERNAL'"
                 ng-click="openCloneRefsetModal(selected.refset); $event.stopPropagation()"
                 title="Clone" class="noul material-icons md-18">content_copy</i>
+              <i
+                confirm="Are you sure that you want to convert this refset to an extensional format?"
+                ng-show="selected.refset.type == 'INTENSIONAL'"
+                ng-click="convertRefset(selected.refset); $event.stopPropagation()"
+                title="Convert to extensional" class="noul material-icons md-18">exit_to_app</i>
             </td>
           </tr>
 
