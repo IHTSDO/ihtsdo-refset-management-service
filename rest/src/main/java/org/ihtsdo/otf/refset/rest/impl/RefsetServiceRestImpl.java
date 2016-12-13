@@ -37,6 +37,7 @@ import org.ihtsdo.otf.refset.Note;
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Refset.MemberType;
+import org.ihtsdo.otf.refset.Refset.Type;
 import org.ihtsdo.otf.refset.ReleaseInfo;
 import org.ihtsdo.otf.refset.StagedRefsetChange;
 import org.ihtsdo.otf.refset.Translation;
@@ -1056,6 +1057,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       }
 
       StringBuilder sb = new StringBuilder();
+
+      // New regular members
       if (report.getNewRegularMembers().size() > 0) {
         sb.append("New Members").append("\r\n");
         sb = appendDiffReportHeader(sb);
@@ -1065,6 +1068,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         sb = appendDiffReportMember(sb, member, refset);
       }
 
+      // Old regular members
       if (report.getOldRegularMembers().size() > 0) {
         sb.append("\r\n").append("Old Members").append("\r\n");
         sb = appendDiffReportHeader(sb);
@@ -1074,55 +1078,71 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         sb = appendDiffReportMember(sb, member, refset);
       }
 
-      if (report.getValidInclusions().size() > 0) {
-        sb.append("\r\n").append("Valid Inclusions").append("\r\n");
-        sb = appendDiffReportHeader(sb);
+      if (refset.getType() == Type.INTENSIONAL) {
+        // Valid inclusions
+        if (report.getValidInclusions().size() > 0) {
+          sb.append("\r\n").append("Valid Inclusions").append("\r\n");
+          sb = appendDiffReportHeader(sb);
+        }
+        for (ConceptRefsetMember member : report.getValidInclusions()) {
+          Logger.getLogger(getClass()).debug("  member = " + member);
+          sb = appendDiffReportMember(sb, member, refset);
+        }
+
+        // Valid exclusions
+        if (report.getValidExclusions().size() > 0) {
+          sb.append("\r\n").append("Valid Exclusions").append("\r\n");
+          sb = appendDiffReportHeader(sb);
+        }
+        for (ConceptRefsetMember member : report.getValidExclusions()) {
+          Logger.getLogger(getClass()).debug("  member = " + member);
+          sb = appendDiffReportMember(sb, member, refset);
+        }
+
+        // Staged inclusions
+        if (report.getStagedInclusions().size() > 0) {
+          sb.append("\r\n").append("Migrated Inclusions").append("\r\n");
+          sb = appendDiffReportHeader(sb);
+        }
+        for (ConceptRefsetMember member : report.getStagedInclusions()) {
+          Logger.getLogger(getClass()).debug("  member = " + member);
+          sb = appendDiffReportMember(sb, member, refset);
+        }
+
+        // Staged exclusions
+        if (report.getStagedExclusions().size() > 0) {
+          sb.append("\r\n").append("Migrated Exclusions").append("\r\n");
+          sb = appendDiffReportHeader(sb);
+        }
+        for (ConceptRefsetMember member : report.getStagedExclusions()) {
+          sb = appendDiffReportMember(sb, member, refset);
+        }
+
+        // Invalid inclusions
+        if (report.getInvalidInclusions().size() > 0) {
+          sb.append("\r\n").append("Invalid Inclusions").append("\r\n");
+          sb = appendDiffReportHeader(sb);
+        }
+        for (ConceptRefsetMember member : report.getInvalidInclusions()) {
+          Logger.getLogger(getClass()).debug("  member = " + member);
+          sb = appendDiffReportMember(sb, member, refset);
+        }
+
+        // Invalid exclusions
+        if (report.getInvalidExclusions().size() > 0) {
+          sb.append("\r\n").append("Invalid Exclusions").append("\r\n");
+          sb = appendDiffReportHeader(sb);
+        }
+        for (ConceptRefsetMember member : report.getInvalidExclusions()) {
+          sb = appendDiffReportMember(sb, member, refset);
+        }
       }
-      for (ConceptRefsetMember member : report.getValidInclusions()) {
+            
+      // Members in common
+      sb.append("\r\n").append("Members in Common").append("\r\n");
+      sb = appendDiffReportHeader(sb);
+      for (ConceptRefsetMember member : membersInCommonMap.get(reportToken)) {
         Logger.getLogger(getClass()).debug("  member = " + member);
-        sb = appendDiffReportMember(sb, member, refset);
-      }
-
-      if (report.getValidExclusions().size() > 0) {
-        sb.append("\r\n").append("Valid Exclusions").append("\r\n");
-        sb = appendDiffReportHeader(sb);
-      }
-      for (ConceptRefsetMember member : report.getValidExclusions()) {
-        Logger.getLogger(getClass()).debug("  member = " + member);
-        sb = appendDiffReportMember(sb, member, refset);
-      }
-
-      if (report.getStagedInclusions().size() > 0) {
-        sb.append("\r\n").append("Migrated Inclusions").append("\r\n");
-        sb = appendDiffReportHeader(sb);
-      }
-      for (ConceptRefsetMember member : report.getStagedInclusions()) {
-        Logger.getLogger(getClass()).debug("  member = " + member);
-        sb = appendDiffReportMember(sb, member, refset);
-      }
-
-      if (report.getStagedExclusions().size() > 0) {
-        sb.append("\r\n").append("Migrated Exclusions").append("\r\n");
-        sb = appendDiffReportHeader(sb);
-      }
-      for (ConceptRefsetMember member : report.getStagedExclusions()) {
-        sb = appendDiffReportMember(sb, member, refset);
-      }
-
-      if (report.getInvalidInclusions().size() > 0) {
-        sb.append("\r\n").append("Invalid Inclusions").append("\r\n");
-        sb = appendDiffReportHeader(sb);
-      }
-      for (ConceptRefsetMember member : report.getInvalidInclusions()) {
-        Logger.getLogger(getClass()).debug("  member = " + member);
-        sb = appendDiffReportMember(sb, member, refset);
-      }
-
-      if (report.getInvalidExclusions().size() > 0) {
-        sb.append("\r\n").append("Invalid Exclusions").append("\r\n");
-        sb = appendDiffReportHeader(sb);
-      }
-      for (ConceptRefsetMember member : report.getInvalidExclusions()) {
         sb = appendDiffReportMember(sb, member, refset);
       }
       
