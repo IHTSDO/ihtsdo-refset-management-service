@@ -856,7 +856,8 @@ tsApp.service('refsetService', [
           var a = document.createElement('a');
           a.href = fileURL;
           a.target = '_blank';
-          a.download = 'definition.' + refset.terminologyId + handler.fileTypeFilter;
+          a.download = 'definition_' + utilService.toCamelCase(refset.name) + refset.terminologyId +
+            '_' + utilService.yyyymmdd(new Date()) + handler.fileTypeFilter;
           document.body.appendChild(a);
           gpService.decrement();
           a.click();
@@ -887,7 +888,8 @@ tsApp.service('refsetService', [
         var a = document.createElement('a');
         a.href = fileURL;
         a.target = '_blank';
-        a.download = 'members.' + refset.terminologyId + handler.fileTypeFilter;
+        a.download = 'members_' + utilService.toCamelCase(refset.name) + refset.terminologyId +
+        '_' + utilService.yyyymmdd(new Date()) + handler.fileTypeFilter;
         document.body.appendChild(a);
         gpService.decrement();
         a.click();
@@ -916,8 +918,8 @@ tsApp.service('refsetService', [
         var a = document.createElement('a');
         a.href = fileURL;
         a.target = '_blank';
-        a.download = 'migration.' + utilService.toCamelCase(refset.name) + 
-        '.' + utilService.yyyymmdd(new Date()) + '.xls';
+        a.download = 'migration_' + utilService.toCamelCase(refset.name) + refset.terminologyId +
+        '_' + utilService.yyyymmdd(new Date()) + '.xls';
         document.body.appendChild(a);
         gpService.decrement();
         a.click();
