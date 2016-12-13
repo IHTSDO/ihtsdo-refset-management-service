@@ -899,6 +899,36 @@ tsApp.service('refsetService', [
         gpService.decrement();
       });
     };
+    
+    this.exportDiffReport = function(reportToken, refset) {
+      console.debug('exportDiffReport');
+      gpService.increment();
+      $http.get(
+        refsetUrl + 'export/report?reportToken=' + reportToken + '&refsetId=' + refset.id).then(
+      // Success
+      function(response) {
+        var blob = new Blob([ response.data ], {
+          type : ''
+        });
+
+        // fake a file URL and download it
+        var fileURL = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = fileURL;
+        a.target = '_blank';
+        a.download = 'migration.' + utilService.toCamelCase(refset.name) + 
+        '.' + utilService.yyyymmdd(new Date()) + '.xls';
+        document.body.appendChild(a);
+        gpService.decrement();
+        a.click();
+
+      },
+      // Error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+      });
+    };
 
     // Begin import members - if validation is result, OK to proceed.
     this.beginImportMembers = function(refsetId, handlerId) {
@@ -999,6 +1029,29 @@ tsApp.service('refsetService', [
       function(evt) {
         var progressPercentage = parseInt(100.0 * evt.loaded / evt.total);
         console.debug('progress: ' + progressPercentage + '% ' + evt.config.data.file.name);
+      });
+      return deferred.promise;
+    };
+
+    this.convertRefset = function(refsetId, type) {
+      console.debug('convertRefset');
+      var deferred = $q.defer();
+
+      // get refset revision
+      gpService.increment();
+      $http.get(
+        refsetUrl + 'convert?refsetId=' + refsetId + '&type=' + type).then(
+      // success
+      function(response) {
+        console.debug('  refset conversion = ', response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
       });
       return deferred.promise;
     };

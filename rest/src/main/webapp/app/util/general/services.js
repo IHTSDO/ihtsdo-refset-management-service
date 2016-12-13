@@ -58,6 +58,42 @@ tsApp
           return pfs;
         };
 
+        this.toText = function(camelCase, captializefirst) {
+          if (capitalizeFirst) {
+            var str = camelCase.replace(/([A-Z]+)/g, " $1").replace(/([A-Z][a-z])/g, " $1");
+            return str[0].toUpperCase() + str.slice(1)
+          } else {
+            return camelCase.replace(/([A-Z]+)/g, " $1").replace(/([A-Z][a-z])/g, " $1")
+          }
+        }
+
+        this.toCamelCase = function(text) {
+          // Lower cases the string
+          return text.toLowerCase()
+          // Replaces any - or _ characters with a space
+          .replace(/[-_]+/g, ' ')
+          // Removes any non alphanumeric characters
+          .replace(/[^\w\s]/g, '')
+          // Uppercases the first character in each group immediately following
+          // a space
+          // (delimited by spaces)
+          .replace(/ (.)/g, function($1) {
+            return $1.toUpperCase();
+          })
+          // Removes spaces
+          .replace(/ /g, '');
+        }
+
+        this.yyyymmdd = function(dateIn) {
+          var yyyy = dateIn.getFullYear();
+          // getMonth() is zero-based
+          var mm = dateIn.getMonth() + 1;
+          var dd = dateIn.getDate();
+          // Leading zeros for mm and dd
+          return String(10000 * yyyy + 100 * mm + dd);
+        }
+
+        
         // Sets the error
         this.setError = function(message) {
           this.error.message = message;

@@ -11,6 +11,7 @@ import java.util.Properties;
 import java.util.UUID;
 
 import org.apache.log4j.Logger;
+import org.ihtsdo.otf.refset.MemberDiffReport;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
@@ -150,43 +151,7 @@ public class ExportRefsetRf2Handler implements ExportRefsetHandler {
     return new ByteArrayInputStream(sb.toString().getBytes("UTF-8"));
   }
 
-  /* see superclass */
-  @Override
-  public InputStream exportDiffReport(Refset refset,
-    List<ConceptRefsetMember> inclusions, List<ConceptRefsetMember> exclusions)
-    throws Exception {
-    Logger.getLogger(getClass()).info(
-        "Export refset definition - " + refset.getTerminologyId() + ", "
-            + refset.getName() + ", " + refset.getDefinitionClauses());
 
-    // Write RF2 refset definition pattern to an input stream
-    StringBuilder sb = new StringBuilder();
-    sb.append("id").append("\t");
-    sb.append("effectiveTime").append("\t");
-    sb.append("active").append("\t");
-    sb.append("moduleId").append("\t");
-    sb.append("refsetId").append("\t");
-    sb.append("referencedComponentId").append("\t");
-    sb.append("definition");
-    sb.append("\r\n");
-
-    sb.append(UUID.randomUUID().toString()).append("\t");
-    if (refset.getEffectiveTime() != null) {
-      sb.append(ConfigUtility.DATE_FORMAT.format(refset.getEffectiveTime()))
-          .append("\t");
-    } else {
-      sb.append("\t");
-    }
-    sb.append(1).append("\t");
-    sb.append(refset.getModuleId()).append("\t");
-    sb.append(refset.getTerminologyId()).append("\t");
-    // fake id for now
-    sb.append(refset.getTerminologyId()).append("\t");
-    sb.append(refset.computeDefinition(inclusions, exclusions));
-    sb.append("\r\n");
-
-    return new ByteArrayInputStream(sb.toString().getBytes("UTF-8"));
-  }
   
   /* see superclass */
   @Override

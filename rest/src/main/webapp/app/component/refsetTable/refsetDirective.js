@@ -926,6 +926,18 @@ tsApp
                 });
               };
 
+              $scope.convertRefset = function(refset) {
+                refsetService.convertRefset(refset, 'EXTENSIONAL').then(
+                  // Success
+                  function(data) {
+                    $scope.getRefsets();
+                  },
+                  // Error
+                  function(data) {
+                    handleError($scope.errors, data);
+                  });
+              }
+              
               //
               // MODALS
               //
@@ -3181,6 +3193,10 @@ tsApp
                   return utilService.getSortIndicator(table, field, $scope.paging);
                 };
 
+                $scope.exportDiffReport = function() {
+                  refsetService.exportDiffReport($scope.reportToken, $scope.refset);
+                }
+                
                 // get diff report
                 $scope.getDiffReport = function() {
                   refsetService.getDiffReport($scope.reportToken).then(
