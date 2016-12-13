@@ -1033,14 +1033,14 @@ tsApp.service('refsetService', [
       return deferred.promise;
     };
 
-    this.convertRefset = function(refsetId, type) {
+    this.convertRefset = function(refset, type) {
       console.debug('convertRefset');
       var deferred = $q.defer();
 
       // get refset revision
       gpService.increment();
       $http.get(
-        refsetUrl + 'convert?refsetId=' + refsetId + '&type=' + type).then(
+        refsetUrl + 'convert?refsetId=' + refset.id + '&type=' + type).then(
       // success
       function(response) {
         console.debug('  refset conversion = ', response.data);

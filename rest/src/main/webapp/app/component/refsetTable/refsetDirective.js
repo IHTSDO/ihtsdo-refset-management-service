@@ -927,6 +927,8 @@ tsApp
               };
 
               $scope.convertRefset = function(refset) {
+                if ($window
+                .confirm('Are you sure that you want to convert this refset to an extensional refset?')) {
                 refsetService.convertRefset(refset, 'EXTENSIONAL').then(
                   // Success
                   function(data) {
@@ -936,6 +938,7 @@ tsApp
                   function(data) {
                     handleError($scope.errors, data);
                   });
+                }
               }
               
               //
