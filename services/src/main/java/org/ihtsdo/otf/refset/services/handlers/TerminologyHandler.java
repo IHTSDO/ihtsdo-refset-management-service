@@ -233,4 +233,14 @@ public interface TerminologyHandler extends Configurable {
    * @throws Exception the exception
    */
   public void setHeaders(HttpHeaders headers) throws Exception;
+  
+  /**
+   * Gets the languages.
+   *
+   * @param terminology the terminology
+   * @param version the version
+   * @return the languages
+   * @throws Exception the exception
+   */
+  public List<String> getLanguages(String terminology, String version) throws Exception;
 }

@@ -25,6 +25,7 @@ import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.Terminology;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
+import org.ihtsdo.otf.refset.helpers.FieldedStringTokenizer;
 import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.jpa.TerminologyJpa;
@@ -58,6 +59,24 @@ import com.google.common.net.InternetDomainName;
  */
 public class SnowowlTerminologyHandler implements TerminologyHandler {
 
+  // terminology/version to language map
+  private static Map<String,String> tvLanguageMap = new HashMap<>();
+  
+  /** The ids to ignore. */
+  private static List<String> idsToIgnore = new ArrayList<>();
+  
+  static {
+    idsToIgnore.add("448879004");
+    idsToIgnore.add("722128001");
+    idsToIgnore.add("722130004");
+    idsToIgnore.add("722129009");
+    idsToIgnore.add("722131000");
+    idsToIgnore.add("900000000000507009");    
+    idsToIgnore.add("900000000000509007");
+    idsToIgnore.add("900000000000508004");
+    idsToIgnore.add("608771002");
+  }
+  
   /**
    * Instantiates an empty {@link SnowowlTerminologyHandler}.
    *
@@ -65,6 +84,7 @@ public class SnowowlTerminologyHandler implements TerminologyHandler {
    */
   public SnowowlTerminologyHandler() throws Exception {
     super();
+    
   }
 
   /** The accept. */
@@ -131,7 +151,7 @@ public class SnowowlTerminologyHandler implements TerminologyHandler {
     final WebTarget target = client.target(url + "/branches/" + localVersion);
     final Response response =
         target.request(accept).header("Authorization", authHeader)
-            .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
+            .header("Accept-Language", getAcceptLanguage(terminology, version))
             .header("Cookie", getCookieHeader()).get();
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -204,7 +224,7 @@ public class SnowowlTerminologyHandler implements TerminologyHandler {
 
     Response response =
         target.request(accept).header("Authorization", authHeader)
-            .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
+            .header("Accept-Language", getAcceptLanguage(terminology, version))
             .header("Cookie", getCookieHeader()).get();
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -317,7 +337,7 @@ public class SnowowlTerminologyHandler implements TerminologyHandler {
 
     Response response =
         target.request(accept).header("Authorization", authHeader)
-            .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
+            .header("Accept-Language", getAcceptLanguage(terminology, version))
             .header("Cookie", getCookieHeader()).get();
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -409,7 +429,7 @@ public class SnowowlTerminologyHandler implements TerminologyHandler {
           + (total - initialMaxLimit) + "&offset="
           + (initialMaxLimit + localPfs.getStartIndex()) + "&expand=pt()");
       response = target.request(accept).header("Authorization", authHeader)
-          .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
+          .header("Accept-Language", getAcceptLanguage(terminology, version))
           .header("Cookie", getCookieHeader()).get();
       resultString = response.readEntity(String.class);
       if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -470,7 +490,7 @@ public class SnowowlTerminologyHandler implements TerminologyHandler {
 
     Response response =
         target.request(accept).header("Authorization", authHeader)
-            .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
+            .header("Accept-Language", getAcceptLanguage(terminology, version))
             .header("Cookie", getCookieHeader()).get();
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -506,7 +526,7 @@ public class SnowowlTerminologyHandler implements TerminologyHandler {
         .target(url + "/browser/" + version + "/concepts/" + terminologyId);
     final Response response =
         target.request("*/*").header("Authorization", authHeader)
-            .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
+            .header("Accept-Language", getAcceptLanguage(terminology, version))
             .header("Cookie", getCookieHeader()).get();
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -726,7 +746,7 @@ public class SnowowlTerminologyHandler implements TerminologyHandler {
         + "/concepts?escg=" + terminologyId + "&expand=pt()");
     final Response response =
         target.request("*/*").header("Authorization", authHeader)
-            .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
+            .header("Accept-Language", getAcceptLanguage(terminology, version))
             .header("Cookie", getCookieHeader()).get();
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -890,7 +910,8 @@ public class SnowowlTerminologyHandler implements TerminologyHandler {
 
     final Response response =
         target.request("*/*").header("Authorization", authHeader)
-            .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6").get();
+        .header("Accept-Language", getAcceptLanguage(terminology, version))
+        .header("Cookie", getCookieHeader()).get();
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -1035,7 +1056,7 @@ public class SnowowlTerminologyHandler implements TerminologyHandler {
 
     final Response response =
         target.request("*/*").header("Authorization", authHeader)
-            .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
+            .header("Accept-Language", getAcceptLanguage(terminology, version))
             .header("Cookie", getCookieHeader()).get();
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -1160,7 +1181,7 @@ public class SnowowlTerminologyHandler implements TerminologyHandler {
         + "/concepts/" + terminologyId + "/parents");
     final Response response =
         target.request("*/*").header("Authorization", authHeader)
-            .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
+            .header("Accept-Language", getAcceptLanguage(terminology, version))
             .header("Cookie", getCookieHeader()).get();
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -1222,7 +1243,7 @@ public class SnowowlTerminologyHandler implements TerminologyHandler {
         + "/concepts/" + terminologyId + "/children?form=inferred");
     final Response response =
         target.request("*/*").header("Authorization", authHeader)
-            .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
+            .header("Accept-Language", getAcceptLanguage(terminology, version))
             .header("Cookie", getCookieHeader()).get();
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -1298,6 +1319,77 @@ public class SnowowlTerminologyHandler implements TerminologyHandler {
   @Override
   public void setHeaders(HttpHeaders headers) throws Exception {
     this.headers = headers;
+  }
+
+  @Override
+  public List<String> getLanguages(String terminology, String version)
+    throws Exception {
+    Logger.getLogger(getClass()).info("  get languages - " + terminology
+        + ", " + version );
+    // Make a webservice call to SnowOwl to get concept
+    final Client client = ClientBuilder.newClient();
+
+    PfsParameter localPfs = new PfsParameterJpa();
+    localPfs.setStartIndex(0);
+    localPfs.setMaxResults(200);
+
+
+    WebTarget target = client.target(url + "/" + version + "/concepts?escg="
+        + URLEncoder.encode("<900000000000506000", "UTF-8").replaceAll(" ", "%20") + "&limit="
+        + localPfs.getMaxResults() + "&offset="
+        + localPfs.getStartIndex() + "&expand=fsn()");
+
+    Response response =
+        target.request(accept).header("Authorization", authHeader)
+            .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
+            .header("Cookie", getCookieHeader()).get();
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+
+      throw new LocalException(
+          "Unexpected terminology server failure. Message = " + resultString);
+    }
+
+
+    ObjectMapper mapper = new ObjectMapper();
+    JsonNode doc = mapper.readTree(resultString);
+    
+    List<String> languages = new ArrayList<>();
+    for (final JsonNode conceptNode : doc.get("items")) {
+      
+      String id = conceptNode.get("id").asText();
+      String term = conceptNode.get("fsn").get("term").asText();
+      
+      if (!idsToIgnore.contains(id) && term.contains("code")) {
+        String code = term.substring(term.indexOf("code") + 5, term.indexOf("]"));
+        languages.add(code + "-x-" + id);
+      }
+    }
+    languages.add("en-US");
+    languages.add("en-GB");
+    
+    return languages;
+  }
+  
+  private String getAcceptLanguage(String terminology, String version) throws Exception {
+    if (tvLanguageMap.containsKey(terminology + version)) {
+      return tvLanguageMap.get(terminology + version);
+    } else {
+      List<String> languages = getLanguages(terminology, version);
+      StringBuilder acceptValue = new StringBuilder();
+      double index = 0.9;
+      for (String lat : languages) {
+        if (index == 0.0) {
+          index = 0.1;
+        }
+        acceptValue.append(lat).append(";").append("q=" + index).append(",");
+        index = index - 0.1;
+      }
+      tvLanguageMap.put(terminology + version, acceptValue.toString());
+      return acceptValue.toString();
+    }
   }
 
 }
