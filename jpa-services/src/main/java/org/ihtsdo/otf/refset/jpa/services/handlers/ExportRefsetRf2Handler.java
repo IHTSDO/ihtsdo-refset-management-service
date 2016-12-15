@@ -11,7 +11,6 @@ import java.util.Properties;
 import java.util.UUID;
 
 import org.apache.log4j.Logger;
-import org.ihtsdo.otf.refset.MemberDiffReport;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
@@ -70,9 +69,8 @@ public class ExportRefsetRf2Handler implements ExportRefsetHandler {
   @Override
   public InputStream exportMembers(Refset refset,
     List<ConceptRefsetMember> members) throws Exception {
-    Logger.getLogger(getClass()).info(
-        "Export refset members with names - " + refset.getTerminologyId()
-            + ", " + refset.getName());
+    Logger.getLogger(getClass()).info("Export refset members with names - "
+        + refset.getTerminologyId() + ", " + refset.getName());
 
     // Write a header
     // Obtain members for refset,
@@ -92,8 +90,8 @@ public class ExportRefsetRf2Handler implements ExportRefsetHandler {
       Logger.getLogger(getClass()).debug("  member = " + member);
 
       // Skip exclusions
-      if (EnumSet.of(Refset.MemberType.EXCLUSION).contains(
-          member.getMemberType())) {
+      if (EnumSet.of(Refset.MemberType.EXCLUSION)
+          .contains(member.getMemberType())) {
         continue;
       }
       sb.append(member.getTerminologyId()).append("\t");
@@ -118,8 +116,8 @@ public class ExportRefsetRf2Handler implements ExportRefsetHandler {
   public InputStream exportDefinition(Refset refset,
     List<ConceptRefsetMember> inclusions, List<ConceptRefsetMember> exclusions)
     throws Exception {
-    Logger.getLogger(getClass()).info(
-        "Export refset definition - " + refset.getTerminologyId() + ", "
+    Logger.getLogger(getClass())
+        .info("Export refset definition - " + refset.getTerminologyId() + ", "
             + refset.getName() + ", " + refset.getDefinitionClauses());
 
     // Write RF2 refset definition pattern to an input stream
@@ -151,8 +149,6 @@ public class ExportRefsetRf2Handler implements ExportRefsetHandler {
     return new ByteArrayInputStream(sb.toString().getBytes("UTF-8"));
   }
 
-
-  
   /* see superclass */
   @Override
   public void setProperties(Properties p) throws Exception {

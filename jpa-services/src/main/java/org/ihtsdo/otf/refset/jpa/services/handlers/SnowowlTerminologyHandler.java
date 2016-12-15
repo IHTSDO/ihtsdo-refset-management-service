@@ -24,7 +24,6 @@ import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.Terminology;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
-import org.ihtsdo.otf.refset.helpers.FieldedStringTokenizer;
 import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.jpa.TerminologyJpa;
@@ -58,24 +57,25 @@ import com.google.common.net.InternetDomainName;
  */
 public class SnowowlTerminologyHandler implements TerminologyHandler {
 
+  /** The tv language map. */
   // terminology/version to language map
-  private static Map<String,String> tvLanguageMap = new HashMap<>();
-  
+  private static Map<String, String> tvLanguageMap = new HashMap<>();
+
   /** The ids to ignore. */
   private static List<String> idsToIgnore = new ArrayList<>();
-  
+
   static {
     idsToIgnore.add("448879004");
     idsToIgnore.add("722128001");
     idsToIgnore.add("722130004");
     idsToIgnore.add("722129009");
     idsToIgnore.add("722131000");
-    idsToIgnore.add("900000000000507009");    
+    idsToIgnore.add("900000000000507009");
     idsToIgnore.add("900000000000509007");
     idsToIgnore.add("900000000000508004");
     idsToIgnore.add("608771002");
   }
-  
+
   /**
    * Instantiates an empty {@link SnowowlTerminologyHandler}.
    *
@@ -83,7 +83,7 @@ public class SnowowlTerminologyHandler implements TerminologyHandler {
    */
   public SnowowlTerminologyHandler() throws Exception {
     super();
-    
+
   }
 
   /** The accept. */
@@ -878,8 +878,8 @@ public class SnowowlTerminologyHandler implements TerminologyHandler {
 
     final Response response =
         target.request("*/*").header("Authorization", authHeader)
-        .header("Accept-Language", getAcceptLanguage(terminology, version))
-        .header("Cookie", getCookieHeader()).get();
+            .header("Accept-Language", getAcceptLanguage(terminology, version))
+            .header("Cookie", getCookieHeader()).get();
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -1317,8 +1317,8 @@ public class SnowowlTerminologyHandler implements TerminologyHandler {
   @Override
   public List<String> getLanguages(String terminology, String version)
     throws Exception {
-    Logger.getLogger(getClass()).info("  get languages - " + terminology
-        + ", " + version );
+    Logger.getLogger(getClass())
+        .info("  get languages - " + terminology + ", " + version);
     // Make a webservice call to SnowOwl to get concept
     final Client client = ClientBuilder.newClient();
 
@@ -1326,10 +1326,10 @@ public class SnowowlTerminologyHandler implements TerminologyHandler {
     localPfs.setStartIndex(0);
     localPfs.setMaxResults(200);
 
-
     WebTarget target = client.target(url + "/" + version + "/concepts?escg="
-        + URLEncoder.encode("<900000000000506000", "UTF-8").replaceAll(" ", "%20") + "&limit="
-        + localPfs.getMaxResults() + "&offset="
+        + URLEncoder.encode("<900000000000506000", "UTF-8").replaceAll(" ",
+            "%20")
+        + "&limit=" + localPfs.getMaxResults() + "&offset="
         + localPfs.getStartIndex() + "&expand=fsn()");
 
     Response response =
@@ -1345,28 +1345,37 @@ public class SnowowlTerminologyHandler implements TerminologyHandler {
           "Unexpected terminology server failure. Message = " + resultString);
     }
 
-
     ObjectMapper mapper = new ObjectMapper();
     JsonNode doc = mapper.readTree(resultString);
-    
+
     List<String> languages = new ArrayList<>();
     for (final JsonNode conceptNode : doc.get("items")) {
-      
+
       String id = conceptNode.get("id").asText();
       String term = conceptNode.get("fsn").get("term").asText();
-      
+
       if (!idsToIgnore.contains(id) && term.contains("code")) {
-        String code = term.substring(term.indexOf("code") + 5, term.indexOf("]"));
+        String code =
+            term.substring(term.indexOf("code") + 5, term.indexOf("]"));
         languages.add(code + "-x-" + id);
       }
     }
     languages.add("en-US");
     languages.add("en-GB");
-    
+
     return languages;
   }
-  
-  private String getAcceptLanguage(String terminology, String version) throws Exception {
+
+  /**
+   * Returns the accept language.
+   *
+   * @param terminology the terminology
+   * @param version the version
+   * @return the accept language
+   * @throws Exception the exception
+   */
+  private String getAcceptLanguage(String terminology, String version)
+    throws Exception {
     if (tvLanguageMap.containsKey(terminology + version)) {
       return tvLanguageMap.get(terminology + version);
     } else {

@@ -1106,6 +1106,7 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
     this.headers = headers;
   }
 
+  /* see superclass */
   @Override
   public List<String> getLanguages(String terminology, String version)
     throws Exception {
