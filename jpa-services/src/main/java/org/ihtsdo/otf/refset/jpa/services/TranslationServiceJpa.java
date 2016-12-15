@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Map;
 
 import javax.persistence.NoResultException;
-import javax.ws.rs.core.HttpHeaders;
 
 import org.apache.log4j.Logger;
 import org.hibernate.envers.AuditReader;
@@ -112,7 +111,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa
   }
 
   /** The headers. */
-  HttpHeaders headers;
+  Map<String,String> headers;
 
   /**
    * Instantiates an empty {@link TranslationServiceJpa}.
@@ -137,7 +136,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa
    * @param headers the headers
    * @throws Exception
    */
-  public TranslationServiceJpa(HttpHeaders headers) throws Exception {
+  public TranslationServiceJpa(Map<String,String >headers) throws Exception {
     this();
     this.headers = headers;
   }

@@ -357,7 +357,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
           final PfsParameter pfs = new PfsParameterJpa();
           pfs.setStartIndex(0);
           pfs.setMaxResults(1);
-          projectService.getTerminologyHandler(project, headers)
+          projectService.getTerminologyHandler(project, getHeaders(headers))
               .resolveExpression(project.getExclusionClause(),
                   project.getTerminology(), "", pfs);
         } catch (Exception e) {
@@ -417,7 +417,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
           final PfsParameter pfs = new PfsParameterJpa();
           pfs.setStartIndex(0);
           pfs.setMaxResults(1);
-          projectService.getTerminologyHandler(project, headers)
+          projectService.getTerminologyHandler(project, getHeaders(headers))
               .resolveExpression(project.getExclusionClause(),
                   project.getTerminology(), "", pfs);
         } catch (Exception e) {
@@ -654,8 +654,9 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
         throw new LocalException("Get modules requires a project");
       }
 
-      final List<Terminology> editions = projectService
-          .getTerminologyHandler(project, headers).getTerminologyEditions();
+      final List<Terminology> editions =
+          projectService.getTerminologyHandler(project, getHeaders(headers))
+              .getTerminologyEditions();
       final TerminologyList list = new TerminologyListJpa();
       list.setObjects(editions);
       list.setTotalCount(list.getCount());
@@ -691,7 +692,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
       }
 
       final List<Terminology> versions =
-          projectService.getTerminologyHandler(project, headers)
+          projectService.getTerminologyHandler(project, getHeaders(headers))
               .getTerminologyVersions(terminology);
       final TerminologyList list = new TerminologyListJpa();
       list.setObjects(versions);
@@ -728,7 +729,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
         throw new LocalException("Get modules requires a project");
       }
       final List<Concept> types =
-          projectService.getTerminologyHandler(project, headers)
+          projectService.getTerminologyHandler(project, getHeaders(headers))
               .getModules(terminology, version);
 
       final ConceptList list = new ConceptListJpa();
@@ -836,7 +837,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
       }
 
       final ConceptList concepts =
-          projectService.getTerminologyHandler(project, headers)
+          projectService.getTerminologyHandler(project, getHeaders(headers))
               .findConceptsForQuery(query, terminology, version, pfs);
 
       return concepts;
@@ -881,7 +882,8 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
       Concept concept = null;
 
       try {
-        concept = translationService.getTerminologyHandler(project, headers)
+        concept = translationService
+            .getTerminologyHandler(project, getHeaders(headers))
             .getFullConcept(terminologyId, terminology, version);
       } catch (Exception e) {
         Logger.getLogger(getClass()).info(
@@ -947,7 +949,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
       }
 
       final ConceptList concepts =
-          translationService.getTerminologyHandler(project, headers)
+          translationService.getTerminologyHandler(project, getHeaders(headers))
               .getConceptParents(terminologyId, terminology, version);
 
       // If translationId is set, include descriptions from the translation
@@ -1026,7 +1028,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
       }
 
       final ConceptList concepts =
-          translationService.getTerminologyHandler(project, headers)
+          translationService.getTerminologyHandler(project, getHeaders(headers))
               .getConceptChildren(terminologyId, terminology, version);
 
       // If translationId is set, include descriptions from the translation
@@ -1107,8 +1109,8 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     @ApiParam(value = "Query, e.g. UPDATE", required = false) @QueryParam("query") String query,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    Logger.getLogger(getClass()).info(
-        "RESTful POST call (Project): /log/" + projectId + ", " + objectId + ", " + query);
+    Logger.getLogger(getClass()).info("RESTful POST call (Project): /log/"
+        + projectId + ", " + objectId + ", " + query);
 
     final ProjectService projectService = new ProjectServiceJpa();
     try {
@@ -1121,7 +1123,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
       pfs.setAscending(false);
       pfs.setSortField("lastModified");
       if (query != null) {
-    	  pfs.setQueryRestriction(query);
+        pfs.setQueryRestriction(query);
       }
 
       final List<LogEntry> entries =
@@ -1180,7 +1182,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
         throw new LocalException("Invalid project id: " + projectId);
       }
       final ConceptList concepts =
-          refsetService.getTerminologyHandler(project, headers)
+          refsetService.getTerminologyHandler(project, getHeaders(headers))
               .getReplacementConcepts(conceptId, terminology, version);
       return concepts;
 
@@ -1210,7 +1212,8 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
         .info("RESTful GET call (Refset): /test " + url);
 
     // Create service and configure transaction scope
-    final ProjectService projectService = new ProjectServiceJpa(headers);
+    final ProjectService projectService =
+        new ProjectServiceJpa(getHeaders(headers));
     try {
       authorizeApp(securityService, authToken, "get standard description types",
           UserRole.VIEWER);

@@ -15,7 +15,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.persistence.NoResultException;
-import javax.ws.rs.core.HttpHeaders;
 
 import org.apache.log4j.Logger;
 import org.hibernate.envers.AuditReader;
@@ -118,7 +117,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
   }
 
   /** The headers. */
-  HttpHeaders headers;
+  Map<String, String> headers;
 
   /**
    * Instantiates an empty {@link RefsetServiceJpa}.
@@ -141,9 +140,9 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
    * Instantiates a {@link RefsetServiceJpa} from the specified parameters.
    *
    * @param headers the headers
-   * @throws Exception
+   * @throws Exception the exception
    */
-  public RefsetServiceJpa(HttpHeaders headers) throws Exception {
+  public RefsetServiceJpa(Map<String, String> headers) throws Exception {
     this();
     this.headers = headers;
   }

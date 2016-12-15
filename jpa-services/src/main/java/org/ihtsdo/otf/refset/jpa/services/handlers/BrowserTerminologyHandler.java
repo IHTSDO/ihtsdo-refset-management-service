@@ -19,7 +19,6 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status.Family;
 
@@ -76,7 +75,7 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
 
   /** The headers. */
   @SuppressWarnings("unused")
-  private HttpHeaders headers;
+  private Map<String, String> headers;
 
   /* see superclass */
   @Override
@@ -1102,7 +1101,7 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
 
   /* see superclass */
   @Override
-  public void setHeaders(HttpHeaders headers) throws Exception {
+  public void setHeaders(Map<String, String> headers) throws Exception {
     // n/a - don't really need to use this
     this.headers = headers;
   }

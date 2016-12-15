@@ -3,7 +3,7 @@
  */
 package org.ihtsdo.otf.refset.services;
 
-import javax.ws.rs.core.HttpHeaders;
+import java.util.Map;
 
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.helpers.KeyValuePairList;
@@ -118,12 +118,12 @@ public interface ProjectService extends RootService {
    * Returns the terminology handler.
    *
    * @param project the project
-   * @param headers the incoming HTTP headers for single-signon support
+   * @param headers the headers
    * @return the terminology handler
    * @throws Exception the exception
    */
   public TerminologyHandler getTerminologyHandler(Project project,
-    HttpHeaders headers) throws Exception;
+    Map<String, String> headers) throws Exception;
 
   /**
    * Returns the terminology handlers.

@@ -17,7 +17,6 @@ import java.util.Properties;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status.Family;
 
@@ -71,11 +70,11 @@ public class SnowowlTerminologyHandler implements TerminologyHandler {
   private final String accept =
       "application/vnd.com.b2international.snowowl+json";
 
-  /** The url. */
-  private String url;
-
   /** The domain. */
   private String domain;
+
+  /** The url. */
+  private String url;
 
   /** The default url. */
   private String defaultUrl;
@@ -84,7 +83,7 @@ public class SnowowlTerminologyHandler implements TerminologyHandler {
   private String authHeader;
 
   /** The headers. */
-  private HttpHeaders headers;
+  private Map<String, String> headers;
 
   /* see superclass */
   @Override
@@ -93,34 +92,6 @@ public class SnowowlTerminologyHandler implements TerminologyHandler {
     handler.defaultUrl = this.defaultUrl;
     handler.authHeader = this.authHeader;
     return handler;
-  }
-
-  /**
-   * Returns the cookie header.
-   *
-   * @return the cookie header
-   */
-  private String getCookieHeader() {
-    final List<String> referers = headers.getRequestHeader("Referer");
-    if (referers != null && referers.size() == 1) {
-      final String referer = referers.get(0);
-      if (referer.contains(domain)) {
-        List<String> cookies = headers.getRequestHeader("Cookie");
-        if (cookies != null && cookies.size() == 1) {
-          return cookies.get(0);
-        } else {
-          Logger.getLogger(getClass())
-              .warn("UNEXPECTED number of Cookie headers = " + cookies.size());
-        }
-      } else {
-        Logger.getLogger(getClass())
-            .warn("UNEXPECTED referer not matching url domain = " + referer);
-      }
-    } else {
-      Logger.getLogger(getClass())
-          .warn("UNEXPECTED number of Referer headers = " + referers.size());
-    }
-    return "";
   }
 
   /* see superclass */
@@ -154,7 +125,8 @@ public class SnowowlTerminologyHandler implements TerminologyHandler {
     if (p.containsKey("authHeader")) {
       authHeader = p.getProperty("authHeader");
     } else {
-      // If no auth header, we know we'll be sending "auth tokens" as cookies
+      // If no auth header, we know we'll be sending "auth tokens" as
+      // getCookieHeader()s
       // with each call.
     }
 
@@ -840,7 +812,6 @@ public class SnowowlTerminologyHandler implements TerminologyHandler {
     return query.matches("\\d+[01]0\\d");
   }
 
-  
   /* see superclass */
   @Override
   public ConceptList findConceptsForQuery(String query, String terminology,
@@ -872,21 +843,18 @@ public class SnowowlTerminologyHandler implements TerminologyHandler {
     }
 
     // Use "escg" if it's a concept id, otherwise search term
-    final WebTarget target =
-        useTerm ? client.target(url + "/browser/" + version
-                + "/descriptions?query="
+    final WebTarget target = useTerm
+        ? client.target(url + "/browser/" + version + "/descriptions?query="
             + URLEncoder.encode(localQuery, "UTF-8").replaceAll(" ", "%20")
             + "&offset=" + localPfs.getStartIndex() + "&limit="
             + (localPfs.getMaxResults() * 3) + "&expand=pt()")
 
-            :
+        :
 
-            	client
-                .target(url + "/" + version + "/concepts?escg="
-                    + URLEncoder.encode(localQuery, "UTF-8").replaceAll(" ",
-                        "%20")
-                    + "&offset=" + localPfs.getStartIndex() + "&limit="
-                    + localPfs.getMaxResults() + "&expand=pt()");
+        client.target(url + "/" + version + "/concepts?escg="
+            + URLEncoder.encode(localQuery, "UTF-8").replaceAll(" ", "%20")
+            + "&offset=" + localPfs.getStartIndex() + "&limit="
+            + localPfs.getMaxResults() + "&expand=pt()");
 
     final Response response =
         target.request("*/*").header("Authorization", authHeader)
@@ -899,98 +867,108 @@ public class SnowowlTerminologyHandler implements TerminologyHandler {
           "Unexpected terminology server failure. Message = " + resultString);
     }
 
-
     // Support grouping by concept
     final Map<String, Concept> conceptMap = new HashMap<>();
     int conceptCt = 0;
 
     final ObjectMapper mapper = new ObjectMapper();
-    
+
     final JsonNode doc = mapper.readTree(resultString);
 
     if (useTerm) {
       JsonNode entry = null;
       int index = 0;
       while ((entry = doc.get(index++)) != null) {
-      // Get concept id
-      final String conceptId = entry.get("concept").get("conceptId").asText();
-      JsonNode conceptNode = entry.get("concept");
+        // Get concept id
+        final String conceptId = entry.get("concept").get("conceptId").asText();
+        JsonNode conceptNode = entry.get("concept");
 
-      final Description desc = new DescriptionJpa();
-      desc.setActive(conceptNode.get("active").asText().equals("true"));
-      desc.setTerm(entry.get("term").asText());
-      if (conceptMap.containsKey(conceptId)) {
-        final Concept concept = conceptMap.get(conceptId);
-        if (desc.isActive() || !localPfs.getActiveOnly()) {
-          concept.getDescriptions().add(desc);
+        final Description desc = new DescriptionJpa();
+        desc.setActive(conceptNode.get("active").asText().equals("true"));
+        desc.setTerm(entry.get("term").asText());
+        if (conceptMap.containsKey(conceptId)) {
+          final Concept concept = conceptMap.get(conceptId);
+          if (desc.isActive() || !localPfs.getActiveOnly()) {
+            concept.getDescriptions().add(desc);
+          }
         }
-      }
 
-      else {
-        // Skip any new concepts past the limit
-        if (conceptCt++ < localPfs.getMaxResults()) {
-          final Concept concept = new ConceptJpa();
-          concept.setActive(
-              entry.get("active").asText().equals("true"));
-          concept.setDefinitionStatusId(
-              conceptNode.get("definitionStatus").asText());
-          concept.setTerminologyId(conceptId);
-          concept.setModuleId(conceptNode.get("moduleId").asText());
-          concept.setName(conceptNode.get("fsn").asText());
-          concept.setPublishable(true);
-          concept.setPublished(true);
+        else {
+          // Skip any new concepts past the limit
+          if (conceptCt++ < localPfs.getMaxResults()) {
+            final Concept concept = new ConceptJpa();
+            concept.setActive(entry.get("active").asText().equals("true"));
+            concept.setDefinitionStatusId(
+                conceptNode.get("definitionStatus").asText());
+            concept.setTerminologyId(conceptId);
+            concept.setModuleId(conceptNode.get("moduleId").asText());
+            concept.setName(conceptNode.get("fsn").asText());
+            concept.setPublishable(true);
+            concept.setPublished(true);
 
-          // Add the description
-          concept.getDescriptions().add(desc);
+            // Add the description
+            concept.getDescriptions().add(desc);
 
-          conceptList.addObject(concept);
-          conceptMap.put(conceptId, concept);
-          Logger.getLogger(getClass()).debug("  concept = " + concept);
+            conceptList.addObject(concept);
+            conceptMap.put(conceptId, concept);
+            Logger.getLogger(getClass()).debug("  concept = " + concept);
+          }
         }
-      }
 
       }
 
-    // Set total count
-    // TODO
-    /*conceptList.setTotalCount(
-        Integer.parseInt(doc.get("details").get("total").asText()));*/
-    conceptList.setTotalCount(200);
+      // Set total count
+      // TODO
+      /*
+       * conceptList.setTotalCount(
+       * Integer.parseInt(doc.get("details").get("total").asText()));
+       */
+      conceptList.setTotalCount(200);
 
     } else { // lookup was conceptId, not term
-    	if (doc.get("items") == null) {
-    	      return conceptList;
-    	    }
-    	    for (final JsonNode conceptNode : doc.get("items")) {
+      if (doc.get("items") == null) {
+        return conceptList;
+      }
+      for (final JsonNode conceptNode : doc.get("items")) {
 
-    	      final Concept concept = new ConceptJpa();
-    	      concept.setActive(conceptNode.get("active").asText().equals("true"));
+        final Concept concept = new ConceptJpa();
+        concept.setActive(conceptNode.get("active").asText().equals("true"));
 
-    	      concept.setTerminologyId(conceptNode.get("id").asText());
-    	      concept.setEffectiveTime(ConfigUtility.DATE_FORMAT
-    	          .parse(conceptNode.get("effectiveTime").asText()));
-    	      concept.setLastModified(concept.getEffectiveTime());
-    	      concept.setLastModifiedBy(terminology);
-    	      concept.setModuleId(conceptNode.get("moduleId").asText());
-    	      concept
-    	          .setDefinitionStatusId(conceptNode.get("definitionStatus").asText());
-    	      concept.setName(conceptNode.get("pt").get("term").asText());
+        concept.setTerminologyId(conceptNode.get("id").asText());
+        concept.setEffectiveTime(ConfigUtility.DATE_FORMAT
+            .parse(conceptNode.get("effectiveTime").asText()));
+        concept.setLastModified(concept.getEffectiveTime());
+        concept.setLastModifiedBy(terminology);
+        concept.setModuleId(conceptNode.get("moduleId").asText());
+        concept.setDefinitionStatusId(
+            conceptNode.get("definitionStatus").asText());
+        concept.setName(conceptNode.get("pt").get("term").asText());
 
-    	      concept.setPublishable(true);
-    	      concept.setPublished(true);
-    	      Logger.getLogger(getClass()).debug("  concept = " + concept);
-    	      conceptList.addObject(concept);
-    	    }
+        concept.setPublishable(true);
+        concept.setPublished(true);
+        Logger.getLogger(getClass()).debug("  concept = " + concept);
+        conceptList.addObject(concept);
+      }
 
-    	    // Set total count
-    	    conceptList.setTotalCount(Integer.parseInt(doc.get("total").asText()));
+      // Set total count
+      conceptList.setTotalCount(Integer.parseInt(doc.get("total").asText()));
     }
     return conceptList;
   }
-  
+
+  /**
+   * Find concepts for query initial technique.
+   *
+   * @param query the query
+   * @param terminology the terminology
+   * @param version the version
+   * @param pfs the pfs
+   * @return the concept list
+   * @throws Exception the exception
+   */
   /* see superclass */
-  public ConceptList findConceptsForQueryInitialTechnique(String query, String terminology,
-    String version, PfsParameter pfs) throws Exception {
+  public ConceptList findConceptsForQueryInitialTechnique(String query,
+    String terminology, String version, PfsParameter pfs) throws Exception {
 
     final ConceptList conceptList = new ConceptListJpa();
     // Make a webservice call to SnowOwl
@@ -1153,7 +1131,6 @@ public class SnowowlTerminologyHandler implements TerminologyHandler {
     String version) throws Exception {
     final ConceptList conceptList = new ConceptListJpa();
 
-
     // Make a webservice call to SnowOwl
     final Client client = ClientBuilder.newClient();
     final WebTarget target = client.target(url + "/browser/" + version
@@ -1296,8 +1273,24 @@ public class SnowowlTerminologyHandler implements TerminologyHandler {
 
   /* see superclass */
   @Override
-  public void setHeaders(HttpHeaders headers) throws Exception {
+  public void setHeaders(Map<String, String> headers) throws Exception {
     this.headers = headers;
+  }
+
+  /**
+   * Returns the cookie header.
+   *
+   * @return the cookie header
+   */
+  public String getCookieHeader() {
+    final String referer = headers.get("Referer");
+    if (referer.contains(domain)) {
+      return headers.get("Cookie");
+    } else {
+      Logger.getLogger(getClass())
+          .warn("UNEXPECTED referer not matching url domain = " + referer);
+    }
+    return "";
   }
 
 }

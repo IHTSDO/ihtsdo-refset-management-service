@@ -141,7 +141,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
     Logger.getLogger(getClass())
         .info("RESTful call (Refset): get refset for id, refsetId:" + refsetId);
 
-    final RefsetService refsetService = new RefsetServiceJpa(headers);
+    final RefsetService refsetService =
+        new RefsetServiceJpa(getHeaders(headers));
     try {
       final Refset refset = refsetService.getRefset(refsetId);
 
@@ -177,7 +178,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
     Logger.getLogger(getClass())
         .info("RESTful call (Refset): get member for id, memberId:" + memberId);
 
-    final RefsetService refsetService = new RefsetServiceJpa(headers);
+    final RefsetService refsetService =
+        new RefsetServiceJpa(getHeaders(headers));
     try {
       final ConceptRefsetMember member = refsetService.getMember(memberId);
 
@@ -215,7 +217,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
     Logger.getLogger(getClass())
         .info("RESTful call (Refset): refsets for project " + projectId);
 
-    final RefsetService refsetService = new RefsetServiceJpa(headers);
+    final RefsetService refsetService =
+        new RefsetServiceJpa(getHeaders(headers));
     try {
       authorizeApp(securityService, authToken, "finds refsets for project",
           UserRole.VIEWER);
@@ -250,7 +253,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
 
     Logger.getLogger(getClass()).info("RESTful call (Refset): refsets");
 
-    final RefsetService refsetService = new RefsetServiceJpa(headers);
+    final RefsetService refsetService =
+        new RefsetServiceJpa(getHeaders(headers));
     try {
       authorizeApp(securityService, authToken,
           "finds refsets based on pfs parameter and query", UserRole.VIEWER);
@@ -285,7 +289,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
           "Refset must have a project with a non null identifier.");
     }
 
-    final RefsetService refsetService = new RefsetServiceJpa(headers);
+    final RefsetService refsetService =
+        new RefsetServiceJpa(getHeaders(headers));
     refsetService.setTransactionPerOperation(false);
     refsetService.beginTransaction();
     try {
@@ -327,9 +332,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         addLogEntry(refsetService, userName, "  definition = ",
             newRefset.getProject().getId(), newRefset.getId(),
             newRefset.getDefinitionClauses().toString());
-        
+
         addLogEntry(refsetService, userName, "ADD refset",
-                refset.getProject().getId(), refset.getId(), refset.toString());
+            refset.getProject().getId(), refset.getId(), refset.toString());
       }
 
       refsetService.commit();
@@ -360,7 +365,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
             + refsetId + ", expression: " + expression);
 
     // Create service and configure transaction scope
-    final RefsetService refsetService = new RefsetServiceJpa(headers);
+    final RefsetService refsetService =
+        new RefsetServiceJpa(getHeaders(headers));
     refsetService.setTransactionPerOperation(false);
     refsetService.beginTransaction();
     Refset refset = refsetService.getRefset(refsetId);
@@ -373,10 +379,10 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         throw new LocalException(
             "Adding members based on an expression can only be done for EXTENSIONAL refsets.");
       }
-      final ConceptList resolvedFromExpression =
-          refsetService.getTerminologyHandler(refset.getProject(), headers)
-              .resolveExpression(refset.computeExpression(expression),
-                  refset.getTerminology(), refset.getVersion(), null);
+      final ConceptList resolvedFromExpression = refsetService
+          .getTerminologyHandler(refset.getProject(), getHeaders(headers))
+          .resolveExpression(refset.computeExpression(expression),
+              refset.getTerminology(), refset.getVersion(), null);
 
       final Set<String> conceptIds = new HashSet<>();
       for (final ConceptRefsetMember member : refset.getMembers()) {
@@ -429,7 +435,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
             + refsetId + ", expression: " + expression);
 
     // Create service and configure transaction scope
-    final RefsetService refsetService = new RefsetServiceJpa(headers);
+    final RefsetService refsetService =
+        new RefsetServiceJpa(getHeaders(headers));
     refsetService.setTransactionPerOperation(false);
     refsetService.beginTransaction();
     Refset refset = refsetService.getRefset(refsetId);
@@ -442,10 +449,10 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
             "Adding members based on an expression can only be done for EXTENSIONAL refsets.");
       }
 
-      final ConceptList resolvedFromExpression =
-          refsetService.getTerminologyHandler(refset.getProject(), headers)
-              .resolveExpression(refset.computeExpression(expression),
-                  refset.getTerminology(), refset.getVersion(), null);
+      final ConceptList resolvedFromExpression = refsetService
+          .getTerminologyHandler(refset.getProject(), getHeaders(headers))
+          .resolveExpression(refset.computeExpression(expression),
+              refset.getTerminology(), refset.getVersion(), null);
       final Set<String> conceptIds = new HashSet<>();
       for (final Concept concept : resolvedFromExpression.getObjects()) {
         conceptIds.add(concept.getTerminologyId());
@@ -488,7 +495,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
               securityService, authToken, "update refset", UserRole.AUTHOR);
 
       Refset oldRefset = getRefset(refset.getId(), authToken);
-      
+
       // Check preconditions
       // No refset with same terminologyId, project id, provisional,
       // effectiveTime
@@ -551,8 +558,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
 
       addLogEntry(translationService, userName, "UPDATE refset",
           refset.getProject().getId(), refset.getId(),
-          "\n  old " + oldRefset.toString() +
-          "\n  new " + refset.toString());
+          "\n  old " + oldRefset.toString() + "\n  new " + refset.toString());
 
       translationService.commit();
     } catch (Exception e) {
@@ -576,7 +582,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
     Logger.getLogger(getClass()).info(
         "RESTful call DELETE (Refset): /remove/" + refsetId + " " + cascade);
 
-    final RefsetService refsetService = new RefsetServiceJpa(headers);
+    final RefsetService refsetService =
+        new RefsetServiceJpa(getHeaders(headers));
     try {
       final Refset refset = refsetService.getRefset(refsetId);
       if (refset.getProject() == null || refset.getProject().getId() == null) {
@@ -638,8 +645,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       // remove refset
       refsetService.removeRefset(refsetId, cascade);
       addLogEntry(refsetService, userName, "REMOVE refset",
-          refset.getProject().getId(), refset.getId(),
-          refset.toString());
+          refset.getProject().getId(), refset.getId(), refset.toString());
 
     } catch (Exception e) {
       handleException(e, "trying to remove a refset");
@@ -663,7 +669,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
     Logger.getLogger(getClass()).info("RESTful call PUT (Refset): /clone "
         + refset.getId() + ", " + projectId + ", " + refset);
 
-    final RefsetService refsetService = new RefsetServiceJpa(headers);
+    final RefsetService refsetService =
+        new RefsetServiceJpa(getHeaders(headers));
     try {
       final String userName = authorizeProject(refsetService, projectId,
           securityService, authToken, "add refset", UserRole.AUTHOR);
@@ -766,7 +773,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         .info("RESTful call POST (Refset): /import/definition " + refsetId
             + ", " + ioHandlerInfoId);
 
-    final RefsetService refsetService = new RefsetServiceJpa(headers);
+    final RefsetService refsetService =
+        new RefsetServiceJpa(getHeaders(headers));
     refsetService.setTransactionPerOperation(false);
     refsetService.beginTransaction();
     try {
@@ -810,10 +818,10 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
           member.setRefset(refset);
 
           // Look up concept name and active status
-          final Concept concept =
-              refsetService.getTerminologyHandler(refset.getProject(), headers)
-                  .getConcept(member.getConceptId(), refset.getTerminology(),
-                      refset.getVersion());
+          final Concept concept = refsetService
+              .getTerminologyHandler(refset.getProject(), getHeaders(headers))
+              .getConcept(member.getConceptId(), refset.getTerminology(),
+                  refset.getVersion());
           if (concept != null) {
             member.setConceptName(concept.getName());
             member.setConceptActive(concept.isActive());
@@ -930,7 +938,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         .info("RESTful call GET (Refset): /export/definition " + refsetId + ", "
             + ioHandlerInfoId);
 
-    final RefsetService refsetService = new RefsetServiceJpa(headers);
+    final RefsetService refsetService =
+        new RefsetServiceJpa(getHeaders(headers));
     try {
       authorizeApp(securityService, authToken, "export definition",
           UserRole.VIEWER);
@@ -986,7 +995,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         .info("RESTful call GET (Refset): /export/members " + refsetId + ", "
             + ioHandlerInfoId);
 
-    final RefsetService refsetService = new RefsetServiceJpa(headers);
+    final RefsetService refsetService =
+        new RefsetServiceJpa(getHeaders(headers));
     try {
       // Load refset
       final Refset refset = refsetService.getRefset(refsetId);
@@ -1071,7 +1081,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
     return null;
 
   }
-  
+
   /* see superclass */
   @Override
   @PUT
@@ -1085,7 +1095,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
     Logger.getLogger(getClass())
         .info("RESTful call PUT (refset): /member/add " + member);
 
-    final RefsetService refsetService = new RefsetServiceJpa(headers);
+    final RefsetService refsetService =
+        new RefsetServiceJpa(getHeaders(headers));
     try {
       final Refset refset = refsetService.getRefset(member.getRefsetId());
 
@@ -1106,10 +1117,10 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
 
       // Look up concept name and active
       if (member.getConceptName() == null) {
-        final Concept concept =
-            refsetService.getTerminologyHandler(refset.getProject(), headers)
-                .getConcept(member.getConceptId(), refset.getTerminology(),
-                    refset.getVersion());
+        final Concept concept = refsetService
+            .getTerminologyHandler(refset.getProject(), getHeaders(headers))
+            .getConcept(member.getConceptId(), refset.getTerminology(),
+                refset.getVersion());
         if (concept != null) {
           member.setConceptName(concept.getName());
           member.setConceptActive(concept.isActive());
@@ -1148,7 +1159,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
     Logger.getLogger(getClass())
         .info("RESTful call DELETE (Refset): /member/remove/" + memberId);
 
-    final RefsetService refsetService = new RefsetServiceJpa(headers);
+    final RefsetService refsetService =
+        new RefsetServiceJpa(getHeaders(headers));
     try {
       final ConceptRefsetMember member = refsetService.getMember(memberId);
       // If the member to delete is already gone, do nothing
@@ -1185,7 +1197,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
     Logger.getLogger(getClass())
         .info("RESTful call DELETE (Refset): member/remove/all/" + refsetId);
 
-    final RefsetService refsetService = new RefsetServiceJpa(headers);
+    final RefsetService refsetService =
+        new RefsetServiceJpa(getHeaders(headers));
     try {
       final Refset refset = refsetService.getRefset(refsetId);
       final String userName = authorizeProject(refsetService,
@@ -1227,7 +1240,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         .info("RESTful call (Refset): find members for query, refsetId:"
             + refsetId + " query:" + query + " " + pfs);
 
-    final RefsetService refsetService = new RefsetServiceJpa(headers);
+    final RefsetService refsetService =
+        new RefsetServiceJpa(getHeaders(headers));
     try {
       authorizeApp(securityService, authToken, "find members", UserRole.VIEWER); // Load
                                                                                  // refset
@@ -1267,7 +1281,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
     Logger.getLogger(getClass())
         .info("RESTful call GET (inclusion): /inclusion/add " + inclusion);
 
-    final RefsetService refsetService = new RefsetServiceJpa(headers);
+    final RefsetService refsetService =
+        new RefsetServiceJpa(getHeaders(headers));
     try {
       final Refset refset = refsetService.getRefset(inclusion.getRefsetId());
 
@@ -1289,10 +1304,10 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       // Lookup concept name and active if not already set
       // Look up concept name and active
       if (inclusion.getConceptName() == null) {
-        final Concept concept =
-            refsetService.getTerminologyHandler(refset.getProject(), headers)
-                .getConcept(inclusion.getConceptId(), refset.getTerminology(),
-                    refset.getVersion());
+        final Concept concept = refsetService
+            .getTerminologyHandler(refset.getProject(), getHeaders(headers))
+            .getConcept(inclusion.getConceptId(), refset.getTerminology(),
+                refset.getVersion());
         if (concept != null) {
           inclusion.setConceptName(concept.getName());
           inclusion.setConceptActive(concept.isActive());
@@ -1350,7 +1365,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
     Logger.getLogger(getClass())
         .info("RESTful call GET (exclusion): /exclusion/add " + conceptId);
 
-    final RefsetService refsetService = new RefsetServiceJpa(headers);
+    final RefsetService refsetService =
+        new RefsetServiceJpa(getHeaders(headers));
     try {
 
       final Refset refset = refsetService.getRefset(refsetId);
@@ -1391,7 +1407,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         .info("RESTful call GET (exclusion): /exclusion/remove for memberId: "
             + memberId);
 
-    final RefsetService refsetService = new RefsetServiceJpa(headers);
+    final RefsetService refsetService =
+        new RefsetServiceJpa(getHeaders(headers));
     try {
 
       final ConceptRefsetMember member = refsetService.getMember(memberId);
@@ -1432,7 +1449,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
     Logger.getLogger(getClass())
         .info("RESTful call (Refset): get import refset handlers:");
 
-    final RefsetService refsetService = new RefsetServiceJpa(headers);
+    final RefsetService refsetService =
+        new RefsetServiceJpa(getHeaders(headers));
     try {
       authorizeApp(securityService, authToken, "get import refset handlers",
           UserRole.VIEWER);
@@ -1460,7 +1478,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
     Logger.getLogger(getClass())
         .info("RESTful call (Refset): get export refset handlers:");
 
-    final RefsetService refsetService = new RefsetServiceJpa(headers);
+    final RefsetService refsetService =
+        new RefsetServiceJpa(getHeaders(headers));
     try {
       authorizeApp(securityService, authToken, "get export refset handlers",
           UserRole.VIEWER);
@@ -1492,7 +1511,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         .info("RESTful call POST (Refset): /migration/begin " + refsetId + ", "
             + newTerminology + ", " + newVersion);
 
-    final RefsetService refsetService = new RefsetServiceJpa(headers);
+    final RefsetService refsetService =
+        new RefsetServiceJpa(getHeaders(headers));
     try {
       // Load refset
       Refset refset = refsetService.getRefset(refsetId);
@@ -1542,10 +1562,10 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         // add members from expression results
         // No need to "resolvExpression" because definition computation includes
         // project exclude logic
-        ConceptList conceptList =
-            refsetService.getTerminologyHandler(refset.getProject(), headers)
-                .resolveExpression(refsetCopy.computeDefinition(null, null),
-                    refsetCopy.getTerminology(), refsetCopy.getVersion(), null);
+        ConceptList conceptList = refsetService
+            .getTerminologyHandler(refset.getProject(), getHeaders(headers))
+            .resolveExpression(refsetCopy.computeDefinition(null, null),
+                refsetCopy.getTerminology(), refsetCopy.getVersion(), null);
 
         // do this to re-use the terminology id
         final Map<String, ConceptRefsetMember> conceptIdMap = new HashMap<>();
@@ -1831,7 +1851,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
     Logger.getLogger(getClass())
         .info("RESTful call POST (Refset): /migration/cancel " + refsetId);
 
-    final RefsetService refsetService = new RefsetServiceJpa(headers);
+    final RefsetService refsetService =
+        new RefsetServiceJpa(getHeaders(headers));
     try {
       // Load refset
       final Refset refset = refsetService.getRefset(refsetId);
@@ -1910,7 +1931,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
 
     // NOTE: this does not generically support comparing intensional refsets
     // the logic assumes only refset1 has inclusions/exclusions
-    final RefsetService refsetService = new RefsetServiceJpa(headers);
+    final RefsetService refsetService =
+        new RefsetServiceJpa(getHeaders(headers));
     try {
       authorizeApp(securityService, authToken, "compare refsets",
           UserRole.VIEWER);
@@ -2027,7 +2049,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
     Logger.getLogger(getClass()).info("RESTful call (Refset): common/members - "
         + reportToken + ", " + query + ", " + conceptActive);
 
-    final RefsetService refsetService = new RefsetServiceJpa(headers);
+    final RefsetService refsetService =
+        new RefsetServiceJpa(getHeaders(headers));
     try {
       // VIEWER access is fine, this is a read-only method
       authorizeApp(securityService, authToken, "find members in common",
@@ -2081,7 +2104,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
 
     Logger.getLogger(getClass()).info("RESTful call (Refset): diff/members");
 
-    final RefsetService refsetService = new RefsetServiceJpa(headers);
+    final RefsetService refsetService =
+        new RefsetServiceJpa(getHeaders(headers));
     try {
       // VIEWER access is fine, this is a read-only method
       authorizeApp(securityService, authToken, "returns diff report",
@@ -2123,7 +2147,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         .info("RESTful call (Refset): Get old members for query: " + query
             + ", reportToken: " + reportToken);
 
-    final RefsetService refsetService = new RefsetServiceJpa(headers);
+    final RefsetService refsetService =
+        new RefsetServiceJpa(getHeaders(headers));
     try {
       // VIEWER access is fine, this is a read-only method
       authorizeApp(securityService, authToken, "get diff report",
@@ -2185,7 +2210,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         .info("RESTful call (Refset): Get new members query: " + query
             + ", reportToken: " + reportToken);
 
-    final RefsetService refsetService = new RefsetServiceJpa(headers);
+    final RefsetService refsetService =
+        new RefsetServiceJpa(getHeaders(headers));
     try {
       // VIEWER access is fine, this is a read-only method
       authorizeApp(securityService, authToken, "get diff report",
@@ -2233,7 +2259,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
     throws Exception {
     Logger.getLogger(getClass()).info("RESTful call (Refset): release/report");
 
-    final RefsetService refsetService = new RefsetServiceJpa(headers);
+    final RefsetService refsetService =
+        new RefsetServiceJpa(getHeaders(headers));
     try {
       authorizeApp(securityService, authToken, "releases a report",
           UserRole.VIEWER);
@@ -2261,7 +2288,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         .info("RESTful call (Refset): get definition for refset id, refsetId:"
             + refsetId);
 
-    final RefsetService refsetService = new RefsetServiceJpa(headers);
+    final RefsetService refsetService =
+        new RefsetServiceJpa(getHeaders(headers));
     try {
       final Refset refset = refsetService.getRefset(refsetId);
       authorizeProject(refsetService, refset.getProject().getId(),
@@ -2292,7 +2320,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
     Logger.getLogger(getClass()).info(
         "RESTful call (Refset): optimize definition for refsetId: " + refsetId);
 
-    final RefsetService refsetService = new RefsetServiceJpa(headers);
+    final RefsetService refsetService =
+        new RefsetServiceJpa(getHeaders(headers));
     refsetService.setTransactionPerOperation(false);
     refsetService.beginTransaction();
     try {
@@ -2314,10 +2343,10 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
           posClauses.add(clause);
         }
         // No need to "resolvExpression" because it doesn't affect the logic
-        final ConceptList concepts =
-            refsetService.getTerminologyHandler(refset.getProject(), headers)
-                .resolveExpression(clause.getValue(), refset.getTerminology(),
-                    refset.getVersion(), null);
+        final ConceptList concepts = refsetService
+            .getTerminologyHandler(refset.getProject(), getHeaders(headers))
+            .resolveExpression(clause.getValue(), refset.getTerminology(),
+                refset.getVersion(), null);
         clauseToConceptsMap.put(clause.getValue(), concepts);
       }
 
@@ -2440,7 +2469,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         .info("RESTful call POST (Refset): /import/begin " + refsetId + ", "
             + ioHandlerInfoId);
 
-    final RefsetService refsetService = new RefsetServiceJpa(headers);
+    final RefsetService refsetService =
+        new RefsetServiceJpa(getHeaders(headers));
     try {
       // Load refset
       final Refset refset = refsetService.getRefset(refsetId);
@@ -2521,7 +2551,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
     Logger.getLogger(getClass())
         .info("RESTful call POST (Refset): /migration/resume " + refsetId);
 
-    final RefsetService refsetService = new RefsetServiceJpa(headers);
+    final RefsetService refsetService =
+        new RefsetServiceJpa(getHeaders(headers));
     try {
       // Load refset
       final Refset refset = refsetService.getRefset(refsetId);
@@ -2574,7 +2605,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         .info("RESTful call POST (Refset): /import/resume " + refsetId + ", "
             + ioHandlerInfoId);
 
-    final RefsetService refsetService = new RefsetServiceJpa(headers);
+    final RefsetService refsetService =
+        new RefsetServiceJpa(getHeaders(headers));
     try {
       // Load refset
       final Refset refset = refsetService.getRefset(refsetId);
@@ -2629,7 +2661,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         .info("RESTful call POST (Refset): /import/finish " + refsetId + ", "
             + ioHandlerInfoId);
 
-    final RefsetService refsetService = new RefsetServiceJpa(headers);
+    final RefsetService refsetService =
+        new RefsetServiceJpa(getHeaders(headers));
     refsetService.setTransactionPerOperation(false);
     refsetService.beginTransaction();
     try {
@@ -2784,7 +2817,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
     Logger.getLogger(getClass())
         .info("RESTful call POST (Refset): /import/cancel " + refsetId);
 
-    final RefsetService refsetService = new RefsetServiceJpa(headers);
+    final RefsetService refsetService =
+        new RefsetServiceJpa(getHeaders(headers));
     try {
       // Load refset
       final Refset refset = refsetService.getRefset(refsetId);
@@ -2863,7 +2897,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
     Logger.getLogger(getClass()).info(
         "RESTful POST call (Refset): /add/note " + refsetId + ", " + note);
 
-    final RefsetService refsetService = new RefsetServiceJpa(headers);
+    final RefsetService refsetService =
+        new RefsetServiceJpa(getHeaders(headers));
     try {
       final Refset refset = refsetService.getRefset(refsetId);
       if (refset.getProject() == null || refset.getProject().getId() == null) {
@@ -2918,7 +2953,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         .info("RESTful call DELETE (Refset): /remove/note " + refsetId + ", "
             + noteId);
 
-    final RefsetService refsetService = new RefsetServiceJpa(headers);
+    final RefsetService refsetService =
+        new RefsetServiceJpa(getHeaders(headers));
     try {
       final Refset refset = refsetService.getRefset(refsetId);
       if (refset.getProject() == null || refset.getProject().getId() == null) {
@@ -2974,7 +3010,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         .info("RESTful POST call (Refset): /member/add/note " + refsetId + ","
             + memberId + ", " + note);
 
-    final RefsetService refsetService = new RefsetServiceJpa(headers);
+    final RefsetService refsetService =
+        new RefsetServiceJpa(getHeaders(headers));
     try {
       final Refset refset = refsetService.getRefset(refsetId);
       if (refset.getProject() == null || refset.getProject().getId() == null) {
@@ -3036,7 +3073,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         .info("RESTful call DELETE (Refset): /member/remove/note " + memberId
             + ", " + noteId);
 
-    final RefsetService refsetService = new RefsetServiceJpa(headers);
+    final RefsetService refsetService =
+        new RefsetServiceJpa(getHeaders(headers));
     try {
       final ConceptRefsetMember member = refsetService.getMember(memberId);
       final Refset refset = member.getRefset();
@@ -3085,7 +3123,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
     Logger.getLogger(getClass())
         .info("RESTful call GET (Refset): /refset/lookup/status " + refsetId);
 
-    final RefsetService refsetService = new RefsetServiceJpa(headers);
+    final RefsetService refsetService =
+        new RefsetServiceJpa(getHeaders(headers));
     try {
       final Refset refset = refsetService.getRefset(refsetId);
       if (refset == null) {
@@ -3125,7 +3164,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         .info("RESTful call GET (Refset): /expression/count " + terminology
             + ", " + version + ", " + expression);
 
-    final RefsetService refsetService = new RefsetServiceJpa(headers);
+    final RefsetService refsetService =
+        new RefsetServiceJpa(getHeaders(headers));
     try {
       authorizeProject(refsetService, projectId, securityService, authToken,
           "count expression", UserRole.AUTHOR);
@@ -3155,7 +3195,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
     Logger.getLogger(getClass())
         .info("RESTful call GET (Refset): /refset/lookup/start " + refsetId);
 
-    final RefsetService refsetService = new RefsetServiceJpa(headers);
+    final RefsetService refsetService =
+        new RefsetServiceJpa(getHeaders(headers));
     try {
       final Refset refset = refsetService.getRefset(refsetId);
       // Authorize the call
@@ -3195,7 +3236,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
             + ", " + version + ", " + expression);
 
     // Create service and configure transaction scope
-    final RefsetService refsetService = new RefsetServiceJpa(headers);
+    final RefsetService refsetService =
+        new RefsetServiceJpa(getHeaders(headers));
     try {
       authorizeProject(refsetService, projectId, securityService, authToken,
           "is expression valid", UserRole.AUTHOR);
@@ -3204,7 +3246,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       final PfsParameter pfs = new PfsParameterJpa();
       pfs.setStartIndex(0);
       pfs.setMaxResults(1);
-      refsetService.getTerminologyHandler(project, headers)
+      refsetService.getTerminologyHandler(project, getHeaders(headers))
           .countExpression(expression, terminology, version);
       return true;
 
@@ -3229,7 +3271,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
     Logger.getLogger(getClass()).info(
         "RESTful call (Refset): recover refset for id, refsetId:" + refsetId);
 
-    final RefsetService refsetService = new RefsetServiceJpa(headers);
+    final RefsetService refsetService =
+        new RefsetServiceJpa(getHeaders(headers));
     refsetService.setTransactionPerOperation(false);
     refsetService.beginTransaction();
     try {
@@ -3264,7 +3307,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
     Logger.getLogger(getClass())
         .info("RESTful call (Refset): origin" + stagedRefsetId);
 
-    final RefsetService refsetService = new RefsetServiceJpa(headers);
+    final RefsetService refsetService =
+        new RefsetServiceJpa(getHeaders(headers));
     try {
       authorizeApp(securityService, authToken, "get origin refset",
           UserRole.VIEWER);
@@ -3304,7 +3348,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
     throws Exception {
     Logger.getLogger(getClass()).info("RESTful call (Refset): filters");
 
-    final RefsetService refsetService = new RefsetServiceJpa(headers);
+    final RefsetService refsetService =
+        new RefsetServiceJpa(getHeaders(headers));
     try {
       authorizeApp(securityService, authToken, "get filters", UserRole.VIEWER);
 
@@ -3392,7 +3437,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
     Logger.getLogger(getClass()).info(
         "RESTful call (Refset): assign refset id " + projectId + ", " + refset);
 
-    final RefsetService refsetService = new RefsetServiceJpa(headers);
+    final RefsetService refsetService =
+        new RefsetServiceJpa(getHeaders(headers));
     try {
       authorizeProject(refsetService, projectId, securityService, authToken,
           "assign refset id", UserRole.AUTHOR);
