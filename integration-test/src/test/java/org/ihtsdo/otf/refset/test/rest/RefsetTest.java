@@ -89,7 +89,7 @@ public class RefsetTest extends RefsetTestSupport {
 
     // Verify number of members to begin with
     List<ConceptRefsetMember> foundMembers =
-        refsetService.findRefsetMembersForQuery(refset.getId(), "",
+        refsetService.findRefsetMembersForQuery(refset.getId(), "", false, 
             new PfsParameterJpa(), adminAuthToken).getObjects();
 
     assertEquals(21, foundMembers.size());
@@ -109,7 +109,7 @@ public class RefsetTest extends RefsetTestSupport {
 
     // Verify number of members in refset has increased due to new member
     foundMembers =
-        refsetService.findRefsetMembersForQuery(refset.getId(), "",
+        refsetService.findRefsetMembersForQuery(refset.getId(), "",false, 
             new PfsParameterJpa(), adminAuthToken).getObjects();
     assertEquals(22, foundMembers.size());
 
@@ -134,12 +134,12 @@ public class RefsetTest extends RefsetTestSupport {
     // Get all members
     ConceptRefsetMemberList originalMemberList =
         refsetService.findRefsetMembersForQuery(refset.getId(),
-            "memberType:MEMBER", new PfsParameterJpa(), adminAuthToken);
+            "memberType:MEMBER", false, new PfsParameterJpa(), adminAuthToken);
     assertEquals(143, originalMemberList.getCount());
 
     // Identify member to exclude
     ConceptRefsetMemberList memberToRemove =
-        refsetService.findRefsetMembersForQuery(refset.getId(), "429817007",
+        refsetService.findRefsetMembersForQuery(refset.getId(), "429817007",false, 
             new PfsParameterJpa(), adminAuthToken);
 
     // Add exclusion and verify refset members have decreased
@@ -147,7 +147,7 @@ public class RefsetTest extends RefsetTestSupport {
         adminAuthToken);
     ConceptRefsetMemberList removedMemberList =
         refsetService.findRefsetMembersForQuery(refset.getId(),
-            "memberType:MEMBER", new PfsParameterJpa(), adminAuthToken);
+            "memberType:MEMBER", false, new PfsParameterJpa(), adminAuthToken);
     assertEquals(142, removedMemberList.getCount());
 
     // Remove exclusion and verify refset members have increased
@@ -159,7 +159,7 @@ public class RefsetTest extends RefsetTestSupport {
         exclusionRemovedMember.getConceptName());
     ConceptRefsetMemberList finalMemberList =
         refsetService.findRefsetMembersForQuery(refset.getId(),
-            "memberType:MEMBER", new PfsParameterJpa(), adminAuthToken);
+            "memberType:MEMBER", false, new PfsParameterJpa(), adminAuthToken);
     assertEquals(143, finalMemberList.getObjects().size());
 
     // clean up
@@ -190,7 +190,7 @@ public class RefsetTest extends RefsetTestSupport {
         (RefsetJpa) refsetService.getRefset(refset.getId(), adminAuthToken);
     ConceptRefsetMemberList members =
         refsetService.findRefsetMembersForQuery(refset.getId(),
-            "memberType:MEMBER", new PfsParameterJpa(), adminAuthToken);
+            "memberType:MEMBER", false, new PfsParameterJpa(), adminAuthToken);
     assertEquals(143, members.getCount());
 
     // Add 2nd clause that is based on concept that is child of original
@@ -204,7 +204,7 @@ public class RefsetTest extends RefsetTestSupport {
         (RefsetJpa) refsetService.getRefset(refset.getId(), adminAuthToken);
     members =
         refsetService.findRefsetMembersForQuery(refset.getId(),
-            "memberType:MEMBER", new PfsParameterJpa(), adminAuthToken);
+            "memberType:MEMBER", false, new PfsParameterJpa(), adminAuthToken);
     assertEquals(143, members.getCount());
     assertEquals(2, refset.getDefinitionClauses().size());
 
@@ -218,7 +218,7 @@ public class RefsetTest extends RefsetTestSupport {
         (RefsetJpa) refsetService.getRefset(refset.getId(), adminAuthToken);
     members =
         refsetService.findRefsetMembersForQuery(refset.getId(),
-            "memberType:MEMBER", new PfsParameterJpa(), adminAuthToken);
+            "memberType:MEMBER", false, new PfsParameterJpa(), adminAuthToken);
     assertEquals(141, members.getCount());
     assertEquals(3, refset.getDefinitionClauses().size());
 
@@ -233,7 +233,7 @@ public class RefsetTest extends RefsetTestSupport {
         (RefsetJpa) refsetService.getRefset(refset.getId(), adminAuthToken);
     members =
         refsetService.findRefsetMembersForQuery(refset.getId(),
-            "memberType:MEMBER", new PfsParameterJpa(), adminAuthToken);
+            "memberType:MEMBER", false, new PfsParameterJpa(), adminAuthToken);
     assertEquals(141, members.getCount());
     assertEquals(4, refset.getDefinitionClauses().size());
 
@@ -244,7 +244,7 @@ public class RefsetTest extends RefsetTestSupport {
     assertEquals(2, optomizedRefset.getDefinitionClauses().size());
     members =
         refsetService.findRefsetMembersForQuery(optomizedRefset.getId(),
-            "memberType:MEMBER", new PfsParameterJpa(), adminAuthToken);
+            "memberType:MEMBER", false, new PfsParameterJpa(), adminAuthToken);
     assertEquals(141, members.getCount());
 
     int posClauses = 0;
