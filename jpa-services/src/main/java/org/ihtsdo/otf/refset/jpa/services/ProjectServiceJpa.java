@@ -10,7 +10,6 @@ import java.util.Map;
 import java.util.Properties;
 
 import javax.persistence.NoResultException;
-import javax.ws.rs.core.HttpHeaders;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.Project;
@@ -125,7 +124,7 @@ public class ProjectServiceJpa extends RootServiceJpa
   }
 
   /** The headers. */
-  HttpHeaders headers;
+  Map<String, String> headers;
 
   /**
    * Instantiates an empty {@link ProjectServiceJpa}.
@@ -158,7 +157,7 @@ public class ProjectServiceJpa extends RootServiceJpa
    * @param headers the headers
    * @throws Exception the exception
    */
-  public ProjectServiceJpa(HttpHeaders headers) throws Exception {
+  public ProjectServiceJpa(Map<String, String> headers) throws Exception {
     this();
     this.headers = headers;
   }
@@ -311,7 +310,7 @@ public class ProjectServiceJpa extends RootServiceJpa
   /* see superclass */
   @Override
   public TerminologyHandler getTerminologyHandler(Project project,
-    HttpHeaders headers) throws Exception {
+    Map<String, String> headers) throws Exception {
     if (!terminologyHandlers.containsKey(project.getTerminologyHandlerKey())) {
       throw new LocalException(
           "No terminology handler exists for the specified key: "

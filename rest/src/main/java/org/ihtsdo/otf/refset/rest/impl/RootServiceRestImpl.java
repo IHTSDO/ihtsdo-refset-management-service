@@ -4,10 +4,15 @@
 package org.ihtsdo.otf.refset.rest.impl;
 
 import java.util.Calendar;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 
+import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
@@ -59,19 +64,19 @@ public class RootServiceRestImpl {
     }
     // throw the local exception as a web application exception
     if (e instanceof LocalException) {
-      throw new WebApplicationException(Response.status(500).entity(message)
-          .build());
+      throw new WebApplicationException(
+          Response.status(500).entity(message).build());
     }
 
     // throw the web application exception as-is, e.g. for 401 errors
     if (e instanceof WebApplicationException) {
       throw new WebApplicationException(message, e);
     }
-    throw new WebApplicationException(Response
-        .status(500)
-        .entity(
-            "\"Unexpected error trying to " + whatIsHappening
-                + ". Please contact the administrator.\"").build());
+    throw new WebApplicationException(
+        Response
+            .status(500).entity("\"Unexpected error trying to "
+                + whatIsHappening + ". Please contact the administrator.\"")
+            .build());
 
   }
 
@@ -90,10 +95,11 @@ public class RootServiceRestImpl {
     throws Exception {
     // Verify the user has the privileges of the required app role
     UserRole role = securityService.getApplicationRoleForToken(authToken);
-    if (!role.hasPrivilegesOf(requiredAppRole == null ? UserRole.VIEWER
-        : requiredAppRole)) {
+    if (!role.hasPrivilegesOf(
+        requiredAppRole == null ? UserRole.VIEWER : requiredAppRole)) {
       throw new WebApplicationException(Response.status(401)
-          .entity("User does not have permissions to " + perform + ".").build());
+          .entity("User does not have permissions to " + perform + ".")
+          .build());
     }
     return securityService.getUsernameForToken(authToken);
   }
@@ -124,13 +130,13 @@ public class RootServiceRestImpl {
     }
 
     // Verify that user project role has privileges of required role
-    UserRole role =
-        projectService.getProject(projectId).getUserRoleMap()
-            .get(securityService.getUser(userName));
+    UserRole role = projectService.getProject(projectId).getUserRoleMap()
+        .get(securityService.getUser(userName));
     UserRole projectRole = (role == null) ? UserRole.VIEWER : role;
     if (!projectRole.hasPrivilegesOf(requiredProjectRole))
       throw new WebApplicationException(Response.status(401)
-          .entity("User does not have permissions to " + perform + ".").build());
+          .entity("User does not have permissions to " + perform + ".")
+          .build());
 
     // return username
     return userName;
@@ -176,9 +182,8 @@ public class RootServiceRestImpl {
 
     // For private projects, verify user has required project role
     else {
-      UserRole role =
-          refset.getProject().getUserRoleMap()
-              .get(securityService.getUser(userName));
+      UserRole role = refset.getProject().getUserRoleMap()
+          .get(securityService.getUser(userName));
       UserRole projectRole = (role == null) ? UserRole.VIEWER : role;
       if (!projectRole.hasPrivilegesOf(requiredProjectRole))
         throw new WebApplicationException(Response.status(401)
@@ -197,7 +202,7 @@ public class RootServiceRestImpl {
    * @return the total elapsed time str
    */
   @SuppressWarnings({
-    "boxing"
+      "boxing"
   })
   protected static String getTotalElapsedTimeStr(long time) {
     Long resultnum = (System.nanoTime() - time) / 1000000000;
@@ -223,7 +228,8 @@ public class RootServiceRestImpl {
    *
    * @param websocket2 the notification websocket
    */
-  public static void setNotificationWebsocket(NotificationWebsocket websocket2) {
+  public static void setNotificationWebsocket(
+    NotificationWebsocket websocket2) {
     websocket = websocket2;
   }
 
@@ -267,5 +273,32 @@ public class RootServiceRestImpl {
     // do not inform listeners
     return newLogEntry;
 
+  }
+
+  /**
+   * Returns the cookie header.
+   *
+   * @param headers the headers
+   * @return the cookie header
+   */
+  public Map<String, String> getHeaders(HttpHeaders headers) {
+    final Map<String, String> map = new HashMap<>();
+    final List<String> referers = headers.getRequestHeader("Referer");
+    if (referers != null && referers.size() == 1) {
+      final String referer = referers.get(0);
+      map.put("Referer", referer);
+      List<String> cookies = headers.getRequestHeader("Cookie");
+      if (cookies != null && cookies.size() == 1) {
+        map.put("Cookie", cookies.get(0));
+        return map;
+      } else {
+        Logger.getLogger(getClass())
+            .warn("UNEXPECTED number of Cookie headers = " + cookies.size());
+      }
+    } else {
+      Logger.getLogger(getClass())
+          .warn("UNEXPECTED number of Referer headers = " + referers.size());
+    }
+    return new HashMap<>();
   }
 }
