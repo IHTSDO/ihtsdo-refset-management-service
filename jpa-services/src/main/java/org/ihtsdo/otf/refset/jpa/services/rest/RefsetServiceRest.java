@@ -215,13 +215,14 @@ public interface RefsetServiceRest {
    *
    * @param refsetId the refset id
    * @param query the query
+   * @param translated the translated
    * @param pfs the pfs
    * @param authToken the auth token
    * @return the concept refset member list
    * @throws Exception the exception
    */
   public ConceptRefsetMemberList findRefsetMembersForQuery(Long refsetId,
-    String query, PfsParameterJpa pfs, String authToken) throws Exception;
+    String query, Boolean translated, PfsParameterJpa pfs, String authToken) throws Exception;
 
   /**
    * Adds the refset inclusion.

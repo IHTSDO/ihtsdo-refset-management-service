@@ -499,4 +499,18 @@ public interface Refset extends Component, Searchable {
    * @param localSet the new local set
    */
   public void setLocalSet(boolean localSet);
+
+  /**
+   * Checks if is translated.
+   *
+   * @return true, if is translated
+   */
+  public boolean isTranslated();
+
+  /**
+   * Sets the translated.
+   *
+   * @param translated the new translated
+   */
+  public void setTranslated(boolean translated);
 }

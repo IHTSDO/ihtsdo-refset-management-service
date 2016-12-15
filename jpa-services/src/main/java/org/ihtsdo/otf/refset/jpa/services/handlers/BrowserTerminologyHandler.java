@@ -10,8 +10,10 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
@@ -876,7 +878,7 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
     final String targetUrl =
         url + "/snomed/" + terminology + "/v" + version + "/descriptions?query="
             + URLEncoder.encode(query, "UTF-8").replaceAll(" ", "%20")
-            + "&searchMode=partialMatching&lang=english" + statusFilter + "&"
+            + "&searchMode=partialMatching&lang=" + getLanguages(terminology, version)+ statusFilter + "&"
             + "skipTo=" + localPfs.getStartIndex() + "&returnLimit="
             + (localPfs.getMaxResults() * 3) + "&normalize=true";
 
@@ -1042,6 +1044,9 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
     String terminology, String version) throws Exception {
     final ConceptList conceptList = new ConceptListJpa();
 
+    //TODO figure out where to put this
+    List<String> languages = this.getLanguages(terminology, version);
+    
     final Client client = ClientBuilder.newClient();
     final String targetUrl = url + "/snomed/" + terminology + "/v" + version
         + "/concepts/" + terminologyId + "/children?form=inferred";
@@ -1126,8 +1131,7 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
         url + "/snomed/" + terminology + "/v" + version + "/descriptions?query="
             + URLEncoder.encode("brain", "UTF-8").replaceAll(" ", "%20")
             + "&searchMode=partialMatching&lang=english" + statusFilter + "&"
-            + "skipTo=" + localPfs.getStartIndex() + "&returnLimit="
-            + (localPfs.getMaxResults() * 3) + "&normalize=true";
+            + "skipTo=0&returnLimit=1&normalize=true";
 
     Logger.getLogger(getClass()).debug("  Find concepts - " + targetUrl);
     final WebTarget target = client.target(targetUrl);
@@ -1143,19 +1147,20 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
     List<String> languages = new ArrayList<String>();
     final ObjectMapper mapper = new ObjectMapper();
     final JsonNode doc = mapper.readTree(resultString);
-    if (doc.get("matches") == null) {
+    System.out.println("resultString " + resultString);
+    if (doc.get("filters") == null) {
+      languages.add("english");
       return languages;
     }
-    for (final JsonNode conceptNode : doc.get("matches")) {
-      // Get concept id
-      final String conceptId = conceptNode.get("conceptId").asText();
-
-      final Description desc = new DescriptionJpa();
-      desc.setActive(conceptNode.get("active").asText().equals("true"));
-      desc.setTerm(conceptNode.get("term").asText());
-      
-
-    }
+    Iterator<String> iter = doc.get("filters").get("lang").fieldNames();
+    while(iter.hasNext())  {
+      final String name = iter.next();
+          if (!name.equals("english")) {
+            languages.add(name);
+          }
+      }
+    
+    languages.add("english");
 
     
     return languages;

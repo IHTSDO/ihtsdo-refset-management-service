@@ -497,7 +497,7 @@ public class SnowowlTerminologyHandler implements TerminologyHandler {
     final WebTarget target = client
         .target(url + "/browser/" + version + "/concepts/" + terminologyId);
     final Response response =
-        target.request("*/*").header("Authorization", authHeader)
+        target.request("application/vnd.org.ihtsdo.browser+json").header("Authorization", authHeader)
             .header("Accept-Language", getAcceptLanguage(terminology, version))
             .header("Cookie", getCookieHeader()).get();
     final String resultString = response.readEntity(String.class);
@@ -717,7 +717,7 @@ public class SnowowlTerminologyHandler implements TerminologyHandler {
     final WebTarget target = client.target(url + "/" + version
         + "/concepts?escg=" + terminologyId + "&expand=pt()");
     final Response response =
-        target.request("*/*").header("Authorization", authHeader)
+        target.request("application/vnd.org.ihtsdo.browser+json").header("Authorization", authHeader)
             .header("Accept-Language", getAcceptLanguage(terminology, version))
             .header("Cookie", getCookieHeader()).get();
     final String resultString = response.readEntity(String.class);
@@ -877,7 +877,7 @@ public class SnowowlTerminologyHandler implements TerminologyHandler {
             + localPfs.getMaxResults() + "&expand=pt()");
 
     final Response response =
-        target.request("*/*").header("Authorization", authHeader)
+        target.request("application/vnd.org.ihtsdo.browser+json").header("Authorization", authHeader)
             .header("Accept-Language", getAcceptLanguage(terminology, version))
             .header("Cookie", getCookieHeader()).get();
     final String resultString = response.readEntity(String.class);
@@ -1033,7 +1033,7 @@ public class SnowowlTerminologyHandler implements TerminologyHandler {
                     + localPfs.getMaxResults() + "&expand=pt()");
 
     final Response response =
-        target.request("*/*").header("Authorization", authHeader)
+        target.request("application/vnd.org.ihtsdo.browser+json").header("Authorization", authHeader)
             .header("Accept-Language", getAcceptLanguage(terminology, version))
             .header("Cookie", getCookieHeader()).get();
     final String resultString = response.readEntity(String.class);
@@ -1157,7 +1157,7 @@ public class SnowowlTerminologyHandler implements TerminologyHandler {
     final WebTarget target = client.target(url + "/browser/" + version
         + "/concepts/" + terminologyId + "/parents");
     final Response response =
-        target.request("*/*").header("Authorization", authHeader)
+        target.request("application/vnd.org.ihtsdo.browser+json").header("Authorization", authHeader)
             .header("Accept-Language", getAcceptLanguage(terminology, version))
             .header("Cookie", getCookieHeader()).get();
     final String resultString = response.readEntity(String.class);
@@ -1219,7 +1219,7 @@ public class SnowowlTerminologyHandler implements TerminologyHandler {
     final WebTarget target = client.target(url + "/browser/" + version
         + "/concepts/" + terminologyId + "/children?form=inferred");
     final Response response =
-        target.request("*/*").header("Authorization", authHeader)
+        target.request("application/vnd.org.ihtsdo.browser+json").header("Authorization", authHeader)
             .header("Accept-Language", getAcceptLanguage(terminology, version))
             .header("Cookie", getCookieHeader()).get();
     final String resultString = response.readEntity(String.class);
