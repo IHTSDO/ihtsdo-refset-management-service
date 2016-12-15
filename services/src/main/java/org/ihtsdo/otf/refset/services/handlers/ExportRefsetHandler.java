@@ -6,10 +6,12 @@ package org.ihtsdo.otf.refset.services.handlers;
 import java.io.InputStream;
 import java.util.List;
 
+import org.ihtsdo.otf.refset.MemberDiffReport;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.helpers.Configurable;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 
+// TODO: Auto-generated Javadoc
 /**
  * Generically represents a handler for exporting refset data.
  * 
@@ -79,16 +81,5 @@ public interface ExportRefsetHandler extends Configurable {
     List<ConceptRefsetMember> inclusions, List<ConceptRefsetMember> exclusions)
     throws Exception;
 
-  /**
-   * Export diff report.
-   *
-   * @param refset the refset
-   * @param inclusions the inclusions
-   * @param exclusions the exclusions
-   * @return the input stream
-   * @throws Exception the exception
-   */
-  public InputStream exportDiffReport(Refset refset, List<ConceptRefsetMember> inclusions, List<ConceptRefsetMember> exclusions)
-		throws Exception;
 
 }

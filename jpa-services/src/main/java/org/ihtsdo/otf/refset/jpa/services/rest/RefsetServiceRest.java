@@ -23,6 +23,7 @@ import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
 
+// TODO: Auto-generated Javadoc
 /**
  * Represents a refsets available via a REST service.
  */
@@ -637,17 +638,27 @@ public interface RefsetServiceRest {
   public String assignRefsetTerminologyId(Long projectId, RefsetJpa refset,
     String authToken) throws Exception;
 
+
   /**
    * Export diff report.
    *
+   * @param reportToken the report token
    * @param refsetId the refset id
-   * @param ioHandlerInfoId the io handler info id
-   * @param query the query
-   * @param pfs the pfs
    * @param authToken the auth token
    * @return the input stream
    * @throws Exception the exception
    */
-  public InputStream exportDiffReport(Long refsetId, String ioHandlerInfoId, String query, PfsParameterJpa pfs, String authToken)
+  public InputStream exportDiffReport(String reportToken, Long refsetId, String authToken)
 		throws Exception;
+
+  /**
+   * Convert refset.
+   *
+   * @param refsetId the refset id
+   * @param refsetType the refset type
+   * @param authToken the auth token
+   * @return the refset
+   * @throws Exception the exception
+   */
+  public Refset convertRefset(Long refsetId, String refsetType, String authToken) throws Exception;
 }
