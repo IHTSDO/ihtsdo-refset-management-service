@@ -1050,7 +1050,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
     Logger.getLogger(getClass())
         .info("RESTful call GET (Refset): /export/report " + reportToken);
 
-    final RefsetService refsetService = new RefsetServiceJpa(headers);
+    final RefsetService refsetService =
+        new RefsetServiceJpa(getHeaders(headers));
     try {
       // Authorize the call
       authorizeApp(securityService, authToken, "export report",
@@ -1145,7 +1146,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
           sb = appendDiffReportMember(sb, member, refset);
         }
       }
-            
+
       // Members in common
       sb.append("\r\n").append("Members in Common").append("\r\n");
       sb = appendDiffReportHeader(sb);
@@ -1153,7 +1154,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         Logger.getLogger(getClass()).debug("  member = " + member);
         sb = appendDiffReportMember(sb, member, refset);
       }
-      
+
       return new ByteArrayInputStream(sb.toString().getBytes("UTF-8"));
 
     } catch (Exception e) {
@@ -1172,6 +1173,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
    * @param sb the sb
    * @return the string builder
    */
+  @SuppressWarnings("static-method")
   private StringBuilder appendDiffReportHeader(StringBuilder sb) {
     sb.append("id").append("\t");
     sb.append("effectiveTime").append("\t");
@@ -1189,10 +1191,11 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
    *
    * @param sb the sb
    * @param member the member
+   * @param refset the refset
    * @return the string builder
    */
-  private StringBuilder appendDiffReportMember(StringBuilder sb, ConceptRefsetMember member,
-    Refset refset) {
+  private StringBuilder appendDiffReportMember(StringBuilder sb,
+    ConceptRefsetMember member, Refset refset) {
     Logger.getLogger(getClass()).debug("  member = " + member);
 
     sb.append(member.getTerminologyId()).append("\t");
@@ -1786,7 +1789,6 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
     return null;
   }
 
-  
   /* see superclass */
   @GET
   @Override
@@ -1798,11 +1800,11 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(getClass())
-        .info("RESTful call POST (Refset): /convert " + refsetId + ", "
-            + refsetType);
+    Logger.getLogger(getClass()).info(
+        "RESTful call POST (Refset): /convert " + refsetId + ", " + refsetType);
 
-    final RefsetService refsetService = new RefsetServiceJpa(headers);
+    final RefsetService refsetService =
+        new RefsetServiceJpa(getHeaders(headers));
     try {
       // Load refset
       Refset refset = refsetService.getRefset(refsetId);
@@ -1816,7 +1818,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
           "begin refset conversion", UserRole.AUTHOR);
 
       // Check refset type
-      if (refset.getType() == Refset.Type.EXTERNAL || refset.getType() == Refset.Type.EXTENSIONAL) {
+      if (refset.getType() == Refset.Type.EXTERNAL
+          || refset.getType() == Refset.Type.EXTENSIONAL) {
         throw new LocalException(
             "Conversion is only allowed for intensional type refsets.");
       }
@@ -1827,7 +1830,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
 
       refset.setType(Refset.Type.EXTENSIONAL);
       refset.setDefinitionClauses(null);
-      
+
       refsetService.updateRefset(refset);
 
       for (final ConceptRefsetMember member : refset.getMembers()) {
@@ -1842,8 +1845,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       refsetService.commit();
 
       addLogEntry(refsetService, userName, "CONVERT REFSET",
-          refset.getProject().getId(), refset.getId(),
-          refset.getTerminologyId() + ": " + refset.getName() + " to " + refsetType);
+          refset.getProject().getId(), refset.getId(), refset.getTerminologyId()
+              + ": " + refset.getName() + " to " + refsetType);
 
       return refset;
 
@@ -1856,7 +1859,6 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
     return null;
   }
 
-  
   /**
    * Gets the old not new for migration.
    *
