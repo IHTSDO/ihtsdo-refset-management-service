@@ -69,9 +69,20 @@
           <b>Version</b>
         </td>
         <td>
-          <select ng-model="refset.version"
+          <!-- <select ng-model="refset.version"
             ng-change="versionSelected(refset.version)"
-            ng-options="item for item in versions"></select>
+            ng-options="item for item in versions"></select> -->
+            
+          <input style="width: 252px" ng-model="refset.version"
+            list="versions" placeholder="e.g. MAIN" />
+          <datalist id=versions>
+            <option ng-repeat="version in versions | orderBy:'version'"
+              value="{{version}}">{{version}}</option>
+          </datalist>
+          <button class="btn btn-xs btn-warning" ng-show="refset.version"
+            ng-click="refset.version=''">Clear</button>
+          &nbsp;&nbsp;
+          <span flag-icon obj="refset"></span>
         </td>
       </tr>
       <tr ng-show="!refset.localSet">

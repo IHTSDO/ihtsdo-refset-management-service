@@ -775,6 +775,10 @@
 </div>
 
 <div class="modal-footer">
+  
+  <span style="float:left"><button ng-show="refset.staged" class="btn btn-primary"
+    ng-click="exportDiffReport();">Export Report</button></span>
+
   <button class="btn btn-primary" ng-disabled="refset.staged"
     ng-click="beginMigration(newTerminology, newVersion);">Migrate</button>
 

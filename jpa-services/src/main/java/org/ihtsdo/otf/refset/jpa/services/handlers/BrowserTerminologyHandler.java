@@ -1106,4 +1106,58 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
     this.headers = headers;
   }
 
+  @Override
+  public List<String> getLanguages(String terminology, String version)
+    throws Exception {
+    // Make a webservice call to browser api
+    final Client client = ClientBuilder.newClient();
+
+    PfsParameter localPfs = new PfsParameterJpa();
+    localPfs.setStartIndex(0);
+    localPfs.setMaxResults(1);
+
+    // Support active-only searches
+    final String statusFilter =  "&statusFilter=activeOnly";
+
+    // Use getConcept() if it's an id, otherwise search term
+    // Read past the limit to find all names for the concept
+    final String targetUrl =
+        url + "/snomed/" + terminology + "/v" + version + "/descriptions?query="
+            + URLEncoder.encode("brain", "UTF-8").replaceAll(" ", "%20")
+            + "&searchMode=partialMatching&lang=english" + statusFilter + "&"
+            + "skipTo=" + localPfs.getStartIndex() + "&returnLimit="
+            + (localPfs.getMaxResults() * 3) + "&normalize=true";
+
+    Logger.getLogger(getClass()).debug("  Find concepts - " + targetUrl);
+    final WebTarget target = client.target(targetUrl);
+
+    final Response response = target.request(accept).get();
+    final String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new LocalException(
+          "Unexpected terminology server failure. Message = " + resultString);
+    }
+    List<String> languages = new ArrayList<String>();
+    final ObjectMapper mapper = new ObjectMapper();
+    final JsonNode doc = mapper.readTree(resultString);
+    if (doc.get("matches") == null) {
+      return languages;
+    }
+    for (final JsonNode conceptNode : doc.get("matches")) {
+      // Get concept id
+      final String conceptId = conceptNode.get("conceptId").asText();
+
+      final Description desc = new DescriptionJpa();
+      desc.setActive(conceptNode.get("active").asText().equals("true"));
+      desc.setTerm(conceptNode.get("term").asText());
+      
+
+    }
+
+    
+    return languages;
+  }
+
 }

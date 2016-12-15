@@ -3,6 +3,7 @@
  */
 package org.ihtsdo.otf.refset.rest.impl;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -34,6 +35,8 @@ import org.ihtsdo.otf.refset.MemberDiffReport;
 import org.ihtsdo.otf.refset.Note;
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
+import org.ihtsdo.otf.refset.Refset.MemberType;
+import org.ihtsdo.otf.refset.Refset.Type;
 import org.ihtsdo.otf.refset.ReleaseInfo;
 import org.ihtsdo.otf.refset.StagedRefsetChange;
 import org.ihtsdo.otf.refset.Translation;
@@ -1033,44 +1036,125 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
   }
 
   /* see superclass */
-  @POST
+  @GET
   @Override
   @Produces("application/octet-stream")
   @Path("/export/report")
   @ApiOperation(value = "Export diff report", notes = "Exports the report during migration of a refset", response = InputStream.class)
   public InputStream exportDiffReport(
-    @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
-    @ApiParam(value = "Import handler id, e.g. \"DEFAULT\"", required = true) @QueryParam("handlerId") String ioHandlerInfoId,
-    @ApiParam(value = "Query, e.g. \"aspirin\"", required = true) @QueryParam("query") String query,
-    @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
+    @ApiParam(value = "Report token, (UUID format)", required = true) @QueryParam("reportToken") String reportToken,
+    @ApiParam(value = "Refset id, e.g. 5", required = true) @QueryParam("refsetId") Long refsetId,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
     Logger.getLogger(getClass())
-        .info("RESTful call GET (Refset): /export/report " + refsetId + ", "
-            + ioHandlerInfoId);
+        .info("RESTful call GET (Refset): /export/report " + reportToken);
 
-    final RefsetService refsetService = new RefsetServiceJpa();
+    final RefsetService refsetService = new RefsetServiceJpa(headers);
     try {
-      // Load refset
-      final Refset refset = refsetService.getRefset(refsetId);
-      if (refset == null) {
-        throw new Exception("Invalid refset id " + refsetId);
-      }
-
       // Authorize the call
       authorizeApp(securityService, authToken, "export report",
           UserRole.VIEWER);
 
-      // Obtain the export handler
-      final ExportRefsetHandler handler =
-          refsetService.getExportRefsetHandler(ioHandlerInfoId);
-      if (handler == null) {
-        throw new Exception("invalid handler id " + ioHandlerInfoId);
+      // Load refset
+      final Refset refset = refsetService.getRefset(refsetId);
+      final MemberDiffReport report =
+          this.getDiffReport(reportToken, authToken);
+      if (report == null) {
+        throw new Exception("Member diff report is null " + reportToken);
       }
 
-      // export the members
-      return handler.exportDiffReport(refset, null, null);
+      StringBuilder sb = new StringBuilder();
+
+      // New regular members
+      if (report.getNewRegularMembers().size() > 0) {
+        sb.append("New Members").append("\r\n");
+        sb = appendDiffReportHeader(sb);
+      }
+      for (ConceptRefsetMember member : report.getNewRegularMembers()) {
+        Logger.getLogger(getClass()).debug("  member = " + member);
+        sb = appendDiffReportMember(sb, member, refset);
+      }
+
+      // Old regular members
+      if (report.getOldRegularMembers().size() > 0) {
+        sb.append("\r\n").append("Old Members").append("\r\n");
+        sb = appendDiffReportHeader(sb);
+      }
+      for (ConceptRefsetMember member : report.getOldRegularMembers()) {
+        Logger.getLogger(getClass()).debug("  member = " + member);
+        sb = appendDiffReportMember(sb, member, refset);
+      }
+
+      if (refset.getType() == Type.INTENSIONAL) {
+        // Valid inclusions
+        if (report.getValidInclusions().size() > 0) {
+          sb.append("\r\n").append("Valid Inclusions").append("\r\n");
+          sb = appendDiffReportHeader(sb);
+        }
+        for (ConceptRefsetMember member : report.getValidInclusions()) {
+          Logger.getLogger(getClass()).debug("  member = " + member);
+          sb = appendDiffReportMember(sb, member, refset);
+        }
+
+        // Valid exclusions
+        if (report.getValidExclusions().size() > 0) {
+          sb.append("\r\n").append("Valid Exclusions").append("\r\n");
+          sb = appendDiffReportHeader(sb);
+        }
+        for (ConceptRefsetMember member : report.getValidExclusions()) {
+          Logger.getLogger(getClass()).debug("  member = " + member);
+          sb = appendDiffReportMember(sb, member, refset);
+        }
+
+        // Staged inclusions
+        if (report.getStagedInclusions().size() > 0) {
+          sb.append("\r\n").append("Migrated Inclusions").append("\r\n");
+          sb = appendDiffReportHeader(sb);
+        }
+        for (ConceptRefsetMember member : report.getStagedInclusions()) {
+          Logger.getLogger(getClass()).debug("  member = " + member);
+          sb = appendDiffReportMember(sb, member, refset);
+        }
+
+        // Staged exclusions
+        if (report.getStagedExclusions().size() > 0) {
+          sb.append("\r\n").append("Migrated Exclusions").append("\r\n");
+          sb = appendDiffReportHeader(sb);
+        }
+        for (ConceptRefsetMember member : report.getStagedExclusions()) {
+          sb = appendDiffReportMember(sb, member, refset);
+        }
+
+        // Invalid inclusions
+        if (report.getInvalidInclusions().size() > 0) {
+          sb.append("\r\n").append("Invalid Inclusions").append("\r\n");
+          sb = appendDiffReportHeader(sb);
+        }
+        for (ConceptRefsetMember member : report.getInvalidInclusions()) {
+          Logger.getLogger(getClass()).debug("  member = " + member);
+          sb = appendDiffReportMember(sb, member, refset);
+        }
+
+        // Invalid exclusions
+        if (report.getInvalidExclusions().size() > 0) {
+          sb.append("\r\n").append("Invalid Exclusions").append("\r\n");
+          sb = appendDiffReportHeader(sb);
+        }
+        for (ConceptRefsetMember member : report.getInvalidExclusions()) {
+          sb = appendDiffReportMember(sb, member, refset);
+        }
+      }
+            
+      // Members in common
+      sb.append("\r\n").append("Members in Common").append("\r\n");
+      sb = appendDiffReportHeader(sb);
+      for (ConceptRefsetMember member : membersInCommonMap.get(reportToken)) {
+        Logger.getLogger(getClass()).debug("  member = " + member);
+        sb = appendDiffReportMember(sb, member, refset);
+      }
+      
+      return new ByteArrayInputStream(sb.toString().getBytes("UTF-8"));
 
     } catch (Exception e) {
       handleException(e, "trying to export diff report");
@@ -1082,7 +1166,50 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
 
   }
 
-  /* see superclass */
+  /**
+   * Append diff report header.
+   *
+   * @param sb the sb
+   * @return the string builder
+   */
+  private StringBuilder appendDiffReportHeader(StringBuilder sb) {
+    sb.append("id").append("\t");
+    sb.append("effectiveTime").append("\t");
+    sb.append("active").append("\t");
+    sb.append("moduleId").append("\t");
+    sb.append("refsetId").append("\t");
+    sb.append("referencedComponentId").append("\t");
+    sb.append("definition");
+    sb.append("\r\n");
+    return sb;
+  }
+
+  /**
+   * Append diff report member.
+   *
+   * @param sb the sb
+   * @param member the member
+   * @return the string builder
+   */
+  private StringBuilder appendDiffReportMember(StringBuilder sb, ConceptRefsetMember member,
+    Refset refset) {
+    Logger.getLogger(getClass()).debug("  member = " + member);
+
+    sb.append(member.getTerminologyId()).append("\t");
+    if (member.getEffectiveTime() != null) {
+      sb.append(ConfigUtility.DATE_FORMAT.format(member.getEffectiveTime()))
+          .append("\t");
+    } else {
+      sb.append("\t");
+    }
+    sb.append(member.isActive() ? 1 : 0).append("\t");
+    sb.append(refset.getModuleId()).append("\t");
+    sb.append(member.getRefset().getTerminologyId()).append("\t");
+    sb.append(member.getConceptId());
+    sb.append("\r\n");
+    return sb;
+  }
+
   @Override
   @PUT
   @Path("/member/add")
@@ -1659,6 +1786,77 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
     return null;
   }
 
+  
+  /* see superclass */
+  @GET
+  @Override
+  @Path("/convert")
+  @ApiOperation(value = "Convert refset", notes = "Convert refset from intensional to extensional", response = RefsetJpa.class)
+  public Refset convertRefset(
+    @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
+    @ApiParam(value = "Refset type, e.g. EXTENSIONAL", required = true) @QueryParam("type") String refsetType,
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(getClass())
+        .info("RESTful call POST (Refset): /convert " + refsetId + ", "
+            + refsetType);
+
+    final RefsetService refsetService = new RefsetServiceJpa(headers);
+    try {
+      // Load refset
+      Refset refset = refsetService.getRefset(refsetId);
+      if (refset == null) {
+        throw new Exception("Invalid refset id " + refsetId);
+      }
+
+      // Authorize the call
+      final String userName = authorizeProject(refsetService,
+          refset.getProject().getId(), securityService, authToken,
+          "begin refset conversion", UserRole.AUTHOR);
+
+      // Check refset type
+      if (refset.getType() == Refset.Type.EXTERNAL || refset.getType() == Refset.Type.EXTENSIONAL) {
+        throw new LocalException(
+            "Conversion is only allowed for intensional type refsets.");
+      }
+
+      // SETUP TRANSACTION
+      refsetService.setTransactionPerOperation(false);
+      refsetService.beginTransaction();
+
+      refset.setType(Refset.Type.EXTENSIONAL);
+      refset.setDefinitionClauses(null);
+      
+      refsetService.updateRefset(refset);
+
+      for (final ConceptRefsetMember member : refset.getMembers()) {
+        if (MemberType.EXCLUSION == member.getMemberType()) {
+          refsetService.removeMember(member.getId());
+        } else if (MemberType.INCLUSION == member.getMemberType()) {
+          member.setMemberType(MemberType.MEMBER);
+          refsetService.updateMember(member);
+        }
+      }
+
+      refsetService.commit();
+
+      addLogEntry(refsetService, userName, "CONVERT REFSET",
+          refset.getProject().getId(), refset.getId(),
+          refset.getTerminologyId() + ": " + refset.getName() + " to " + refsetType);
+
+      return refset;
+
+    } catch (Exception e) {
+      handleException(e, "trying to convert refset");
+    } finally {
+      refsetService.close();
+      securityService.close();
+    }
+    return null;
+  }
+
+  
   /**
    * Gets the old not new for migration.
    *
