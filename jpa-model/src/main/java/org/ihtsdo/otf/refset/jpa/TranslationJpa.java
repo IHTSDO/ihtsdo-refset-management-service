@@ -657,26 +657,16 @@ public class TranslationJpa extends AbstractComponent implements Translation {
   /* see superclass */
   @Override
   public String toString() {
-    return "TranslationJpa [name="
-        + name
-        + ", description="
-        + description
-        + ", isPublic="
-        + isPublic
-        + ", stagingType="
-        + stagingType
-        + ", language="
-        + language
-        + ", workflowStatus="
-        + workflowStatus
-        + ", workflowPath="
-        + workflowPath
-        + ", refset="
-        + (refset == null ? null : refset.getId())
-        + ", project ="
-        + (refset != null && refset.getProject() != null ? refset.getProject()
-            .getId() : null)  + "]";
-    // Note: removed DescriptionTypes and CaseSensitiveTypes because they make the LogEntries too lengthy
+    return "TranslationJpa [name=" + name + ", description=" + description
+        + ", isPublic=" + isPublic + ", stagingType=" + stagingType
+        + ", language=" + language + ", workflowStatus=" + workflowStatus
+        + ", workflowPath=" + workflowPath + ", refset="
+        + (refset == null ? null : refset.getTerminologyId()) + ", project ="
+        + (refset != null && refset.getProject() != null
+            ? refset.getProject().getId() : null)
+        + "]";
+    // Note: removed DescriptionTypes and CaseSensitiveTypes because they make
+    // the LogEntries too lengthy
   }
 
   /* see superclass */

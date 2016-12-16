@@ -355,6 +355,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
       memory.setTranslation(newTranslation);
       translationService.addPhraseMemory(memory);
 
+      // Log new translation
       addLogEntry(translationService, userName, "ADD translation",
           newTranslation.getProject().getId(), newTranslation.getId(),
           newTranslation.toString());
@@ -427,8 +428,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
 
       addLogEntry(translationService, userName, "UPDATE translation",
           translation.getProject().getId(), translation.getId(),
-          "\n  old " + oldTranslation.toString() + "\n  new "
-              + translation.toString());
+          "\n  old = " + oldTranslation + "\n  new = " + translation);
 
     } catch (Exception e) {
       handleException(e, "trying to update a translation");
@@ -519,9 +519,11 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
           releaseService.close();
         }
       }
-      // Create service and configure transaction scope
+
+      // Remove translation
       translationService.removeTranslation(translationId, cascade);
 
+      // Log remove translation
       addLogEntry(translationService, userName, "REMOVE translation",
           translation.getProject().getId(), translationId,
           translation.toString());
@@ -628,10 +630,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
 
       addLogEntry(translationService, userName,
           "REMOVE all translation concepts", translation.getProject().getId(),
-          translation.getId(),
-          "id=" + translation.getTerminologyId() + " name="
-              + translation.getName() + " language=" + translation.getLanguage()
-              + " description=" + translation.getDescription());
+          translation.getId(), translation.toString());
 
       translationService.commit();
 
@@ -804,9 +803,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
 
       addLogEntry(translationService, userName, "BEGIN IMPORT translation",
           translation.getProject().getId(), translation.getId(),
-          "id=" + translation.getTerminologyId() + " name="
-              + translation.getName() + " language=" + translation.getLanguage()
-              + " description=" + translation.getDescription());
+          translation.toString());
 
       return result;
 
@@ -1213,6 +1210,11 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
         translationService.lookupConceptNames(translationId,
             "finish import concepts", ConfigUtility.isBackgroundLookup());
       }
+
+      addLogEntry(translationService, userName, "FINISH IMPORT translation",
+          translation.getProject().getId(), translation.getId(),
+          translation + "\n  count = " + objectCt);
+
       return validationResult;
     } catch (Exception e) {
       handleException(e, "trying to import translation concepts");
@@ -1355,8 +1357,9 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
 
       // compute log entry
       StringBuilder sb = new StringBuilder();
-      for (Description d : newConcept.getDescriptions()) {
-        sb.append("\nADD description ").append(d.toString());
+      sb.append(concept.getTerminologyId() + ": " + concept.getName());
+      for (Description desc : newConcept.getDescriptions()) {
+        sb.append("\n  ADD description " + desc);
       }
       addLogEntry(translationService, userName, "ADD concept",
           translation.getProject().getId(), translation.getId(), sb.toString());
@@ -1405,40 +1408,28 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
       // so translation is available lower down
       concept.setTranslation(translation);
 
-      final Map<Long, String> oldTermMap = new HashMap<>();
+      // save original state
+      final Map<Long, Description> oldTermMap = new HashMap<>();
       for (final Description oldDesc : oldConcept.getDescriptions()) {
-        oldTermMap.put(oldDesc.getId(), oldDesc.getTerm());
+        oldTermMap.put(oldDesc.getId(), oldDesc);
       }
 
       StringBuilder sb = new StringBuilder();
+      sb.append(concept.getTerminologyId() + ": " + concept.getName());
 
       // Add descriptions/languages that haven't been added yet.
       for (final Description desc : concept.getDescriptions()) {
 
-        // Fill in standard description fields for concept
-        desc.setLanguageCode(translation.getLanguage());
-        // New descriptions have null effective time.
-        desc.setEffectiveTime(null);
-        desc.setActive(true);
-        desc.setPublishable(true);
-        desc.setPublished(false);
-        desc.setModuleId(translation.getModuleId());
-
-        // If the description is new
-        // OR the description exists but the "term" has changed, add a new
-        // description
-        if (desc.getId() == null || (desc.getId() != null
-            && !oldTermMap.get(desc.getId()).equals(desc.getTerm()))) {
-          // compile logEntry indicating if ADD or UPDATE
-          if (desc.getId() == null) {
-            sb.append("\nADD description ").append(desc.toString());
-          } else {
-            sb.append("\nUPDATE description ").append(desc.toString());
-            sb.append("\n  old " + oldTermMap.get(desc.getId()));
-            sb.append("\n  new " + desc.getTerm());
-          }
-          // clear ID in case this is a term-change case
-          desc.setId(null);
+        // If the description is new, add it
+        if (desc.getId() == null) {
+          // Fill in standard description fields for concept
+          desc.setLanguageCode(translation.getLanguage());
+          // New descriptions have null effective time.
+          desc.setEffectiveTime(null);
+          desc.setActive(true);
+          desc.setPublishable(true);
+          desc.setPublished(false);
+          desc.setModuleId(translation.getModuleId());
           desc.setConcept(concept);
           desc.setLastModifiedBy(userName);
           translationService.addDescription(desc);
@@ -1458,6 +1449,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
             translationService.addLanguageRefsetMember(member,
                 translation.getTerminology());
           }
+          sb.append("\n  ADD description = ").append(desc.toString());
+
         }
       }
 
@@ -1465,9 +1458,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
       for (final Description oldDesc : oldConcept.getDescriptions()) {
         boolean found = false;
         for (final Description desc : concept.getDescriptions()) {
-          // Look for a match on ID and term - otherwise remove description
-          if (oldDesc.getId().equals(desc.getId())
-              && oldDesc.getTerm().equals(desc.getTerm())) {
+          // Look for a match on ID - otherwise remove description
+          if (oldDesc.getId().equals(desc.getId())) {
 
             // Update language refset member - assume each description has
             // exactly one
@@ -1479,10 +1471,11 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
               throw new Exception(
                   "Unexpected number of language refset members for description.");
             }
-            LanguageRefsetMember oldMember =
+            final LanguageRefsetMember oldMember =
                 oldDesc.getLanguageRefsetMembers().get(0);
-            LanguageRefsetMember member =
+            final LanguageRefsetMember member =
                 desc.getLanguageRefsetMembers().get(0);
+            boolean langChanged = false;
             if (!oldMember.getAcceptabilityId()
                 .equals(member.getAcceptabilityId())) {
               oldMember.setAcceptabilityId(member.getAcceptabilityId());
@@ -1490,14 +1483,18 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
               oldMember.setEffectiveTime(null);
               translationService.updateLanguageRefsetMember(oldMember,
                   translation.getTerminology());
+              langChanged = true;
             }
 
             // update the description in case other fields changed
             desc.setLanguageRefsetMembers(oldDesc.getLanguageRefsetMembers());
-            if (!desc.equals(oldDesc)) {
+            if (!desc.equals(oldDesc) || langChanged) {
               desc.setEffectiveTime(null);
               desc.setLastModifiedBy(userName);
               desc.setConcept(concept);
+              sb.append("\n  UPDATE description ").append(desc.toString());
+              sb.append("\n    old = " + oldTermMap.get(desc.getId()));
+              sb.append("\n    new = " + desc);
               translationService.updateDescription(desc);
             }
             // found a match, move to the next one
@@ -1513,8 +1510,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
             translationService.removeLanguageRefsetMember(member.getId());
           }
           // remove desc
+          sb.append("\n  REMOVE description = ").append(oldDesc.toString());
           translationService.removeDescription(oldDesc.getId());
-          sb.append("\nREMOVE description ").append(oldDesc.toString());
         }
       }
 
@@ -1523,12 +1520,10 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
       translationService.updateConcept(concept);
 
       addLogEntry(translationService, userName, "UPDATE concept",
-          translation.getProject().getId(), translation.getId(),
-          concept.toString() + "\n" + sb.toString());
+          translation.getProject().getId(), translation.getId(), sb.toString());
 
       addLogEntry(translationService, userName, "UPDATE concept",
-          translation.getProject().getId(), concept.getId(),
-          concept.toString() + "\n" + sb.toString());
+          translation.getProject().getId(), concept.getId(), sb.toString());
 
       // finish transaction
       translationService.commit();
@@ -1771,6 +1766,9 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
         translationService.updateTranslation(translation);
       }
 
+      addLogEntry(translationService, userName, "ADD spelling dictionary entry",
+          translation.getProject().getId(), translation.getId(), entry);
+
     } catch (Exception e) {
       handleException(e, "trying to add a spelling entry");
     } finally {
@@ -1893,9 +1891,10 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
         translation.setLastModifiedBy(userName);
         translationService.updateTranslation(translation);
       }
+
       addLogEntry(translationService, userName,
           "REMOVE spelling dictionary entry", translation.getProject().getId(),
-          translation.getId(), entry + ": ");
+          translation.getId(), entry);
 
     } catch (Exception e) {
       handleException(e, "trying to remove a spelling dictionary entry");
@@ -1955,6 +1954,9 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
         translation.setLastModifiedBy(userName);
         translationService.updateTranslation(translation);
       }
+
+      addLogEntry(translationService, userName, "CLEAR spelling dictionary",
+          translation.getProject().getId(), translation.getId(), "");
 
     } catch (Exception e) {
       handleException(e, "trying to remove all spelling dictionary entries");
@@ -2116,6 +2118,10 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
         translationService.updateTranslation(translation);
       }
 
+      addLogEntry(translationService, userName, "ADD phrase memory entry",
+          translation.getProject().getId(), translation.getId(),
+          name + " = " + translatedName);
+
       // Create service and configure transaction scope
       return translationService.addMemoryEntry(entry);
     } catch (Exception e) {
@@ -2169,9 +2175,10 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
         translation.setLastModifiedBy(userName);
         translationService.updateTranslation(translation);
       }
+
       addLogEntry(translationService, userName, "REMOVE phrase memory entry",
           translation.getProject().getId(), translation.getId(),
-          name + ": " + translatedName);
+          name + " = " + translatedName);
 
     } catch (Exception e) {
       handleException(e, "trying to remove a phrase memory entry");
@@ -2326,6 +2333,9 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
         translation.setLastModifiedBy(userName);
         translationService.updateTranslation(translation);
       }
+
+      addLogEntry(translationService, userName, "CLEAR phrase memory",
+          translation.getProject().getId(), translation.getId(), "");
 
     } catch (Exception e) {
       handleException(e, "trying to remove all phrase memory entries");
@@ -2921,7 +2931,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
 
       addLogEntry(translationService, userName, "ADD translation note",
           translation.getProject().getId(), translation.getId(),
-          newNote.getId() + ": " + newNote.getValue());
+          newNote.toString());
 
       return newNote;
     } catch (Exception e) {
@@ -2966,8 +2976,10 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
       translationService.removeNote(noteId, TranslationNoteJpa.class);
 
       // for indexing
+      Note note = null;
       for (int i = 0; i < translation.getNotes().size(); i++) {
         if (translation.getNotes().get(i).getId().equals(noteId)) {
+          note = translation.getNotes().get(i);
           translation.getNotes().remove(i);
           break;
         }
@@ -2976,8 +2988,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
       translationService.updateTranslation(translation);
 
       addLogEntry(translationService, userName, "REMOVE translation note",
-          translation.getProject().getId(), translationId,
-          translation.getTerminologyId() + ": " + noteId);
+          translation.getProject().getId(), translationId, note.toString());
 
     } catch (Exception e) {
       handleException(e, "trying to remove a translation note");
@@ -3040,7 +3051,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
 
       addLogEntry(translationService, userName, "ADD concept note",
           translation.getProject().getId(), translation.getId(),
-          newNote.getId() + ": " + newNote.getValue());
+          concept.getTerminologyId() + " = " + note);
 
       return newNote;
 
@@ -3086,8 +3097,10 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
       translationService.removeNote(noteId, ConceptNoteJpa.class);
 
       // For indexing
+      Note note = null;
       for (int i = 0; i < concept.getNotes().size(); i++) {
         if (concept.getNotes().get(i).getId().equals(noteId)) {
+          note = concept.getNotes().get(i);
           concept.getNotes().remove(i);
           break;
         }
@@ -3097,7 +3110,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
 
       addLogEntry(translationService, userName, "REMOVE concept note",
           translation.getProject().getId(), translation.getId(),
-          concept.getTerminologyId() + ": " + noteId);
+          concept.getTerminologyId() + " = " + note);
 
     } catch (Exception e) {
       handleException(e, "trying to remove a concept note");

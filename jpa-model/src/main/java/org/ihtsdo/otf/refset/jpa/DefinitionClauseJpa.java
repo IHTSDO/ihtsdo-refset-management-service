@@ -104,8 +104,7 @@ public class DefinitionClauseJpa implements DefinitionClause {
   /* see superclass */
   @Override
   public String toString() {
-    return "DefinitionClauseJpa [id=" + id + ", value=" + value + ", negated="
-        + negated + "]";
+    return (negated ? "NOT " : "") + value;
   }
 
   @Override

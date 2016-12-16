@@ -92,7 +92,8 @@ public class DescriptionJpa extends AbstractComponent implements Description {
 
     if (deepCopy) {
       languageRefsetMembers = new ArrayList<>();
-      for (LanguageRefsetMember member : description.getLanguageRefsetMembers()) {
+      for (LanguageRefsetMember member : description
+          .getLanguageRefsetMembers()) {
         LanguageRefsetMember newMember = new LanguageRefsetMemberJpa(member);
         newMember.setDescriptionId(this.getTerminologyId());
         languageRefsetMembers.add(newMember);
@@ -260,10 +261,10 @@ public class DescriptionJpa extends AbstractComponent implements Description {
   /* see superclass */
   @Override
   public String toString() {
-    return "DescriptionJpa [id=" + getId() + ", languageCode=" + languageCode
-        + ", typeId=" + typeId + ", term=" + term + ", caseSignificanceId="
-        + caseSignificanceId + ", concept=" + concept.getId()
-        + ", languageRefsetMembers=" + languageRefsetMembers + "] "
+    return "DescriptionJpa [id= " + getId() + ", term=" + term
+        + ", languageCode=" + languageCode + ", typeId=" + typeId
+        + ", caseSignificanceId=" + caseSignificanceId + ", concept="
+        + concept.getTerminologyId() + ", lang=" + languageRefsetMembers + "] "
         + super.toString();
   }
 
@@ -272,15 +273,11 @@ public class DescriptionJpa extends AbstractComponent implements Description {
   public int hashCode() {
     final int prime = 31;
     int result = super.hashCode();
-    result =
-        prime
-            * result
-            + ((caseSignificanceId == null) ? 0 : caseSignificanceId.hashCode());
-    result =
-        prime
-            * result
-            + ((concept == null || concept.getTerminologyId() == null) ? 0
-                : concept.getTerminologyId().hashCode());
+    result = prime * result
+        + ((caseSignificanceId == null) ? 0 : caseSignificanceId.hashCode());
+    result = prime * result
+        + ((concept == null || concept.getTerminologyId() == null) ? 0
+            : concept.getTerminologyId().hashCode());
     result =
         prime * result + ((languageCode == null) ? 0 : languageCode.hashCode());
     result = prime * result + ((term == null) ? 0 : term.hashCode());
@@ -310,8 +307,8 @@ public class DescriptionJpa extends AbstractComponent implements Description {
     } else if (concept.getTerminologyId() == null) {
       if (other.concept != null && other.concept.getTerminologyId() != null)
         return false;
-    } else if (!concept.getTerminologyId().equals(
-        other.concept.getTerminologyId()))
+    } else if (!concept.getTerminologyId()
+        .equals(other.concept.getTerminologyId()))
       return false;
     if (languageCode == null) {
       if (other.languageCode != null)

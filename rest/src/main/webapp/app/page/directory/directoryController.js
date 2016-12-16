@@ -129,8 +129,8 @@ tsApp.controller('DirectoryCtrl',
         } else {
           // default is published if nothing set
           $scope.accordionState['PUBLISHED'] = true;
-          securityService.updateUserPreferences($scope.user.userPreferences);
         }
+        securityService.updateUserPreferences($scope.user.userPreferences);
       };
 
       // Get $scope.metadata.{import,export}Handlers

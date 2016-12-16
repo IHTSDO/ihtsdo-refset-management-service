@@ -97,6 +97,18 @@
           <b>Members In Common ({{membersInCommon.totalCount}})</b>
         </h5>
         <span style="display: block;">
+          <span class="info-text" ng-show="membersInCommon.totalCount > 10"
+            style="float: right; margin-top: 4px">
+            Page size: <select ng-model="pageSize" title="Page Size"
+              ng-change="findMembersInCommon()">
+              <option value="10">10</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+              <option value="200">200</option>
+              <option value="10000">All</option>
+            </select>
+          </span>
+
           <uib-pagination items-per-page="pageSize" max-size="5"
             boundary-links="true" class="pagination-sm" previous-text="&lsaquo;"
             next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;"
@@ -611,7 +623,7 @@
               <td class="nobreak">
                 <button class="btn btn-xs inactive"
                   ng-show="!member.conceptActive" uib-tooltip="Inactive">I</button>
- 
+
                 <i ng-show="member.memberType == 'MEMBER'"
                   title="Include old member"
                   ng-click="include(member, true, false)"
@@ -775,9 +787,11 @@
 </div>
 
 <div class="modal-footer">
-  
-  <span style="float:left"><button ng-show="refset.staged" class="btn btn-primary"
-    ng-click="exportDiffReport();">Export Report</button></span>
+
+  <span style="float: left">
+    <button ng-show="refset.staged" class="btn btn-primary"
+      ng-click="exportDiffReport();">Export Report</button>
+  </span>
 
   <button class="btn btn-primary" ng-disabled="refset.staged"
     ng-click="beginMigration(newTerminology, newVersion);">Migrate</button>
