@@ -8,7 +8,6 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -57,8 +56,7 @@ import com.google.common.net.InternetDomainName;
  */
 public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
 
-  /** The tv language map. */
-  // terminology/version to language map
+  /** The terminology version language map. */
   private static Map<String, String> tvLanguageMap = new HashMap<>();
 
   /** The ids to ignore. */
@@ -717,99 +715,10 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     if (terminologyId.length() < 5) {
       return null;
     }
-    // Make a webservice call to SnowOwl
-    final Client client = ClientBuilder.newClient();
-    final WebTarget target = client.target(url + "/" + version
-        + "/concepts?escg=" + terminologyId + "&expand=pt()");
-    final Response response =
-        target.request("application/vnd.org.ihtsdo.browser+json").header("Authorization", authHeader)
-            .header("Accept-Language", getAcceptLanguage(terminology, version))
-            .header("Cookie", getCookieHeader()).get();
-    final String resultString = response.readEntity(String.class);
-    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-      // n/a
-    } else {
-      // Here's the messy part about trying to parse the return error message
-      if (resultString.contains("loop did not match anything")) {
-        return null;
-      }
-
-      if (resultString
-          .contains("One or more supplied query parameters were invalid")) {
-        throw new LocalException("Badly formatted concept id.");
-      }
-
-      throw new LocalException(
-          "Unexpected terminology server failure. Message = " + resultString);
-    }
-
-    /**
-     * <pre>
-     * {
-     *   "items": [
-     *     {
-     *       "id": "61778004",
-     *       "released": true,
-     *       "active": true,
-     *       "effectiveTime": "20020131",
-     *       "moduleId": "900000000000207008",
-     *       "definitionStatus": "PRIMITIVE",
-     *       "subclassDefinitionStatus": "NON_DISJOINT_SUBCLASSES",
-     *       "pt": {
-     *         "id": "102669013",
-     *         "released": true,
-     *         "active": true,
-     *         "effectiveTime": "20020131",
-     *         "moduleId": "900000000000207008",
-     *         "conceptId": "61778004",
-     *         "typeId": "900000000000013009",
-     *         "term": "Tumoral calcinosis",
-     *         "languageCode": "en",
-     *         "caseSignificance": "INITIAL_CHARACTER_CASE_INSENSITIVE",
-     *         "acceptabilityMap": {
-     *           "900000000000509007": "PREFERRED"
-     *         }
-     *       }
-     *     }
-     *   ],
-     *   "offset": 0,
-     *   "limit": 5,
-     *   "total": 1
-     * }
-     * </pre>
-     */
-    final ObjectMapper mapper = new ObjectMapper();
-    final JsonNode doc = mapper.readTree(resultString);
-    if (doc.get("items") == null) {
-      return null;
-    }
-    Iterator<JsonNode> concepts = doc.get("items").elements();
-    if (!concepts.hasNext()) {
-      return null;
-    }
-    final JsonNode conceptNode = concepts.next();
-    if (concepts.hasNext()) {
-      throw new LocalException(
-          "Multiple concepts found for same conceptId - " + terminologyId);
-    }
-    final Concept concept = new ConceptJpa();
-    concept.setActive(conceptNode.get("active").asText().equals("true"));
-
-    concept.setTerminologyId(conceptNode.get("id").asText());
-    concept.setEffectiveTime(ConfigUtility.DATE_FORMAT
-        .parse(conceptNode.get("effectiveTime").asText()));
-    concept.setLastModified(concept.getEffectiveTime());
-    concept.setLastModifiedBy(terminology);
-    concept.setModuleId(conceptNode.get("moduleId").asText());
-    concept.setDefinitionStatusId(conceptNode.get("definitionStatus").asText());
-    concept.setName(conceptNode.get("pt").get("term").asText());
-
-    concept.setPublishable(true);
-    concept.setPublished(true);
-    Logger.getLogger(getClass()).debug("  concept = " + concept);
-
-    return concept;
+    ConceptList conceptList = resolveExpression(terminologyId, terminology, version, null);
+    return conceptList.getObjects().get(0);
   }
+
 
   /* see superclass */
   @Override
@@ -982,138 +891,7 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     return conceptList;
   }
 
-  /**
-   * Find concepts for query initial technique.
-   *
-   * @param query the query
-   * @param terminology the terminology
-   * @param version the version
-   * @param pfs the pfs
-   * @return the concept list
-   * @throws Exception the exception
-   */
-  /* see superclass */
-  public ConceptList findConceptsForQueryInitialTechnique(String query,
-    String terminology, String version, PfsParameter pfs) throws Exception {
 
-    final ConceptList conceptList = new ConceptListJpa();
-    // Make a webservice call to SnowOwl
-    final Client client = ClientBuilder.newClient();
-
-    PfsParameter localPfs = pfs;
-    if (localPfs == null) {
-      localPfs = new PfsParameterJpa();
-    } else {
-      // need to copy it because we might change it here
-      localPfs = new PfsParameterJpa(pfs);
-    }
-    if (localPfs.getStartIndex() == -1) {
-      localPfs.setStartIndex(0);
-      localPfs.setMaxResults(Integer.MAX_VALUE);
-    }
-
-    boolean useTerm = true;
-    String localQuery = query;
-    if (localQuery.matches("\\d+[01]0\\d")) {
-      useTerm = false;
-    } else if (localQuery.matches("\\d+[01]0\\d\\*")) {
-      localQuery = localQuery.replace("*", "");
-      useTerm = false;
-    }
-
-    // Use "escg" if it's a concept id, otherwise search term
-    final WebTarget target =
-        useTerm ? client.target(url + "/" + version + "/concepts?term="
-            + URLEncoder.encode(localQuery, "UTF-8").replaceAll(" ", "%20")
-            + "&offset=" + localPfs.getStartIndex() + "&limit="
-            + localPfs.getMaxResults() + "&expand=pt()")
-
-            :
-
-            client
-                .target(url + "/" + version + "/concepts?escg="
-                    + URLEncoder.encode(localQuery, "UTF-8").replaceAll(" ",
-                        "%20")
-                    + "&offset=" + localPfs.getStartIndex() + "&limit="
-                    + localPfs.getMaxResults() + "&expand=pt()");
-
-    final Response response =
-        target.request("application/vnd.org.ihtsdo.browser+json").header("Authorization", authHeader)
-            .header("Accept-Language", getAcceptLanguage(terminology, version))
-            .header("Cookie", getCookieHeader()).get();
-    final String resultString = response.readEntity(String.class);
-    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-      // n/a
-    } else {
-      throw new LocalException(
-          "Unexpected terminology server failure. Message = " + resultString);
-    }
-
-    /**
-     * <pre>
-     * {
-     *   "items": [
-     *     {
-     *       "id": "61778004",
-     *       "released": true,
-     *       "active": true,
-     *       "effectiveTime": "20020131",
-     *       "moduleId": "900000000000207008",
-     *       "definitionStatus": "PRIMITIVE",
-     *       "subclassDefinitionStatus": "NON_DISJOINT_SUBCLASSES",
-     *       "pt": {
-     *         "id": "102669013",
-     *         "released": true,
-     *         "active": true,
-     *         "effectiveTime": "20020131",
-     *         "moduleId": "900000000000207008",
-     *         "conceptId": "61778004",
-     *         "typeId": "900000000000013009",
-     *         "term": "Tumoral calcinosis",
-     *         "languageCode": "en",
-     *         "caseSignificance": "INITIAL_CHARACTER_CASE_INSENSITIVE",
-     *         "acceptabilityMap": {
-     *           "900000000000509007": "PREFERRED"
-     *         }
-     *       }
-     *     }, ...
-     *   ],
-     *   "offset": 0,
-     *   "limit": 5,
-     *   "total": 3871
-     * }
-     * </pre>
-     */
-    final ObjectMapper mapper = new ObjectMapper();
-    final JsonNode doc = mapper.readTree(resultString);
-    if (doc.get("items") == null) {
-      return conceptList;
-    }
-    for (final JsonNode conceptNode : doc.get("items")) {
-
-      final Concept concept = new ConceptJpa();
-      concept.setActive(conceptNode.get("active").asText().equals("true"));
-
-      concept.setTerminologyId(conceptNode.get("id").asText());
-      concept.setEffectiveTime(ConfigUtility.DATE_FORMAT
-          .parse(conceptNode.get("effectiveTime").asText()));
-      concept.setLastModified(concept.getEffectiveTime());
-      concept.setLastModifiedBy(terminology);
-      concept.setModuleId(conceptNode.get("moduleId").asText());
-      concept
-          .setDefinitionStatusId(conceptNode.get("definitionStatus").asText());
-      concept.setName(conceptNode.get("pt").get("term").asText());
-
-      concept.setPublishable(true);
-      concept.setPublished(true);
-      Logger.getLogger(getClass()).debug("  concept = " + concept);
-      conceptList.addObject(concept);
-    }
-
-    // Set total count
-    conceptList.setTotalCount(Integer.parseInt(doc.get("total").asText()));
-    return conceptList;
-  }
 
   /* see superclass */
   @Override

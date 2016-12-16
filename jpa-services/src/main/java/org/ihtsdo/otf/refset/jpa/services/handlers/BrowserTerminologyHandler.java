@@ -57,15 +57,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class BrowserTerminologyHandler extends AbstractTerminologyHandler {
 
-  /**
-   * Instantiates an empty {@link BrowserTerminologyHandler}.
-   *
-   * @throws Exception the exception
-   */
-  public BrowserTerminologyHandler() throws Exception {
-    super();
-  }
 
+  /** The terminology version language map. */
+  private static Map<String, List<String>> tvLanguageMap = new HashMap<>();
+  
   /** The accept. */
   private final String accept = "application/json";
 
@@ -79,6 +74,15 @@ public class BrowserTerminologyHandler extends AbstractTerminologyHandler {
   @SuppressWarnings("unused")
   private Map<String, String> headers;
 
+  /**
+   * Instantiates an empty {@link BrowserTerminologyHandler}.
+   *
+   * @throws Exception the exception
+   */
+  public BrowserTerminologyHandler() throws Exception {
+    super();
+  }
+  
   /* see superclass */
   @Override
   public TerminologyHandler copy() throws Exception {
@@ -883,7 +887,9 @@ public class BrowserTerminologyHandler extends AbstractTerminologyHandler {
     final String targetUrl =
         url + "/snomed/" + terminology + "/v" + version + "/descriptions?query="
             + URLEncoder.encode(query, "UTF-8").replaceAll(" ", "%20")
-            + "&searchMode=partialMatching&lang=" + getLanguages(terminology, version)+ statusFilter + "&"
+            + "&searchMode=partialMatching&lang=" 
+            + URLEncoder.encode(getLanguages(terminology, version).toString(), "UTF-8").replaceAll(" ", "%20")
+            + statusFilter + "&"
             + "skipTo=" + localPfs.getStartIndex() + "&returnLimit="
             + (localPfs.getMaxResults() * 3) + "&normalize=true";
 
@@ -1120,54 +1126,60 @@ public class BrowserTerminologyHandler extends AbstractTerminologyHandler {
   @Override
   public List<String> getLanguages(String terminology, String version)
     throws Exception {
-    // Make a webservice call to browser api
-    final Client client = ClientBuilder.newClient();
-
-    PfsParameter localPfs = new PfsParameterJpa();
-    localPfs.setStartIndex(0);
-    localPfs.setMaxResults(1);
-
-    // Support active-only searches
-    final String statusFilter = "&statusFilter=activeOnly";
-
-    // Use getConcept() if it's an id, otherwise search term
-    // Read past the limit to find all names for the concept
-    final String targetUrl =
-        url + "/snomed/" + terminology + "/v" + version + "/descriptions?query="
-            + URLEncoder.encode("brain", "UTF-8").replaceAll(" ", "%20")
-            + "&searchMode=partialMatching&lang=english" + statusFilter + "&"
-            + "skipTo=0&returnLimit=1&normalize=true";
-
-    Logger.getLogger(getClass()).debug("  Find concepts - " + targetUrl);
-    final WebTarget target = client.target(targetUrl);
-
-    final Response response = target.request(accept).get();
-    final String resultString = response.readEntity(String.class);
-    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-      // n/a
+    if (tvLanguageMap.containsKey(terminology + version)) {
+      return tvLanguageMap.get(terminology + version);
     } else {
-      throw new LocalException(
-          "Unexpected terminology server failure. Message = " + resultString);
-    }
-    List<String> languages = new ArrayList<String>();
-    final ObjectMapper mapper = new ObjectMapper();
-    final JsonNode doc = mapper.readTree(resultString);
-    System.out.println("resultString " + resultString);
-    if (doc.get("filters") == null) {
+
+      // Make a webservice call to browser api
+      final Client client = ClientBuilder.newClient();
+
+      PfsParameter localPfs = new PfsParameterJpa();
+      localPfs.setStartIndex(0);
+      localPfs.setMaxResults(1);
+
+      // Support active-only searches
+      final String statusFilter = "&statusFilter=activeOnly";
+
+      // Use getConcept() if it's an id, otherwise search term
+      // Read past the limit to find all names for the concept
+      final String targetUrl = url + "/snomed/" + terminology + "/v" + version
+          + "/descriptions?query="
+          + URLEncoder.encode("brain", "UTF-8").replaceAll(" ", "%20")
+          + "&searchMode=partialMatching&lang=english" + statusFilter + "&"
+          + "skipTo=0&returnLimit=1&normalize=true";
+
+      Logger.getLogger(getClass()).debug("  Find concepts - " + targetUrl);
+      final WebTarget target = client.target(targetUrl);
+
+      final Response response = target.request(accept).get();
+      final String resultString = response.readEntity(String.class);
+      if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+        // n/a
+      } else {
+        throw new LocalException(
+            "Unexpected terminology server failure. Message = " + resultString);
+      }
+      List<String> languages = new ArrayList<String>();
+      final ObjectMapper mapper = new ObjectMapper();
+      final JsonNode doc = mapper.readTree(resultString);
+      System.out.println("resultString " + resultString);
+      if (doc.get("filters") == null) {
+        languages.add("english");
+        return languages;
+      }
+      Iterator<String> iter = doc.get("filters").get("lang").fieldNames();
+      while (iter.hasNext()) {
+        final String name = iter.next();
+        if (!name.equals("english")) {
+          languages.add(name);
+        }
+      }
+
       languages.add("english");
+
+      tvLanguageMap.put(terminology + version, languages);
       return languages;
     }
-    Iterator<String> iter = doc.get("filters").get("lang").fieldNames();
-    while(iter.hasNext())  {
-      final String name = iter.next();
-          if (!name.equals("english")) {
-            languages.add(name);
-          }
-      }
-    
-    languages.add("english");
-
-    return languages;
   }
 
 }
