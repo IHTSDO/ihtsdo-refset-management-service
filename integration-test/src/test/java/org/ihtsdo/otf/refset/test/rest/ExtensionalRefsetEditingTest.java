@@ -102,7 +102,7 @@ public class ExtensionalRefsetEditingTest extends RefsetTestSupport {
 
     List<ConceptRefsetMember> addedMembers =
         refsetService.findRefsetMembersForQuery(currentRefset.getId(), "",
-            new PfsParameterJpa(), adminAuthToken).getObjects();
+            false, new PfsParameterJpa(), adminAuthToken).getObjects();
     assertEquals(5, addedMembers.size());
 
     // Remove 2 members
@@ -111,7 +111,7 @@ public class ExtensionalRefsetEditingTest extends RefsetTestSupport {
 
     List<ConceptRefsetMember> currentMembers =
         refsetService.findRefsetMembersForQuery(currentRefset.getId(), "",
-            new PfsParameterJpa(), adminAuthToken).getObjects();
+            false,  new PfsParameterJpa(), adminAuthToken).getObjects();
     assertEquals(3, currentMembers.size());
 
     // Change Refset Definition

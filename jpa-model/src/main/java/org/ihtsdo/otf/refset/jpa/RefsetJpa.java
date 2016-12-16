@@ -154,6 +154,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   /** The is local set. */
   @Column(nullable = false)
   private boolean localSet;
+ 
 
   /**
    * The refset descriptors.
@@ -317,6 +318,18 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   @Override
   public void setLocalSet(boolean localSet) {
     this.localSet = localSet;
+  }
+  
+  /* see superclass */
+  @Override
+  public boolean isTranslated() {
+    return this.getTranslations().size() > 0;
+  }
+
+  /* see superclass */
+  @Override
+  public void setTranslated(boolean translated) {
+    // no-op
   }
 
   /* see superclass */
