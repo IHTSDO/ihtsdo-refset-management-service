@@ -418,6 +418,21 @@ public class BrowserTerminologyHandlerTest extends JpaSupport {
   }
 
   /**
+   * Test translate.
+   *
+   * @throws Exception the exception
+   */
+  @Test
+  public void testTranslate() throws Exception {
+    Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
+    ProjectService service = new ProjectServiceJpa();
+    String german =
+        service.getTerminologyHandler(project, null).translate("disease", "de");
+    Logger.getLogger(getClass()).info("  german = " + german);
+    service.close();
+  }
+
+  /**
    * Teardown.
    *
    * @throws Exception the exception

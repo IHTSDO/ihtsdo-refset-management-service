@@ -55,7 +55,7 @@ import com.google.common.net.InternetDomainName;
  * sv-SE-x-46011000052107;q=0.8,en-US;q=0.5 Can find language reference sets
  * descendants of 900000000000506000
  */
-public class SnowowlTerminologyHandler implements TerminologyHandler {
+public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
 
   /** The tv language map. */
   // terminology/version to language map
@@ -148,6 +148,11 @@ public class SnowowlTerminologyHandler implements TerminologyHandler {
       // If no auth header, we know we'll be sending "auth tokens" as
       // getCookieHeader()s
       // with each call.
+    }
+    if (p.containsKey("apiKey")) {
+      setApiKey(p.getProperty("apiKey"));
+    } else {
+      throw new LocalException("Required property apiKey not specified.");
     }
 
   }

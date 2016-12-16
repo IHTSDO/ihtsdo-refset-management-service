@@ -232,7 +232,7 @@ public interface TerminologyHandler extends Configurable {
    * @throws Exception the exception
    */
   public void setHeaders(Map<String, String> headers) throws Exception;
-  
+
   /**
    * Gets the languages.
    *
@@ -241,5 +241,16 @@ public interface TerminologyHandler extends Configurable {
    * @return the languages
    * @throws Exception the exception
    */
-  public List<String> getLanguages(String terminology, String version) throws Exception;
+  public List<String> getLanguages(String terminology, String version)
+    throws Exception;
+
+  /**
+   * Translate.
+   *
+   * @param text the text
+   * @param langauge the langauge
+   * @return the string
+   * @throws Exception the exception
+   */
+  public String translate(String text, String langauge) throws Exception;
 }
