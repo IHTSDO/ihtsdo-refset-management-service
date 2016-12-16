@@ -488,14 +488,14 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         .info("RESTful call POST (Refset): /update " + refset);
 
     // Create service and configure transaction scope
-    final TranslationService translationService = new TranslationServiceJpa();
+    final TranslationService translationService = new TranslationServiceJpa(getHeaders(headers));
     translationService.setTransactionPerOperation(false);
     translationService.beginTransaction();
 
     try {
       String userName =
           authorizeProject(translationService, refset.getProject().getId(),
-              securityService, authToken, "update refset", UserRole.AUTHOR);
+              securityService, authToken, "update  refset", UserRole.AUTHOR);
 
       Refset oldRefset = getRefset(refset.getId(), authToken);
 
@@ -1910,7 +1910,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
     Logger.getLogger(getClass())
         .info("RESTful call POST (Refset): /migration/finish " + refsetId);
 
-    final TranslationService refsetService = new TranslationServiceJpa();
+    final TranslationService refsetService = new TranslationServiceJpa(getHeaders(headers));
     try {
       // Load refset
       final Refset refset = refsetService.getRefset(refsetId);
