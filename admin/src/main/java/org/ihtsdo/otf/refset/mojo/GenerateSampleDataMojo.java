@@ -273,7 +273,7 @@ public class GenerateSampleDataMojo extends AbstractMojo {
       makeProject("Project 11", null, admin, "BROWSER", "https://sct-rest.ihtsdotools.org/api");
       makeProject("Project 12", null, admin, "BROWSER", "https://sct-rest.ihtsdotools.org/api");
       ProjectJpa project13 = makeProject("Project 13", null, admin, "SNOWOWL", "http://local.ihtsdotools.org:8081/snowowl");
-      ProjectJpa project14 = makeProject("Project 14", null, admin, "SNOWOWL", "https://local.ihtsdotools.org:8081/snowowl-se");
+      ProjectJpa project14 = makeProject("Project 14", null, admin, "SNOWOWL", "http://local.ihtsdotools.org:8081/snowowl-se");
 
       //
       // Assign project roles
