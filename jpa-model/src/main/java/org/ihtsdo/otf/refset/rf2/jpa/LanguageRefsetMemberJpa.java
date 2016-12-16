@@ -21,8 +21,8 @@ import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
     "terminologyId", "id"
 }))
 @XmlRootElement(name = "language")
-public class LanguageRefsetMemberJpa extends AbstractRefsetMemberJpa implements
-    LanguageRefsetMember {
+public class LanguageRefsetMemberJpa extends AbstractRefsetMemberJpa
+    implements LanguageRefsetMember {
 
   /** The description id. */
   @Column(nullable = false)
@@ -86,12 +86,10 @@ public class LanguageRefsetMemberJpa extends AbstractRefsetMemberJpa implements
   public int hashCode() {
     final int prime = 31;
     int result = super.hashCode();
-    result =
-        prime * result
-            + ((acceptabilityId == null) ? 0 : acceptabilityId.hashCode());
-    result =
-        prime * result
-            + ((descriptionId == null) ? 0 : descriptionId.hashCode());
+    result = prime * result
+        + ((acceptabilityId == null) ? 0 : acceptabilityId.hashCode());
+    result = prime * result
+        + ((descriptionId == null) ? 0 : descriptionId.hashCode());
     return result;
   }
 
@@ -118,10 +116,11 @@ public class LanguageRefsetMemberJpa extends AbstractRefsetMemberJpa implements
   }
 
   /* see superclass */
+  /* see superclass */
   @Override
   public String toString() {
-    return "LanguageRefsetMemberJpa [id=" + getId() + ", descriptionId="
-        + descriptionId + ", acceptabilityId=" + acceptabilityId + "]";
+    return "[terminologyId= " + getTerminologyId() + ", acceptabilityId= "
+        + getAcceptabilityId() + "]";
   }
 
 }

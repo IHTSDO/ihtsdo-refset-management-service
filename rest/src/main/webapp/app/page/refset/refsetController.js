@@ -227,8 +227,8 @@ tsApp
             // default is available if nothing set
             $scope.accordionState['AVAILABLE'] = true;
             $scope.user.userPreferences.lastRefsetAccordion = 'AVAILABLE';
-            securityService.updateUserPreferences($scope.user.userPreferences);
           }
+          securityService.updateUserPreferences($scope.user.userPreferences);
         };
 
         // Initialize some metadata first time
