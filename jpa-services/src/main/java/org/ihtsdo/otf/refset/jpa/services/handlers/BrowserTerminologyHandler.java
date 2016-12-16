@@ -53,7 +53,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * par/chd/expr are not language aware yet. For possible values, look at the
  * "filters" metadata in a tester query and it provides options.
  */
-public class BrowserTerminologyHandler implements TerminologyHandler {
+public class BrowserTerminologyHandler extends AbstractTerminologyHandler {
 
   /**
    * Instantiates an empty {@link BrowserTerminologyHandler}.
@@ -111,6 +111,11 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
       defaultUrl = p.getProperty("defaultUrl");
     } else {
       throw new LocalException("Required property defaultUrl not specified.");
+    }
+    if (p.containsKey("apiKey")) {
+      setApiKey(p.getProperty("apiKey"));
+    } else {
+      throw new LocalException("Required property apiKey not specified.");
     }
   }
 
@@ -1118,7 +1123,7 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
     localPfs.setMaxResults(1);
 
     // Support active-only searches
-    final String statusFilter =  "&statusFilter=activeOnly";
+    final String statusFilter = "&statusFilter=activeOnly";
 
     // Use getConcept() if it's an id, otherwise search term
     // Read past the limit to find all names for the concept
@@ -1153,11 +1158,9 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
       final Description desc = new DescriptionJpa();
       desc.setActive(conceptNode.get("active").asText().equals("true"));
       desc.setTerm(conceptNode.get("term").asText());
-      
 
     }
 
-    
     return languages;
   }
 

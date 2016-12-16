@@ -73,7 +73,7 @@ public class PatchDataMojo extends AbstractMojo {
 
       // Patch 1000001
       // Set project handler key/url for all projects
-      if ("1000001".compareTo(start) >= 0 && "1000001".compareTo(end) <= 0) {
+      if ("20161215".compareTo(start) >= 0 && "20161215".compareTo(end) <= 0) {
         getLog().info(
             "Processing patch 1000001 - set project terminology handler key/url");
         for (final Project project : service.findProjectsForQuery(null, null)
@@ -86,6 +86,10 @@ public class PatchDataMojo extends AbstractMojo {
           service.updateProject(project);
         }
 
+        // project needs handler key and URL set
+      
+        
+        
         // Reindex
         getLog().info("  Reindex");
         // login as "admin", use token
