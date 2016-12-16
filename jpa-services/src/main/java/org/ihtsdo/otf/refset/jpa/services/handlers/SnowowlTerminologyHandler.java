@@ -118,9 +118,10 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     final String localVersion = version == null ? "MAIN" : version;
     final Client client = ClientBuilder.newClient();
     final WebTarget target = client.target(url + "/branches/" + localVersion);
+    System.out.println("URL=" + url + "/branches/" + localVersion);
+
     final Response response =
         target.request(accept).header("Authorization", authHeader)
-            .header("Accept-Language", getAcceptLanguage(terminology, version))
             .header("Cookie", getCookieHeader()).get();
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {

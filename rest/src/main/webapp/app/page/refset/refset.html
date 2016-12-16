@@ -1,40 +1,20 @@
 <!-- Controlled by RefsetCtrl (in refsetController.js)  -->
-
-<div class="row">
-
-  <div class="col-md-12 col-xs-12">
-    <h4 class="col-md-12">Refsets</h4>
-  </div>
-</div>
-
 <div class="row">
   <div class="col-md-12 col-xs-12">
-    <div class="col-md-4 col-xs-8">
-      <table class="table">
-        <tbody>
-          <tr>
-            <td>Choose Project:</td>
-            <td>
-              <select ng-model="project" ng-show="projects.data.length > 1"
-                ng-options="item.name for item in projects.data"
-                ng-change="setProject(project);"></select>
-              <span ng-show="projects.data.length == 1">{{project.name}}</span>
-              &nbsp;
-              <span>{{project.organization}}</span>
-            </td>
-          </tr>
-          <tr>
-            <td>Role:</td>
-            <td>
-              <select ng-model="projects.role" ng-show="roleOptions.length > 1"
-                ng-options="item for item in roleOptions" ng-change="setRole();"></select>
-              <span ng-show="roleOptions.length == 1">{{projects.role}}</span>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-    <div class="col-md-8 col-xs-4"></div>
+    <h6>
+      <span>
+        Project: <select ng-model="project" ng-show="projects.data.length > 1"
+          ng-options="item.name for item in projects.data"
+          ng-change="setProject(project);"></select>
+        <span ng-show="projects.data.length == 1">{{project.name}}</span>
+      </span>
+      <span>
+        &nbsp;&nbsp;Role: <select ng-model="projects.role"
+          ng-show="roleOptions.length > 1" ng-change="setRole()"
+          ng-options="item for item in roleOptions"></select>
+        <span ng-show="roleOptions.length == 1">{{projects.role}}</span>
+      </span>
+    </h6>
   </div>
 </div>
 <div class="row">

@@ -5,9 +5,22 @@
   <div class="col-md-6 col-xs-12">
 
     <div>
-      <uib-pagination items-per-page="pageSize" max-size="5"
-        boundary-links="true" class="pagination-sm" previous-text="&lsaquo;"
-        next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;"
+      <span class="info-text" ng-show="translations.totalCount > 10"
+        style="float: right; margin-top: 4px">
+        Page size: <select ng-model="paging['translation'].page"
+          title="Page Size" ng-change="getTranslations()">
+          <option value="10">10</option>
+          <option value="50">50</option>
+          <option value="100">100</option>
+          <option value="200">200</option>
+          <option value="10000">All</option>
+        </select>
+      </span>
+
+      <uib-pagination items-per-page="paging['translation'].pageSize"
+        max-size="5" boundary-links="true" class="pagination-sm"
+        previous-text="&lsaquo;" next-text="&rsaquo;" first-text="&laquo;"
+        last-text="&raquo;"
         ng-show="translations.totalCount > visibleSize || paging['translation'].filter"
         total-items="translations.totalCount"
         ng-model="paging['translation'].page" ng-change="getTranslations()"></uib-pagination>
@@ -521,16 +534,29 @@
         ({{selected.translation.available.totalCount}})</span>
     </h4>
     <span style="display: block;">
-      <uib-pagination items-per-page="pageSize" max-size="5"
+      <span class="info-text"
+        ng-show="selected.translation.available.totalCount > 10"
+        style="float: right; margin-top: 4px">
+        Page size: <select ng-model="paging['available'].pageSize"
+          title="Page Size"
+          ng-change="getAvailableConcepts(selected.translation)">
+          <option value="10">10</option>
+          <option value="50">50</option>
+          <option value="100">100</option>
+          <option value="200">200</option>
+          <option value="10000">All</option>
+        </select>
+      </span>
+      <uib-pagination items-per-page="paging['available'].pageSize" max-size="5"
         boundary-links="true" class="pagination-sm" previous-text="&lsaquo;"
         next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;"
-        ng-show="selected.translation.available.totalCount > pageSize || paging['available'].filter"
+        ng-show="selected.translation.available.totalCount > paging['available'].pageSize || paging['available'].filter"
         total-items="selected.translation.available.totalCount"
         ng-model="paging['available'].page"
         ng-change="getAvailableConcepts(selected.translation)"></uib-pagination>
 
       <input class="input-filter" placeholder="Search"
-        ng-show="selected.translation.available.totalCount > pageSize || paging['available'].filter"
+        ng-show="selected.translation.available.totalCount > paging['available'].pageSize || paging['available'].filter"
         type="text" ng-model="paging['available'].filter"
         ng-model-options="{ debounce: 300 }"
         ng-change="getAvailableConcepts(selected.translation)">
@@ -618,20 +644,18 @@
               title="Reassign back to author" class="noul material-icons md-18">assignment_returned</i>
 
             <!-- Unassign - n/a - these are available concepts -->
-            
+
             <!-- Notes -->
-                <i
-                  ng-show="projects.role != 'ADMIN' && concept.notes.length > 0"
-                  ng-click="openNotesModal(concept, 'Concept'); $event.stopPropagation()"
-                  title="Edit concept notes" class="noul material-icons md-18">assignment</i>
-                <i
-                  ng-show="projects.role != 'ADMIN' && concept.notes.length == 0"
-                  ng-click="openNotesModal(concept, 'Concept'); $event.stopPropagation()"
-                  title="Add concept notes" class="md-grey material-icons md-18">assignment</i>
-            
+            <i ng-show="projects.role != 'ADMIN' && concept.notes.length > 0"
+              ng-click="openNotesModal(concept, 'Concept'); $event.stopPropagation()"
+              title="Edit concept notes" class="noul material-icons md-18">assignment</i>
+            <i ng-show="projects.role != 'ADMIN' && concept.notes.length == 0"
+              ng-click="openNotesModal(concept, 'Concept'); $event.stopPropagation()"
+              title="Add concept notes" class="md-grey material-icons md-18">assignment</i>
+
             <!--  Log -->
-			<i ng-click="openLogModal()" title="Retrieve log"
-                  class="noul material-icons md-18">event_note</i>
+            <i ng-click="openLogModal()" title="Retrieve log"
+              class="noul material-icons md-18">event_note</i>
           </td>
         </tr>
       </tbody>
@@ -651,16 +675,30 @@
         ({{selected.translation.assigned.totalCount}})</span>
     </h4>
     <span style="display: block;">
-      <uib-pagination items-per-page="pageSize" max-size="5"
+      <span class="info-text"
+        ng-show="selected.translation.assigned.totalCount > 10"
+        style="float: right; margin-top: 4px">
+        Page size: <select ng-model="paging['assigned'].pageSize"
+          title="Page Size"
+          ng-change="getAssignedConcepts(selected.translation)">
+          <option value="10">10</option>
+          <option value="50">50</option>
+          <option value="100">100</option>
+          <option value="200">200</option>
+          <option value="10000">All</option>
+        </select>
+      </span>
+
+      <uib-pagination items-per-page="paging['assigned'].pageSize" max-size="5"
         boundary-links="true" class="pagination-sm" previous-text="&lsaquo;"
         next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;"
-        ng-show="selected.translation.assigned.totalCount > pageSize || paging['assigned'].filter"
+        ng-show="selected.translation.assigned.totalCount > paging['assigned'].pageSize || paging['assigned'].filter"
         total-items="selected.translation.assigned.totalCount"
         ng-model="paging['assigned'].page"
         ng-change="getAssignedConcepts(selected.translation)"></uib-pagination>
 
       <input class="input-filter" placeholder="Search"
-        ng-show="selected.translation.assigned.totalCount > pageSize || paging['assigned'].filter"
+        ng-show="selected.translation.assigned.totalCount > paging['assigned'].pageSize || paging['assigned'].filter"
         type="text" ng-model="paging['assigned'].filter"
         ng-model-options="{ debounce: 300 }"
         ng-change="getAssignedConcepts(selected.translation)">
@@ -784,8 +822,8 @@
               ng-click="openNotesModal(record.concept, 'Concept');"
               title="Add concept notes (no notes yet)"
               class="md-grey material-icons md-18">assignment</i>
-            <i ng-click="openLogModal()" title="Retrieve log"
-                  class="noul material-icons md-18">event_note</i>
+            <i ng-click="openLogModal(record.concept)" title="Retrieve log"
+              class="noul material-icons md-18">event_note</i>
 
             <br>
           </td>
@@ -838,9 +876,22 @@
 
       <div>
         <span style="display: block;"
-          ng-show="selected.translation.concepts.totalCount > pageSize || paging['concept'].filter || withNotesOnly">
-          <uib-pagination items-per-page="pageSize" max-size="5"
-            ng-show="selected.translation.concepts.totalCount > pageSize"
+          ng-show="selected.translation.concepts.totalCount > paging['concept'].pageSize || paging['concept'].filter || withNotesOnly">
+          <span class="info-text"
+            ng-show="selected.translation.assigned.totalCount > 10"
+            style="float: right; margin-top: 4px">
+            Page size: <select ng-model="paging['concept'].pageSize"
+              title="Page Size" ng-change="getConcepts(selected.translation)">
+              <option value="10">10</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+              <option value="200">200</option>
+              <option value="10000">All</option>
+            </select>
+          </span>
+          <uib-pagination items-per-page="paging['concept'].pageSize"
+            max-size="5"
+            ng-show="selected.translation.concepts.totalCount > paging['concept'].pageSize"
             boundary-links="true" class="pagination-sm" previous-text="&lsaquo;"
             next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;"
             total-items="selected.translation.concepts.totalCount"
@@ -945,8 +996,8 @@
                   ng-click="startLookup(selected.translation); $event.stopPropagation()"
                   ng-show="concept.name == 'name lookup in progress' && !selected.translation.lookupInProgress"
                   title="Restart name lookup" class="noul material-icons md-18">play_arrow</i>
-				<!-- log -->
-				<i ng-click="openLogModal()" title="Retrieve log"
+                <!-- log -->
+                <i ng-click="openLogModal()" title="Retrieve log"
                   class="noul material-icons md-18">event_note</i>
               </td>
             </tr>

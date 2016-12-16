@@ -154,7 +154,6 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   /** The is local set. */
   @Column(nullable = false)
   private boolean localSet;
- 
 
   /**
    * The refset descriptors.
@@ -319,7 +318,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   public void setLocalSet(boolean localSet) {
     this.localSet = localSet;
   }
-  
+
   /* see superclass */
   @Override
   public boolean isTranslated() {
@@ -930,16 +929,11 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   @Override
   public String toString() {
     return "RefsetJpa [name=" + name + ", description=" + description
-        + ", isPublic=" + isPublic + ", stagingType=" + stagingType + ", type="
-        + type + ", definitionClauses=" + definitionClauses + ", extUrl="
-        + externalUrl + ", forTranslation=" + forTranslation
-        + ", workflowStatus=" + workflowStatus + ", workflowPath="
-        + workflowPath + ", namespace=" + namespace + ", domain=" + domain
-        + ", refsetDescriptorUuid=" + refsetDescriptorUuid + ", project="
-        + (project == null ? null : project.getId())
-        + ", enabledFeedbackEvents=" + enabledFeedbackEvents
-        + ", inPublicationProcess=" + inPublicationProcess
-        + ", lookupInProgress=" + lookupInProgress + ", localSet=" + localSet
+        + ", type=" + type + ", terminology=" + getTerminology() + ", version="
+        + getVersion() + ", namespace=" + namespace + ", definitionClauses="
+        + definitionClauses + ", extUrl=" + externalUrl + ", workflowStatus="
+        + workflowStatus + ", workflowPath=" + workflowPath + ", domain="
+        + domain + ", project=" + (project == null ? null : project.getId())
         + "]";
   }
 
