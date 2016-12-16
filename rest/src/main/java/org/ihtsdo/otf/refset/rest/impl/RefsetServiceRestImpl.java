@@ -325,9 +325,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       final Refset newRefset = refsetService.addRefset(refset);
 
       // compute definition if intensional and not empty
-      addLogEntry(refsetService, userName, "ADD refset",
-          newRefset.getProject().getId(), newRefset.getId(),
-          newRefset.getTerminologyId() + ": " + newRefset.getName());
+      final String type = newRefset.isLocalSet() ? "local set" : "refset";
+      addLogEntry(refsetService, userName, "ADD " + type,
+          refset.getProject().getId(), refset.getId(), refset.toString());
       if (refset.getType() == Refset.Type.INTENSIONAL
           && !refset.getDefinitionClauses().isEmpty()) {
         refsetService.resolveRefsetDefinition(newRefset);
@@ -335,9 +335,6 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         addLogEntry(refsetService, userName, "  definition = ",
             newRefset.getProject().getId(), newRefset.getId(),
             newRefset.getDefinitionClauses().toString());
-
-        addLogEntry(refsetService, userName, "ADD refset",
-            refset.getProject().getId(), refset.getId(), refset.toString());
       }
 
       refsetService.commit();
@@ -410,7 +407,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         }
       }
       addLogEntry(refsetService, userName, "ADD members for expression",
-          refset.getProject().getId(), refset.getId(), expression);
+          refset.getProject().getId(), refset.getId(),
+          refset.getTerminologyId() + " = " + expression);
 
       refsetService.commit();
       return list;
@@ -550,6 +548,11 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       translationService.updateRefset(refset);
       translationService.setAssignIdentifiersFlag(true);
 
+      final String type = refset.isLocalSet() ? "local set" : "refset";
+      addLogEntry(translationService, userName, "UPDATE " + type,
+          refset.getProject().getId(), refset.getId(),
+          refset.getTerminologyId() + "\n  old = " + oldRefset.toString()
+              + "\n  new = " + refset.toString());
       if (refset.getType() == Refset.Type.INTENSIONAL && !refset
           .getDefinitionClauses().toString().equals(previousClauses)) {
         refset.setMembers(previousMembers);
@@ -558,10 +561,6 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
             refset.getProject().getId(), refset.getId(),
             refset.getDefinitionClauses().toString());
       }
-
-      addLogEntry(translationService, userName, "UPDATE refset",
-          refset.getProject().getId(), refset.getId(),
-          "\n  old " + oldRefset.toString() + "\n  new " + refset.toString());
 
       translationService.commit();
     } catch (Exception e) {
@@ -647,7 +646,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
 
       // remove refset
       refsetService.removeRefset(refsetId, cascade);
-      addLogEntry(refsetService, userName, "REMOVE refset",
+      final String type = refset.isLocalSet() ? "local set" : "refset";
+      addLogEntry(refsetService, userName, "REMOVE " + type,
           refset.getProject().getId(), refset.getId(), refset.toString());
 
     } catch (Exception e) {
@@ -744,8 +744,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         refsetService.resolveRefsetDefinition(newRefset);
       }
       addLogEntry(refsetService, userName, "CLONE refset",
-          refset.getProject().getId(), refset.getId(),
-          refset.getTerminologyId() + ": " + refset.getName());
+          refset.getProject().getId(), refset.getId(), refset.toString());
 
       // done
       refsetService.commit();
@@ -866,7 +865,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
 
       addLogEntry(refsetService, userName, "IMPORT DEFINITION",
           refset.getProject().getId(), refset.getId(),
-          refset.getTerminologyId() + ": " + refset.getName());
+          refset.getTerminologyId() + " = " + refset.getDefinitionClauses());
       refsetService.commit();
 
     } catch (Exception e) {
@@ -1261,9 +1260,11 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
 
       member.setLastModifiedBy(userName);
       ConceptRefsetMember newMember = refsetService.addMember(member);
+
       addLogEntry(refsetService, userName, "ADD member",
           refset.getProject().getId(), refset.getId(),
-          newMember.getConceptId() + ": " + newMember.getConceptName());
+          refset.getTerminologyId() + " = " + newMember.getConceptId() + " "
+              + newMember.getConceptName());
 
       return newMember;
 
@@ -1305,7 +1306,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       refsetService.removeMember(memberId);
       addLogEntry(refsetService, userName, "REMOVE member",
           refset.getProject().getId(), refset.getId(),
-          member.getTerminologyId() + ": " + member.getConceptName());
+          refset.getTerminologyId() + " = " + member.getTerminologyId() + " "
+              + member.getConceptName());
 
     } catch (Exception e) {
       handleException(e, "trying to remove a member ");
@@ -1341,7 +1343,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         refsetService.removeMember(member.getId());
       }
       addLogEntry(refsetService, userName, "REMOVE all members",
-          refset.getProject().getId(), refsetId, ": ");
+          refset.getProject().getId(), refsetId, refset.getTerminologyId());
 
       refsetService.commit();
 
@@ -1364,7 +1366,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
     @ApiParam(value = "Query", required = false) @QueryParam("query") String query,
     @ApiParam(value = "Translated, e.g. true/false/null", required = false) @QueryParam("translated") Boolean translated,
     @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
-    @ApiParam(value = "Authorization token, e.g. 'author1'", required =true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
     Logger.getLogger(getClass())
@@ -1466,7 +1468,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
 
       addLogEntry(refsetService, userName, "ADD refset inclusion",
           refset.getProject().getId(), refset.getId(),
-          inclusion.getConceptId() + ": " + inclusion.getConceptName());
+          refset.getTerminologyId() + " = " + inclusion.getConceptId() + " "
+              + inclusion.getConceptName());
 
       return member;
 
@@ -1510,8 +1513,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
           staged, false, refsetService, userName);
 
       addLogEntry(refsetService, userName, "ADD refset exclusion",
-          refset.getProject().getId(), refset.getId(),
-          member.getConceptId() + ": " + member.getConceptName());
+          refset.getProject().getId(), refset.getId(), refset.getTerminologyId()
+              + " = " + member.getConceptId() + " " + member.getConceptName());
 
       return member;
     } catch (Exception e) {
@@ -1556,7 +1559,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       }
       addLogEntry(refsetService, userName, "REMOVE refset exclusion",
           member.getRefset().getProject().getId(), member.getRefset().getId(),
-          member.getTerminologyId() + ": " + member.getConceptName());
+          member.getRefset().getTerminologyId() + " = "
+              + member.getTerminologyId() + " " + member.getConceptName());
 
       return member;
     } catch (Exception e) {
@@ -1776,8 +1780,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       }
 
       addLogEntry(refsetService, userName, "BEGIN MIGRATION",
-          refset.getProject().getId(), refset.getId(),
-          refset.getTerminologyId() + ": " + refset.getName());
+          refset.getProject().getId(), refset.getId(), refset.toString());
 
       return refsetCopy;
 
@@ -1846,8 +1849,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       refsetService.commit();
 
       addLogEntry(refsetService, userName, "CONVERT REFSET",
-          refset.getProject().getId(), refset.getId(), refset.getTerminologyId()
-              + ": " + refset.getName() + " to " + refsetType);
+          refset.getProject().getId(), refset.getId(),
+          refset.getTerminologyId() + " => " + refsetType);
 
       return refset;
 
@@ -2024,8 +2027,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       refsetService.removeRefset(stagedRefset.getId(), false);
 
       addLogEntry(refsetService, userName, "FINISH MIGRATION",
-          refset.getProject().getId(), refset.getId(),
-          refset.getTerminologyId() + ": " + refset.getName());
+          refset.getProject().getId(), refset.getId(), refset.toString());
 
       refsetService.commit();
 
@@ -2099,8 +2101,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       refsetService.updateRefset(refset);
 
       addLogEntry(refsetService, userName, "CANCEL MIGRATION",
-          refset.getProject().getId(), refset.getId(),
-          refset.getTerminologyId() + ": " + refset.getName());
+          refset.getProject().getId(), refset.getId(), refset.toString());
       refsetService.commit();
 
       // Lookup member names should always happen after commit
@@ -2626,10 +2627,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
 
       addLogEntry(refsetService, userName, "OPTIMIZE refset definition",
           refset.getProject().getId(), refset.getId(),
-          refset.getTerminologyId() + ": " + refset.getName());
-      addLogEntry(refsetService, userName, "  definition = ",
-          refset.getProject().getId(), refset.getId(),
-          refset.getDefinitionClauses().toString());
+          refset.getTerminologyId() + " = " + refset.getDefinitionClauses());
 
       refsetService.commit();
     } catch (Exception e) {
@@ -2727,8 +2725,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       }
 
       addLogEntry(refsetService, userName, "BEGIN IMPORT refset",
-          refset.getProject().getId(), refset.getId(),
-          refset.getTerminologyId() + ": " + refset.getName());
+          refset.getProject().getId(), refset.getId(), refset.toString());
       return result;
     } catch (Exception e) {
       handleException(e, "trying to begin import members");
@@ -2778,8 +2775,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       refsetService.handleLazyInit(stagedRefset);
 
       addLogEntry(refsetService, userName, "RESUME MIGRATION",
-          refset.getProject().getId(), refset.getId(),
-          refset.getTerminologyId() + ": " + refset.getName());
+          refset.getProject().getId(), refset.getId(), refset.toString());
 
       return stagedRefset;
     } catch (Exception e) {
@@ -2984,8 +2980,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
           "FINISH IMPORT " + (handler.isDeltaHandler() ? "DELTA " : "")
               + "refset",
           refset.getProject().getId(), refset.getId(),
-          refset.getTerminologyId() + ": " + refset.getName() + ", " + objectCt
-              + " members imported");
+          refset.toString() + "\n  count = " + objectCt);
+
       refsetService.commit();
 
       // With contents committed, can now lookup Names/Statuses of members
@@ -3047,8 +3043,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       refsetService.updateRefset(refset);
 
       addLogEntry(refsetService, userName, "CANCEL IMPORT refset",
-          refset.getProject().getId(), refset.getId(),
-          refset.getTerminologyId() + ": " + refset.getName());
+          refset.getProject().getId(), refset.getId(), refset.toString());
 
     } catch (Exception e) {
       handleException(e, "trying to resume import members");
@@ -3128,7 +3123,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
 
       addLogEntry(refsetService, userName, "ADD refset note",
           refset.getProject().getId(), refset.getId(),
-          newNote.getId() + ": " + newNote.getValue());
+          refset.getTerminologyId() + " = " + newNote);
 
       return newNote;
     } catch (Exception e) {
@@ -3185,7 +3180,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       refsetService.updateRefset(refset);
 
       addLogEntry(refsetService, userName, "REMOVE Refset Note",
-          refset.getProject().getId(), refset.getId(), noteId + ": ");
+          refset.getProject().getId(), refset.getId(),
+          refset.getTerminologyId() + " = " + noteId);
 
     } catch (Exception e) {
       handleException(e, "trying to remove a refset note");
@@ -3247,7 +3243,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
 
       addLogEntry(refsetService, userName, "ADD member note",
           refset.getProject().getId(), refset.getId(),
-          memberNote.getId() + ": " + memberNote.getValue());
+          member.getConceptId() + " = " + memberNote);
 
       return newNote;
 
@@ -3292,8 +3288,10 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       refsetService.removeNote(noteId, ConceptRefsetMemberNoteJpa.class);
 
       // For indexing
+      Note note = null;
       for (int i = 0; i < member.getNotes().size(); i++) {
         if (member.getNotes().get(i).getId().equals(noteId)) {
+          note = member.getNotes().get(i);
           member.getNotes().remove(i);
           break;
         }
@@ -3301,7 +3299,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       member.setLastModifiedBy(userName);
       refsetService.updateMember(member);
       addLogEntry(refsetService, userName, "REMOVE member note",
-          refset.getProject().getId(), refset.getId(), noteId + ": ");
+          refset.getProject().getId(), refset.getId(),
+          member.getConceptId() + " = " + note);
 
     } catch (Exception e) {
       handleException(e, "trying to remove a member note");

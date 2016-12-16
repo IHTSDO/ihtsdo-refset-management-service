@@ -231,8 +231,8 @@ tsApp
             // default is published if nothing set
             $scope.accordionState['EDITING'] = true;
             $scope.user.userPreferences.lastTranslationAccordion = 'EDITING';
-            securityService.updateUserPreferences($scope.user.userPreferences);
           }
+          securityService.updateUserPreferences($scope.user.userPreferences);
         };
 
         // Initialize some metadata first time

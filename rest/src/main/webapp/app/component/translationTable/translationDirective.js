@@ -65,32 +65,38 @@ tsApp
 
               // Paging variables
               $scope.visibleSize = 4;
-              $scope.pageSize = 10;
               $scope.paging = {};
               $scope.paging['translation'] = {
                 page : 1,
                 filter : $routeParams.translationId ? 'id:' + $routeParams.translationId : '',
                 sortField : 'name',
-                ascending : null
+                ascending : null,
+                pageSize : 10
               };
               $scope.paging['concept'] = {
                 page : 1,
                 filter : '',
                 sortField : $scope.value == 'PUBLISHED' || $scope.value == 'BETA' ? 'name'
                   : 'lastModified',
-                ascending : null
+                ascending : null,
+                pageSize : 10
+
               };
               $scope.paging['available'] = {
                 page : 1,
                 filter : '',
                 sortField : 'lastModified',
-                ascending : null
+                ascending : null,
+                pageSize : 10
+
               };
               $scope.paging['assigned'] = {
                 page : 1,
                 filter : '',
                 sortField : 'conceptTerminologyId',
-                ascending : null
+                ascending : null,
+                pageSize : 10
+
               };
 
               $scope.ioImportHandlers = [];
@@ -163,8 +169,9 @@ tsApp
               // Get $scope.translations
               $scope.getTranslations = function() {
                 var pfs = {
-                  startIndex : ($scope.paging['translation'].page - 1) * $scope.pageSize,
-                  maxResults : $scope.pageSize,
+                  startIndex : ($scope.paging['translation'].page - 1)
+                    * $scope.paging['translation'].pageSize,
+                  maxResults : $scope.paging['translation'].pageSize,
                   sortField : $scope.paging['translation'].sortField,
                   ascending : $scope.paging['translation'].ascending == null ? true
                     : $scope.paging['translation'].ascending,
@@ -301,7 +308,8 @@ tsApp
               // Prepare PFS for searches and for export
               function prepPfs() {
                 var pfs = {
-                  startIndex : ($scope.paging['concept'].page - 1) * $scope.pageSize,
+                  startIndex : ($scope.paging['concept'].page - 1)
+                    * $scope.paging['concept'].pageSize,
                   maxResults : $scope.pageSize,
                   sortField : $scope.paging['concept'].sortField,
                   ascending : $scope.paging['concept'].ascending == null ? true
@@ -330,8 +338,9 @@ tsApp
                   return;
                 }
                 var pfs = {
-                  startIndex : ($scope.paging['available'].page - 1) * $scope.pageSize,
-                  maxResults : $scope.pageSize,
+                  startIndex : ($scope.paging['available'].page - 1)
+                    * $scope.paging['available'].pageSize,
+                  maxResults : $scope.paging['available'].pageSize,
                   sortField : $scope.paging['available'].sortField,
                   ascending : $scope.paging['available'].ascending == null ? true
                     : $scope.paging['available'].ascending,
@@ -381,8 +390,9 @@ tsApp
                 }
 
                 var pfs = {
-                  startIndex : ($scope.paging['assigned'].page - 1) * $scope.pageSize,
-                  maxResults : $scope.pageSize,
+                  startIndex : ($scope.paging['assigned'].page - 1)
+                    * $scope.paging['assigned'].pageSize,
+                  maxResults : $scope.paging['assigned'].pageSize,
                   sortField : $scope.paging['assigned'].sortField,
                   ascending : $scope.paging['assigned'].ascending == null ? false
                     : $scope.paging['assigned'].ascending,
@@ -2810,7 +2820,7 @@ tsApp
               };
 
               // Log modal
-              $scope.openLogModal = function() {
+              $scope.openLogModal = function(concept) {
                 console.debug('openLogModal ');
 
                 var modalInstance = $uibModal.open({
@@ -2824,7 +2834,10 @@ tsApp
                     },
                     project : function() {
                       return $scope.project;
-                    }
+                    },
+                    concept : function() {
+                      return concept;
+                    },
                   }
                 });
 
@@ -2836,8 +2849,8 @@ tsApp
               };
 
               // Log controller
-              var LogModalCtrl = function($scope, $uibModalInstance, translation, project) {
-                console.debug('Entered log modal control', translation, project);
+              var LogModalCtrl = function($scope, $uibModalInstance, translation, project, concept) {
+                console.debug('Entered log modal control', translation, project, concept);
 
                 $scope.filter = '';
                 $scope.errors = [];
@@ -2845,7 +2858,11 @@ tsApp
 
                 // Get log to display
                 $scope.getLog = function() {
-                  projectService.getLog(project.id, translation.id, $scope.filter).then(
+                  var objectId = translation.id
+                  if (concept) {
+                    objectId = concept.id;
+                  }
+                  projectService.getLog(project.id, objectId, $scope.filter).then(
                   // Success
                   function(data) {
                     $scope.log = data;

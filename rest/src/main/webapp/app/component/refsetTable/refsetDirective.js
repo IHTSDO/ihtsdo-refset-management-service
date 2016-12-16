@@ -71,14 +71,14 @@ tsApp
 
               // Paging variables
               $scope.visibleSize = 4;
-              $scope.pageSize = 10;
               $scope.paging = {};
               $scope.paging['refset'] = {
                 page : 1,
                 filter : $routeParams.refsetId ? 'id:' + $routeParams.refsetId : '',
                 typeFilter : '',
                 sortField : $scope.value == 'ASSIGNED' ? 'refsetName' : 'name',
-                ascending : null
+                ascending : null,
+                pageSize : 10
               };
               $scope.paging['member'] = {
                 page : 1,
@@ -86,14 +86,16 @@ tsApp
                 typeFilter : '',
                 sortField : $scope.value == 'PUBLISHED' || $scope.value == 'BETA' ? 'conceptName'
                   : 'lastModified',
-                ascending : true
+                ascending : true,
+                pageSize : 10
               };
               $scope.paging['membersInCommon'] = {
                 page : 1,
                 filter : '',
                 typeFilter : '',
                 sortField : 'name',
-                ascending : null
+                ascending : null,
+                pageSize : 10
               };
               $scope.paging['oldRegularMembers'] = {
                 page : 1,
@@ -150,8 +152,9 @@ tsApp
                 }
 
                 var pfs = {
-                  startIndex : ($scope.paging['refset'].page - 1) * $scope.pageSize,
-                  maxResults : $scope.pageSize,
+                  startIndex : ($scope.paging['refset'].page - 1)
+                    * $scope.paging['refset'].pageSize,
+                  maxResults : $scope.paging['refset'].pageSize,
                   sortField : $scope.paging['refset'].sortField,
                   ascending : $scope.paging['refset'].ascending == null ? true
                     : $scope.paging['refset'].ascending,
@@ -483,8 +486,8 @@ tsApp
               // Prepare PFS for searches and for export
               function prepPfs() {
                 var pfs = {
-                  startIndex : ($scope.paging['member'].page - 1) * $scope.pageSize,
-                  maxResults : $scope.pageSize,
+                  startIndex : ($scope.paging['member'].page - 1) * $scope.paging['member'].pageSize,
+                  maxResults : $scope.paging['refset'].pageSize,
                   sortField : $scope.paging['member'].sortField,
                   ascending : $scope.paging['member'].ascending == null ? false
                     : $scope.paging['member'].ascending,
@@ -928,8 +931,8 @@ tsApp
 
               $scope.convertRefset = function(refset) {
                 if ($window
-                .confirm('Are you sure that you want to convert this refset to an extensional refset?')) {
-                refsetService.convertRefset(refset, 'EXTENSIONAL').then(
+                  .confirm('Are you sure that you want to convert this refset to an extensional refset?')) {
+                  refsetService.convertRefset(refset, 'EXTENSIONAL').then(
                   // Success
                   function(data) {
                     $scope.getRefsets();
@@ -940,7 +943,7 @@ tsApp
                   });
                 }
               }
-              
+
               //
               // MODALS
               //
@@ -3199,7 +3202,7 @@ tsApp
                 $scope.exportDiffReport = function() {
                   refsetService.exportDiffReport($scope.reportToken, $scope.refset);
                 }
-                
+
                 // get diff report
                 $scope.getDiffReport = function() {
                   refsetService.getDiffReport($scope.reportToken).then(
