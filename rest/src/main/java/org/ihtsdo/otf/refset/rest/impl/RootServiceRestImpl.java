@@ -283,6 +283,9 @@ public class RootServiceRestImpl {
    */
   public Map<String, String> getHeaders(HttpHeaders headers) {
     final Map<String, String> map = new HashMap<>();
+    if (headers == null) {
+      return map;
+    }
     final List<String> referers = headers.getRequestHeader("Referer");
     if (referers != null && referers.size() == 1) {
       final String referer = referers.get(0);

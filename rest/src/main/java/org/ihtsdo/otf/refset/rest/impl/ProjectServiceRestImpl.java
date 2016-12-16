@@ -870,7 +870,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
             + terminologyId + ", " + terminology + ", " + version + ", "
             + translationId);
 
-    final TranslationService translationService = new TranslationServiceJpa();
+    final TranslationService translationService = new TranslationServiceJpa(getHeaders(headers));
     try {
       final String userName = authorizeProject(translationService, projectId,
           securityService, authToken, "get full concept", UserRole.AUTHOR);
@@ -938,7 +938,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
             + terminologyId + ", " + terminology + ", " + version + ", "
             + translationId);
 
-    final TranslationService translationService = new TranslationServiceJpa();
+    final TranslationService translationService = new TranslationServiceJpa(getHeaders(headers));
     try {
       final String userName = authorizeProject(translationService, projectId,
           securityService, authToken, "get concept parents", UserRole.AUTHOR);
@@ -1016,7 +1016,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
             + terminologyId + ", " + terminology + ", " + version + ", "
             + translationId);
 
-    final TranslationService translationService = new TranslationServiceJpa();
+    final TranslationService translationService = new TranslationServiceJpa(getHeaders(headers));
 
     try {
       final String userName = authorizeProject(translationService, projectId,
@@ -1074,7 +1074,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
         .info("RESTful POST call (Project): /descriptiontypes - " + terminology
             + ", " + version);
 
-    final TranslationService translationService = new TranslationServiceJpa();
+    final TranslationService translationService = new TranslationServiceJpa(getHeaders(headers));
     try {
       authorizeApp(securityService, authToken, "get standard description types",
           UserRole.VIEWER);

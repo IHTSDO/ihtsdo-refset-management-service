@@ -117,7 +117,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
   }
 
   /** The headers. */
-  Map<String, String> headers;
+  public Map<String, String> headers;
 
   /**
    * Instantiates an empty {@link RefsetServiceJpa}.
@@ -1552,5 +1552,6 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
     }
 
   }
+
 
 }

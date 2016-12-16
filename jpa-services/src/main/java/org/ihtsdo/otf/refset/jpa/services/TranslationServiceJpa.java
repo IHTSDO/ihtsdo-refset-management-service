@@ -110,8 +110,6 @@ public class TranslationServiceJpa extends RefsetServiceJpa
     }
   }
 
-  /** The headers. */
-  Map<String,String> headers;
 
   /**
    * Instantiates an empty {@link TranslationServiceJpa}.
