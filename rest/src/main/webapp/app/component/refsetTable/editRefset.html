@@ -19,7 +19,8 @@
       </tr>
       <tr>
         <td>
-          <b>Refset Id</b>
+          <b ng-show="!localSet">Refset Id</b>
+          <b ng-show="localSet">Local Set Id</b>
         </td>
         <td>
           <input ng-model="refset.terminologyId" placeholder="Optional" />

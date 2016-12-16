@@ -1200,6 +1200,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
   @Override
   @GET
   @Path("/test")
+  @Produces("text/plain")
   @ApiOperation(value = "Test handler URL", notes = "Tests the handler url for the specified key.", response = Boolean.class)
   public Boolean testHandlerUrl(
     @ApiParam(value = "Handler key to test, e.g. 'BROWSER'", required = true) @QueryParam("key") String key,
@@ -1215,7 +1216,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     final ProjectService projectService =
         new ProjectServiceJpa(getHeaders(headers));
     try {
-      authorizeApp(securityService, authToken, "get standard description types",
+      authorizeApp(securityService, authToken, "test handler url",
           UserRole.VIEWER);
 
       // This will fail if there is a problem

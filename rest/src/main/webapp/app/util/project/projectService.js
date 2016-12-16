@@ -106,7 +106,12 @@ tsApp
             projectUrl + 'test?key=' + project.terminologyHandlerKey + '&url='
               + encodeURIComponent(project.terminologyHandlerUrl)
               + (terminology ? '&terminology=' + terminology : '')
-              + (version ? '&version =' + version : '')).then(
+              + (version ? '&version =' + version : ''), {
+              transformResponse : [ function(data) {
+                // Response is plain text at this point
+                return data;
+              } ]
+            }).then(
           // success
           function(response) {
             console.debug('  test = ', response.data);
@@ -629,27 +634,27 @@ tsApp
 
           // Assign user to project
           gpService.increment();
-         
+
           $http.get(
-            projectUrl + 'log?projectId=' + projectId + '&objectId=' + objectId + '&lines=1000' 
-            + (filter != '' ? '&query=' + filter : ''), {
+            projectUrl + 'log?projectId=' + projectId + '&objectId=' + objectId + '&lines=1000'
+              + (filter != '' ? '&query=' + filter : ''), {
               transformResponse : [ function(data) {
                 // Data response is plain text at this point
                 // So just return it, or do your parsing here
                 return data;
               } ]
             }).then(
-            // success
-            function(response) {
-              gpService.decrement();
-              deferred.resolve(response.data);
-            },
-            // error
-            function(response) {
-              utilService.handleError(response);
-              gpService.decrement();
-              deferred.reject(response.data);
-            });
+          // success
+          function(response) {
+            gpService.decrement();
+            deferred.resolve(response.data);
+          },
+          // error
+          function(response) {
+            utilService.handleError(response);
+            gpService.decrement();
+            deferred.reject(response.data);
+          });
           return deferred.promise;
         };
 
