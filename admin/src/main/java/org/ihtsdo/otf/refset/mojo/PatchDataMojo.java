@@ -29,6 +29,7 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
+import org.ihtsdo.otf.refset.helpers.ProjectList;
 import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.WorkflowServiceJpa;
 import org.ihtsdo.otf.refset.rest.impl.ProjectServiceRestImpl;
@@ -87,9 +88,15 @@ public class PatchDataMojo extends AbstractMojo {
         }
 
         // project needs handler key and URL set
-      
-        
-        
+        getLog().info("  Set projects terminology handler key/url");
+        final ProjectList list = service.getProjects();
+        for (final Project project : list.getObjects()) {
+          project.setTerminologyHandlerKey("BROWSER");
+          project
+              .setTerminologyHandlerUrl("https://sct-rest.ihtsdotools.org/api");
+          service.updateProject(project);
+        }
+
         // Reindex
         getLog().info("  Reindex");
         // login as "admin", use token

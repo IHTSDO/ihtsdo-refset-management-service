@@ -1,6 +1,12 @@
 <div class="modal-header">
-  <h4 ng-show="!localSet">{{action}} Refset</h4>
-  <h4 ng-show="localSet">{{action}} Local Set</h4>
+  <h4 style="display: inline" ng-show="!localSet">{{action}} Refset</h4>
+  <h4 style="display: inline" ng-show="localSet">{{action}} Local Set</h4>
+  <span style="float: right">
+    <i ng-show="comments.length == 0" class="glyphicon glyphicon-remove"
+      ng-click="cancel()"></i>
+    <i ng-show="comments.length > 0" class="glyphicon glyphicon-remove"
+      ng-click="close()"></i>
+  </span>
 </div>
 
 <div class="modal-body">
@@ -19,8 +25,8 @@
       </tr>
       <tr>
         <td>
-          <b ng-show="!localSet">Refset Id</b>
-          <b ng-show="localSet">Local Set Id</b>
+          <b ng-show="!localSet">Refset Id</b> <b ng-show="localSet">Local
+            Set Id</b>
         </td>
         <td>
           <input ng-model="refset.terminologyId" placeholder="Optional" />
@@ -70,8 +76,8 @@
           <b>Version</b>
         </td>
         <td>
-          <input style="width: 252px" ng-model="refset.version"
-            list="versions" placeholder="e.g. MAIN" />
+          <input style="width: 252px" ng-model="refset.version" list="versions"
+            placeholder="e.g. MAIN" />
           <datalist id=versions>
             <option ng-repeat="version in versions | orderBy:'version'"
               value="{{version}}">{{version}}</option>

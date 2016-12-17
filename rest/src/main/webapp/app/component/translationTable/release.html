@@ -1,5 +1,8 @@
 <div class="modal-header">
-  <h4>Release Translation</h4>
+  <h4 style="display: inline">Release Translation</h4>
+  <span style="float: right">
+    <i class="glyphicon glyphicon-remove" ng-click="close()"> </i>
+  </span>
 </div>
 
 <div class="modal-body">
@@ -22,9 +25,9 @@
   <div
     ng-show="translation.stagingType == 'BETA' || stagedTranslation.workflowStatus == 'BETA'"
     class="alert alert-success">
-    Click "Finish" to finalize publication. <br>
-    <br>Click "Close" to review the BETA release (the release can be
-    resumed from the RELEASES section).
+    Click "Finish" to finalize publication. <br> <br>Click "Close" to
+    review the BETA release (the release can be resumed from the RELEASES
+    section).
   </div>
 
   <div ng-show="validationResult && translation.stagingType != 'BETA'">

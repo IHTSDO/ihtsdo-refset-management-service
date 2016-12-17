@@ -1,13 +1,17 @@
 <div class="modal-header">
-  <h4>
+  <h4 style="display: inline">
     {{action}} Concept
     <span ng-show="action == 'REASSIGN'"> to Author</span>
   </h4>
+  <span style="float: right">
+    <i class="glyphicon glyphicon-remove" ng-click="cancel()"> </i>
+  </span>
 </div>
 
 <div class="modal-body">
   <!-- Translation info -->
-  <div translation-info translation="translation" form="short" metadata="metadata"></div>
+  <div translation-info translation="translation" form="short"
+    metadata="metadata"></div>
 
   <table class="table">
     <tr>

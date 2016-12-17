@@ -1,6 +1,8 @@
 <div class="modal-header">
-  <h4>Migration</h4>
-
+  <h4 style="display: inline">Migration</h4>
+  <!-- no X at the top, too complicated -->
+</div>
+<div class="modal-body">
   <div class="row">
     <!-- Migration - choose terminology/version -->
     <table class="table">
@@ -28,16 +30,16 @@
           </td>
           <td>
             <!-- <select ng-model="newVersion" ng-options="item for item in versions"></select> -->
-             <input style="width: 252px" ng-model="newVersion"
-            list="versions" placeholder="e.g. MAIN" />
-          <datalist id=versions>
-            <option ng-repeat="version in versions | orderBy:'version'"
-              value="{{version}}">{{version}}</option>
-          </datalist>
-          <button class="btn btn-xs btn-warning" ng-show="newVersion"
-            ng-click="newVersion=''">Clear</button>
-          &nbsp;&nbsp;
-          <span flag-icon obj="refset"></span>
+            <input style="width: 252px" ng-model="newVersion" list="versions"
+              placeholder="e.g. MAIN" />
+            <datalist id=versions>
+              <option ng-repeat="version in versions | orderBy:'version'"
+                value="{{version}}">{{version}}</option>
+            </datalist>
+            <button class="btn btn-xs btn-warning" ng-show="newVersion"
+              ng-click="newVersion=''">Clear</button>
+            &nbsp;&nbsp;
+            <span flag-icon obj="refset"></span>
           </td>
         </tr>
       </tbody>
@@ -791,7 +793,6 @@
     <div class="col-md-5 col-xs-12">&nbsp;</div>
 
   </div>
-
 
   <!-- end modal-body -->
 </div>
