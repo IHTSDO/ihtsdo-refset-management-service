@@ -1067,9 +1067,11 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       StringBuilder sb = new StringBuilder();
 
       // New regular members
+      sb.append("New Members").append("\r\n");
       if (report.getNewRegularMembers().size() > 0) {
-        sb.append("New Members").append("\r\n");
         sb = appendDiffReportHeader(sb);
+      } else {
+        sb = sb.append("n/a").append("\r\n");
       }
       for (ConceptRefsetMember member : report.getNewRegularMembers()) {
         Logger.getLogger(getClass()).debug("  member = " + member);
@@ -1077,9 +1079,11 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       }
 
       // Old regular members
-      if (report.getOldRegularMembers().size() > 0) {
-        sb.append("\r\n").append("Old Members").append("\r\n");
+      sb.append("\r\n").append("Old Members").append("\r\n");
+      if (report.getOldRegularMembers().size() > 0) {     
         sb = appendDiffReportHeader(sb);
+      }else {
+        sb = sb.append("n/a").append("\r\n");
       }
       for (ConceptRefsetMember member : report.getOldRegularMembers()) {
         Logger.getLogger(getClass()).debug("  member = " + member);
@@ -1088,9 +1092,11 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
 
       if (refset.getType() == Type.INTENSIONAL) {
         // Valid inclusions
-        if (report.getValidInclusions().size() > 0) {
-          sb.append("\r\n").append("Valid Inclusions").append("\r\n");
+        sb.append("\r\n").append("Valid Inclusions").append("\r\n");
+        if (report.getValidInclusions().size() > 0) {         
           sb = appendDiffReportHeader(sb);
+        } else {
+          sb = sb.append("n/a").append("\r\n");
         }
         for (ConceptRefsetMember member : report.getValidInclusions()) {
           Logger.getLogger(getClass()).debug("  member = " + member);
@@ -1098,9 +1104,11 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         }
 
         // Valid exclusions
-        if (report.getValidExclusions().size() > 0) {
-          sb.append("\r\n").append("Valid Exclusions").append("\r\n");
+        sb.append("\r\n").append("Valid Exclusions").append("\r\n");
+        if (report.getValidExclusions().size() > 0) {         
           sb = appendDiffReportHeader(sb);
+        } else {
+          sb = sb.append("n/a").append("\r\n");
         }
         for (ConceptRefsetMember member : report.getValidExclusions()) {
           Logger.getLogger(getClass()).debug("  member = " + member);
@@ -1108,9 +1116,11 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         }
 
         // Staged inclusions
+        sb.append("\r\n").append("Migrated Inclusions").append("\r\n");
         if (report.getStagedInclusions().size() > 0) {
-          sb.append("\r\n").append("Migrated Inclusions").append("\r\n");
-          sb = appendDiffReportHeader(sb);
+            sb = appendDiffReportHeader(sb);
+        } else {
+          sb = sb.append("n/a").append("\r\n");
         }
         for (ConceptRefsetMember member : report.getStagedInclusions()) {
           Logger.getLogger(getClass()).debug("  member = " + member);
@@ -1118,18 +1128,22 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         }
 
         // Staged exclusions
+        sb.append("\r\n").append("Migrated Exclusions").append("\r\n");
         if (report.getStagedExclusions().size() > 0) {
-          sb.append("\r\n").append("Migrated Exclusions").append("\r\n");
-          sb = appendDiffReportHeader(sb);
+            sb = appendDiffReportHeader(sb);
+        } else {
+          sb = sb.append("n/a").append("\r\n");
         }
         for (ConceptRefsetMember member : report.getStagedExclusions()) {
           sb = appendDiffReportMember(sb, member, refset);
         }
 
         // Invalid inclusions
+        sb.append("\r\n").append("Invalid Inclusions").append("\r\n");
         if (report.getInvalidInclusions().size() > 0) {
-          sb.append("\r\n").append("Invalid Inclusions").append("\r\n");
           sb = appendDiffReportHeader(sb);
+        } else {
+          sb = sb.append("n/a").append("\r\n");
         }
         for (ConceptRefsetMember member : report.getInvalidInclusions()) {
           Logger.getLogger(getClass()).debug("  member = " + member);
@@ -1137,9 +1151,11 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         }
 
         // Invalid exclusions
+        sb.append("\r\n").append("Invalid Exclusions").append("\r\n");
         if (report.getInvalidExclusions().size() > 0) {
-          sb.append("\r\n").append("Invalid Exclusions").append("\r\n");
           sb = appendDiffReportHeader(sb);
+        } else {
+          sb = sb.append("n/a").append("\r\n");
         }
         for (ConceptRefsetMember member : report.getInvalidExclusions()) {
           sb = appendDiffReportMember(sb, member, refset);
@@ -1180,7 +1196,6 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
     sb.append("moduleId").append("\t");
     sb.append("refsetId").append("\t");
     sb.append("referencedComponentId").append("\t");
-    sb.append("definition");
     sb.append("\r\n");
     return sb;
   }
@@ -1755,8 +1770,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       }
       refsetCopy.setLastModifiedBy(userName);
       refsetService.updateRefset(refsetCopy);
+      refsetService.handleLazyInit(refsetCopy);
       refsetService.commit();
-
       // lookup names after commit
 
       // Look up names/concept active for members of EXTENSIONAL
@@ -1782,10 +1797,11 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       addLogEntry(refsetService, userName, "BEGIN MIGRATION",
           refset.getProject().getId(), refset.getId(), refset.toString());
 
+
       return refsetCopy;
 
     } catch (Exception e) {
-      handleException(e, "trying to begin redefinition of refset");
+      handleException(e, "trying to begin migration of refset");
     } finally {
       refsetService.close();
       securityService.close();
@@ -1852,6 +1868,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
           refset.getProject().getId(), refset.getId(),
           refset.getTerminologyId() + " => " + refsetType);
 
+      refsetService.handleLazyInit(refset);
       return refset;
 
     } catch (Exception e) {
@@ -2029,8 +2046,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       addLogEntry(refsetService, userName, "FINISH MIGRATION",
           refset.getProject().getId(), refset.getId(), refset.toString());
 
+      refsetService.handleLazyInit(refset);
       refsetService.commit();
-
       return refset;
 
     } catch (Exception e) {
