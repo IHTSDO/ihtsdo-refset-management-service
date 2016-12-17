@@ -1,11 +1,15 @@
 <div class="modal-header">
-  <h4>{{operation}} {{type}}</h4>
+  <h4 style="display: inline">{{operation}} {{type}}</h4>
+  <span style="float: right">
+    <i class="glyphicon glyphicon-remove" ng-click="close()"> </i>
+  </span>
 </div>
 
 <div class="modal-body">
   <div>
     <!-- Translation info -->
-    <div translation-info translation="translation" form="long" metadata="metadata"></div>
+    <div translation-info translation="translation" form="long"
+      metadata="metadata"></div>
 
     <table class="table">
       <tr ng-show="type == 'Translation'">
@@ -31,9 +35,8 @@
               ngf-pattern="'.txt,{{selectedIoHandler.fileTypeFilter}}'"
               ngf-max-size="200MB">Browse for File</button>
             <br />
-            <div ngf-drop ng-model="file"
-              class="drop-box" ngf-drag-over-class="'dragover'"
-              ngf-max-size="200MB"
+            <div ngf-drop ng-model="file" class="drop-box"
+              ngf-drag-over-class="'dragover'" ngf-max-size="200MB"
               ngf-pattern="'.txt,{{selectedIoHandler.fileTypeFilter}}'">Drop
               file here</div>
           </div>
@@ -98,7 +101,8 @@
   <button class="btn btn-primary" ng-disabled="!file"
     ng-show="operation == 'Import' && errors.length > 0 && type == 'Translation'"
     ng-click="continueImport(file);">Continue With Import</button>
-  <button class="btn btn-warning" ng-show="comments.length == 0" ng-click="cancel()">Cancel</button>
+  <button class="btn btn-warning" ng-show="comments.length == 0"
+    ng-click="cancel()">Cancel</button>
   <button class="btn btn-warning" ng-click="close()">Close</button>
-  
+
 </div>
