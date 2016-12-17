@@ -888,7 +888,7 @@ public class BrowserTerminologyHandler extends AbstractTerminologyHandler {
         url + "/snomed/" + terminology + "/v" + version + "/descriptions?query="
             + URLEncoder.encode(query, "UTF-8").replaceAll(" ", "%20")
             + "&searchMode=partialMatching&lang=" 
-            + URLEncoder.encode(getLanguages(terminology, version).toString(), "UTF-8").replaceAll(" ", "%20")
+            + getLanguages(terminology, version).get(0)
             + statusFilter + "&"
             + "skipTo=" + localPfs.getStartIndex() + "&returnLimit="
             + (localPfs.getMaxResults() * 3) + "&normalize=true";
