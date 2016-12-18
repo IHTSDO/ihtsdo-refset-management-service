@@ -13,7 +13,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
@@ -57,10 +56,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class BrowserTerminologyHandler extends AbstractTerminologyHandler {
 
-
   /** The terminology version language map. */
   private static Map<String, List<String>> tvLanguageMap = new HashMap<>();
-  
+
   /** The accept. */
   private final String accept = "application/json";
 
@@ -82,7 +80,7 @@ public class BrowserTerminologyHandler extends AbstractTerminologyHandler {
   public BrowserTerminologyHandler() throws Exception {
     super();
   }
-  
+
   /* see superclass */
   @Override
   public TerminologyHandler copy() throws Exception {
@@ -120,8 +118,6 @@ public class BrowserTerminologyHandler extends AbstractTerminologyHandler {
     }
     if (p.containsKey("apiKey")) {
       setApiKey(p.getProperty("apiKey"));
-    } else {
-      throw new LocalException("Required property apiKey not specified.");
     }
   }
 
@@ -887,9 +883,8 @@ public class BrowserTerminologyHandler extends AbstractTerminologyHandler {
     final String targetUrl =
         url + "/snomed/" + terminology + "/v" + version + "/descriptions?query="
             + URLEncoder.encode(query, "UTF-8").replaceAll(" ", "%20")
-            + "&searchMode=partialMatching&lang=" 
-            + getLanguages(terminology, version).get(0)
-            + statusFilter + "&"
+            + "&searchMode=partialMatching&lang="
+            + getLanguages(terminology, version).get(0) + statusFilter + "&"
             + "skipTo=" + localPfs.getStartIndex() + "&returnLimit="
             + (localPfs.getMaxResults() * 3) + "&normalize=true";
 
@@ -1055,9 +1050,9 @@ public class BrowserTerminologyHandler extends AbstractTerminologyHandler {
     String terminology, String version) throws Exception {
     final ConceptList conceptList = new ConceptListJpa();
 
-    //TODO figure out where to put this
+    // TODO figure out where to put this
     List<String> languages = this.getLanguages(terminology, version);
-    
+
     final Client client = ClientBuilder.newClient();
     final String targetUrl = url + "/snomed/" + terminology + "/v" + version
         + "/concepts/" + terminologyId + "/children?form=inferred";
