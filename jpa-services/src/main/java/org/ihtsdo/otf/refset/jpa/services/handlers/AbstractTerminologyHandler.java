@@ -44,6 +44,9 @@ public abstract class AbstractTerminologyHandler implements TerminologyHandler {
    */
   @Override
   public String translate(String text, String language) throws Exception {
+    if (apiKey == null) {
+      return "";
+    }
     GoogleTranslate.setHttpReferrer(
         ConfigUtility.getConfigProperties().getProperty("base.url"));
     GoogleTranslate.setKey("***REMOVED***");
