@@ -87,6 +87,7 @@ import org.ihtsdo.otf.refset.services.handlers.TerminologyHandler;
 import org.ihtsdo.otf.refset.workflow.TrackingRecord;
 import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 
+import com.google.common.collect.Sets;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
@@ -1399,12 +1400,50 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         throw new Exception("Invalid refset id " + refsetId);
       }
 
-      final ConceptRefsetMemberList list =
+      if (translated == null) {
+        final ConceptRefsetMemberList list =
           refsetService.findMembersForRefset(refsetId, query, pfs);
-      for (ConceptRefsetMember member : list.getObjects()) {
-        refsetService.handleLazyInit(member);
+        for (ConceptRefsetMember member : list.getObjects()) {
+          refsetService.handleLazyInit(member);
+        }
+        return list;
+      } else if (translated != null) {
+        final ConceptRefsetMemberList list =
+            refsetService.findMembersForRefset(refsetId, query, new PfsParameterJpa());
+        for (ConceptRefsetMember member : list.getObjects()) {
+          refsetService.handleLazyInit(member);
+        }
+        Set<String> memberConceptIds = new HashSet<>();
+        Set<String> translationConceptIds = new HashSet<>();
+        Set<String> results = new HashSet<>();
+        for (ConceptRefsetMember member : list.getObjects()) {
+          memberConceptIds.add(member.getConceptId());
+        }
+        for (Translation translation : refset.getTranslations()) {
+          for (Concept concept : translation.getConcepts()) {
+            if (concept.getWorkflowStatus() == WorkflowStatus.READY_FOR_PUBLICATION) {
+              translationConceptIds.add(concept.getTerminologyId());
+            }
+          }
+        }
+        if (translated) {
+          results = Sets.intersection(memberConceptIds, translationConceptIds);
+        } else {
+          results = Sets.difference(memberConceptIds, translationConceptIds);
+        }
+        ConceptRefsetMemberList resultList = new ConceptRefsetMemberListJpa();
+        for (ConceptRefsetMember member : list.getObjects()) {
+          if (results.contains(member.getConceptId())) {
+            resultList.addObject(member);
+          }
+        }
+        final int[] totalCt = new int[1];
+        list.setObjects(refsetService.applyPfsToList(resultList.getObjects(),
+            ConceptRefsetMember.class, totalCt, pfs));
+        list.setTotalCount(totalCt[0]);
+        return list;
       }
-      return list;
+      return null;
     } catch (Exception e) {
       handleException(e, "trying to find members ");
       return null;
