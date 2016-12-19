@@ -76,7 +76,7 @@ public class PatchDataMojo extends AbstractMojo {
       // Set project handler key/url for all projects
       if ("20161215".compareTo(start) >= 0 && "20161215".compareTo(end) <= 0) {
         getLog().info(
-            "Processing patch 1000001 - set project terminology handler key/url");
+            "Processing patch 20161215 - set project terminology handler key/url");
         for (final Project project : service.findProjectsForQuery(null, null)
             .getObjects()) {
           project.setTerminologyHandlerKey("BROWSER");
