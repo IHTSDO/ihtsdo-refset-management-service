@@ -310,7 +310,7 @@ tsApp
                 var pfs = {
                   startIndex : ($scope.paging['concept'].page - 1)
                     * $scope.paging['concept'].pageSize,
-                  maxResults : $scope.pageSize,
+                  maxResults : $scope.paging['concept'],
                   sortField : $scope.paging['concept'].sortField,
                   ascending : $scope.paging['concept'].ascending == null ? true
                     : $scope.paging['concept'].ascending,
