@@ -357,10 +357,14 @@ public class ConceptJpa extends AbstractComponent implements Concept {
   @Override
   public String toString() {
     return "ConceptJpa [id=" + getId() + " - " + getTerminologyId() + ", name="
-        + name + ", terminology=" + translation.getTerminology()
-        + ", workflowStatus=" + workflowStatus + ", definitionStatusId="
-        + definitionStatusId + ", leaf=" + leaf + ", translation="
-        + translation.getId() + " - " + translation.getTerminologyId() + "]";
+        + name + ", terminology="
+        + (translation == null ? ""
+            : translation.getTerminology() + ", workflowStatus="
+                + workflowStatus + ", definitionStatusId=" + definitionStatusId
+                + ", leaf=" + leaf + ", translation=" + translation.getId()
+                + " - "
+                + (translation == null ? "" : translation.getTerminologyId()))
+        + "]";
   }
 
 }

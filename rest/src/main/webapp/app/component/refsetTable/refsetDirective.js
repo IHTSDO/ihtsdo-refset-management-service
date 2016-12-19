@@ -70,7 +70,6 @@ tsApp
               $scope.refsetReviewersMap = {};
 
               // Paging variables
-              $scope.visibleSize = 4;
               $scope.paging = {};
               $scope.paging['refset'] = {
                 page : 1,
@@ -486,8 +485,9 @@ tsApp
               // Prepare PFS for searches and for export
               function prepPfs() {
                 var pfs = {
-                  startIndex : ($scope.paging['member'].page - 1) * $scope.paging['member'].pageSize,
-                  maxResults : $scope.paging['refset'].pageSize,
+                  startIndex : ($scope.paging['member'].page - 1)
+                    * $scope.paging['member'].pageSize,
+                  maxResults : $scope.paging['member'].pageSize,
                   sortField : $scope.paging['member'].sortField,
                   ascending : $scope.paging['member'].ascending == null ? false
                     : $scope.paging['member'].ascending,

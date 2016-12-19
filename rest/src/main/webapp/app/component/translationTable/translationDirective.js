@@ -64,7 +64,6 @@ tsApp
               $scope.conceptIdToReviewersMap = {};
 
               // Paging variables
-              $scope.visibleSize = 4;
               $scope.paging = {};
               $scope.paging['translation'] = {
                 page : 1,
@@ -310,7 +309,7 @@ tsApp
                 var pfs = {
                   startIndex : ($scope.paging['concept'].page - 1)
                     * $scope.paging['concept'].pageSize,
-                  maxResults : $scope.paging['concept'],
+                  maxResults : $scope.paging['concept'].pageSize,
                   sortField : $scope.paging['concept'].sortField,
                   ascending : $scope.paging['concept'].ascending == null ? true
                     : $scope.paging['concept'].ascending,

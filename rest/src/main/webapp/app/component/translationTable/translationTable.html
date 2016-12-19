@@ -21,7 +21,7 @@
         max-size="5" boundary-links="true" class="pagination-sm"
         previous-text="&lsaquo;" next-text="&rsaquo;" first-text="&laquo;"
         last-text="&raquo;"
-        ng-show="translations.totalCount > visibleSize || paging['translation'].filter"
+        ng-show="translations.totalCount > paging['translation'].pageSize || paging['translation'].filter"
         total-items="translations.totalCount"
         ng-model="paging['translation'].page" ng-change="getTranslations()"></uib-pagination>
 
@@ -31,7 +31,6 @@
       </span>
 
       <input class="input-filter" placeholder="Search"
-        ng-show="translations.totalCount > visibleSize || paging['translation'].filter"
         type="text" ng-model="paging['translation'].filter"
         ng-model-options="{ debounce: 300 }" ng-change="getTranslations()"
         title="{{paging['translation'].filter}}" list="filter{{value}}">
@@ -556,7 +555,6 @@
         ng-change="getAvailableConcepts(selected.translation)"></uib-pagination>
 
       <input class="input-filter" placeholder="Search"
-        ng-show="selected.translation.available.totalCount > paging['available'].pageSize || paging['available'].filter"
         type="text" ng-model="paging['available'].filter"
         ng-model-options="{ debounce: 300 }"
         ng-change="getAvailableConcepts(selected.translation)">
@@ -698,7 +696,6 @@
         ng-change="getAssignedConcepts(selected.translation)"></uib-pagination>
 
       <input class="input-filter" placeholder="Search"
-        ng-show="selected.translation.assigned.totalCount > paging['assigned'].pageSize || paging['assigned'].filter"
         type="text" ng-model="paging['assigned'].filter"
         ng-model-options="{ debounce: 300 }"
         ng-change="getAssignedConcepts(selected.translation)">
@@ -878,7 +875,7 @@
         <span style="display: block;"
           ng-show="selected.translation.concepts.totalCount > paging['concept'].pageSize || paging['concept'].filter || withNotesOnly">
           <span class="info-text"
-            ng-show="selected.translation.assigned.totalCount > 10"
+            ng-show="selected.translation.concepts.totalCount  > 10"
             style="float: right; margin-top: 4px">
             Page size: <select ng-model="paging['concept'].pageSize"
               title="Page Size" ng-change="getConcepts(selected.translation)">

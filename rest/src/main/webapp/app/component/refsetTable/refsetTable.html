@@ -8,7 +8,7 @@
       <span class="info-text" ng-show="refsets.totalCount > 10"
         style="float: right; margin-top: 4px">
         Page size: <select ng-model="paging['refset'].pageSize"
-          title="Page Size" ng-change="getRefsets()">
+          title="Page Size" ng-change="paging['refset'].page = 0; getRefsets()">
           <option value="10">10</option>
           <option value="50">50</option>
           <option value="100">100</option>
@@ -19,7 +19,7 @@
       <uib-pagination items-per-page="paging['refset'].pageSize" max-size="5"
         boundary-links="true" class="pagination-sm" previous-text="&lsaquo;"
         next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;"
-        ng-show="refsets.totalCount > visibleSize || paging['refset'].filter"
+        ng-show="refsets.totalCount > paging['refset'].pageSize || paging['refset'].filter"
         total-items="refsets.totalCount" ng-model="paging['refset'].page"
         ng-change="getRefsets()"></uib-pagination>
 
@@ -28,9 +28,7 @@
         <br class="visible-xs-inline" />
       </span>
 
-      <input placeholder="Search"
-        ng-show="refsets.totalCount > visibleSize || paging['refset'].filter"
-        type="text" ng-model="paging['refset'].filter"
+      <input placeholder="Search" type="text" ng-model="paging['refset'].filter"
         ng-model-options="{ debounce: 300 }" ng-change="getRefsets()"
         title="{{paging['refset'].filter}}" list="filter{{value}}">
       <datalist id="filter{{value}}">
@@ -715,14 +713,13 @@
       </h4>
 
       <div>
-        <span style="display: block;"
-          ng-show="selected.refset.members.totalCount > paging['member'].pageSize || paging['member'].filter || withNotesOnly">
-
+        <div>
           <span class="info-text"
             ng-show="selected.refset.members.totalCount > 10"
             style="float: right; margin-top: 4px">
             Page size: <select ng-model="paging['member'].pageSize"
-              title="Page Size" ng-change="getMembers(selected.refset)">
+              title="Page Size"
+              ng-change="paging['member'].page = 1; getMembers(selected.refset)">
               <option value="10">10</option>
               <option value="50">50</option>
               <option value="100">100</option>
@@ -731,10 +728,10 @@
             </select>
           </span>
 
-          <uib-pagination ng-show="selected.refset.members.totalCount > 10"
-            items-per-page="paging['member'].pageSize" max-size="5"
-            boundary-links="true" class="pagination-sm" previous-text="&lsaquo;"
-            next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;"
+          <uib-pagination items-per-page="paging['member'].pageSize"
+            max-size="5" boundary-links="true" class="pagination-sm"
+            previous-text="&lsaquo;" next-text="&rsaquo;" first-text="&laquo;"
+            last-text="&raquo;"
             ng-show="selected.refset.members.totalCount > paging['member'].pageSize"
             total-items="selected.refset.members.totalCount"
             ng-model="paging['member'].page"
@@ -756,7 +753,7 @@
             ng-click="paging['member'].filter = ''; withNotesOnly = false; getMembers(selected.refset)"
             title="Click to clear filter text">Clear</button>
 
-        </span>
+        </div>
 
         <table
           ng-show="selected.refset.members.totalCount > 0 || paging['member'].filter || paging['member'].typeFilter"
