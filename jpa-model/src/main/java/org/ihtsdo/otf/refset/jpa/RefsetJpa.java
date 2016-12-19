@@ -322,9 +322,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   /* see superclass */
   @Override
   public boolean isTranslated() {
-    // commented out due to lazy initialization error
-    // TODO return this.getTranslations().size() > 0;
-    return false;
+    return this.getTranslations().size() > 0;
   }
 
   /* see superclass */

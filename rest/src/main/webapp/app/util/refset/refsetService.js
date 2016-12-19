@@ -366,14 +366,15 @@ tsApp.service('refsetService', [
     };
 
     // find members for refset
-    this.findRefsetMembersForQuery = function(refsetId, query, pfs) {
+    this.findRefsetMembersForQuery = function(refsetId, query, pfs, translated) {
       console.debug('findRefsetMembersForQuery');
       var deferred = $q.defer();
 
       // find members
       gpService.increment();
       $http.post(
-        refsetUrl + 'members?refsetId=' + refsetId + '&query=' + utilService.prepQuery(query),
+        refsetUrl + 'members?refsetId=' + refsetId + '&query=' + utilService.prepQuery(query) +
+        (translated != null ? '&translated=' + translated : ''),
         utilService.prepPfs(pfs)).then(
       // success
       function(response) {

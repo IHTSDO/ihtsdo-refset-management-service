@@ -61,8 +61,8 @@ tsApp
               $scope.filters = [];
 
               // Page metadata
-              $scope.memberTypes = [ 'Member', 'Exclusion', 'Inclusion', 'Active', 'Inactive' ];
-              $scope.refsetTypes = [ 'Refset', 'Local', 'Extensional', 'Intensional', 'External' ];
+              $scope.memberTypes = [ 'Member', 'Exclusion', 'Inclusion', 'Active', 'Inactive', 'Translated', 'Not Translated'  ];
+              $scope.refsetTypes = [ 'Refset', 'Local', 'Extensional', 'Intensional', 'External'];
 
               // Used for project admin to know what users are assigned to
               // something.
@@ -459,9 +459,17 @@ tsApp
               $scope.getMembers = function(refset) {
 
                 var pfs = prepPfs();
+                var value = $scope.paging['member'].typeFilter;
+                var translated;
+
+                if (value == 'Translated') {
+                  translated = true;
+                } else if (value == 'Not Translated') {
+                  translated = false;
+                }
 
                 refsetService.findRefsetMembersForQuery(refset.id, $scope.paging['member'].filter,
-                  pfs).then(
+                  pfs, translated).then(
                   // Success
                   function(data) {
                     refset.members = data.members;
@@ -502,14 +510,15 @@ tsApp
                     pfs.queryRestriction = 'conceptActive:false';
                   } else if (value == 'Active') {
                     pfs.queryRestriction = 'conceptActive:true';
-                  }
-
-                  else {
+                  } else if (value == 'Translated' || value == 'Not Translated') {
+                    // do nothing
+                  } else {
                     // Handle member type
-
                     value = value.replace(' ', '_').toUpperCase();
                     pfs.queryRestriction = 'memberType:' + value;
                   }
+                  
+                  
                 }
 
                 if ($scope.withNotesOnly && pfs.queryRestriction) {
