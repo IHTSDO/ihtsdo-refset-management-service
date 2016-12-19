@@ -187,7 +187,7 @@ public class ConfigUtility {
       FileReader in = new FileReader(new File(configFileName));
       config.load(in);
       in.close();
-      Logger.getLogger(ConfigUtility.class).info("  properties = " + config);
+      Logger.getLogger(ConfigUtility.class).debug("  properties = " + config);
     }
     return config;
   }
