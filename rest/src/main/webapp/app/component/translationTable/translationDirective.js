@@ -671,11 +671,12 @@ tsApp
 
                 // load all concepts assigned to the user
                 var pfs = {
-                  startIndex : -1,
-                  maxResults : 10,
-                  sortField : null,
-                  ascending : null,
-                  queryRestriction : null
+                  startIndex : ($scope.paging['assigned'].page - 1) * $scope.paging['assigned'].pageSize,
+                  maxResults : $scope.paging['assigned'].pageSize,
+                  sortField : $scope.paging['assigned'].sortField,
+                  ascending : $scope.paging['assigned'].ascending == null ? false
+                    : $scope.paging['assigned'].ascending,
+                  queryRestriction : $scope.paging['assigned'].filter 
                 };
 
                 if ($scope.projects.role == 'AUTHOR') {
@@ -746,6 +747,153 @@ tsApp
 
               };
 
+              // Finish all concepts assigned to this user
+              $scope.finishAll = function(userName) {
+
+                // load all concepts assigned to the user
+                var pfs = {
+                  startIndex : ($scope.paging['assigned'].page - 1) * $scope.paging['assigned'].pageSize,
+                  maxResults : $scope.paging['assigned'].pageSize,
+                  sortField : $scope.paging['assigned'].sortField,
+                  ascending : $scope.paging['assigned'].ascending == null ? false
+                    : $scope.paging['assigned'].ascending,
+                  queryRestriction : $scope.paging['assigned'].filter
+                };
+
+                if ($scope.projects.role == 'AUTHOR') {
+                  workflowService.findAssignedEditingConcepts($scope.project.id,
+                    $scope.selected.translation.id, userName, pfs).then(
+                    // Success
+                    function(data) {
+
+                      // Extract concepts from records
+                      var list = new Array();
+                      for (var i = 0; i < data.records.length; i++) {
+                        if (data.records[i].concept.workflowStatus.indexOf('IN_PROGRESS') != -1 || 
+                          data.records[i].concept.workflowStatus=='REVIEW_NEW') {
+                          list.push(data.records[i].concept);
+                        }
+                      }
+                      if (list.length == 0) {
+                        alert('There are no concepts ready to be finished.')
+                      }
+
+                      // Make parameter
+                      var conceptList = {
+                        concepts : list
+                      };
+
+                      // Finish all concepts
+                      workflowService.performBatchTranslationWorkflowAction($scope.project.id,
+                        $scope.selected.translation.id, $scope.user.userName, $scope.projects.role,
+                        'FINISH', conceptList).then(
+                      // Success
+                      function(data) {
+                        translationService.fireTranslationChanged($scope.selected.translation);
+                      }
+                      // Error is already handled by service
+                      );
+
+                    }
+                  // Error is already handled by service
+                  );
+                } else if ($scope.projects.role == 'REVIEWER') {
+                  workflowService.findAssignedReviewConcepts($scope.project.id,
+                    $scope.selected.translation.id, $scope.user.userName, pfs).then(
+                    // Success
+                    function(data) {
+
+                      // Extract concepts from records
+                      var list = new Array();
+                      for (var i = 0; i < data.records.length; i++) {
+                        if (data.records[i].concept.workflowStatus.indexOf('IN_PROGRESS') != -1 || 
+                          data.records[i].concept.workflowStatus=='REVIEW_NEW') {
+                          list.push(data.records[i].concept);
+                        }
+                      }
+                      if (list.length == 0) {
+                        alert('There are no concepts ready to be finished.')
+                      }
+                      
+                      // Make parameter
+                      var conceptList = {
+                        concepts : list
+                      };
+
+                      // Finish all concepts
+                      workflowService.performBatchTranslationWorkflowAction($scope.project.id,
+                        $scope.selected.translation.id, $scope.user.userName, $scope.projects.role,
+                        'FINISH', conceptList).then(
+                      // Success
+                      function(data) {
+                        translationService.fireTranslationChanged($scope.selected.translation);
+                      }
+                      // Error is already handled by service
+                      );
+
+                    }
+                  // Error is already handled by service
+                  );
+                } else {
+                  alert("Finish is only available for AUTHOR or REVIEWER roles.");
+                }
+
+              };
+              
+              // Publish all concepts assigned to this user
+              $scope.publishAll = function(userName) {
+
+                // load all concepts assigned to the user
+                var pfs = {
+                  startIndex : ($scope.paging['assigned'].page - 1) * $scope.paging['assigned'].pageSize,
+                  maxResults : $scope.paging['assigned'].pageSize,
+                  sortField : $scope.paging['assigned'].sortField,
+                  ascending : $scope.paging['assigned'].ascending == null ? false
+                    : $scope.paging['assigned'].ascending,
+                  queryRestriction : $scope.paging['assigned'].filter
+                };
+
+                if ($scope.projects.role == 'REVIEWER') {
+                  workflowService.findAssignedReviewConcepts($scope.project.id,
+                    $scope.selected.translation.id, $scope.user.userName, pfs).then(
+                    // Success
+                    function(data) {
+
+                      // Extract concepts from records
+                      var list = new Array();
+                      for (var i = 0; i < data.records.length; i++) {
+                        if (data.records[i].concept.workflowStatus=='REVIEW_DONE') {
+                          list.push(data.records[i].concept);
+                        }
+                      }
+                      if (list.length == 0) {
+                        alert('There are no concepts ready to be published.')
+                      }
+                      
+                      // Make parameter
+                      var conceptList = {
+                        concepts : list
+                      };
+
+                      // Publish all concepts
+                      workflowService.performBatchTranslationWorkflowAction($scope.project.id,
+                        $scope.selected.translation.id, $scope.user.userName, $scope.projects.role,
+                        'FINISH', conceptList).then(
+                      // Success
+                      function(data) {
+                        translationService.fireTranslationChanged($scope.selected.translation);
+                      }
+                      // Error is already handled by service
+                      );
+
+                    }
+                  // Error is already handled by service
+                  );
+                } else {
+                  alert("Publish is only available for REVIEWER role.");
+                }
+
+              };
               // Performs a workflow action
               $scope.performWorkflowAction = function(concept, action) {
 
@@ -1517,7 +1665,7 @@ tsApp
                 $scope.translation = translation;
                 $scope.metadata = metadata;
                 $scope.batchSize = 10;
-                $scope.batchSizes = [ 5, 10, 25, 100 ];
+                $scope.batchSizes = [ 10, 50, 100, 200 ];
                 $scope.project = project;
                 $scope.role = role;
                 $scope.assignedUsers = [];
@@ -1859,6 +2007,7 @@ tsApp
                 // Save this so we can set the workflow status and it shows up
                 // immediately
                 $scope.concept = concept;
+                $scope.googleResult = null;
 
                 // Data structure for case significance - we just need the
                 // id/name
@@ -1890,6 +2039,55 @@ tsApp
                 $scope.clearError = function() {
                   $scope.errors = [];
                 };
+                
+                // get concept with descriptions
+                $scope.getFullConcept = function(concept) {
+                  projectService.getFullConcept($scope.project.id, concept.terminologyId,
+                    $scope.data.terminology, $scope.data.version,
+                    ($scope.data.translation ? $scope.data.translation.id : null)).then(
+                    // Success
+                    function(data) {
+                      // Needed to communicate phrase memory info back to the
+                      // translation editing.
+                      $scope.data.descriptions = data.descriptions;
+                      // Needed for local scope
+                      $scope.concept = data;
+                      var translateTerm = '';
+                      // translate the first 'en' PT in the descriptions
+                      for (var i=0; i<$scope.data.descriptions.length; i++) {
+                        if($scope.getDescriptionType($scope.data.descriptions[i]) == 'PT' &&
+                          $scope.data.descriptions[i].languageCode == 'en') {
+                          translateTerm = $scope.data.descriptions[i].term;
+                          break;
+                        }
+                      }
+                      // translate term
+                      projectService.translate($scope.project.id, translateTerm, $scope.translation.language).then(
+                        function(data) {
+                        $scope.googleResult = data;
+                      });
+                    },
+                    // Error
+                    function(data) {
+                      $scope.error = data;
+                      utilService.clearError();
+                    });
+
+                };
+                // Return the description type name
+                $scope.getDescriptionType = function(description) {
+                  for (var i = 0; i < $scope.data.descriptionTypes.length; i++) {
+                    var type = $scope.data.descriptionTypes[i];
+                    if (description.typeId == type.typeId && description.languages
+                      && description.languages[0].acceptabilityId == type.acceptabilityId) {
+                      return type.name;
+                    }
+                  }
+                  return 'UNKNOWN';
+                };
+
+
+                $scope.getFullConcept($scope.concept);
 
                 // Table sorting
 
@@ -2186,7 +2384,7 @@ tsApp
                 };
 
                 // Description stuff
-
+ 
                 // Get description types
                 $scope.getDescriptionTypes = function() {
                   return $scope.translation.descriptionTypes.sort(utilService.sortBy('name'));
@@ -2198,10 +2396,23 @@ tsApp
                     $scope.pageSize);
                 };
 
+                $scope.addGoogleDescription = function(term) {
+                  if ($scope.conceptTranslated.descriptions.length == 1 &&
+                    $scope.conceptTranslated.descriptions[0].term == '') {
+                    $scope.conceptTranslated.descriptions[0].term = term;
+                  } else {
+                    $scope.addDescription(term);
+                  }
+                }
+                
                 // Add a new empty description entry
-                $scope.addDescription = function() {
+                $scope.addDescription = function(term) {
                   var description = {};
-                  description.term = '';
+                  if (term) {
+                    description.term = term;
+                  } else {
+                    description.term = '';
+                  }
                   description.caseSignificanceId = $scope.caseSignificanceTypes[0].key;
                   // Pick the last one by default (e.g. Synonym)
                   var types = $scope.getDescriptionTypes();

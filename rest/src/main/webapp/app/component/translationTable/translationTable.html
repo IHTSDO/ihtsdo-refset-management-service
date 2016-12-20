@@ -738,7 +738,14 @@
               confirm="Are you sure you want to unassign all concepts?"
               ng-click="unassignAll(user.userName)" title="Unassign all"
               class="noul material-icons md-18">assignment_return</i>
+              <i ng-show="selected.translation.assigned.totalCount > 0"
+              ng-click="finishAll(user.userName)" title="Finish all"
+              class="noul material-icons md-18">done</i>
+              <i ng-show="selected.translation.assigned.totalCount > 0 && projects.role == 'REVIEWER'"
+              ng-click="publishAll(user.userName)" title="Publish all"
+              class="noul material-icons md-18">open_in_new</i>
           </th>
+          
         </tr>
       </thead>
       <tbody>
