@@ -1421,7 +1421,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         }
         for (Translation translation : refset.getTranslations()) {
           for (Concept concept : translation.getConcepts()) {
-            if (concept.getWorkflowStatus() == WorkflowStatus.READY_FOR_PUBLICATION) {
+            if (concept.getWorkflowStatus() == WorkflowStatus.READY_FOR_PUBLICATION ||
+                concept.getWorkflowStatus() == WorkflowStatus.PUBLISHED) {
               translationConceptIds.add(concept.getTerminologyId());
             }
           }
@@ -1900,14 +1901,14 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
           refsetService.updateMember(member);
         }
       }
-
+      refsetService.handleLazyInit(refset);
       refsetService.commit();
 
       addLogEntry(refsetService, userName, "CONVERT REFSET",
           refset.getProject().getId(), refset.getId(),
           refset.getTerminologyId() + " => " + refsetType);
 
-      refsetService.handleLazyInit(refset);
+
       return refset;
 
     } catch (Exception e) {
@@ -3504,6 +3505,45 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       pfs.setMaxResults(1);
       refsetService.getTerminologyHandler(project, getHeaders(headers))
           .countExpression(expression, terminology, version);
+      return true;
+
+    } catch (Exception e) {
+      return false;
+    } finally {
+      refsetService.close();
+      securityService.close();
+    }
+  }
+
+  /* see superclass */
+  @Override
+  @GET
+  @Produces("text/plain")
+  @Path("/version/valid")
+  @ApiOperation(value = "Indicates if a terminology and version is valid", notes = "Gets true if the terminology and version are valid, false otherwise", response = Boolean.class)
+  public Boolean isTerminologyVersionValid(
+    @ApiParam(value = "Project id, e.g. 12345'", required = true) @QueryParam("projectId") Long projectId,
+    @ApiParam(value = "Terminology, e.g. SNOMEDCT", required = true) @QueryParam("terminology") String terminology,
+    @ApiParam(value = "Version, e.g. 20150131", required = true) @QueryParam("version") String version,
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass())
+        .info("RESTful PUT call (Refset): /version/valid " + terminology
+            + ", " + version);
+
+    // Create service and configure transaction scope
+    final RefsetService refsetService =
+        new RefsetServiceJpa(getHeaders(headers));
+    try {
+      authorizeProject(refsetService, projectId, securityService, authToken,
+          "is terminology version valid", UserRole.AUTHOR);
+      final Project project = refsetService.getProject(projectId);
+
+      final PfsParameter pfs = new PfsParameterJpa();
+      pfs.setStartIndex(0);
+      pfs.setMaxResults(1);
+      refsetService.getTerminologyHandler(project, getHeaders(headers))
+          .test(terminology, version);
       return true;
 
     } catch (Exception e) {

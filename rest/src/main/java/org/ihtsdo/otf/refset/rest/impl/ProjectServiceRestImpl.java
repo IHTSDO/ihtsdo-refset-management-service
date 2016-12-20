@@ -1145,6 +1145,54 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     return null;
   }
 
+  /* see superclass */
+  @GET
+  @Path("/translate")
+  @Produces("text/plain")
+  @ApiOperation(value = "Get google translation", notes = "Gets translation for specified text from google translate in specified language", response = String.class)
+  @Override
+  public String translate(
+    @ApiParam(value = "Project id, e.g. 5", required = true) @QueryParam("projectId") Long projectId,
+    @ApiParam(value = "Text, e.g. heart", required = true) @QueryParam("text") String text,
+    @ApiParam(value = "Language, e.g. sv", required = false) @QueryParam("language") String language,
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info("RESTful POST call (Project): /translate/"
+        + text + ", " + language);
+
+    final TranslationService translationService = new TranslationServiceJpa(getHeaders(headers));
+    try {
+      final String userName = authorizeProject(translationService, projectId,
+          securityService, authToken, "get full concept", UserRole.AUTHOR);
+
+      final Project project = translationService.getProject(projectId);
+      if (project == null) {
+        throw new LocalException("Invalid project id: " + projectId);
+      }
+      String translation = "";
+
+      try {
+        translation = translationService
+            .getTerminologyHandler(project, getHeaders(headers))
+            .translate(text, language);
+      } catch (Exception e) {
+        Logger.getLogger(getClass()).info(
+            "No results in call to Terminology Handler with text: "
+                + text + ", language: " + language
+                + " and project: " + projectId);
+      }
+
+
+      return translation;
+    } catch (Exception e) {
+      handleException(e, "trying to retrieve concept with description");
+      return null;
+    } finally {
+      translationService.close();
+      securityService.close();
+    }
+
+  }
   /**
    * Get the replacement concepts.
    *

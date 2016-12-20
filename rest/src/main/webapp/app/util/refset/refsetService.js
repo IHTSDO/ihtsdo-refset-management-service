@@ -1345,6 +1345,35 @@ tsApp.service('refsetService', [
       });
       return deferred.promise;
     };
+    
+    // checks if terminology version is valid
+    this.isTerminologyVersionValid = function(projectId, terminology, version) {
+      console.debug('isTerminologyVersionValid', projectId, terminology, version);
+      var deferred = $q.defer();
+
+      // Get project roles
+      gpService.increment();
+      $http.get(
+        refsetUrl + 'version/valid?projectId=' + projectId + '&terminology=' + terminology
+          + '&version=' + version,  {
+          headers : {
+            'Content-type' : 'text/plain'
+          }
+        }).then(
+      // success
+      function(response) {
+        console.debug('  terminology version valid = ' + response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    };
 
     // get the origin id given a staged refset
     this.getOriginForStagedRefsetId = function(stagedRefsetId) {
