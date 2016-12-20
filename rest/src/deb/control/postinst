@@ -1,0 +1,11 @@
+#!/bin/sh -e
+
+#For debugging uncomment these two lines
+set -x
+echo $*
+
+APP_NAME=[[packageName]]
+
+chown -R $APP_NAME.$APP_NAME /opt/$APP_NAME
+supervisorctl update $APP_NAME || true
+supervisorctl start $APP_NAME || true
