@@ -1,5 +1,11 @@
 <div class="modal-header">
-  <h4>{{operation}} {{type}}</h4>
+  <h4 style="display: inline">{{operation}} {{type}}</h4>
+  <span style="float: right">
+    <i ng-show="importStarted && !importFinished && comments.length == 0"
+      class="glyphicon glyphicon-remove" ng-click="cancel()"> </i>
+    <i ng-show="importFinished || !importStarted"
+      class="glyphicon glyphicon-remove" ng-click="close()"> </i>
+  </span>
 </div>
 
 <div class="modal-body">

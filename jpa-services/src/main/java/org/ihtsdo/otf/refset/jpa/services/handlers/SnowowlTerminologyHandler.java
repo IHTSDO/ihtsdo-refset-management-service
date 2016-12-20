@@ -150,8 +150,6 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     }
     if (p.containsKey("apiKey")) {
       setApiKey(p.getProperty("apiKey"));
-    } else {
-      throw new LocalException("Required property apiKey not specified.");
     }
 
   }
@@ -404,11 +402,9 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
           + URLEncoder.encode(expr, "UTF-8") + "&limit="
           + (total - initialMaxLimit) + "&offset="
           + (initialMaxLimit + localPfs.getStartIndex()) + "&expand=pt()");
-      response =
-          target.request(accept).header("Authorization", authHeader)
-              .header("Accept-Language",
-                  getAcceptLanguage(terminology, version))
-              .header("Cookie", getCookieHeader()).get();
+      response = target.request(accept).header("Authorization", authHeader)
+          .header("Accept-Language", getAcceptLanguage(terminology, version))
+          .header("Cookie", getCookieHeader()).get();
       resultString = response.readEntity(String.class);
       if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
         // n/a
@@ -789,13 +785,10 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
 
         :
 
-        client
-            .target(
-                url + "/" + version + "/concepts?escg="
-                    + URLEncoder.encode(localQuery, "UTF-8").replaceAll(" ",
-                        "%20")
-                    + "&offset=" + localPfs.getStartIndex() + "&limit="
-                    + localPfs.getMaxResults() + "&expand=pt()");
+        client.target(url + "/" + version + "/concepts?escg="
+            + URLEncoder.encode(localQuery, "UTF-8").replaceAll(" ", "%20")
+            + "&offset=" + localPfs.getStartIndex() + "&limit="
+            + localPfs.getMaxResults() + "&expand=pt()");
 
     final Response response =
         target.request("application/vnd.org.ihtsdo.browser+json")

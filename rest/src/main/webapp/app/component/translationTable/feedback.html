@@ -1,12 +1,16 @@
 <div class="modal-header">
-  <h4>Submit Feedback</h4>
+  <h4 style="display: inline">Submit Feedback</h4>
+  <span style="float: right">
+    <i class="glyphicon glyphicon-remove" ng-click="cancel()"> </i>
+  </span>
 </div>
 
 <div class="modal-body">
 
   <div>
     <!-- Translation info -->
-    <div translation-info translation="translation" form="long" metadata="metadata"></div>
+    <div translation-info translation="translation" form="long"
+      metadata="metadata"></div>
 
     <!-- Form -->
     <table class="table">
@@ -47,6 +51,7 @@
 
 <div class="modal-footer">
   <button class="btn btn-primary"
-    ng-click="addFeedback(translation, name, email, message);">Send Feedback</button>
+    ng-click="addFeedback(translation, name, email, message);">Send
+    Feedback</button>
   <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
 </div>

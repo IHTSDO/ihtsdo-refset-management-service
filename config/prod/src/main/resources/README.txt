@@ -86,6 +86,13 @@ unzip ~/refset/code/config/prod/target/refset*.zip -d config
 #  *  identifier.assignment.handler.DEFAULT.userName=refset-prod
 #  *  identifier.assignment.handler.DEFAULT.password=********
 
+PATCH INSTRUCTIONS
+
+cd ~/refset/code/admin
+mvn install -PUpdatedb -Drefset.config/home/ihtsdo/refset/config/config-load.properties >&! mvn.log
+set patchStart=20161201
+set patchEnd=20161215
+mvn install -PPatch -Drefset.config/home/ihtsdo/refset/config/config-load.properties -Dstart=$patchStart -Dend=$patchEnd >&! mvn.log &
 
 REDEPLOY INSTRUCTIONS
 

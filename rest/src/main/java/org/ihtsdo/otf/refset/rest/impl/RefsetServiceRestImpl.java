@@ -487,7 +487,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         .info("RESTful call POST (Refset): /update " + refset);
 
     // Create service and configure transaction scope
-    final TranslationService translationService = new TranslationServiceJpa(getHeaders(headers));
+    final TranslationService translationService =
+        new TranslationServiceJpa(getHeaders(headers));
     translationService.setTransactionPerOperation(false);
     translationService.beginTransaction();
 
@@ -1081,9 +1082,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
 
       // Old regular members
       sb.append("\r\n").append("Old Members").append("\r\n");
-      if (report.getOldRegularMembers().size() > 0) {     
+      if (report.getOldRegularMembers().size() > 0) {
         sb = appendDiffReportHeader(sb);
-      }else {
+      } else {
         sb = sb.append("n/a").append("\r\n");
       }
       for (ConceptRefsetMember member : report.getOldRegularMembers()) {
@@ -1094,7 +1095,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       if (refset.getType() == Type.INTENSIONAL) {
         // Valid inclusions
         sb.append("\r\n").append("Valid Inclusions").append("\r\n");
-        if (report.getValidInclusions().size() > 0) {         
+        if (report.getValidInclusions().size() > 0) {
           sb = appendDiffReportHeader(sb);
         } else {
           sb = sb.append("n/a").append("\r\n");
@@ -1106,7 +1107,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
 
         // Valid exclusions
         sb.append("\r\n").append("Valid Exclusions").append("\r\n");
-        if (report.getValidExclusions().size() > 0) {         
+        if (report.getValidExclusions().size() > 0) {
           sb = appendDiffReportHeader(sb);
         } else {
           sb = sb.append("n/a").append("\r\n");
@@ -1119,7 +1120,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         // Staged inclusions
         sb.append("\r\n").append("Migrated Inclusions").append("\r\n");
         if (report.getStagedInclusions().size() > 0) {
-            sb = appendDiffReportHeader(sb);
+          sb = appendDiffReportHeader(sb);
         } else {
           sb = sb.append("n/a").append("\r\n");
         }
@@ -1131,7 +1132,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         // Staged exclusions
         sb.append("\r\n").append("Migrated Exclusions").append("\r\n");
         if (report.getStagedExclusions().size() > 0) {
-            sb = appendDiffReportHeader(sb);
+          sb = appendDiffReportHeader(sb);
         } else {
           sb = sb.append("n/a").append("\r\n");
         }
@@ -1837,7 +1838,6 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       addLogEntry(refsetService, userName, "BEGIN MIGRATION",
           refset.getProject().getId(), refset.getId(), refset.toString());
 
-
       return refsetCopy;
 
     } catch (Exception e) {
@@ -1901,6 +1901,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
           refsetService.updateMember(member);
         }
       }
+      refsetService.handleLazyInit(refset);
       refsetService.handleLazyInit(refset);
       refsetService.commit();
 
@@ -1970,7 +1971,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
     Logger.getLogger(getClass())
         .info("RESTful call POST (Refset): /migration/finish " + refsetId);
 
-    final TranslationService refsetService = new TranslationServiceJpa(getHeaders(headers));
+    final TranslationService refsetService =
+        new TranslationServiceJpa(getHeaders(headers));
     try {
       // Load refset
       final Refset refset = refsetService.getRefset(refsetId);

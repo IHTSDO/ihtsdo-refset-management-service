@@ -187,7 +187,7 @@ public class ConfigUtility {
       FileReader in = new FileReader(new File(configFileName));
       config.load(in);
       in.close();
-      Logger.getLogger(ConfigUtility.class).info("  properties = " + config);
+      Logger.getLogger(ConfigUtility.class).debug("  properties = " + config);
     }
     return config;
   }
@@ -206,8 +206,8 @@ public class ConfigUtility {
       final String str = prop.toString();
 
       if (str.startsWith("deploy.") || str.startsWith("site.")
-          || str.startsWith("base.url") || str.startsWith("logout.") ||
-          str.startsWith("help.url")) {
+          || str.startsWith("base.url") || str.startsWith("logout.")
+          || str.startsWith("help.url")) {
         p.put(prop, config.getProperty(prop.toString()));
       }
 
@@ -291,8 +291,10 @@ public class ConfigUtility {
       if (key.toString().startsWith(property + "." + handlerName + ".")) {
         String shortKey = key.toString()
             .substring((property + "." + handlerName + ".").length());
-        Logger.getLogger(ConfigUtility.class).info(" property " + shortKey
-            + " = " + config.getProperty(key.toString()));
+        if (!property.contains("password")) {
+          Logger.getLogger(ConfigUtility.class).debug(" property " + shortKey
+              + " = " + config.getProperty(key.toString()));
+        }
         handlerProperties.put(shortKey, config.getProperty(key.toString()));
       }
     }

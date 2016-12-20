@@ -55,8 +55,8 @@ public class ImsSecurityServiceHandler implements SecurityServiceHandler {
 
     // Construct user from document
     User user = new UserJpa();
-    user.setName(doc.get("firstName").asText() + " "
-        + doc.get("lastName").asText());
+    user.setName(
+        doc.get("firstName").asText() + " " + doc.get("lastName").asText());
     user.setUserName(doc.get("login").asText());
     user.setEmail(doc.get("email").asText());
     user.setApplicationRole(UserRole.VIEWER);
@@ -67,7 +67,8 @@ public class ImsSecurityServiceHandler implements SecurityServiceHandler {
       if (role.asText().equals("ROLE_refset-administrators")) {
         user.setApplicationRole(UserRole.ADMIN);
       }
-      if (role.asText().equals("ROLE_refset-users")) {
+      if (user.getApplicationRole() != UserRole.ADMIN
+          && role.asText().equals("ROLE_refset-users")) {
         user.setApplicationRole(UserRole.USER);
       }
     }

@@ -1,6 +1,11 @@
 <div class="modal-header">
-  <h4 ng-show="refset.type == 'INTENSIONAL'">Add/Include Member(s)</h4>
-  <h4 ng-show="refset.type == 'EXTENSIONAL'">Add Member(s)</h4>
+  <h4 style="display: inline" ng-show="refset.type == 'INTENSIONAL'">Add/Include
+    Member(s)</h4>
+  <h4 style="display: inline" ng-show="refset.type == 'EXTENSIONAL'">Add
+    Member(s)</h4>
+  <span style="float: right">
+    <i class="glyphicon glyphicon-remove" ng-click="cancel()"></i>
+  </span>
 </div>
 
 <div class="modal-body">
@@ -80,7 +85,8 @@
 <div class="modal-footer">
   <button class="btn btn-primary" ng-show="warnings.length == 0"
     ng-click="add(refset, member, includeClause)">Add</button>
-  <button confirm="Are you sure you want to add an expression for large number of members?"
+  <button
+    confirm="Are you sure you want to add an expression for large number of members?"
     class="btn btn-primary"
     ng-show="warnings.length != 0 && refset.type == 'INTENSIONAL'"
     ng-click="continueAdd(refset, member, includeClause)">Add</button>
