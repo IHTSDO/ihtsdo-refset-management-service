@@ -48,6 +48,14 @@
           <span style="float: right;">
             <button ng-click="addDescription();" title="Add description"
               class="btn btn-xs btn-primary">Add Description</button>
+                          <!-- Notes -->
+            <i ng-show="concept.notes.length > 0"
+              ng-click="openNotesModal(concept, 'Concept');"
+              title="Edit concept notes" class="noul material-icons md-18">assignment</i>
+            <i ng-show="concept.notes.length == 0"
+              ng-click="openNotesModal(concept, 'Concept');"
+              title="Add concept notes (no notes yet)"
+              class="md-grey material-icons md-18">assignment</i>
           </span>
         </span>
 
@@ -97,8 +105,13 @@
 
       </div>
 
-
-      <h5>Spelling and Memory Controls</h5>
+    <uib-accordion>
+	  <uib-accordion-group> 
+	    <uib-accordion-heading>
+          <h5>
+            <span uib-tooltip="Open spelling and memory controls">Spelling and Memory Controls</span>
+          </h5>
+        </uib-accordion-heading>
       <div class="col-md-12 col-xs-12">
         <table class="table">
           <tbody>
@@ -173,6 +186,9 @@
         </table>
 
       </div>
+      
+    </uib-accordion-group>
+    </uib-accordion>
 
       <div ng-show="errors.length > 0 || warnings.length> 0"
         class="col-md-10 col-xs-12">
@@ -196,6 +212,10 @@
 </div>
 
 <div class="modal-footer">
+  <span style="width:250; display: block;
+    overflow: hidden; text-overflow: ellipsis; float: left;">{{googleResult}}
+  <button class="btn btn-xs btn-primary" ng-click="addGoogleDescription(googleResult);"
+    title="Add description">Add</button></span>
   <button class="btn btn-primary" ng-click="saveConcept(conceptTranslated);"
     title="Save work">Save/Next</button>
   <button confirm="Are you sure you want to finish editing this concept?"
