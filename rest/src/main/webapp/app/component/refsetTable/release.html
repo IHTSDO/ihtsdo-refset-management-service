@@ -1,5 +1,8 @@
 <div class="modal-header">
-  <h4>Release Refset</h4>
+  <h4 style="display: inline">Release Refset</h4>
+  <span style="float: right">
+    <i class="glyphicon glyphicon-remove" ng-click="close()"> </i>
+  </span>
 </div>
 
 <div class="modal-body">
@@ -21,9 +24,11 @@
     in the "Releases" section.</div>
   <div
     ng-show="refset.stagingType == 'BETA' || stagedRefset.workflowStatus == 'BETA'"
-    class="alert alert-success">Click "Finish" to finalize publication.
-    <br><br>Click "Close" to review the BETA release (the release can be resumed from
-    the RELEASES section).</div>
+    class="alert alert-success">
+    Click "Finish" to finalize publication. <br> <br>Click "Close" to
+    review the BETA release (the release can be resumed from the RELEASES
+    section).
+  </div>
 
   <div ng-show="validationResult && refset.stagingType != 'BETA'">
     <h4 ng-show="validationResult.warnings.length > 0">Warnings</h4>

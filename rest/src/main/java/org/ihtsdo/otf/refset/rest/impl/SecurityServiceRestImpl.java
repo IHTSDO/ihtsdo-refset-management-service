@@ -442,7 +442,11 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl
       final String userName = authorizeApp(securityService, authToken,
           "update user preferences", UserRole.VIEWER);
 
+      // stopgaps if there are problems on client side.
       if (userPreferences == null) {
+        return null;
+      }
+      if (userPreferences.getUser() == null) {
         return null;
       }
       if (!userPreferences.getUser().getUserName().equals(userName)) {

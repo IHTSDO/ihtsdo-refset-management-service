@@ -64,7 +64,6 @@ tsApp
               $scope.conceptIdToReviewersMap = {};
 
               // Paging variables
-              $scope.visibleSize = 4;
               $scope.paging = {};
               $scope.paging['translation'] = {
                 page : 1,
@@ -224,11 +223,13 @@ tsApp
 
               // Clear the url params when "clear" gets clicked
               $scope.clearUrlParams = function() {
-                var index = $scope.link.indexOf("?");
-                if (index != -1) {
-                  $scope.link = $scope.link.substring(0, index);
-                  $window.location.href = $scope.link;
-                  $route.reload();
+                if ($scope.value == 'PUBLISHED' && $scope.link) {
+                  var index = $scope.link.indexOf("?");
+                  if (index != -1) {
+                    $scope.link = $scope.link.substring(0, index);
+                    $window.location.href = $scope.link;
+                    $route.reload();
+                  }
                 }
               }
 
@@ -310,7 +311,7 @@ tsApp
                 var pfs = {
                   startIndex : ($scope.paging['concept'].page - 1)
                     * $scope.paging['concept'].pageSize,
-                  maxResults : $scope.pageSize,
+                  maxResults : $scope.paging['concept'].pageSize,
                   sortField : $scope.paging['concept'].sortField,
                   ascending : $scope.paging['concept'].ascending == null ? true
                     : $scope.paging['concept'].ascending,

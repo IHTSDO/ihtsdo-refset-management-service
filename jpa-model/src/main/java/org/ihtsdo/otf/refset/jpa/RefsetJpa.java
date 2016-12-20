@@ -926,13 +926,17 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   /* see superclass */
   @Override
   public String toString() {
-    return "RefsetJpa [name=" + name + ", description=" + description
-        + ", type=" + type + ", terminology=" + getTerminology() + ", version="
-        + getVersion() + ", namespace=" + namespace + ", definitionClauses="
+    // NOTE: consider that these fields are used both for searching in
+    // appyPfsToList mode
+    // and for creating log entries
+    return "RefsetJpa [id=" + getId() + " - " + getTerminologyId() + ", name="
+        + name + ", description=" + description + ", type=" + type
+        + ", terminology=" + getTerminology() + ", version=" + getVersion()
+        + ", namespace=" + namespace + ", definitionClauses="
         + definitionClauses + ", extUrl=" + externalUrl + ", workflowStatus="
         + workflowStatus + ", workflowPath=" + workflowPath + ", domain="
         + domain + ", project=" + (project == null ? null : project.getId())
-        + "]";
+        + ", localSet=" + localSet + "]";
   }
 
 }

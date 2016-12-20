@@ -21,7 +21,7 @@
         max-size="5" boundary-links="true" class="pagination-sm"
         previous-text="&lsaquo;" next-text="&rsaquo;" first-text="&laquo;"
         last-text="&raquo;"
-        ng-show="translations.totalCount > visibleSize || paging['translation'].filter"
+        ng-show="translations.totalCount > paging['translation'].pageSize"
         total-items="translations.totalCount"
         ng-model="paging['translation'].page" ng-change="getTranslations()"></uib-pagination>
 
@@ -31,7 +31,7 @@
       </span>
 
       <input class="input-filter" placeholder="Search"
-        ng-show="translations.totalCount > visibleSize || paging['translation'].filter"
+        ng-show="translations.totalCount > 0 || paging['translation'].filter"
         type="text" ng-model="paging['translation'].filter"
         ng-model-options="{ debounce: 300 }" ng-change="getTranslations()"
         title="{{paging['translation'].filter}}" list="filter{{value}}">
@@ -50,8 +50,10 @@
         ng-show="translations.totalCount > 0 && isDirectory()"
         ng-model="showLatest" ng-change="getTranslations()" uib-btn-checkbox
         btn-checkbox-true="true" btn-checkbox-false="false">
-        <span ng-show="showLatest" title="Click to show all">Latest</span>
-        <span ng-hide="showLatest" title="Click to show only most recent">All</span>
+        <span ng-show="showLatest"
+          title="Showing only most recent, click to toggle">Latest</span>
+        <span ng-hide="showLatest"
+          title="Showing only most recent, click to toggle">All</span>
       </button>
 
       <h4 ng-show="value=='EDITING' && translations.totalCount == 0">
@@ -550,14 +552,14 @@
       <uib-pagination items-per-page="paging['available'].pageSize" max-size="5"
         boundary-links="true" class="pagination-sm" previous-text="&lsaquo;"
         next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;"
-        ng-show="selected.translation.available.totalCount > paging['available'].pageSize || paging['available'].filter"
+        ng-show="selected.translation.available.totalCount > paging['available'].pageSize"
         total-items="selected.translation.available.totalCount"
         ng-model="paging['available'].page"
         ng-change="getAvailableConcepts(selected.translation)"></uib-pagination>
 
-      <input class="input-filter" placeholder="Search"
+      <input class="input-filter" placeholder="Search" type="text"
         ng-show="selected.translation.available.totalCount > paging['available'].pageSize || paging['available'].filter"
-        type="text" ng-model="paging['available'].filter"
+        ng-model="paging['available'].filter"
         ng-model-options="{ debounce: 300 }"
         ng-change="getAvailableConcepts(selected.translation)">
 
@@ -567,10 +569,8 @@
         title="Click to clear filter text">Clear</button>
     </span>
 
-    <span ng-show="selected.translation.available.totalCount == 0"
-      style="display: block;" class="alert alert-warning">No available
-      concepts for {{projects.role}}.</span>
-    <table ng-show="selected.translation.available.totalCount > 0" class="table">
+
+    <table ng-show="selected.translation" class="table">
       <thead>
         <tr>
           <th class="col-md-3 col-xs-3"
@@ -660,6 +660,9 @@
         </tr>
       </tbody>
     </table>
+    <span ng-show="selected.translation.available.totalCount == 0"
+      style="display: block;" class="alert alert-warning">No available
+      concepts for {{projects.role}}.</span>
 
     <!-- End R2C1 -->
   </div>
@@ -692,14 +695,14 @@
       <uib-pagination items-per-page="paging['assigned'].pageSize" max-size="5"
         boundary-links="true" class="pagination-sm" previous-text="&lsaquo;"
         next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;"
-        ng-show="selected.translation.assigned.totalCount > paging['assigned'].pageSize || paging['assigned'].filter"
+        ng-show="selected.translation.assigned.totalCount > paging['assigned'].pageSize"
         total-items="selected.translation.assigned.totalCount"
         ng-model="paging['assigned'].page"
         ng-change="getAssignedConcepts(selected.translation)"></uib-pagination>
 
-      <input class="input-filter" placeholder="Search"
+      <input class="input-filter" placeholder="Search" type="text"
         ng-show="selected.translation.assigned.totalCount > paging['assigned'].pageSize || paging['assigned'].filter"
-        type="text" ng-model="paging['assigned'].filter"
+        ng-model="paging['assigned'].filter"
         ng-model-options="{ debounce: 300 }"
         ng-change="getAssignedConcepts(selected.translation)">
 
@@ -708,10 +711,7 @@
         title="Click to clear filter text">Clear</button>
     </span>
 
-    <span ng-show="selected.translation.assigned.totalCount == 0"
-      style="display: block;" class="alert alert-warning">No assigned
-      concepts for {{projects.role}}.</span>
-    <table ng-show="selected.translation.assigned.totalCount > 0" class="table">
+    <table ng-show="selected.translation" class="table">
       <thead>
         <tr>
           <th class="col-md-3 col-xs-3"
@@ -830,7 +830,9 @@
         </tr>
       </tbody>
     </table>
-
+    <span ng-show="selected.translation.assigned.totalCount == 0"
+      style="display: block;" class="alert alert-warning">No assigned
+      concepts for {{projects.role}}.</span>
 
     <!-- End R2C2 -->
   </div>
@@ -878,7 +880,7 @@
         <span style="display: block;"
           ng-show="selected.translation.concepts.totalCount > paging['concept'].pageSize || paging['concept'].filter || withNotesOnly">
           <span class="info-text"
-            ng-show="selected.translation.assigned.totalCount > 10"
+            ng-show="selected.translation.concepts.totalCount  > 10"
             style="float: right; margin-top: 4px">
             Page size: <select ng-model="paging['concept'].pageSize"
               title="Page Size" ng-change="getConcepts(selected.translation)">
@@ -899,6 +901,7 @@
             ng-change="getConcepts(selected.translation)"></uib-pagination>
 
           <input placeholder="Search" type="text"
+            ng-show="selected.translation.concepts.totalCount > paging['concept'].pageSize || paging['concept'].filter"
             ng-model="paging['concept'].filter"
             ng-model-options="{ debounce: 300 }"
             ng-change="getConcepts(selected.translation)">
@@ -916,7 +919,7 @@
 
         </span>
 
-        <table class="table">
+        <table ng-show="selected.translation" class="table">
           <thead>
             <tr>
               <th class="col-md-3 col-xs-3"
@@ -1004,12 +1007,12 @@
           </tbody>
         </table>
         <span
-          ng-show="selected.translation && !withNotesOnly && !paging['concept'].filter && selected.translation.concepts.totalCount == 0">
+          ng-show="selected.translation && selected.translation.concepts.totalCount == 0">
           <br />
           <span class="alert alert-warning">
-            Translation has no
+            No
             <span ng-show="value == 'EDITING'">publication ready</span>
-            concepts
+            translation concepts found.
           </span>
         </span>
         <span

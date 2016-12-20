@@ -1,5 +1,9 @@
 <div class="modal-header">
-  <h4>Definition Clauses</h4>
+  <h4 style="display: inline">Definition Clauses</h4>
+  <span style="float: right">
+    <i ng-show="value == 'ASSIGNED'" class="glyphicon glyphicon-remove" ng-click="close()"></i>
+    <i ng-show="value != 'ASSIGNED'" class="glyphicon glyphicon-remove" ng-click="cancel()"></i>
+  </span>
 </div>
 
 <div class="modal-body">

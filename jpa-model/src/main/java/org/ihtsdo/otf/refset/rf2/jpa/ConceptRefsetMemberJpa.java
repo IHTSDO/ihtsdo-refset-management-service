@@ -47,8 +47,8 @@ import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 @Audited
 @Indexed
 @XmlRootElement(name = "member")
-public class ConceptRefsetMemberJpa extends AbstractComponent implements
-    ConceptRefsetMember {
+public class ConceptRefsetMemberJpa extends AbstractComponent
+    implements ConceptRefsetMember {
 
   /** The Refset. */
   @ManyToOne(targetEntity = RefsetJpa.class, optional = false)
@@ -98,7 +98,8 @@ public class ConceptRefsetMemberJpa extends AbstractComponent implements
     conceptActive = member.isConceptActive();
     memberType = member.getMemberType();
     for (Note note : member.getNotes()) {
-      getNotes().add(new ConceptRefsetMemberNoteJpa((ConceptRefsetMemberNoteJpa) note));
+      getNotes().add(
+          new ConceptRefsetMemberNoteJpa((ConceptRefsetMemberNoteJpa) note));
     }
   }
 
@@ -272,16 +273,16 @@ public class ConceptRefsetMemberJpa extends AbstractComponent implements
     final int prime = 31;
     int result = super.hashCode();
     result = prime * result + ((conceptId == null) ? 0 : conceptId.hashCode());
-    
+
     // This is removed to support memberDiffReport
-    /*result = prime * result + ((memberType == null) ? 0 :
-     memberType.hashCode());*/
-     
+    /*
+     * result = prime * result + ((memberType == null) ? 0 :
+     * memberType.hashCode());
+     */
+
     result =
-        prime
-            * result
-            + ((refset == null || refset.getTerminologyId() == null) ? 0
-                : refset.getTerminologyId().hashCode());
+        prime * result + ((refset == null || refset.getTerminologyId() == null)
+            ? 0 : refset.getTerminologyId().hashCode());
     return result;
 
   }
@@ -314,8 +315,8 @@ public class ConceptRefsetMemberJpa extends AbstractComponent implements
     } else if (refset.getTerminologyId() == null) {
       if (other.refset != null && other.refset.getTerminologyId() != null)
         return false;
-    } else if (!refset.getTerminologyId().equals(
-        other.refset.getTerminologyId()))
+    } else if (!refset.getTerminologyId()
+        .equals(other.refset.getTerminologyId()))
       return false;
     return true;
   }
@@ -328,8 +329,9 @@ public class ConceptRefsetMemberJpa extends AbstractComponent implements
    */
   @Override
   public String toString() {
-    return "ConceptRefsetMemberJpa [refset.id=" + refset.getId() + ", conceptId="
-        + conceptId + ", conceptName=" + conceptName + ", type=" + memberType
-        + ", conceptActive=" + conceptActive + "] " + super.toString();
+    return "ConceptRefsetMemberJpa [refset.id="
+        + (refset == null ? "" : refset.getId()) + ", conceptId=" + conceptId
+        + ", conceptName=" + conceptName + ", type=" + memberType
+        + ", conceptActive=" + conceptActive + "]";
   }
 }
