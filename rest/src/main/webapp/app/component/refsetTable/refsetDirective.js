@@ -2504,6 +2504,7 @@ tsApp
                 $scope.projects = projects;
                 $scope.definition = null;
                 $scope.metadata = metadata;
+                $scope.validVersion = null;
                 $scope.terminologies = metadata.terminologies;
                 $scope.versions = angular.copy($scope.metadata.versions[$scope.project.terminology]
                   .sort().reverse());
@@ -2540,9 +2541,22 @@ tsApp
                   });
                 };
 
+                $scope.testTerminologyVersion = function() {
+                  refsetService.isTerminologyVersionValid($scope.project.id, $scope.refset.terminology, 
+                     $scope.refset.version).then(
+                       function(data) {
+                         $scope.validVersion = data;
+                       });
+                 }
+                
+                $scope.resetValidVersion = function() {
+                  $scope.validVersion = null;
+                }
+                
                 // Initialize modules if terminology/version set
                 if ($scope.refset.terminology && $scope.refset.version) {
                   $scope.getModules();
+                  $scope.testTerminologyVersion();
                 }
 
                 // Handle terminology selected
@@ -2696,6 +2710,7 @@ tsApp
                 $scope.projects = projects;
                 $scope.localSet = refset.localSet;
                 $scope.metadata = metadata;
+                $scope.validVersion = null;
                 $scope.terminologies = metadata.terminologies;
                 $scope.versions = $scope.metadata.versions[refset.terminology] ? angular
                   .copy($scope.metadata.versions[refset.terminology].sort().reverse()) : [];
@@ -2712,9 +2727,18 @@ tsApp
                   });
                 };
 
+                $scope.testTerminologyVersion = function() {
+                  refsetService.isTerminologyVersionValid($scope.project.id, $scope.refset.terminology, 
+                     $scope.refset.version).then(
+                       function(data) {
+                         $scope.validVersion = data;
+                       });
+                 }
+                
                 // Initialize modules if terminology/version set
                 if ($scope.refset.terminology && $scope.refset.version) {
                   $scope.getModules();
+                  $scope.testTerminologyVersion();
                 }
 
                 // Handle terminology selected
@@ -2731,6 +2755,10 @@ tsApp
                 $scope.versionSelected = function(version) {
                   $scope.getModules();
                 };
+                 
+                 $scope.resetValidVersion = function() {
+                   $scope.validVersion = null;
+                 }
 
                 // Assign refset id
                 $scope.assignRefsetTerminologyId = function(refset) {
@@ -3068,6 +3096,7 @@ tsApp
                 $scope.versions = angular.copy($scope.metadata.versions[$scope.newTerminology]
                   .sort().reverse());
                 $scope.newVersion = $scope.versions[0];
+                $scope.validVersion = null;
                 $scope.errors = [];
                 $scope.statusTypes = [ 'Active', 'Inactive' ];
                 $scope.pagedStagedInclusions = [];
@@ -3212,6 +3241,18 @@ tsApp
                   refsetService.exportDiffReport($scope.reportToken, $scope.refset);
                 }
 
+                $scope.testTerminologyVersion = function() {
+                 refsetService.isTerminologyVersionValid($scope.project.id, $scope.newTerminology, 
+                    $scope.newVersion).then(
+                      function(data) {
+                        $scope.validVersion = data;
+                      });
+                }
+                
+                $scope.resetValidVersion = function() {
+                  $scope.validVersion = null;
+                }
+                
                 // get diff report
                 $scope.getDiffReport = function() {
                   refsetService.getDiffReport($scope.reportToken).then(

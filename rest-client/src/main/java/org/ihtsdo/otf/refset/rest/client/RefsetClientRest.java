@@ -1525,4 +1525,29 @@ public class RefsetClientRest extends RootClientRest
         RefsetJpa.class);
   }
 
+  @Override
+  public Boolean isTerminologyVersionValid(Long projectId, String terminology,
+    String version, String authToken) throws Exception {
+      validateNotEmpty(terminology, "terminology");
+      validateNotEmpty(version, "version");
+      validateNotEmpty(projectId, "projectId");
+      Client client = ClientBuilder.newClient();
+      WebTarget target = client.target(config.getProperty("base.url")
+          + "/refset/expression/valid" + "?projectId=" + projectId
+          + "&terminology=" + terminology + "&version=" + version);
+      Response response = target.request(MediaType.TEXT_PLAIN)
+          .header("Authorization", authToken).get();
+
+      String resultString = response.readEntity(String.class);
+      if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+        // n/a
+      } else {
+        throw new Exception(response.toString());
+      }
+
+      return resultString.equals("true");
+
+
+  }
+
 }

@@ -29,13 +29,15 @@
           <td>
             <!-- <select ng-model="newVersion" ng-options="item for item in versions"></select> -->
              <input style="width: 252px" ng-model="newVersion"
-            list="versions" placeholder="e.g. MAIN" />
+            list="versions" placeholder="e.g. MAIN" ng-change="resetValidVersion();"/>
           <datalist id=versions>
             <option ng-repeat="version in versions | orderBy:'version'"
               value="{{version}}">{{version}}</option>
           </datalist>
           <button class="btn btn-xs btn-warning" ng-show="newVersion"
             ng-click="newVersion=''">Clear</button>
+          <button class="btn btn-xs btn-primary" ng-show="newVersion"
+            ng-click="testTerminologyVersion();">Test</button>
           &nbsp;&nbsp;
           <span flag-icon obj="refset"></span>
           </td>
@@ -802,9 +804,8 @@
     <button ng-show="refset.staged" class="btn btn-primary"
       ng-click="exportDiffReport();">Export Report</button>
   </span>
-
-  <button class="btn btn-primary" ng-disabled="refset.staged"
-    ng-click="beginMigration(newTerminology, newVersion);">Migrate</button>
+  <button class="btn btn-primary" ng-disabled="refset.staged || validVersion != 'true'" 
+    title="Test version before migrating" ng-click="beginMigration(newTerminology, newVersion);">Migrate</button>
 
   <button ng-show="refset.staged" class="btn btn-primary"
     ng-click="saveForLater(refset);">Save for later</button>

@@ -327,4 +327,17 @@ public interface ProjectServiceRest {
    */
   public Boolean testHandlerUrl(String key, String url, String terminology,
     String version, String authToken) throws Exception;
+
+  /**
+   * Translate.
+   *
+   * @param projectId the project id
+   * @param text the text
+   * @param language the language
+   * @param authToken the auth token
+   * @return the string
+   * @throws Exception the exception
+   */
+  public String translate(Long projectId, String text, String language,
+    String authToken) throws Exception;
 }

@@ -662,4 +662,17 @@ public interface RefsetServiceRest {
    * @throws Exception the exception
    */
   public Refset convertRefset(Long refsetId, String refsetType, String authToken) throws Exception;
+
+  /**
+   * Checks if is terminology version valid.
+   *
+   * @param projectId the project id
+   * @param terminology the terminology
+   * @param version the version
+   * @param authToken the auth token
+   * @return the boolean
+   * @throws Exception the exception
+   */
+  public Boolean isTerminologyVersionValid(Long projectId, String terminology,
+    String version, String authToken) throws Exception;
 }

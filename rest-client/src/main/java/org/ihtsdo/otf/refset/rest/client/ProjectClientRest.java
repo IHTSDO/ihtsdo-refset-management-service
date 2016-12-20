@@ -767,4 +767,29 @@ public class ProjectClientRest extends RootClientRest
     // always return true
     return true;
   }
+
+  @Override
+  public String translate(Long projectId, String text, String language,
+    String authToken) throws Exception {
+    Logger.getLogger(getClass()).debug("Project Client - translate");
+    validateNotEmpty(projectId, "projectId");
+    validateNotEmpty(text, "text");
+
+    Client client = ClientBuilder.newClient();
+    WebTarget target = client
+        .target(config.getProperty("base.url") + "/project/translate?" + "projectId="
+            + projectId + "&text=" + text + "&language=" + language);
+    Response response = target.request(MediaType.APPLICATION_XML)
+        .header("Authorization", authToken).get();
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+
+    // converting to object
+    return resultString;
+  }
 }
