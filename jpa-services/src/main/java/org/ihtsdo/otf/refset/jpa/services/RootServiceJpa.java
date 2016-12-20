@@ -11,6 +11,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
+import java.util.Random;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -24,6 +25,7 @@ import org.apache.lucene.queryparser.classic.QueryParserBase;
 import org.hibernate.search.jpa.FullTextQuery;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.HasLastModified;
+import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.LogEntry;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.jpa.helpers.LogEntryJpa;
@@ -42,8 +44,8 @@ public abstract class RootServiceJpa implements RootService {
   /** The factory. */
   protected static EntityManagerFactory factory = null;
   static {
-    Logger.getLogger(RootServiceJpa.class).info(
-        "Setting root service entity manager factory.");
+    Logger.getLogger(RootServiceJpa.class)
+        .info("Setting root service entity manager factory.");
     Properties config;
     try {
       config = ConfigUtility.getConfigProperties();
@@ -74,8 +76,8 @@ public abstract class RootServiceJpa implements RootService {
       throw new Exception("Factory is null, serious problem.");
     }
     if (!factory.isOpen()) {
-      Logger.getLogger(getClass()).info(
-          "Setting root service entity manager factory.");
+      Logger.getLogger(getClass())
+          .info("Setting root service entity manager factory.");
       Properties config = ConfigUtility.getConfigProperties();
       factory = Persistence.createEntityManagerFactory("TermServiceDS", config);
     }
@@ -94,8 +96,8 @@ public abstract class RootServiceJpa implements RootService {
       throw new Exception("Factory is null, serious problem.");
     }
     if (!factory.isOpen()) {
-      Logger.getLogger(getClass()).info(
-          "Setting root service entity manager factory.");
+      Logger.getLogger(getClass())
+          .info("Setting root service entity manager factory.");
       Properties config = ConfigUtility.getConfigProperties();
       factory = Persistence.createEntityManagerFactory("TermServiceDS", config);
     }
@@ -190,7 +192,7 @@ public abstract class RootServiceJpa implements RootService {
       commitClearBegin();
     }
   }
-  
+
   /* see superclass */
   @Override
   public void close() throws Exception {
@@ -273,11 +275,52 @@ public abstract class RootServiceJpa implements RootService {
     return query;
   }
 
+  /**
+   * Retrieves the sort field value from an object.
+   *
+   * @param o the object
+   * @param sortField the period-separated X list of sequential getX methods,
+   *          e.g. a.b.c
+   * @return the value of the requested sort field
+   * @throws Exception the exception
+   */
+  @SuppressWarnings("static-method")
+  Object getSortFieldValue(final Object o, final String sortField)
+    throws Exception {
+    // split the fields for method retrieval, e.g. a.b.c. =
+    // o.getA().getB().getC()
+    final String[] splitFields = sortField.split("\\.");
+
+    int i = 0;
+    Method finalMethod = null;
+    Object finalObject = o;
+
+    while (i < splitFields.length) {
+      finalMethod = finalObject.getClass().getMethod(
+          "get" + ConfigUtility.capitalize(splitFields[i]), new Class<?>[] {});
+      finalMethod.setAccessible(true);
+      finalObject = finalMethod.invoke(finalObject, new Object[] {});
+      i++;
+    }
+
+    // verify that final object is actually a string, enum, or date
+    if (!finalMethod.getReturnType().equals(String.class)
+        && !finalMethod.getReturnType().isEnum()
+        && !finalMethod.getReturnType().equals(Long.class)
+        && !finalMethod.getReturnType().equals(Date.class)) {
+      throw new Exception(
+          "Requested sort field value is not string, enum, or date value "
+              + finalMethod.getReturnType().getName());
+    }
+    return finalObject;
+
+  }
+
   // this is called by REST layer and so needs to be exposed through RootService
   /* see superclass */
   @Override
-  public <T> List<T> applyPfsToList(List<T> list, Class<T> clazz,
-    int[] totalCt, PfsParameter pfs) throws Exception {
+  public <T> List<T> applyPfsToList(final List<T> list, final Class<T> clazz,
+    final int[] totalCt, final PfsParameter pfs) throws Exception {
 
     // Skip empty pfs
     if (pfs == null) {
@@ -288,86 +331,184 @@ public abstract class RootServiceJpa implements RootService {
 
     List<T> result = list;
 
-    // Handle sorting
+    // handle filtering based on query restriction
+    if (pfs != null && pfs.getQueryRestriction() != null
+        && !pfs.getQueryRestriction().isEmpty()) {
 
-    // apply paging, and sorting if appropriate
-    if (pfs != null
-        && (pfs.getSortField() != null && !pfs.getSortField().isEmpty())) {
-
-      // check that specified sort field exists on Concept and is
-      // a string
-      final Method sortMethod =
-          clazz.getMethod("get" + ConfigUtility.capitalize(pfs.getSortField()),
-              new Class<?>[] {});
-
-      if (!sortMethod.getReturnType().equals(String.class)
-          && !sortMethod.getReturnType().isEnum()
-          && !sortMethod.getReturnType().equals(Date.class)) {
-        throw new Exception("Referenced sort field is not of a supported type");
+      if (pfs.getQueryRestriction().contains(" OR ")) {
+        throw new LocalException("Query with OR clause not supported here = "
+            + pfs.getQueryRestriction());
       }
 
-      final boolean isDate = sortMethod.getReturnType().equals(Date.class);
+      result = new ArrayList<>();
 
-      // allow the method to be accessed
-      sortMethod.setAccessible(true);
+      for (final T t : list) {
+        final StringBuilder sb = new StringBuilder();
+        for (final Method m : t.getClass().getMethods()) {
+          // TODO Add annotation check for @Field, @Fields...
+          if (m.getName().startsWith("get") && (m
+              .isAnnotationPresent(org.hibernate.search.annotations.Field.class)
+              || m.isAnnotationPresent(
+                  org.hibernate.search.annotations.Fields.class))) {
+            try {
 
-      final boolean ascending = (pfs != null) ? pfs.isAscending() : true;
-
-      // sort the list
-      Collections.sort(result, new Comparator<T>() {
-        @Override
-        public int compare(T t1, T t2) {
-          // if an exception is returned, simply pass equality
-          try {
-            final Object o1 = sortMethod.invoke(t1, new Object[] {});
-            final Object o2 = sortMethod.invoke(t2, new Object[] {});
-            if (isDate) {
-              Long l1 = ((Date) o1).getTime();
-              Long l2 = ((Date) o2).getTime();
-              return ascending ? l1.compareTo(l2) : l2.compareTo(l1);
-            } else {
-              final String s1 = o1.toString();
-              final String s2 = o2.toString();
-              if (ascending) {
-                return s1.compareTo(s2);
-              } else {
-                return s2.compareTo(s1);
+              final Object val = m.invoke(t);
+              // Support long, string, and enum
+              if (val != null && (val instanceof String || val instanceof Long
+                  || m.getReturnType().isEnum())) {
+                sb.append(val.toString()).append(" ");
               }
+            } catch (IllegalArgumentException e) {
+              // do nothing, skip field
             }
-          } catch (Exception e) {
-            return 0;
+          }
+
+          // special handling for "localSet"
+          else if (m.getName().equals("isLocalSet")) {
+            try {
+              final Object val = m.invoke(t);
+              sb.append(val.toString()).append("localSet:" + val);
+
+            } catch (IllegalArgumentException e) {
+              // do nothing, skip field
+            }
+          }
+
+        }
+
+        final String[] clauses = pfs.getQueryRestriction().split(" AND ");
+        boolean all = true;
+        for (final String clause : clauses) {
+          if (sb.toString().toLowerCase()
+              .indexOf((clause.endsWith("*") ? clause.replace("*", "") : clause)
+                  .toLowerCase()) == -1) {
+            all = false;
+            break;
           }
         }
-      });
-    }
-
-    // Handle filtering based on toString()
-    if (pfs != null
-        && (pfs.getQueryRestriction() != null && !pfs.getQueryRestriction()
-            .isEmpty())) {
-
-      // Strip last char off if it is a *
-      String match = pfs.getQueryRestriction();
-      if (match.lastIndexOf('*') == match.length() - 1) {
-        match = match.substring(0, match.length() - 1);
-      }
-      final List<T> filteredResult = new ArrayList<T>();
-      for (T t : result) {
-        if (t.toString().toLowerCase().indexOf(match.toLowerCase()) != -1) {
-          filteredResult.add(t);
+        if (all) {
+          result.add(t);
         }
       }
+    }
 
-      if (filteredResult.size() != result.size()) {
-        result = filteredResult;
+    // check if sorting required
+    if (pfs != null)
+
+    {
+
+      final List<String> pfsSortFields = new ArrayList<>();
+      // if sort field specified, add to list of sort fields
+      if (pfs.getSortField() != null && !pfs.getSortField().isEmpty()) {
+        pfsSortFields.add(pfs.getSortField());
+      }
+
+      // if one or more sort fields found, apply sorting
+      if (!pfsSortFields.isEmpty() && !pfsSortFields.contains("RANDOM")) {
+
+        // declare the final ascending flag and sort fields for comparator
+        final boolean ascending = (pfs != null) ? pfs.isAscending() : true;
+        final List<String> sortFields = pfsSortFields;
+
+        // sort the list
+        Collections.sort(result, new Comparator<T>() {
+
+          @Override
+          public int compare(T t1, T t2) {
+            // if an exception is returned, simply pass equality
+            try {
+
+              for (final String sortField : sortFields) {
+                final Object s1 = getSortFieldValue(t1, sortField);
+                final Object s2 = getSortFieldValue(t2, sortField);
+
+                final boolean isDate = s1 instanceof Date;
+                final boolean isLong = s1 instanceof Long;
+
+                // if both values null, skip to next sort field
+                if (s1 != null || s2 != null) {
+
+                  // handle date comparison by long value
+                  if (isDate || isLong) {
+                    final Long l1 = s1 == null ? null
+                        : (isDate ? ((Date) s1).getTime() : ((Long) s1));
+                    final Long l2 = s2 == null ? null
+                        : (isDate ? ((Date) s2).getTime() : ((Long) s2));
+
+                    if (ascending) {
+                      if (l1 == null && s2 != null) {
+                        return -1;
+                      }
+                      if (l1 != null && l1.compareTo(l2) != 0) {
+                        return l1.compareTo(l2);
+                      } else {
+                        return 0;
+                      }
+                    } else {
+                      if (l2 == null && l1 != null) {
+                        return -1;
+                      }
+                      if (l2 != null && l2.compareTo(l1) != 0) {
+                        return l2.compareTo(l1);
+                      } else {
+                        return 0;
+                      }
+                    }
+                  }
+
+                  // otherwise handle via string comparison
+                  else if (ascending) {
+                    if (s1 == null && s2 != null) {
+                      return -1;
+                    }
+                    if (s1 != null
+                        && s1.toString().compareTo(s2.toString()) != 0) {
+                      return s1.toString().compareTo(s2.toString());
+                    } else {
+                      return 0;
+                    }
+                  } else {
+                    if (s2 == null && s1 != null) {
+                      return -1;
+                    }
+                    if (s2 != null
+                        && (s2.toString()).compareTo(s1.toString()) != 0) {
+                      return (s2.toString()).compareTo(s1.toString());
+                    } else {
+                      return 0;
+                    }
+                  }
+                }
+              }
+              // if no return after checking all sort fields, return equality
+              return 0;
+            } catch (Exception e) {
+              e.printStackTrace();
+              return 0;
+            }
+          }
+        });
+      }
+
+      // support RANDOM
+      else if (pfsSortFields.contains("RANDOM")) {
+        final Random random = new Random(new Date().getTime());
+        Collections.sort(result, new Comparator<T>() {
+
+          @Override
+          public int compare(T arg0, T arg1) {
+            return random.nextInt();
+          }
+        });
       }
     }
 
-    // Set total count before filtering
+    // set the total count
     totalCt[0] = result.size();
 
     // get the start and end indexes based on paging parameters
     int startIndex = 0;
+
     int toIndex = result.size();
     if (pfs != null && pfs.getStartIndex() != -1) {
       startIndex = pfs.getStartIndex();
@@ -410,12 +551,12 @@ public abstract class RootServiceJpa implements RootService {
             try {
               // handle dates explicitly
               if (o2 instanceof Date) {
-                return ((Date) sortField.get(o1)).compareTo((Date) sortField
-                    .get(o2));
+                return ((Date) sortField.get(o1))
+                    .compareTo((Date) sortField.get(o2));
               } else {
                 // otherwise, sort based on conversion to string
-                return (sortField.get(o1).toString()).compareTo(sortField.get(
-                    o2).toString());
+                return (sortField.get(o1).toString())
+                    .compareTo(sortField.get(o2).toString());
               }
             } catch (IllegalAccessException e) {
               // on exception, return equality
@@ -426,23 +567,25 @@ public abstract class RootServiceJpa implements RootService {
       } else {
         // make comparator
         return new Comparator<T>() {
+
           @Override
           public int compare(T o2, T o1) {
             try {
               // handle dates explicitly
               if (o2 instanceof Date) {
-                return ((Date) sortField.get(o1)).compareTo((Date) sortField
-                    .get(o2));
+                return ((Date) sortField.get(o1))
+                    .compareTo((Date) sortField.get(o2));
               } else {
                 // otherwise, sort based on conversion to string
-                return (sortField.get(o1).toString()).compareTo(sortField.get(
-                    o2).toString());
+                return (sortField.get(o1).toString())
+                    .compareTo(sortField.get(o2).toString());
               }
             } catch (IllegalAccessException e) {
               // on exception, return equality
               return 0;
             }
           }
+
         };
       }
 
@@ -478,18 +621,16 @@ public abstract class RootServiceJpa implements RootService {
 
     FullTextQuery fullTextQuery = null;
     try {
-      fullTextQuery =
-          IndexUtility.applyPfsToLuceneQuery(clazz, fieldNamesKey, query, pfs,
-              manager);
+      fullTextQuery = IndexUtility.applyPfsToLuceneQuery(clazz, fieldNamesKey,
+          query, pfs, manager);
     } catch (ParseException e) {
       // If parse exception, try a literal query
       StringBuilder escapedQuery = new StringBuilder();
       if (query != null && !query.isEmpty()) {
         escapedQuery.append(QueryParserBase.escape(query));
       }
-      fullTextQuery =
-          IndexUtility.applyPfsToLuceneQuery(clazz, fieldNamesKey,
-              escapedQuery.toString(), pfs, manager);
+      fullTextQuery = IndexUtility.applyPfsToLuceneQuery(clazz, fieldNamesKey,
+          escapedQuery.toString(), pfs, manager);
     }
 
     totalCt[0] = fullTextQuery.getResultSize();
@@ -722,11 +863,9 @@ public abstract class RootServiceJpa implements RootService {
   protected <T extends HasLastModified> T getHasLastModified(
     String terminologyId, String terminology, String version, Class<T> clazz) {
     try {
-      javax.persistence.Query query =
-          manager
-              .createQuery("select a from "
-                  + clazz.getName()
-                  + " a where terminologyId = :terminologyId and version = :version and terminology = :terminology");
+      javax.persistence.Query query = manager.createQuery("select a from "
+          + clazz.getName()
+          + " a where terminologyId = :terminologyId and version = :version and terminology = :terminology");
       query.setParameter("terminologyId", terminologyId);
       query.setParameter("terminology", terminology);
       query.setParameter("version", version);
@@ -741,8 +880,8 @@ public abstract class RootServiceJpa implements RootService {
   @Override
   public List<LogEntry> findLogEntriesForQuery(String query, PfsParameter pfs)
     throws Exception {
-    Logger.getLogger(getClass()).info(
-        "Root Service - find log entries " + "/" + query);
+    Logger.getLogger(getClass())
+        .info("Root Service - find log entries " + "/" + query);
 
     final StringBuilder sb = new StringBuilder();
     if (query != null && !query.equals("")) {
@@ -750,9 +889,8 @@ public abstract class RootServiceJpa implements RootService {
     }
 
     int[] totalCt = new int[1];
-    final List<LogEntry> list =
-        (List<LogEntry>) getQueryResults(sb.toString(), LogEntryJpa.class,
-            LogEntryJpa.class, pfs, totalCt);
+    final List<LogEntry> list = (List<LogEntry>) getQueryResults(sb.toString(),
+        LogEntryJpa.class, LogEntryJpa.class, pfs, totalCt);
 
     return list;
   }

@@ -35,7 +35,7 @@ tsApp
           // Add a * to the filter if set and doesn't contain a ':' indicating
           // filter search
           if (!wildcardFlag && query.indexOf("(") == -1 && query.indexOf(":") == -1
-            && query.indexOf("\"") == -1) {
+            && query.indexOf("=") == -1 && query.indexOf("\"") == -1) {
             var query2 = query.concat('*');
             return encodeURIComponent(query2);
           }
@@ -50,6 +50,7 @@ tsApp
 
           // Add a * to the filter if set and doesn't contain a :
           if (pfs.queryRestriction && pfs.queryRestriction.indexOf(":") == -1
+            && pfs.queryRestriction.indexOf("=") == -1
             && pfs.queryRestriction.indexOf("\"") == -1) {
             var pfs2 = angular.copy(pfs);
             pfs2.queryRestriction += "*";
@@ -93,7 +94,6 @@ tsApp
           return String(10000 * yyyy + 100 * mm + dd);
         }
 
-        
         // Sets the error
         this.setError = function(message) {
           this.error.message = message;
@@ -469,7 +469,11 @@ tsApp.service('gpService', [ '$timeout', function($timeout) {
     }
     glassPane.counter--;
     if (glassPane.counter == 0) {
-      glassPane.enabled = false;
+      $timeout(function() {
+        if (glassPane.counter == 0) {
+          glassPane.enabled = false;
+        }
+      }, 100);
     }
   };
 

@@ -19,7 +19,7 @@
       <uib-pagination items-per-page="paging['refset'].pageSize" max-size="5"
         boundary-links="true" class="pagination-sm" previous-text="&lsaquo;"
         next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;"
-        ng-show="refsets.totalCount > paging['refset'].pageSize || paging['refset'].filter"
+        ng-show="refsets.totalCount > paging['refset'].pageSize"
         total-items="refsets.totalCount" ng-model="paging['refset'].page"
         ng-change="getRefsets()"></uib-pagination>
 
@@ -29,6 +29,7 @@
       </span>
 
       <input placeholder="Search" type="text" ng-model="paging['refset'].filter"
+        ng-show="refsets.totalCount > 0 || paging['refset'].filter || paging['refset'].typefilter"
         ng-model-options="{ debounce: 300 }" ng-change="getRefsets()"
         title="{{paging['refset'].filter}}" list="filter{{value}}">
       <datalist id="filter{{value}}">
@@ -45,8 +46,10 @@
         ng-show="refsets.totalCount > 0 && (value == 'RELEASE' || value == 'PUBLISHED')"
         ng-model="showLatest" ng-change="getRefsets()" uib-btn-checkbox
         btn-checkbox-true="true" btn-checkbox-false="false">
-        <span ng-show="showLatest" title="Click to show all">Latest</span>
-        <span ng-hide="showLatest" title="Click to show only most recent">All</span>
+        <span ng-show="showLatest"
+          title="Showing only most recent, click to toggle">Latest</span>
+        <span ng-hide="showLatest"
+          title="Showing only most recent, click to toggle">All</span>
       </button>
 
       <span ng-show="value == 'AVAILABLE'" style="float: right;">
@@ -738,11 +741,13 @@
             ng-change="getMembers(selected.refset)"></uib-pagination>
 
           <input placeholder="Search" type="text"
+            ng-show="selected.refset.members.totalCount > 0 || paging['member'].filter || withNotesOnly"
             ng-model="paging['member'].filter"
             ng-model-options="{ debounce: 300 }"
             ng-change="getMembers(selected.refset)">
 
-          <span class="info-text nobreak">
+          <span class="info-text nobreak"
+            ng-show="selected.refset.members.totalCount > 0 || withNotesOnly">
             <span uib-tooltip="Members with notes">Notes:</span>
             <input type="checkbox" ng-model="withNotesOnly"
               ng-change="getMembers(selected.refset)">
@@ -755,9 +760,7 @@
 
         </div>
 
-        <table
-          ng-show="selected.refset.members.totalCount > 0 || paging['member'].filter || paging['member'].typeFilter"
-          class="table">
+        <table ng-show="selected.refset" class="table">
           <thead class="table-select-row">
             <tr>
               <th class="col-md-3 col-xs-3"
@@ -857,15 +860,15 @@
           </tbody>
         </table>
         <span
-          ng-show="selected.refset && !withNotesOnly && !paging['member'].filter && !paging['member'].typeFilter && selected.refset.members.totalCount == 0">
+          ng-show="selected.refset && selected.refset.members.totalCount == 0 && !paging['member'].filter && !withNotesOnly && !paging['member'].typeFilter">
           <br />
           <span ng-show="value !='AVAILABLE'" class="alert alert-warning">Refset
-            has no members</span>
+            members found</span>
           <span ng-show="value =='AVAILABLE'" class="alert alert-warning">No
             members, assign refset to edit</span>
         </span>
         <span
-          ng-show="(paging['member'].filter || withNotesOnly) && selected.refset.members.totalCount == 0">
+          ng-show="(paging['member'].filter || withNotesOnly || paging['member'].typeFilter) && selected.refset.members.totalCount == 0">
           <br />
           <span class="alert alert-warning"> No refset members matching
             filter </span>

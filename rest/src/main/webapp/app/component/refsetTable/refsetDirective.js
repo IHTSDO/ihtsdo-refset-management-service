@@ -157,7 +157,7 @@ tsApp
                   sortField : $scope.paging['refset'].sortField,
                   ascending : $scope.paging['refset'].ascending == null ? true
                     : $scope.paging['refset'].ascending,
-                  queryRestriction : null,
+                  queryRestriction : '',
                   latestOnly : false
                 };
 
@@ -165,18 +165,10 @@ tsApp
                   var value = $scope.paging['refset'].typeFilter;
 
                   // Handle query restrictions
-                  if (value == 'Local'
-                    && ($scope.value == 'ASSIGNED' || $scope.value == 'RELEASE'
-                      || $scope.value == 'PUBLISHED' || $scope.value == 'BETA')) {
+                  if (value == 'Local') {
                     pfs.queryRestriction = 'localSet:true';
-                  } else if (value == 'Local') {
-                    pfs.queryRestriction = 'localSet=true';
-                  } else if (value == 'Refset'
-                    && ($scope.value == 'ASSIGNED' || $scope.value == 'RELEASE'
-                      || $scope.value == 'PUBLISHED' || $scope.value == 'BETA')) {
-                    pfs.queryRestriction = 'localSet:false';
                   } else if (value == 'Refset') {
-                    pfs.queryRestriction = 'localSet=false';
+                    pfs.queryRestriction = 'localSet:false';
                   } else if (value == 'Intensional'
                     && ($scope.value == 'RELEASE' || $scope.value == 'PUBLISHED' || $scope.value == 'BETA')) {
                     pfs.queryRestriction = 'type:INTENSIONAL';
@@ -193,13 +185,11 @@ tsApp
                   } else if (value == 'External' && $scope.value == 'ASSIGNED') {
                     pfs.queryRestriction = 'refsetType:EXTERNAL';
                   } else if (value == 'Intensional') {
-                    pfs.queryRestriction = 'Intensional';
+                    pfs.queryRestriction = 'INTENSIONAL';
                   } else if (value == 'Extensional') {
-                    pfs.queryRestriction = 'Extensional';
+                    pfs.queryRestriction = 'EXTENSIONAL';
                   } else if (value == 'External') {
-                    pfs.queryRestriction = 'External';
-                  } else if (value == 'All') {
-                    pfs.queryRestriction = '';
+                    pfs.queryRestriction = 'EXTERNAL';
                   }
                 }
 
@@ -361,11 +351,13 @@ tsApp
 
               // Clear the url params when "clear" gets clicked
               $scope.clearUrlParams = function() {
-                var index = $scope.link.indexOf("?");
-                if (index != -1) {
-                  $scope.link = $scope.link.substring(0, index);
-                  $window.location.href = $scope.link;
-                  $route.reload();
+                if ($scope.value == 'PUBLISHED' && $scope.link) {
+                  var index = $scope.link.indexOf("?");
+                  if (index != -1) {
+                    $scope.link = $scope.link.substring(0, index);
+                    $window.location.href = $scope.link;
+                    $route.reload();
+                  }
                 }
               }
 
@@ -2496,6 +2488,7 @@ tsApp
                 $scope.definition = null;
                 $scope.metadata = metadata;
                 $scope.terminologies = metadata.terminologies;
+                console.debug('xxx', $scope.project.terminology, $scope.metadata);
                 $scope.versions = angular.copy($scope.metadata.versions[$scope.project.terminology]
                   .sort().reverse());
                 $scope.filters = filters;
