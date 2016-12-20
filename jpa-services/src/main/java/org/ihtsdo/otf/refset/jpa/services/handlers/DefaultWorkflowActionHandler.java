@@ -921,6 +921,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
   public RefsetList findAvailableEditingRefsets(Long projectId,
     PfsParameter pfs, WorkflowService service) throws Exception {
 
+    // TODO: redo this with lucene and set joins (based around id)
     // NEW Refsets for this project that do not yet have tracking records
     // workflow status does not have to be 'NEW' because sometimes work
     // that is in progress is unassigned

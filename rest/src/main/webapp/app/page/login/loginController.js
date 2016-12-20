@@ -31,9 +31,7 @@ tsApp
         // If using 'deploy.dev.ims.check'
         // Verify IMS login
         if (appConfig['deploy.dev.ims.check']) {
-          console.debug('x');
           if ($window.location.href.indexOf('ihtsdotools.org') != -1) {
-            console.debug('y');
             $http.get(appConfig['deploy.dev.ims.check'] + '/account').then(
             // Success
             function(response) {
