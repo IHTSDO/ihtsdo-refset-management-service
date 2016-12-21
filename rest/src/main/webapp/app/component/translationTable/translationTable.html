@@ -558,7 +558,7 @@
         ng-change="getAvailableConcepts(selected.translation)"></uib-pagination>
 
       <input class="input-filter" placeholder="Search" type="text"
-        ng-show="selected.translation.available.totalCount > paging['available'].pageSize || paging['available'].filter"
+        ng-show="selected.translation.available.totalCount > 1 || paging['available'].filter"
         ng-model="paging['available'].filter"
         ng-model-options="{ debounce: 300 }"
         ng-change="getAvailableConcepts(selected.translation)">
@@ -701,7 +701,7 @@
         ng-change="getAssignedConcepts(selected.translation)"></uib-pagination>
 
       <input class="input-filter" placeholder="Search" type="text"
-        ng-show="selected.translation.assigned.totalCount > paging['assigned'].pageSize || paging['assigned'].filter"
+        ng-show="selected.translation.assigned.totalCount > 1 || paging['assigned'].filter"
         ng-model="paging['assigned'].filter"
         ng-model-options="{ debounce: 300 }"
         ng-change="getAssignedConcepts(selected.translation)">
@@ -901,7 +901,7 @@
             ng-change="getConcepts(selected.translation)"></uib-pagination>
 
           <input placeholder="Search" type="text"
-            ng-show="selected.translation.concepts.totalCount > paging['concept'].pageSize || paging['concept'].filter"
+            ng-show="selected.translation.concepts.totalCount > 1 || paging['concept'].filter"
             ng-model="paging['concept'].filter"
             ng-model-options="{ debounce: 300 }"
             ng-change="getConcepts(selected.translation)">
