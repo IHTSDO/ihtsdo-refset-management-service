@@ -594,7 +594,7 @@
           </th>
           <th class="col-md-2 col-xs-2">Actions <!-- Assign --> <i
               ng-show="selected.translation.available.totalCount > 0 && projects.role != 'ADMIN'"
-              ng-click="openBatchAssignConceptModal(); $event.stopPropagation()"
+              ng-click="openBatchAssignConceptModal('Available'); $event.stopPropagation()"
               title="Assign batch" class="noul material-icons md-18">assignment_ind</i>
 
             <i
@@ -945,7 +945,10 @@
                 ng-click="setSortField('concept','effectiveTime', selected.translation)">Effective
                 Time<span ng-bind="getSortIndicator('concept','effectiveTime')"></span>
               </th>
-              <th ng-show="value == 'EDITING'">Actions</th>
+              <th ng-show="value == 'EDITING'">Actions <i
+                ng-show="selected.translation.concepts.totalCount > 0 && projects.role != 'ADMIN'"
+                ng-click="openBatchAssignConceptModal('Finished'); $event.stopPropagation()"
+                title="Assign batch" class="noul material-icons md-18">assignment_ind</i></th>
             </tr>
           </thead>
           <tbody>
