@@ -27,6 +27,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
@@ -35,8 +36,8 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
+import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.ihtsdo.otf.refset.DefinitionClause;
 import org.ihtsdo.otf.refset.Project;
@@ -81,7 +82,7 @@ import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
  * See admin/pom.xml for sample usage
  * 
  */
-@Mojo( name = "sample-data2", defaultPhase = LifecyclePhase.PACKAGE)
+@Mojo(name = "sample-data2", defaultPhase = LifecyclePhase.PACKAGE)
 public class GenerateSampleData2Mojo extends AbstractMojo {
 
   /** The assign names. */
@@ -138,9 +139,8 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
       service.close();
 
       // The assign names property
-      assignNames =
-          Boolean.valueOf(properties
-              .getProperty("terminology.handler.DEFAULT.assignNames"));
+      assignNames = Boolean.valueOf(
+          properties.getProperty("terminology.handler.DEFAULT.assignNames"));
 
       // Handle reindexing database if mode is set
       if (mode != null && mode.equals("create")) {
@@ -149,8 +149,8 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
       }
 
       boolean serverRunning = ConfigUtility.isServerActive();
-      getLog().info(
-          "Server status detected:  " + (!serverRunning ? "DOWN" : "UP"));
+      getLog()
+          .info("Server status detected:  " + (!serverRunning ? "DOWN" : "UP"));
       if (serverRunning) {
         throw new Exception("Server must not be running to generate data");
       }
@@ -265,20 +265,32 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
       // Create projects
       //
       Logger.getLogger(getClass()).info("Add new projects");
-      ProjectJpa project1 = makeProject("Project 1", "1000001", admin);
-      ProjectJpa project2 = makeProject("Project 2", "1000036", admin);
-      ProjectJpa project3 = makeProject("Project 3", "1000124", admin);
-      ProjectJpa project4 = makeProject("Project 4", null, admin);
+      ProjectJpa project1 = makeProject("Project 1", "1000001", admin,
+          "BROWSER", "https://sct-rest.ihtsdotools.org/api");
+      ProjectJpa project2 = makeProject("Project 2", "1000036", admin,
+          "BROWSER", "https://sct-rest.ihtsdotools.org/api");
+      ProjectJpa project3 = makeProject("Project 3", "1000124", admin,
+          "BROWSER", "https://sct-rest.ihtsdotools.org/api");
+      ProjectJpa project4 = makeProject("Project 4", null, admin, "BROWSER",
+          "https://sct-rest.ihtsdotools.org/api");
 
       // Make additional projects to trigger paging
-      ProjectJpa project5 = makeProject("Project 5", null, admin);
-      ProjectJpa project6 = makeProject("Project 6", null, admin);
-      makeProject("Project 7", null, admin);
-      makeProject("Project 8", null, admin);
-      makeProject("Project 9", null, admin);
-      makeProject("Project 10", null, admin);
-      makeProject("Project 11", null, admin);
-      makeProject("Project 12", null, admin);
+      ProjectJpa project5 = makeProject("Project 5", null, admin, "BROWSER",
+          "https://sct-rest.ihtsdotools.org/api");
+      ProjectJpa project6 = makeProject("Project 6", null, admin, "BROWSER",
+          "https://sct-rest.ihtsdotools.org/api");
+      makeProject("Project 7", null, admin, "BROWSER",
+          "https://sct-rest.ihtsdotools.org/api");
+      makeProject("Project 8", null, admin, "BROWSER",
+          "https://sct-rest.ihtsdotools.org/api");
+      makeProject("Project 9", null, admin, "BROWSER",
+          "https://sct-rest.ihtsdotools.org/api");
+      makeProject("Project 10", null, admin, "BROWSER",
+          "https://sct-rest.ihtsdotools.org/api");
+      makeProject("Project 11", null, admin, "BROWSER",
+          "https://sct-rest.ihtsdotools.org/api");
+      makeProject("Project 12", null, admin, "BROWSER",
+          "https://sct-rest.ihtsdotools.org/api");
 
       //
       // Assign project roles
@@ -308,9 +320,8 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
           refsetreviewer1.getUserName(), UserRole.REVIEWER.toString(),
           admin.getAuthToken());
       project = new ProjectServiceRestImpl();
-      project.assignUserToProject(project1.getId(),
-          refsetauthor1.getUserName(), UserRole.AUTHOR.toString(),
-          admin.getAuthToken());
+      project.assignUserToProject(project1.getId(), refsetauthor1.getUserName(),
+          UserRole.AUTHOR.toString(), admin.getAuthToken());
 
       // Project 2
       project = new ProjectServiceRestImpl();
@@ -419,9 +430,9 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
           "UK1000000", Refset.Type.EXTENSIONAL, project1, "999001711000000106",
           "1000001", "999000051000000104", reviewer1);
 
-      makeRefset("Breathing finding simple reference set", null, 3,
-          "UK1000000", Refset.Type.EXTENSIONAL, project1, "999001431000000106",
-          "1000001", "999000051000000104", reviewer1);
+      makeRefset("Breathing finding simple reference set", null, 3, "UK1000000",
+          Refset.Type.EXTENSIONAL, project1, "999001431000000106", "1000001",
+          "999000051000000104", reviewer1);
 
       makeRefset("Care planning action context values simple reference set",
           null, 4, "UK1000000", Refset.Type.EXTENSIONAL, project1,
@@ -451,9 +462,9 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
           Refset.Type.EXTENSIONAL, project1, "999000821000000100", "1000001",
           "999000051000000104", reviewer1);
 
-      makeRefset("Need for interpreter findings simple reference set", null,
-          11, "UK1000000", Refset.Type.EXTENSIONAL, project1,
-          "991481000000102", "1000001", "999000051000000104", reviewer1);
+      makeRefset("Need for interpreter findings simple reference set", null, 11,
+          "UK1000000", Refset.Type.EXTENSIONAL, project1, "991481000000102",
+          "1000001", "999000051000000104", reviewer1);
 
       makeRefset(
           "Newborn blood spot screening result status simple reference set",
@@ -481,20 +492,18 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
           "AU1000036", Refset.Type.INTENSIONAL, project2, "32568021000036109",
           "1000036", "32570231000036109", reviewer2);
 
-      RefsetJpa refset =
-          makeRefset("Adverse reaction agent reference set", null, 0,
-              "AU1000036", Refset.Type.EXTERNAL, project2, "142321000036106",
-              "1000036", "32570231000036109", reviewer2);
+      RefsetJpa refset = makeRefset("Adverse reaction agent reference set",
+          null, 0, "AU1000036", Refset.Type.EXTERNAL, project2,
+          "142321000036106", "1000036", "32570231000036109", reviewer2);
       // Set the external URL
-      refset
-          .setExternalUrl("http://www.nehta.gov.au/news-and-events/news/701-available-for-download-nctis-adverse-reaction-reference-set-implementation-guide-and-snomed-ct-au-mapping-guidelines");
-      new RefsetServiceRestImpl()
-          .updateRefset(refset, reviewer2.getAuthToken());
+      refset.setExternalUrl(
+          "http://www.nehta.gov.au/news-and-events/news/701-available-for-download-nctis-adverse-reaction-reference-set-implementation-guide-and-snomed-ct-au-mapping-guidelines");
+      new RefsetServiceRestImpl().updateRefset(refset,
+          reviewer2.getAuthToken());
 
       // Spanish translation - new refsetid for scope refset
-      refset =
-          makeTranslationRefset("Spanish Translation scope reference set", 2,
-              "INT", project2, "", "1000124", "450829007", reviewer2);
+      refset = makeTranslationRefset("Spanish Translation scope reference set",
+          2, "INT", project2, "", "1000124", "450829007", reviewer2);
 
       // Make spanish translation
       makeTranslation(
@@ -502,9 +511,8 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
           "450828004", refset, project2, 2, "INT", "es", reviewer2);
 
       // Swedish translation - new refsetid for scope refset
-      refset =
-          makeTranslationRefset("Swedish Translation scope reference set", 3,
-              "INT", project2, "", "1000124", "45991000052106", reviewer2);
+      refset = makeTranslationRefset("Swedish Translation scope reference set",
+          3, "INT", project2, "", "1000124", "45991000052106", reviewer2);
 
       // Make Swedish translation
       makeTranslation("Swedish language reference set", "46011000052107",
@@ -513,33 +521,31 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
       // Create a refset (extensional) and a translation refset in project 3
       Logger.getLogger(getClass()).info("Create US refsets");
       reviewer3 = (UserJpa) security.authenticate("reviewer3", "reviewer3");
-      makeRefset("Route of administration reference set", null, 17,
-          "US1000124", Refset.Type.EXTENSIONAL, project3, "442311000124105",
-          "1000124", "731000124108", reviewer3);
+      makeRefset("Route of administration reference set", null, 17, "US1000124",
+          Refset.Type.EXTENSIONAL, project3, "442311000124105", "1000124",
+          "731000124108", reviewer3);
 
       // Create intensional refsets to test definition changes
-      Logger.getLogger(getClass()).info(
-          "  intensional refsets with definition changes");
-      refset =
-          makeRefset("Antibiotic measurement reference set", null, 0,
-              "US1000124", Refset.Type.INTENSIONAL, project3, "", "1000124",
-              "731000124108", reviewer3);
+      Logger.getLogger(getClass())
+          .info("  intensional refsets with definition changes");
+      refset = makeRefset("Antibiotic measurement reference set", null, 0,
+          "US1000124", Refset.Type.INTENSIONAL, project3, "", "1000124",
+          "731000124108", reviewer3);
       refset.setWorkflowStatus(WorkflowStatus.BETA);
-      new RefsetServiceRestImpl()
-          .updateRefset(refset, reviewer3.getAuthToken());
+      new RefsetServiceRestImpl().updateRefset(refset,
+          reviewer3.getAuthToken());
       // START: <<58427002 | Antibiotic measurement (procedure) |
       redefine(refset, "<<58427002 | Antibiotic measurement (procedure) |",
           reviewer3);
 
       // NEXT: 105070004 | Ampicillin measurement (procedure) |
 
-      refset =
-          makeRefset("Ampicillin measurement reference set", null, 0,
-              "US1000124", Refset.Type.INTENSIONAL, project3, "", "1000124",
-              "731000124108", reviewer3);
+      refset = makeRefset("Ampicillin measurement reference set", null, 0,
+          "US1000124", Refset.Type.INTENSIONAL, project3, "", "1000124",
+          "731000124108", reviewer3);
       refset.setWorkflowStatus(WorkflowStatus.BETA);
-      new RefsetServiceRestImpl()
-          .updateRefset(refset, reviewer3.getAuthToken());
+      new RefsetServiceRestImpl().updateRefset(refset,
+          reviewer3.getAuthToken());
       // START: <<105070004 | Ampicillin measurement (procedure) |
       redefine(refset, "<<105070004 | Ampicillin measurement (procedure) |",
           reviewer3);
@@ -559,13 +565,12 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
       new RefsetServiceRestImpl().addRefsetExclusion(refset.getId(),
           "313948006", false, reviewer3.getAuthToken());
 
-      refset =
-          makeRefset("Pneumonia reference set reference set", null, 0,
-              "US1000124", Refset.Type.INTENSIONAL, project3, "", "1000124",
-              "731000124108", reviewer3);
+      refset = makeRefset("Pneumonia reference set reference set", null, 0,
+          "US1000124", Refset.Type.INTENSIONAL, project3, "", "1000124",
+          "731000124108", reviewer3);
       refset.setWorkflowStatus(WorkflowStatus.BETA);
-      new RefsetServiceRestImpl()
-          .updateRefset(refset, reviewer3.getAuthToken());
+      new RefsetServiceRestImpl().updateRefset(refset,
+          reviewer3.getAuthToken());
       // START: <<233604007 | Pneumonia (disorder) | MINUS <<78895009 |
       // Congenital pneumonia (disorder) |
       redefine(refset, "<<233604007 | Pneumonia (disorder) |", reviewer3);
@@ -576,45 +581,41 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
       // |
 
       // Create intensional refsets to test migration
-      Logger.getLogger(getClass()).info(
-          "  intensional refsets with version changes");
-      refset =
-          makeRefset("Antibiotic measurement reference set", null, 0,
-              "US1000124", Refset.Type.INTENSIONAL, project3, "", "1000124",
-              "731000124108", reviewer3);
+      Logger.getLogger(getClass())
+          .info("  intensional refsets with version changes");
+      refset = makeRefset("Antibiotic measurement reference set", null, 0,
+          "US1000124", Refset.Type.INTENSIONAL, project3, "", "1000124",
+          "731000124108", reviewer3);
       refset.setWorkflowStatus(WorkflowStatus.BETA);
-      new RefsetServiceRestImpl()
-          .updateRefset(refset, reviewer3.getAuthToken());
+      new RefsetServiceRestImpl().updateRefset(refset,
+          reviewer3.getAuthToken());
       redefine(refset, "<<58427002 | Antibiotic measurement (procedure) |",
           reviewer3);
       migrate(refset, reviewer3);
 
-      refset =
-          makeRefset("Azole anitfungal reference set", null, 0, "US1000124",
-              Refset.Type.INTENSIONAL, project3, "", "1000124", "731000124108",
-              reviewer3);
+      refset = makeRefset("Azole anitfungal reference set", null, 0,
+          "US1000124", Refset.Type.INTENSIONAL, project3, "", "1000124",
+          "731000124108", reviewer3);
       refset.setWorkflowStatus(WorkflowStatus.BETA);
-      new RefsetServiceRestImpl()
-          .updateRefset(refset, reviewer3.getAuthToken());
+      new RefsetServiceRestImpl().updateRefset(refset,
+          reviewer3.getAuthToken());
       redefine(refset, "<<373236000 | Azole antifungal (substance) |",
           reviewer3);
       migrate(refset, reviewer3);
 
-      refset =
-          makeRefset("Polyderma reference set", null, 0, "US1000124",
-              Refset.Type.INTENSIONAL, project3, "", "1000124", "731000124108",
-              reviewer3);
+      refset = makeRefset("Polyderma reference set", null, 0, "US1000124",
+          Refset.Type.INTENSIONAL, project3, "", "1000124", "731000124108",
+          reviewer3);
       refset.setWorkflowStatus(WorkflowStatus.BETA);
-      new RefsetServiceRestImpl()
-          .updateRefset(refset, reviewer3.getAuthToken());
+      new RefsetServiceRestImpl().updateRefset(refset,
+          reviewer3.getAuthToken());
       redefine(refset, "<<70759006 | Pyoderma (disorder) |", reviewer3);
       migrate(refset, reviewer3);
 
       // Make danish refset and translation
-      refset =
-          makeTranslationRefset("Danish translation scope reference set", 20,
-              "INT", project3, "554461000005103", "1000005", "554471000005108",
-              reviewer3);
+      refset = makeTranslationRefset("Danish translation scope reference set",
+          20, "INT", project3, "554461000005103", "1000005", "554471000005108",
+          reviewer3);
 
       // Make Swedish translation
       TranslationJpa translation =
@@ -626,15 +627,13 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
           reviewer3.getAuthToken());
 
       // Make dutch refset and translation
-      refset =
-          makeTranslationRefset("Netherlands translation scope reference set",
-              22, "INT", project3, "31000146106", "1000005", "11000146104",
-              reviewer3);
+      refset = makeTranslationRefset(
+          "Netherlands translation scope reference set", 22, "INT", project3,
+          "31000146106", "1000005", "11000146104", reviewer3);
 
       // Make dutch translation
-      translation =
-          makeTranslation("Netherlands Dutch language reference set",
-              "31000146106", refset, project3, 22, "INT", "nl", reviewer3);
+      translation = makeTranslation("Netherlands Dutch language reference set",
+          "31000146106", refset, project3, 22, "INT", "nl", reviewer3);
 
       if (assignNames) {
         // Ensure that all lookup names routines completed
@@ -644,9 +643,8 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
           completed = true;
 
           for (Long refsetId : createdRefsets) {
-            Refset r =
-                new RefsetServiceRestImpl().getRefset(refsetId,
-                    admin.getAuthToken());
+            Refset r = new RefsetServiceRestImpl().getRefset(refsetId,
+                admin.getAuthToken());
 
             if (r.isLookupInProgress()) {
               // lookupMemberNames still running on refset
@@ -662,9 +660,8 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
           completed = true;
 
           for (Long translationId : createdTranslations) {
-            Translation t =
-                new TranslationServiceRestImpl().getTranslation(translationId,
-                    admin.getAuthToken());
+            Translation t = new TranslationServiceRestImpl()
+                .getTranslation(translationId, admin.getAuthToken());
 
             if (t.isLookupInProgress()) {
               // lookupConceptNames still running on translation
@@ -704,14 +701,16 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
    * Make project.
    *
    * @param name the name
-   * @param namespaceId the namespace id
+   * @param namespace the namespace
    * @param auth the auth
+   * @param handlerKey the handler key
+   * @param handlerUrl the handler url
    * @return the project jpa
    * @throws Exception the exception
    */
   @SuppressWarnings("static-method")
-  private ProjectJpa makeProject(String name, String namespaceId, User auth)
-    throws Exception {
+  private ProjectJpa makeProject(String name, String namespace, User auth,
+    String handlerKey, String handlerUrl) throws Exception {
     final ProjectJpa project = new ProjectJpa();
     project.setName(name);
     project.setDescription("Description of project " + name);
@@ -719,12 +718,17 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
     project.setTerminology("en-edition");
     project.setTerminologyId("JIRA-12345");
     project.setVersion("latest");
-    project.setOrganization("IHTSDO");
     // This is the only namespace configured in the sample id generation service
     // when there are others, we can play with this
-    project.setNamespace(namespaceId);
-    return (ProjectJpa) new ProjectServiceRestImpl().addProject(project,
-        auth.getAuthToken());
+    project.setNamespace(namespace);
+    project.setOrganization("IHTSDO");
+    project.addValidationCheck("DEFAULT");
+    project.setTerminologyHandlerKey(handlerKey);
+    project.setTerminologyHandlerUrl(handlerUrl);
+    ProjectJpa newProject = (ProjectJpa) new ProjectServiceRestImpl()
+        .addProject(project, auth.getAuthToken());
+    newProject.setUserRoleMap(new HashMap<User, UserRole>());
+    return newProject;
   }
 
   /**
@@ -736,7 +740,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
    * @throws Exception the exception
    */
   @SuppressWarnings({
-    "static-method"
+      "static-method"
   })
   private ReleaseInfo makeReleaseInfo(String name, Object object)
     throws Exception {
@@ -773,7 +777,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
    * @throws Exception the exception
    */
   @SuppressWarnings({
-    "static-method"
+      "static-method"
   })
   private ReleaseArtifact makeReleaseArtifact(String name,
     ReleaseInfo releaseInfo, String pathToFile) throws Exception {
@@ -860,9 +864,8 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
     ValidationServiceRest validation = new ValidationServiceRestImpl();
 
     // Validate refset
-    ValidationResult result =
-        validation.validateRefset(refset, refset.getProject().getId(),
-            auth.getAuthToken());
+    ValidationResult result = validation.validateRefset(refset,
+        refset.getProject().getId(), auth.getAuthToken());
     if (!result.isValid()) {
       Logger.getLogger(getClass()).error(result.toString());
       throw new Exception("Refset does not pass validation.");
@@ -873,17 +876,15 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
 
     if (type == Refset.Type.EXTENSIONAL) {
       // Import members (from file)
-      ValidationResult vr =
-          refsetService.beginImportMembers(refset.getId(), "DEFAULT",
-              auth.getAuthToken());
+      ValidationResult vr = refsetService.beginImportMembers(refset.getId(),
+          "DEFAULT", auth.getAuthToken());
       if (!vr.isValid()) {
         throw new Exception("import staging is invalid - " + vr);
       }
       refsetService = new RefsetServiceRestImpl();
-      InputStream in =
-          new FileInputStream(new File(
-              "../config/src/main/resources/data/refset" + num + ""
-                  + "/der2_Refset_SimpleSnapshot_" + edition + "_20150131.txt"));
+      InputStream in = new FileInputStream(
+          new File("../config/src/main/resources/data/refset" + num + ""
+              + "/der2_Refset_SimpleSnapshot_" + edition + "_20150131.txt"));
       refsetService.finishImportMembers(null, in, refset.getId(), "DEFAULT",
           auth.getAuthToken());
       in.close();
@@ -892,13 +893,13 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
     // fake some refset release info
     ReleaseInfo refsetReleaseInfo = makeReleaseInfo("20150731", refset);
     if (type == Refset.Type.EXTENSIONAL) {
-      makeReleaseArtifact("der2_Refset_SimpleSnapshot_" + edition
-          + "_20150131.txt", refsetReleaseInfo,
-          "../config/src/main/resources/data/refset" + num
+      makeReleaseArtifact(
+          "der2_Refset_SimpleSnapshot_" + edition + "_20150131.txt",
+          refsetReleaseInfo, "../config/src/main/resources/data/refset" + num
               + "/der2_Refset_SimpleSnapshot_" + edition + "_20150131.txt");
-      makeReleaseArtifact("der2_Refset_SimpleDelta_" + edition
-          + "_20150131.txt", refsetReleaseInfo,
-          "../config/src/main/resources/data/refset" + num
+      makeReleaseArtifact(
+          "der2_Refset_SimpleDelta_" + edition + "_20150131.txt",
+          refsetReleaseInfo, "../config/src/main/resources/data/refset" + num
               + "/der2_Refset_SimpleSnapshot_" + edition + "_20150131.txt");
     }
 
@@ -968,25 +969,23 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
     refsetService = new RefsetServiceRestImpl();
 
     // Import members (from file)
-    ValidationResult vr =
-        refsetService.beginImportMembers(refset.getId(), "DEFAULT",
-            auth.getAuthToken());
+    ValidationResult vr = refsetService.beginImportMembers(refset.getId(),
+        "DEFAULT", auth.getAuthToken());
     if (!vr.isValid()) {
       throw new Exception("import staging is invalid - " + vr);
     }
     refsetService = new RefsetServiceRestImpl();
-    InputStream in =
-        new FileInputStream(new File(
-            "../config/src/main/resources/data/translation" + num + ""
-                + "/der2_Refset_SimpleSnapshot_" + edition + "_20150131.txt"));
+    InputStream in = new FileInputStream(
+        new File("../config/src/main/resources/data/translation" + num + ""
+            + "/der2_Refset_SimpleSnapshot_" + edition + "_20150131.txt"));
     refsetService.finishImportMembers(null, in, refset.getId(), "DEFAULT",
         auth.getAuthToken());
     in.close();
 
     // refset release info
     ReleaseInfo info = makeReleaseInfo("20150731", refset);
-    makeReleaseArtifact("der2_Refset_SimpleSnapshot_" + edition
-        + "_20150131.txt", info,
+    makeReleaseArtifact(
+        "der2_Refset_SimpleSnapshot_" + edition + "_20150131.txt", info,
         "../config/src/main/resources/data/translation" + num
             + "/der2_Refset_SimpleSnapshot_" + edition + "_20150131.txt");
     makeReleaseArtifact("der2_Refset_SimpleDelta_" + edition + "_20150131.txt",
@@ -1019,8 +1018,8 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
     User auth) throws Exception {
     final TranslationJpa translation = new TranslationJpa();
     translation.setName(name);
-    translation.setDescription("Description of translation "
-        + translation.getName());
+    translation
+        .setDescription("Description of translation " + translation.getName());
     translation.setActive(true);
     translation.setEffectiveTime(null);
     translation.setLastModified(new Date());
@@ -1041,9 +1040,8 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
     ValidationServiceRest validation = new ValidationServiceRestImpl();
 
     // Validate translation
-    ValidationResult result =
-        validation.validateTranslation(translation, project.getId(),
-            auth.getAuthToken());
+    ValidationResult result = validation.validateTranslation(translation,
+        project.getId(), auth.getAuthToken());
     if (!result.isValid()) {
       Logger.getLogger(getClass()).error(result.toString());
       throw new Exception("translation does not pass validation.");
@@ -1053,17 +1051,15 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
 
     // Import members (from file) - switch file based on counter
     translationService = new TranslationServiceRestImpl();
-    ValidationResult vr =
-        translationService.beginImportConcepts(translation.getId(), "DEFAULT",
-            auth.getAuthToken());
+    ValidationResult vr = translationService.beginImportConcepts(
+        translation.getId(), "DEFAULT", auth.getAuthToken());
     if (!vr.isValid()) {
       throw new Exception("translation staging is not valid - " + vr);
     }
     translationService = new TranslationServiceRestImpl();
-    InputStream in =
-        new FileInputStream(new File(
-            "../config/src/main/resources/data/translation" + num
-                + "/translation.zip"));
+    InputStream in = new FileInputStream(
+        new File("../config/src/main/resources/data/translation" + num
+            + "/translation.zip"));
     translationService.finishImportConcepts(null, in, translation.getId(),
         "DEFAULT", auth.getAuthToken());
     in.close();
@@ -1073,12 +1069,12 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
     makeReleaseArtifact("SnomedCT_" + edition + "_20150131.zip", info,
         "../config/src/main/resources/data/translation" + num
             + "/translation.zip");
-    makeReleaseArtifact("sct2_Description_Snapshot_" + edition
-        + "_20150131.txt", info,
+    makeReleaseArtifact(
+        "sct2_Description_Snapshot_" + edition + "_20150131.txt", info,
         "../config/src/main/resources/data/translation" + num
             + "/sct2_Description_Snapshot_" + edition + "_20150131.txt");
-    makeReleaseArtifact("der2_cRefset_LanguageSnapshot_" + edition
-        + "_20150131.txt", info,
+    makeReleaseArtifact(
+        "der2_cRefset_LanguageSnapshot_" + edition + "_20150131.txt", info,
         "../config/src/main/resources/data/translation" + num
             + "/der2_cRefset_LanguageSnapshot_" + edition + "_20150131.txt");
 
@@ -1088,8 +1084,8 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
       createdTranslations.add(translation.getId());
     }
     final TranslationJpa retval =
-        (TranslationJpa) new TranslationServiceRestImpl().getTranslation(
-            translation.getId(), auth.getAuthToken());
+        (TranslationJpa) new TranslationServiceRestImpl()
+            .getTranslation(translation.getId(), auth.getAuthToken());
     retval.setSpellingDictionary(null);
     retval.setPhraseMemory(null);
     return retval;
