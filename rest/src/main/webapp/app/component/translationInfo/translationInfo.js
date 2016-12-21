@@ -63,6 +63,12 @@ tsApp.directive('languages', [ 'utilService', function(utilService) {
         value : 'lt',
         name : 'Lithuanian - lt'
       }, {
+        value : 'nb',
+        name : 'Norwegian Bokmål - lt'
+      }, {
+        value : 'nn',
+        name : 'Norwegian Nynorsk - lt'
+      }, {
         value : 'pl',
         name : 'Polish - pl'
       }, {
