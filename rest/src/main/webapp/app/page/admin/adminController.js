@@ -697,9 +697,7 @@ tsApp
             projectService.addProject(project).then(
               // Success
               function(data) {
-                // if not an admin, add user as a project admin
-                if ($scope.user.applicationRole != 'ADMIN') {
-                  var projectId = data.id;
+                var projectId = data.id;
                   projectService.assignUserToProject(data.id, $scope.user.userName, 'ADMIN').then(
                     function(data) {
                       // Update 'anyrole'
@@ -715,9 +713,7 @@ tsApp
                       $scope.errors[0] = data;
                       utilService.clearError();
                     });
-                } else {
-                  $uibModalInstance.close(data);
-                }
+                
               },
               // Error
               function(data) {

@@ -118,6 +118,7 @@ tsApp.controller('EditConceptModalCtrl', [
     // immediately
     $scope.concept = concept;
     $scope.googleResult = null;
+    $scope.displayControls = false;
 
     // Data structure for case significance - we just need the
     // id/name
@@ -178,6 +179,10 @@ tsApp.controller('EditConceptModalCtrl', [
       return 'UNKNOWN';
     };
 
+    // toggles display of memory and spelling controls
+    $scope.toggleDisplayControls = function() {
+      $scope.displayControls = !$scope.displayControls;
+    };
 
     // Table sorting
 
@@ -680,6 +685,72 @@ tsApp.controller('EditConceptModalCtrl', [
     //
     // MODALS
     //
+    
+    // Log modal
+    $scope.openLogModal = function(concept) {
+      console.debug('openLogModal ');
+
+      var modalInstance = $uibModal.open({
+        templateUrl : 'app/component/refsetTable/log.html',
+        controller : LogModalCtrl,
+        backdrop : 'static',
+        size : 'lg',
+        resolve : {
+          translation : function() {
+            return $scope.translation;
+          },
+          project : function() {
+            return $scope.project;
+          },
+          concept : function() {
+            return concept;
+          },
+        }
+      });
+
+      // NO need for a result function
+      // modalInstance.result.then(
+      // // Success
+      // function(data) {
+      // });
+    };
+
+    // Log controller
+    var LogModalCtrl = function($scope, $uibModalInstance, translation, project, concept) {
+      console.debug('Entered log modal control', translation, project, concept);
+
+      $scope.filter = '';
+      $scope.errors = [];
+      $scope.warnings = [];
+
+      // Get log to display
+      $scope.getLog = function() {
+        var objectId = translation.id
+        if (concept) {
+          objectId = concept.id;
+        }
+        projectService.getLog(project.id, objectId, $scope.filter).then(
+        // Success
+        function(data) {
+          $scope.log = data;
+        },
+        // Error
+        function(data) {
+          handleError($scope.errors, data);
+        });
+
+      };
+
+      // close modal
+      $scope.close = function() {
+        // nothing changed, don't pass a value
+        $uibModalInstance.close();
+      };
+
+      // initialize
+      $scope.getLog();
+    };
+
     $scope.openNotesModal = function(lobject, ltype) {
       console.debug('openNotesModal ', lobject, ltype);
 
