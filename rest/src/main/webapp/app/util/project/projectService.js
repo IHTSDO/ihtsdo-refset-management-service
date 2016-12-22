@@ -658,6 +658,37 @@ tsApp
           return deferred.promise;
         };
 
+        // get google translate result for given text
+        this.translate = function(projectId, text, language) {
+          console.debug('getLog');
+          var deferred = $q.defer();
+
+          // Assign user to project
+          gpService.increment();
+
+          $http.get(
+            projectUrl + 'translate?projectId=' + projectId + '&text=' + text + '&language='
+              + language, {
+              transformResponse : [ function(data) {
+                // Data response is plain text at this point
+                // So just return it, or do your parsing here
+                return data;
+              } ]
+            }).then(
+          // success
+          function(response) {
+            gpService.decrement();
+            deferred.resolve(response.data);
+          },
+          // error
+          function(response) {
+            utilService.handleError(response);
+            gpService.decrement();
+            deferred.reject(response.data);
+          });
+          return deferred.promise;
+        };
+
         // assign user to project
         this.getReplacementConcepts = function(projectId, conceptId, terminology, version) {
           console.debug('getReplacementConcepts', projectId, conceptId, terminology, version);

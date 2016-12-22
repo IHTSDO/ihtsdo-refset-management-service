@@ -247,7 +247,7 @@
           <div class="alert alert-success">{{comment}}</div>
         </td>
       </tr>
-	  <tr ng-show="validVersion != 'true'">
+	  <tr ng-show="validVersion == 'false'">
         <td colspan="2">
           <div class="alert alert-danger">Enter valid version and click Test.</div>
         </td>
@@ -263,7 +263,7 @@
       ng-click="submitRefset(refset);" ng-disabled="validVersion != 'true'">Add</button>
     <button ng-show="action == 'Edit'" class="btn btn-primary" 
       ng-click="submitRefset(refset);" ng-disabled="validVersion != 'true'">Save</button>
-    <button ng-show="action == 'Clone' && comments.length == 0"
+    <button ng-show="action == 'Clone' && comments.length == 0" ng-disabled="validVersion != 'true'"
       class="btn btn-primary" ng-click="submitRefset(refset); ">Clone</button>
     <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
     <button ng-show="comments.length > 0" class="btn btn-warning"
