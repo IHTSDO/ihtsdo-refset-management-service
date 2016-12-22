@@ -183,6 +183,10 @@ public class ImportTranslationRf2DeltaHandler implements
             concept = conceptCache.get(fields[4]);
             concept.getDescriptions().add(description);
             description.setConcept(concept);
+            // Description ids are not allowed to be empty
+            if (fields[0].equals("")) {
+              throw new LocalException("Empty description ids are not allowed, consider using TMP-* ids instead.");
+            }
             // Cache the description for lookup by the language reset member
             descriptions.put(fields[0], description);
             addedDescriptionCt++;

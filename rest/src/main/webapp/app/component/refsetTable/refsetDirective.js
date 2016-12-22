@@ -1524,6 +1524,7 @@ tsApp
                 $scope.versionsMap = {};
                 $scope.terminologies = [];
                 $scope.versions = [];
+                $scope.validVersion = null;
 
                 // Copy refset and clear terminology id
                 $scope.refset = JSON.parse(JSON.stringify(refset));
@@ -1591,6 +1592,18 @@ tsApp
                   });
                 };
 
+                $scope.testTerminologyVersion = function() {
+                  refsetService.isTerminologyVersionValid($scope.project.id, $scope.refset.terminology, 
+                     $scope.refset.version).then(
+                       function(data) {
+                         $scope.validVersion = data;
+                       });
+                 }
+                
+                $scope.resetValidVersion = function() {
+                  $scope.validVersion = null;
+                }
+                
                 // Initialize terminology/version/module
                 if ($scope.refset.terminology && $scope.refset.version) {
                   $scope.getModules();
@@ -2549,7 +2562,6 @@ tsApp
                 // Initialize modules if terminology/version set
                 if ($scope.refset.terminology && $scope.refset.version) {
                   $scope.getModules();
-                  $scope.testTerminologyVersion();
                 }
 
                 // Handle terminology selected
