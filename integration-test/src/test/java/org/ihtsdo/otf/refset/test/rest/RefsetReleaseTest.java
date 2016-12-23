@@ -213,7 +213,6 @@ public class RefsetReleaseTest extends RestSupport {
     refset.setTerminologyId(refsetId);
     // This is an opportunity to use "branch"
     refset.setVersion("20150131");
-    refset.setWorkflowPath("DFEAULT");
     refset.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
     refset.setLocalSet(false);
 

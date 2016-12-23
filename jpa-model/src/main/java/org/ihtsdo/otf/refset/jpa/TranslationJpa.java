@@ -103,10 +103,6 @@ public class TranslationJpa extends AbstractComponent implements Translation {
   @Column(nullable = false)
   private WorkflowStatus workflowStatus = WorkflowStatus.NEW;
 
-  /** The workflow path. */
-  @Column(nullable = false)
-  private String workflowPath;
-
   /** The provisional flag. */
   @Column(nullable = false)
   private boolean provisional;
@@ -191,7 +187,6 @@ public class TranslationJpa extends AbstractComponent implements Translation {
     stagingType = translation.getStagingType();
     language = translation.getLanguage();
     workflowStatus = translation.getWorkflowStatus();
-    workflowPath = translation.getWorkflowPath();
     refset = translation.getRefset();
     project = translation.getProject();
     setCaseSensitiveTypes(translation.getCaseSensitiveTypes());
@@ -488,19 +483,6 @@ public class TranslationJpa extends AbstractComponent implements Translation {
   }
 
   /* see superclass */
-  // n/a - @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
-  @Override
-  public String getWorkflowPath() {
-    return workflowPath;
-  }
-
-  /* see superclass */
-  @Override
-  public void setWorkflowPath(String workflowPath) {
-    this.workflowPath = workflowPath;
-  }
-
-  /* see superclass */
   @XmlTransient
   @Override
   public List<Concept> getConcepts() {
@@ -660,8 +642,7 @@ public class TranslationJpa extends AbstractComponent implements Translation {
     return "TranslationJpa [id=" + getId() + " - " + getTerminologyId()
         + ", name=" + name + ", description=" + description + ", isPublic="
         + isPublic + ", stagingType=" + stagingType + ", language=" + language
-        + ", workflowStatus=" + workflowStatus + ", workflowPath="
-        + workflowPath + ", refset="
+        + ", workflowStatus=" + workflowStatus  + ", refset="
         + (refset == null ? null : refset.getTerminologyId()) + ", project ="
         + (refset != null && refset.getProject() != null
             ? refset.getProject().getId() : null)

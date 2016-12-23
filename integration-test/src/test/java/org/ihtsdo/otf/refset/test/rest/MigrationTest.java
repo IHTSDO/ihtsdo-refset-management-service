@@ -411,7 +411,6 @@ public class MigrationTest extends RestSupport {
     refset.setTerminologyId(refsetId);
     // This is an opportunity to use "branch"
     refset.setVersion("20150131");
-    refset.setWorkflowPath("DFEAULT");
     refset.setWorkflowStatus(WorkflowStatus.PUBLISHED);
     refset.setLocalSet(false);
 

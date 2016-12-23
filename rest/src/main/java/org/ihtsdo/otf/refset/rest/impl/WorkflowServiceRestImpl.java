@@ -17,6 +17,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
 import org.apache.log4j.Logger;
+import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.User;
@@ -40,11 +41,12 @@ import org.ihtsdo.otf.refset.services.SecurityService;
 import org.ihtsdo.otf.refset.services.TranslationService;
 import org.ihtsdo.otf.refset.services.WorkflowService;
 import org.ihtsdo.otf.refset.services.handlers.WorkflowActionHandler;
-import org.ihtsdo.otf.refset.worfklow.TrackingRecordJpa;
-import org.ihtsdo.otf.refset.worfklow.TrackingRecordListJpa;
+import org.ihtsdo.otf.refset.workflow.TrackingRecordJpa;
+import org.ihtsdo.otf.refset.workflow.TrackingRecordListJpa;
 import org.ihtsdo.otf.refset.workflow.TrackingRecord;
 import org.ihtsdo.otf.refset.workflow.TrackingRecordList;
 import org.ihtsdo.otf.refset.workflow.WorkflowAction;
+import org.ihtsdo.otf.refset.workflow.WorkflowConfig;
 import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 
 import com.wordnik.swagger.annotations.Api;
@@ -99,6 +101,44 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl
     }
     return null;
   }
+  
+  /* see superclass */
+  @Override
+  @GET
+  @Path("/config")
+  @ApiOperation(value = "Get workflow config", notes = "Gets the workflow configuration for the given project", response = WorkflowConfig.class)
+  public WorkflowConfig getWorkflowConfig(
+    @ApiParam(value = "Project id, e.g. 5", required = false) @QueryParam("projectId") Long projectId,
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful POST call (Workflow): /config " + projectId);
+
+    final WorkflowService workflowService = new WorkflowServiceJpa();
+    try {
+      authorizeProject(workflowService, projectId, securityService, authToken,
+          "trying to get workflow config", UserRole.AUTHOR);
+      
+      final Project project = workflowService.getProject(projectId);
+
+      // Obtain the handler
+      final WorkflowActionHandler handler = workflowService
+          .getWorkflowHandlerForPath(project.getWorkflowPath());
+      
+      if (handler == null) {
+        return null;
+      }
+      
+      return handler.getWorkflowConfig();
+
+    } catch (Exception e) {
+      handleException(e, "trying to get workflow config");
+    } finally {
+      workflowService.close();
+      securityService.close();
+    }
+    return null;
+  }
 
   /* see superclass */
   @Override
@@ -114,7 +154,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info("RESTful POST call (Workflow): /refset/"
-        + action + ", " + refsetId + ", " + userName);
+        + action + ", " + refsetId + ", " + userName + ", " + projectRole);
 
     // Test preconditions
     if (projectId == null || refsetId == null || userName == null) {
@@ -172,9 +212,12 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl
           workflowService.getTranslation(translationId);
       final User user = securityService.getUser(userName);
       securityService.handleLazyInit(user);
+      // Get the project
+      final Project project = workflowService.getProject(projectId);
+      
       // Obtain the handler
       final WorkflowActionHandler handler = workflowService
-          .getWorkflowHandlerForPath(translation.getWorkflowPath());
+          .getWorkflowHandlerForPath(project.getWorkflowPath());
       // Find available editing work
       final ConceptList list = handler.findAvailableEditingConcepts(translation,
           pfs, workflowService);
@@ -263,9 +306,12 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl
       // Get object references
       final Translation translation =
           workflowService.getTranslation(translationId);
+      // Get the project
+      final Project project = workflowService.getProject(projectId);
+      
       // Obtain the handler
       final WorkflowActionHandler handler = workflowService
-          .getWorkflowHandlerForPath(translation.getWorkflowPath());
+          .getWorkflowHandlerForPath(project.getWorkflowPath());
       // Find available editing work
       final ConceptList list = handler.findAvailableReviewConcepts(translation,
           pfs, workflowService);
@@ -862,14 +908,17 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl
     try {
       authorizeProject(workflowService, projectId, securityService, authToken,
           "trying to find refset available review work", UserRole.AUTHOR);
-
+      
       // Get the project
+      final Project project = workflowService.getProject(projectId);
+      
+      // Get the translation
       final Translation translation =
           workflowService.getTranslation(translationId);
 
       // Obtain the handler
       final WorkflowActionHandler handler = workflowService
-          .getWorkflowHandlerForPath(translation.getWorkflowPath());
+          .getWorkflowHandlerForPath(project.getWorkflowPath());
 
       // Get available concepts for all users with author or reviewer roles on
       // the project

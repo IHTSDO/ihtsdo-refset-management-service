@@ -13,6 +13,7 @@ import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.refset.workflow.TrackingRecord;
 import org.ihtsdo.otf.refset.workflow.TrackingRecordList;
+import org.ihtsdo.otf.refset.workflow.WorkflowConfig;
 
 /**
  * Represents a service for performing workflow actions.
@@ -275,4 +276,15 @@ public interface WorkflowServiceRest {
    */
   public void addFeedback(Long objectId, String name, String email,
     String message, String authToken) throws Exception;
+
+  /**
+   * Gets the workflow config.
+   *
+   * @param projectId the project id
+   * @param authToken the auth token
+   * @return the workflow config
+   * @throws Exception the exception
+   */
+  public WorkflowConfig getWorkflowConfig(Long projectId, String authToken)
+    throws Exception;
 }

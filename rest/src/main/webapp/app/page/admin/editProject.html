@@ -114,6 +114,17 @@
         </td>
       </tr>
       <tr>
+        <td>
+          <b>Workflow path</b>
+        </td>
+        <td>
+          <span ng-show="metadata.workflowPaths.length == 1">{{project.workflowPath}}</span>
+          <select ng-show="metadata.workflowPaths.length > 1"
+            ng-model="project.workflowPath"
+            ng-options="item for item in metadata.workflowPaths"></select>
+        </td>
+      </tr>
+      <tr>
         <td title="Project level exclusion clause for intensional definitions">
           <b>Exclusion Clause</b>
         </td>
