@@ -59,8 +59,8 @@ public class ProjectUserQueryTest extends ProjectTestSupport {
    * @throws Exception the exception
    */
   @SuppressWarnings("static-method")
-  private ProjectJpa makeProject(String name, String namespace, String authToken)
-    throws Exception {
+  private ProjectJpa makeProject(String name, String namespace,
+    String authToken) throws Exception {
     ProjectJpa project = new ProjectJpa();
     project.setName(name);
     project.setDescription("Description of project " + name);
@@ -74,6 +74,7 @@ public class ProjectUserQueryTest extends ProjectTestSupport {
     project.setLastModifiedBy("Author1");
     project.setOrganization("IHTSDO");
     project.addValidationCheck("DEFAULT");
+    project.setWorkflowPath("DEFAULT");
 
     project = (ProjectJpa) projectService.addProject(project, adminAuthToken);
 
@@ -115,29 +116,25 @@ public class ProjectUserQueryTest extends ProjectTestSupport {
     ProjectJpa project =
         makeProject("Find Users Project", "1000001", adminAuthToken);
 
-    projectService.assignUserToProject(project.getId(),
-        reviewer1.getUserName(), UserRole.REVIEWER.toString(), adminAuthToken);
+    projectService.assignUserToProject(project.getId(), reviewer1.getUserName(),
+        UserRole.REVIEWER.toString(), adminAuthToken);
     projectService.assignUserToProject(project.getId(), author1.getUserName(),
         UserRole.AUTHOR.toString(), adminAuthToken);
 
     // verify able to retrieve expected concept
-    UserList users =
-        projectService.findAssignedUsersForProject(project.getId(),
-            "projectAnyRole:" + project.getId(), null, adminAuthToken);
+    UserList users = projectService.findAssignedUsersForProject(project.getId(),
+        "projectAnyRole:" + project.getId(), null, adminAuthToken);
     assertTrue(users.getCount() == 2);
-    users =
-        projectService.findAssignedUsersForProject(project.getId(),
-            "applicationRole:ADMIN", null, adminAuthToken);
+    users = projectService.findAssignedUsersForProject(project.getId(),
+        "applicationRole:ADMIN", null, adminAuthToken);
     assertTrue(users.getCount() == 0);
 
     // verify able to retrieve expected concept
-    users =
-        projectService.findUnassignedUsersForProject(project.getId(),
-            "projectAnyRole:" + project.getId(), null, adminAuthToken);
+    users = projectService.findUnassignedUsersForProject(project.getId(),
+        "projectAnyRole:" + project.getId(), null, adminAuthToken);
     assertTrue(users.getCount() == 0);
-    users =
-        projectService.findUnassignedUsersForProject(project.getId(),
-            "applicationRole:ADMIN", null, adminAuthToken);
+    users = projectService.findUnassignedUsersForProject(project.getId(),
+        "applicationRole:ADMIN", null, adminAuthToken);
     assertTrue(users.getCount() == 1);
 
     // Clean Up

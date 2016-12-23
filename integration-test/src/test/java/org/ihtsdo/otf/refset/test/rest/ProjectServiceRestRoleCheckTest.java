@@ -82,6 +82,7 @@ public class ProjectServiceRestRoleCheckTest extends ProjectTestSupport {
     project.setName("Sample");
     project.setTerminology("en-edition");
     project.setVersion("latest");
+    project.setWorkflowPath("DEFAULT");
 
     try {
       project =

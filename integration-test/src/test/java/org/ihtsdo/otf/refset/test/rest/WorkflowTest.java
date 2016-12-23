@@ -192,7 +192,6 @@ public class WorkflowTest extends RestSupport {
     refset.setTerminology("en-edition");
     refset.setTerminologyId(refsetId);
     refset.setVersion("20150131");
-    refset.setWorkflowPath("DEFAULT");
     refset.setWorkflowStatus(WorkflowStatus.NEW);
     refset.setLocalSet(false);
 
@@ -280,6 +279,7 @@ public class WorkflowTest extends RestSupport {
     project.setLastModifiedBy("Author1");
     project.setOrganization("IHTSDO");
     project.addValidationCheck("DEFAULT");
+    project.setWorkflowPath("DEFAULT");
 
     project = (ProjectJpa) projectService.addProject(project, adminAuthToken);
 
@@ -326,7 +326,6 @@ public class WorkflowTest extends RestSupport {
         makeRefset("refset WF Test 1", null, Refset.Type.EXTERNAL, project,
             null, false);
     refset1.setWorkflowStatus(WorkflowStatus.NEW);
-    refset1.setWorkflowPath("DEFAULT");
     refsetService = new RefsetClientRest(properties);
     refsetService.updateRefset(refset1, adminAuthToken);
 
@@ -371,7 +370,6 @@ public class WorkflowTest extends RestSupport {
         makeRefset("refset WF Test 2", null, Refset.Type.EXTERNAL, project,
             null, false);
     refset2.setWorkflowStatus(WorkflowStatus.NEW);
-    refset2.setWorkflowPath("DEFAULT");
     refsetService = new RefsetClientRest(properties);
     refsetService.updateRefset(refset2, adminAuthToken);
 
@@ -523,7 +521,6 @@ public class WorkflowTest extends RestSupport {
         makeRefset("refset WF Test 1", null, Refset.Type.EXTERNAL, project,
             null, false);
     refset1.setWorkflowStatus(WorkflowStatus.NEW);
-    refset1.setWorkflowPath("DEFAULT");
     refsetService = new RefsetClientRest(properties);
     refsetService.updateRefset(refset1, adminAuthToken);
 
@@ -532,7 +529,6 @@ public class WorkflowTest extends RestSupport {
         makeRefset("refset WF Test 2", null, Refset.Type.EXTERNAL, project,
             null, false);
     refset2.setWorkflowStatus(WorkflowStatus.NEW);
-    refset2.setWorkflowPath("DEFAULT");
     refsetService = new RefsetClientRest(properties);
     refsetService.updateRefset(refset2, adminAuthToken);
 

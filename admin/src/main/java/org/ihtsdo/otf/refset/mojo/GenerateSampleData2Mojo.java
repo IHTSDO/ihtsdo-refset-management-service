@@ -725,6 +725,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
     project.addValidationCheck("DEFAULT");
     project.setTerminologyHandlerKey(handlerKey);
     project.setTerminologyHandlerUrl(handlerUrl);
+    project.setWorkflowPath("DEFAULT");
     ProjectJpa newProject = (ProjectJpa) new ProjectServiceRestImpl()
         .addProject(project, auth.getAuthToken());
     newProject.setUserRoleMap(new HashMap<User, UserRole>());
@@ -852,7 +853,6 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
     refset.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse("20150131"));
     // This is an opportunity to use "branch"
     refset.setVersion("20150131");
-    refset.setWorkflowPath("DEFAULT");
     refset.setWorkflowStatus(WorkflowStatus.PUBLISHED);
     if (type == Refset.Type.EXTERNAL) {
       refset.setExternalUrl("http://www.example.com/some/other/refset.txt");
@@ -951,7 +951,6 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
     // This is an opportunity to use "branch"
     refset.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse("20150131"));
     refset.setVersion("20150131");
-    refset.setWorkflowPath("DEFAULT");
     refset.setWorkflowStatus(WorkflowStatus.PUBLISHED);
     refset.setLocalSet(false);
     RefsetServiceRest refsetService = new RefsetServiceRestImpl();
@@ -1032,7 +1031,6 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
     translation.setTerminology(refset.getTerminology());
     translation.setVersion(refset.getVersion());
     translation.setTerminologyId(terminologyId);
-    translation.setWorkflowPath("DEFAULT");
     translation.setWorkflowStatus(WorkflowStatus.PUBLISHED);
     translation.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse("20150131"));
     TranslationServiceRest translationService =

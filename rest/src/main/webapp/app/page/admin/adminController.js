@@ -15,8 +15,10 @@ tsApp
       'validationService',
       'refsetService',
       'translationService',
+      'workflowService',
       function($scope, $http, $location, $uibModal, gpService, utilService, tabService,
-        securityService, projectService, validationService, refsetService, translationService) {
+        securityService, projectService, validationService, refsetService, translationService,
+        workflowService) {
         console.debug('configure AdminCtrl');
 
         // Clear error
@@ -48,6 +50,7 @@ tsApp
         $scope.users = null;
         $scope.assignedUsers = null;
         $scope.unassignedUsers = null;
+        $scope.metadata = {};
         $scope.languageDescriptionTypes = [];
         $scope.terminologyHandlers = []
         $scope.pagedAvailableLdt = [];
@@ -230,6 +233,14 @@ tsApp
             $scope.projectRoles = data.strings;
           });
         };
+        
+        // Get $scope.metadata.workflowPaths
+        $scope.getWorkflowPaths = function() {
+          workflowService.getWorkflowPaths().then(function(data) {
+            $scope.metadata.workflowPaths = data.strings;
+          });
+        };
+
 
         // Sets the selected project
         $scope.setProject = function(project) {
@@ -534,6 +545,9 @@ tsApp
               },
               terminologyHandlers : function() {
                 return $scope.terminologyHandlers;
+              },
+              metadata : function() {
+                return $scope.metadata;
               }
             }
           });
@@ -550,13 +564,14 @@ tsApp
 
         // Add project controller
         var AddProjectModalCtrl = function($scope, $uibModalInstance, $timeout, user,
-          validationChecks, terminologyHandlers) {
+          validationChecks, terminologyHandlers, metadata) {
 
           $scope.action = 'Add';
           $scope.user = user;
           $scope.terminologyHandlers = terminologyHandlers;
           $scope.url = terminologyHandlers[0].value;
           $scope.urlTestSuccess = false;
+          $scope.metadata = metadata;
           $scope.project = {
             moduleId : user.userPreferences.moduleId,
             namespace : user.userPreferences.namespace,
@@ -671,7 +686,7 @@ tsApp
             var index = $scope.selectedChecks.indexOf(check);
             $scope.selectedChecks.splice(index, 1);
           };
-
+          
           // Add the project
           $scope.submitProject = function(project) {
             if (!project || !project.name || !project.description || !project.terminology) {
@@ -748,6 +763,9 @@ tsApp
               },
               terminologyHandlers : function() {
                 return $scope.terminologyHandlers;
+              },
+              metadata : function() {
+                return $scope.metadata;
               }
             }
           });
@@ -760,10 +778,11 @@ tsApp
         };
 
         var EditProjectModalCtrl = function($scope, $uibModalInstance, $timeout, project, user,
-          validationChecks, terminologyHandlers) {
+          validationChecks, terminologyHandlers, metadata) {
           $scope.action = 'Edit';
           $scope.user = user;
           $scope.project = project;
+          $scope.metadata = metadata;
           $scope.clause = {
             value : project.exclusionClause
           };
@@ -1066,6 +1085,7 @@ tsApp
         $scope.getValidationChecks();
         $scope.getLanguageDescriptionTypes();
         $scope.getTerminologyHandlers();
+        $scope.getWorkflowPaths();
 
         // Handle users with user preferences
         if ($scope.user.userPreferences) {

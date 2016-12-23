@@ -26,8 +26,9 @@ import org.ihtsdo.otf.refset.jpa.helpers.RefsetListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.TranslationListJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.WorkflowServiceRest;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
-import org.ihtsdo.otf.refset.worfklow.TrackingRecordJpa;
-import org.ihtsdo.otf.refset.worfklow.TrackingRecordListJpa;
+import org.ihtsdo.otf.refset.workflow.TrackingRecordJpa;
+import org.ihtsdo.otf.refset.workflow.TrackingRecordListJpa;
+import org.ihtsdo.otf.refset.workflow.WorkflowConfig;
 import org.ihtsdo.otf.refset.workflow.TrackingRecord;
 import org.ihtsdo.otf.refset.workflow.TrackingRecordList;
 
@@ -733,5 +734,30 @@ public class WorkflowClientRest extends RootClientRest implements
     } else {
       throw new Exception(response.getStatusInfo().toString());
     }
+  }
+
+  @Override
+  public WorkflowConfig getWorkflowConfig(Long projectId, String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).debug("Workflow Client - get workflow config");
+
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url") + "/workflow/config");
+
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).get();
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(resultString);
+    }
+
+    // converting to object
+    return (WorkflowConfig) ConfigUtility.getGraphForString(resultString,
+        StringList.class);
   }
 }

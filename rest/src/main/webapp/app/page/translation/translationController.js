@@ -124,7 +124,9 @@ tsApp
                   if ($scope.projects.assignedUsers[i].userName == $scope.user.userName) {
                     $scope.projects.role = $scope.projects.assignedUsers[i].projectRoleMap[$scope.project.id];
                     if ($scope.projects.role == 'ADMIN') {
-                      $scope.roleOptions = [ 'ADMIN', 'REVIEWER', 'AUTHOR' ];
+                      $scope.roleOptions = [ 'ADMIN', /*'REVIEWER2',*/ 'REVIEWER', 'AUTHOR' ];
+                   /* } else if ($scope.projects.role == 'REVIEWER2') {
+                      $scope.roleOptions = [ 'REVIEWER2', 'REVIEWER', 'AUTHOR' ];*/
                     } else if ($scope.projects.role == 'REVIEWER') {
                       $scope.roleOptions = [ 'REVIEWER', 'AUTHOR' ];
                     } else if ($scope.projects.role == 'AUTHOR') {
