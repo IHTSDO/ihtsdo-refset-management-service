@@ -1102,7 +1102,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     refsetAllowedMap.put("SAVE" + "REVIEWER" + "REVIEW_DONE", true);
     refsetAllowedMap.put("FINISH" + "REVIEWER" + "REVIEW_NEW", true);
     refsetAllowedMap.put("FINISH" + "REVIEWER" + "REVIEW_IN_PROGRESS", true);
-    refsetAllowedMap.put("FINISH" + "REVIEWER" + "REVIEW_DONE", true);
+    //refsetAllowedMap.put("FINISH" + "REVIEWER" + "REVIEW_DONE", true);
     refsetAllowedMap.put("CANCEL" + "REVIEWER" + "*", true);
     
     config.setRefsetAllowedMap(refsetAllowedMap);
