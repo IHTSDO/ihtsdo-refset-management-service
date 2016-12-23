@@ -181,4 +181,18 @@ public interface Project extends Searchable {
    */
   public void setTerminologyHandlerUrl(String terminologyHandlerUrl);
 
+  /**
+   * Gets the workflow path.
+   *
+   * @return the workflow path
+   */
+  public String getWorkflowPath();
+
+  /**
+   * Sets the workflow path.
+   *
+   * @param workflowPath the new workflow path
+   */
+  public void setWorkflowPath(String workflowPath);
+
 }

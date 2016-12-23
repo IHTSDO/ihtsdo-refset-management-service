@@ -156,7 +156,6 @@ public class RefsetNoteTest extends RestSupport {
     refset.setTerminology("en-edition");
     refset.setTerminologyId(refsetId);
     refset.setVersion("20150131");
-    refset.setWorkflowPath("DEFAULT");
     refset.setWorkflowStatus(WorkflowStatus.NEW);
     refset.setLocalSet(false);
 

@@ -867,6 +867,7 @@ public class GenerateSampleDataMojo extends AbstractMojo {
     project.addValidationCheck("DEFAULT");
     project.setTerminologyHandlerKey(handlerKey);
     project.setTerminologyHandlerUrl(handlerUrl);
+    project.setWorkflowPath("DEFAULT");
     ProjectJpa newProject = (ProjectJpa) new ProjectServiceRestImpl()
         .addProject(project, auth.getAuthToken());
     newProject.setUserRoleMap(new HashMap<User, UserRole>());
@@ -1028,7 +1029,6 @@ public class GenerateSampleDataMojo extends AbstractMojo {
     refset.setTerminologyId(refsetId);
     // This is an opportunity to use "branch"
     refset.setVersion("20150131");
-    refset.setWorkflowPath("DEFAULT");
     refset.setLocalSet(false);
     if (importMembers) {
       refset.setWorkflowStatus(WorkflowStatus.PUBLISHED);
@@ -1130,7 +1130,6 @@ public class GenerateSampleDataMojo extends AbstractMojo {
     translation.setTerminology(refset.getTerminology());
     translation.setVersion(refset.getVersion());
     translation.setTerminologyId(refset.getTerminologyId());
-    translation.setWorkflowPath("DEFAULT");
     translation.setWorkflowStatus(WorkflowStatus.PUBLISHED);
     translation.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse("20150131"));
 

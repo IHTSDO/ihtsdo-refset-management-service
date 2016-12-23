@@ -1,7 +1,7 @@
 /**
  * Copyright 2015 West Coast Informatics, LLC
  */
-package org.ihtsdo.otf.refset.worfklow;
+package org.ihtsdo.otf.refset.workflow;
 
 import java.util.List;
 

@@ -501,6 +501,58 @@ tsApp.service('workflowService', [
       return deferred.promise;
     };
 
+    this.getWorkflowConfig = function(projectId) {
+      console.debug('getWorkflowConfig');
+      var deferred = $q.defer();
+
+      // Gets the workflow config for the given projectId
+      gpService.increment();
+      $http.get(workflowUrl + 'config?projectId=' + projectId).then(
+      // success
+      function(response) {
+        console.debug('  workflow config = ', response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    };
+
+    
+    this.refsetIsAllowed = function(action, role, workflowStatus, workflowConfig) {
+      var allowed = workflowConfig.refsetAllowedMap[action + role + workflowStatus];
+      if (allowed == null) {
+        allowed = workflowConfig.refsetAllowedMap[action + role + '*'];
+      }
+      if (allowed == null) {
+        return false;
+      }
+      return allowed;
+    }
+    
+    this.refsetGetRole = function(action, role, workflowStatus, workflowConfig) {
+      var allowed = workflowConfig.refsetRoleMap[action + role + workflowStatus];
+      if (allowed == null) {
+        allowed = workflowConfig.refsetRoleMap[action + role + '*'];
+      }
+      if (allowed == null) {
+        return 'AUTHOR';
+      }
+      return allowed;
+    }
+    
+    this.translationIsAllowed = function(action, role, workflowStatus, workflowConfig) {
+      
+    }
+    
+    this.translationGetRole = function(action, role, workflowStatus, workflowConfig) {
+      
+    }
     // end
 
   } ]);

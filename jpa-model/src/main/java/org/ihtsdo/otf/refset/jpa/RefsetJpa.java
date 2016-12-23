@@ -135,10 +135,6 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   @Column(nullable = false)
   private WorkflowStatus workflowStatus = WorkflowStatus.NEW;
 
-  /** The workflow path. */
-  @Column(nullable = false)
-  private String workflowPath;
-
   /** The namespace. */
   @Column(nullable = true)
   private String namespace;
@@ -230,7 +226,6 @@ public class RefsetJpa extends AbstractComponent implements Refset {
     lookupInProgress = refset.isLookupInProgress();
     feedbackEmail = refset.getFeedbackEmail();
     workflowStatus = refset.getWorkflowStatus();
-    workflowPath = refset.getWorkflowPath();
     project = refset.getProject();
     localSet = refset.isLocalSet();
     enabledFeedbackEvents = new HashSet<>(refset.getEnabledFeedbackEvents());
@@ -417,18 +412,6 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   @Override
   public void setWorkflowStatus(WorkflowStatus workflowStatus) {
     this.workflowStatus = workflowStatus;
-  }
-
-  /* see superclass */
-  @Override
-  public String getWorkflowPath() {
-    return workflowPath;
-  }
-
-  /* see superclass */
-  @Override
-  public void setWorkflowPath(String workflowPath) {
-    this.workflowPath = workflowPath;
   }
 
   /* see superclass */
@@ -934,7 +917,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
         + ", terminology=" + getTerminology() + ", version=" + getVersion()
         + ", namespace=" + namespace + ", definitionClauses="
         + definitionClauses + ", extUrl=" + externalUrl + ", workflowStatus="
-        + workflowStatus + ", workflowPath=" + workflowPath + ", domain="
+        + workflowStatus  + ", domain="
         + domain + ", project=" + (project == null ? null : project.getId())
         + ", localSet=" + localSet + "]";
   }

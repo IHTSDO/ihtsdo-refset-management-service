@@ -15,8 +15,11 @@ public enum UserRole {
   /** The author. */
   AUTHOR("Author"),
   
-  /** The lead. */
+  /** The reviewer. */
   REVIEWER("Reviewer"),
+  
+  /** The second reviewer. */
+  REVIEWER2("Reviewer2"),
   
   /**  The user. */
   USER("User"),
@@ -59,6 +62,9 @@ public enum UserRole {
       return true;
     else if (this == UserRole.REVIEWER
         && (role == UserRole.VIEWER || role == UserRole.USER || role == UserRole.AUTHOR || role == UserRole.REVIEWER))
+      return true;
+    else if (this == UserRole.REVIEWER2
+        && (role == UserRole.VIEWER || role == UserRole.USER || role == UserRole.AUTHOR || role == UserRole.REVIEWER || role == UserRole.REVIEWER2))
       return true;
     else if (this == UserRole.USER
         && (role == UserRole.VIEWER || role == UserRole.USER || role == UserRole.AUTHOR))

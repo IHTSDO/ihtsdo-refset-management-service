@@ -122,6 +122,10 @@ public class ProjectJpa implements Project {
   /** The terminology handler url. */
   @Column(nullable = true)
   private String terminologyHandlerUrl;
+  
+  /** The workflow path. */
+  @Column(nullable = false)
+  private String workflowPath;
 
   /** The role map. */
   @ElementCollection
@@ -168,6 +172,7 @@ public class ProjectJpa implements Project {
     terminology = project.getTerminology();
     terminologyHandlerKey = project.getTerminologyHandlerKey();
     terminologyHandlerUrl = project.getTerminologyHandlerUrl();
+    workflowPath = project.getWorkflowPath();
     version = project.getVersion();
     feedbackEmail = project.getFeedbackEmail();
     exclusionClause = project.getExclusionClause();
@@ -399,6 +404,20 @@ public class ProjectJpa implements Project {
   public void setOrganization(String organization) {
     this.organization = organization;
   }
+  
+  /* see superclass */
+  // n/a - @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  @Override
+  public String getWorkflowPath() {
+    return workflowPath;
+  }
+
+  /* see superclass */
+  @Override
+  public void setWorkflowPath(String workflowPath) {
+    this.workflowPath = workflowPath;
+  }
+
 
   /* see superclass */
   @Override
@@ -568,7 +587,8 @@ public class ProjectJpa implements Project {
         + ", namespace=" + namespace + ", moduleId=" + moduleId
         + ", organization=" + organization + ", description=" + description
         + ", terminology=" + terminology + ", version=" + version
-        + ", terminologyHandlerKey=" + terminologyHandlerKey
+        + ", terminologyHandlerKey=" + terminologyHandlerKey + ", workflowPath="
+        + workflowPath
         + ", exclusionClause=" + exclusionClause + ", userRoleMap="
         + userRoleMap + ", validationChecks=" + validationChecks + "]";
   }

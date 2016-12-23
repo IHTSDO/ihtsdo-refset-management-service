@@ -218,25 +218,16 @@
               confirm="Are you sure you want to remove the refset ({{refset.name}})?"
               ng-click="removeRefset(refset); $event.stopPropagation()"
               class="noul material-icons md-18">delete</i>
-            <!-- Assign as non-admin -->
-            <i ng-show="projects.role != 'ADMIN'"
-              ng-click="openAssignRefsetModal(refset,'ASSIGN'); $event.stopPropagation()"
-              title="Assign" class="noul material-icons md-18">assignment_ind</i>
-
-            <!-- Assign as admin -->
+            
+            <!-- Assign -->
             <i
-              ng-show="projects.role == 'ADMIN' && refset.workflowStatus == 'NEW'"
-              ng-click="openAssignRefsetModal(refset,'ASSIGN','AUTHOR'); $event.stopPropagation()"
+              ng-show="isAllowed('ASSIGN', refset)"
+              ng-click="openAssignRefsetModal(refset,'ASSIGN', getRole('ASSIGN', refset)); $event.stopPropagation()"
               title="Assign" class="noul material-icons md-18">assignment_ind</i>
+           
+            <!-- Reassign back to author -->
             <i
-              ng-show="projects.role == 'ADMIN' && refset.workflowStatus != 'NEW'"
-              ng-click="openAssignRefsetModal(refset,'ASSIGN','REVIEWER'); $event.stopPropagation()"
-              title="Assign" class="noul material-icons md-18">assignment_ind</i>
-
-
-            <!-- As author/reviewer, reassign back to author -->
-            <i
-              ng-show="projects.role != 'AUTHOR' && refset.workflowStatus != 'NEW'"
+              ng-show="isAllowed('REASSIGN', refset)"
               confirm="Are you sure you want to unassign the refset ({{refset.name}})?"
               ng-click="openAssignRefsetModal(refset,'REASSIGN'); $event.stopPropagation()"
               title="Reassign back to author" class="noul material-icons md-18">assignment_returned</i>

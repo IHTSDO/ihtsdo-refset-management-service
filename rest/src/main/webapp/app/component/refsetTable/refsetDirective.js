@@ -945,6 +945,16 @@ tsApp
                 }
               }
 
+              $scope.isAllowed = function(action, refset) {
+                return workflowService.refsetIsAllowed(action, $scope.projects.role, refset.workflowStatus,
+                  $scope.metadata.workflowConfig);
+              }
+              
+              $scope.getRole = function(action, refset) {
+                return workflowService.refsetGetRole(action, $scope.projects.role, refset.workflowStatus,
+                  $scope.metadata.workflowConfig);
+              }
+              
               //
               // MODALS
               //

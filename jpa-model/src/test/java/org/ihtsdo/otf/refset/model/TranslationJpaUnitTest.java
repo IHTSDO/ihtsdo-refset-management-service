@@ -188,7 +188,6 @@ public class TranslationJpaUnitTest extends ModelUnitSupport {
     tester.include("description");
     tester.include("isPublic");
     tester.include("workflowStatus");
-    tester.include("workflowPath");
     tester.include("provisional");
     tester.include("spellingDictionaryEmpty");
     tester.include("phraseMemoryEmpty");

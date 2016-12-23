@@ -146,17 +146,6 @@
       </tr>
       <tr>
         <td>
-          <b>Workflow path</b>
-        </td>
-        <td>
-          <span ng-show="metadata.workflowPaths.length == 1">{{refset.workflowPath}}</span>
-          <select ng-show="metadata.workflowPaths.length > 1"
-            ng-model="refset.workflowPath"
-            ng-options="item for item in metadata.workflowPaths"></select>
-        </td>
-      </tr>
-      <tr>
-        <td>
           <b>Type</b>
         </td>
         <td>
@@ -220,7 +209,7 @@
             {{errors[0]}}
             <div style="display: inline; float: right;">
               <i ng-show="errors[1]"
-                title="{{error.expand ? 'Show' : 'Hide'}} long eror"
+                title="{{error.expand ? 'Show' : 'Hide'}} long error"
                 class="noul material-icons md-18"
                 ng-click="error.expand = !error.expand;">attach_file</i>
             </div>
