@@ -117,20 +117,6 @@ public interface Translation extends Component, Searchable {
   public void setWorkflowStatus(WorkflowStatus workflowStatus);
 
   /**
-   * Returns the workflow path.
-   *
-   * @return the workflow path
-   */
-  public String getWorkflowPath();
-
-  /**
-   * Sets the workflow path.
-   *
-   * @param workflowPath the workflow path
-   */
-  public void setWorkflowPath(String workflowPath);
-
-  /**
    * Returns the refset.
    *
    * @return the refset

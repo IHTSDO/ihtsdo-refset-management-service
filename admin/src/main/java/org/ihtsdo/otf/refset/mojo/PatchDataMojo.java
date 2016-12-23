@@ -110,6 +110,18 @@ public class PatchDataMojo extends AbstractMojo {
         contentService.luceneReindex(null, authToken);
 
       }
+      
+      // Patch 1000002
+      // Set projects default 
+      getLog().info(
+          "Processing patch 1000002 - set project workflow path");
+      for (final Project project : service.findProjectsForQuery(null, null)
+          .getObjects()) {
+        project.setWorkflowPath("DEFAULT");
+        getLog().info(
+            "  project = " + project.getId() + ", " + project.getName());
+        service.updateProject(project);
+      }
 
       service.close();
       getLog().info("Done ...");

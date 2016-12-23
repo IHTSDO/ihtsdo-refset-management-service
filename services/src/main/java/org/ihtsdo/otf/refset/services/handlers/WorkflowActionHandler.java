@@ -12,10 +12,12 @@ import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.Configurable;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.RefsetList;
+import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.services.WorkflowService;
 import org.ihtsdo.otf.refset.workflow.TrackingRecord;
 import org.ihtsdo.otf.refset.workflow.WorkflowAction;
+import org.ihtsdo.otf.refset.workflow.WorkflowConfig;
 
 /**
  * Generically represents a handler for performing workflow actions.
@@ -133,4 +135,19 @@ public interface WorkflowActionHandler extends Configurable {
     User user, UserRole projectRole, WorkflowAction action, Concept concept,
     WorkflowService service) throws Exception;
 
+  /**
+   * Gets the available roles.
+   *
+   * @return the available roles
+   * @throws Exception the exception
+   */
+  public StringList getAvailableRoles() throws Exception;
+
+  /**
+   * Gets the workflow config.
+   *
+   * @return the workflow config
+   * @throws Exception the exception
+   */
+  public WorkflowConfig getWorkflowConfig() throws Exception;
 }

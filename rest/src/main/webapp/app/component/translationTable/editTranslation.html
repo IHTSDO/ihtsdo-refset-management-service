@@ -85,17 +85,7 @@
         </td>
         <td>{{translation.version}}</td>
       </tr>
-      <tr>
-        <td>
-          <b>Workflow path</b>
-        </td>
-        <td>
-          <span ng-show="metadata.workflowPaths.length == 1">{{translation.workflowPath}}</span>
-          <select ng-show="metadata.workflowPaths.length > 1"
-            ng-model="translation.workflowPath"
-            ng-options="item for item in metadata.workflowPaths"></select>
-        </td>
-      </tr>
+      
 
       <!-- Errors and warnings-->
       <tr
@@ -105,7 +95,7 @@
             {{errors[0]}}
             <div style="display: inline; float: right;">
               <i ng-show="errors[1]"
-                title="{{error.expand ? 'Show' : 'Hide'}} long eror"
+                title="{{error.expand ? 'Show' : 'Hide'}} long error"
                 class="noul material-icons md-18"
                 ng-click="error.expand = !error.expandtrue;">attach_file</i>
             </div>
