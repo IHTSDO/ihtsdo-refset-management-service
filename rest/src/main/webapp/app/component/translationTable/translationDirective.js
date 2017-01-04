@@ -1025,6 +1025,16 @@ tsApp
                 }
               };
 
+              $scope.isAllowed = function(action, concept) {
+                return workflowService.translationIsAllowed(action, $scope.projects.role, concept.workflowStatus,
+                  $scope.metadata.workflowConfig);
+              }
+              
+              $scope.getRole = function(action, concept) {
+                return workflowService.translationGetRole(action, $scope.projects.role, concept.workflowStatus,
+                  $scope.metadata.workflowConfig);
+              }
+              
               // 
               // MODALS
               //
@@ -1417,8 +1427,8 @@ tsApp
               };
 
               // Assign concept modal
-              $scope.openAssignConceptModal = function(lconcept, laction, lrole) {
-                console.debug('openAssignConceptModal ', lconcept, laction, lrole);
+              $scope.openAssignConceptModal = function(lconcept, laction) {
+                console.debug('openAssignConceptModal ', lconcept, laction);
 
                 var modalInstance = $uibModal.open({
                   templateUrl : 'app/component/translationTable/assignConcept.html',
@@ -1446,12 +1456,8 @@ tsApp
                     project : function() {
                       return $scope.project;
                     },
-                    role : function() {
-                      if (lrole) {
-                        return lrole;
-                      } else {
-                        return $scope.projects.role;
-                      }
+                    role : function() {            
+                      return $scope.projects.role;
                     },
                     tinymceOptions : function() {
                       return utilService.tinymceOptions;
@@ -1475,11 +1481,13 @@ tsApp
 
                 $scope.concept = concept;
                 $scope.metadata = metadata;
+                $scope.workflowConfig = metadata.workflowConfig;
                 $scope.note;
                 $scope.translation = translation;
                 $scope.action = action;
                 $scope.project = project;
-                $scope.role = role;
+                $scope.role = workflowService.translationGetRole(action, role, concept.workflowStatus,
+                  $scope.workflowConfig);
                 $scope.assignedUsers = [];
                 $scope.user = utilService.findBy(assignedUsers, currentUser, 'userName');
                 $scope.tinymceOptions = tinymceOptions;
@@ -1537,8 +1545,10 @@ tsApp
 
                   // else, reassign
                   else if (action == 'REASSIGN') {
+                    $scope.role = workflowService.translationGetRole('REASSIGN', role, concept.workflowStatus,
+                      $scope.workflowConfig);                 
                     workflowService.performTranslationWorkflowAction($scope.project.id,
-                      translation.id, $scope.user.userName, 'AUTHOR', 'REASSIGN', $scope.concept)
+                      translation.id, $scope.user.userName, $scope.role, 'REASSIGN', $scope.concept)
                       .then(
                         // Success - reassign
                         function(data) {
@@ -1567,16 +1577,21 @@ tsApp
 
                   // else, unassign, then reassign
                   else if (action == 'UNASSIGN-REASSIGN') {
-
+                    $scope.role = workflowService.translationGetRole('UNASSIGN', role, concept.workflowStatus,
+                      $scope.workflowConfig);
+                    
                     workflowService
                       .performTranslationWorkflowAction($scope.project.id, translation.id,
                         $scope.user.userName, $scope.role, 'UNASSIGN', $scope.concept).then(
                         // Success - unassign
                         function(data) {
+                          $scope.role = workflowService.translationGetRole('REASSIGN', role, concept.workflowStatus,
+                            $scope.workflowConfig);
+                          
                           // The username doesn't matter - it'll go back to the
                           // author
                           workflowService.performTranslationWorkflowAction($scope.project.id,
-                            translation.id, $scope.user.userName, 'AUTHOR', 'REASSIGN',
+                            translation.id, $scope.user.userName, $scope.role, 'REASSIGN',
                             $scope.concept).then(
                             // Success - reassign
                             function(data) {

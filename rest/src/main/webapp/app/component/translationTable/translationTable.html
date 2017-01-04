@@ -619,26 +619,16 @@
           </td>
           <!-- Actions -->
           <td class="nobreak">
+            
             <!-- Assign -->
-            <i ng-show="projects.role != 'ADMIN'"
+            <i
+              ng-show="isAllowed('ASSIGN', concept)"
               ng-click="openAssignConceptModal(concept, 'ASSIGN'); $event.stopPropagation()"
-              title="Assign" class="noul material-icons md-18">assignment_ind</i>
-
-            <!-- Assign -->
-            <i
-              ng-show="projects.role == 'ADMIN' && concept.workflowStatus=='NEW'"
-              ng-click="openAssignConceptModal(concept, 'ASSIGN', 'AUTHOR'); $event.stopPropagation()"
-              title="Assign" class="noul material-icons md-18">assignment_ind</i>
-
-            <!-- Assign -->
-            <i
-              ng-show="projects.role == 'ADMIN' && concept.workflowStatus=='EDITING_DONE'"
-              ng-click="openAssignConceptModal(concept, 'ASSIGN', 'REVIEWER'); $event.stopPropagation()"
               title="Assign" class="noul material-icons md-18">assignment_ind</i>
 
             <!-- Reassign -->
             <i
-              ng-show="projects.role != 'AUTHOR' && concept.workflowStatus!='NEW'"
+              ng-show="isAllowed('REASSIGN', concept)"
               confirm="Are you sure you want to reassign this concept ({{concept.terminologyId}}, {{concept.name}})"
               ng-click="openAssignConceptModal(concept, 'REASSIGN'); $event.stopPropagation()"
               title="Reassign back to author" class="noul material-icons md-18">assignment_returned</i>
@@ -810,14 +800,14 @@
 
             <!-- Finish -->
             <i confirm="Are you sure you want to finalize editing/review?"
-              ng-show="projects.role != 'ADMIN' && (record.concept.workflowStatus.indexOf('IN_PROGRESS') != -1 || record.concept.workflowStatus=='REVIEW_NEW')"
+              ng-show="isAllowed('FINISH', record.concept)"
               ng-click="performWorkflowAction(record.concept, 'FINISH');"
               title="Finish" class="noul material-icons md-18">done</i>
 
             <!-- Mark ready for publication -->
             <i
-              ng-show="projects.role != 'ADMIN' && record.concept.workflowStatus == 'REVIEW_DONE'"
-              ng-click="performWorkflowAction(record.concept, 'FINISH')"
+              ng-show="isAllowed('PREPARE_FOR_PUBLICATION', record.concept)"
+              ng-click="performWorkflowAction(record.concept, 'PREPARE_FOR_PUBLICATION')"
               title="Mark ready for publication"
               class="noul material-icons md-18">open_in_new</i>
 
@@ -978,7 +968,7 @@
               <td ng-show="value == 'EDITING'">
                 <!-- Assign (for error fixing) -->
                 <i ng-show="projects.role != 'ADMIN'"
-                  ng-click="openAssignConceptModal(concept, 'ASSIGN', 'AUTHOR'); $event.stopPropagation()"
+                  ng-click="openAssignConceptModal(concept, 'ASSIGN'); $event.stopPropagation()"
                   title="Assign" class="noul material-icons md-18">assignment_ind</i>
                 <!-- Unassign (for ADMIN fixing) -->
                 <i

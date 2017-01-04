@@ -101,6 +101,15 @@ tsApp
           if (!$scope.project) {
             return;
           }
+          
+          // Lookup workflow config for this project
+          workflowService.getWorkflowConfig($scope.project.id)
+          .then(
+            // Success
+            function(data) {
+              $scope.metadata.workflowConfig = data;
+            });
+          
           // Look up terminology names for this project
           $scope.getTerminologyMetadata(project);
 

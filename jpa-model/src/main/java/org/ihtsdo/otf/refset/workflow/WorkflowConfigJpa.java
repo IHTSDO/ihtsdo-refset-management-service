@@ -6,15 +6,12 @@ package org.ihtsdo.otf.refset.workflow;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.xml.bind.annotation.XmlRootElement;
-
 import org.ihtsdo.otf.refset.helpers.StringList;
 
 /**
  * JAXB enabled implementation of {@link WorkflowConfig}.
  * 
  */
-@XmlRootElement(name = "config")
 public class WorkflowConfigJpa implements WorkflowConfig {
 
   /** The refset allowed map. key = action+role+workflowStatus */
