@@ -15,7 +15,9 @@ public enum WorkflowAction {
   /** The save action. */
   SAVE,
   /** The finish action. */
-  FINISH,
+  FINISH,  
+  /** The ready for publication. */
+  PREPARE_FOR_PUBLICATION,
   /** The beta action. */
   BETA,
   /** The publish action. */
