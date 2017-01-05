@@ -210,12 +210,12 @@ tsApp
                     });
                 }
 
-                if ($scope.value == 'AVAILABLE' && $scope.projects.role == 'AUTHOR') {
+                if ($scope.value == 'AVAILABLE') {
                   if (pfs.queryRestriction && $scope.paging['refset'].filter) {
                     pfs.queryRestriction = pfs.queryRestriction + " AND ";
                   }
                   pfs.queryRestriction = pfs.queryRestriction + $scope.paging['refset'].filter;
-                  workflowService.findAvailableEditingRefsets($scope.project.id,
+                  workflowService.findAvailableRefsets($scope.projects.role, $scope.project.id,
                     $scope.user.userName, pfs).then(function(data) {
                     $scope.refsets = data.refsets;
                     $scope.refsets.totalCount = data.totalCount;
@@ -223,32 +223,7 @@ tsApp
                     $scope.reselect();
                   });
                 }
-                if ($scope.value == 'AVAILABLE' && $scope.projects.role == 'REVIEWER') {
-                  if (pfs.queryRestriction && $scope.paging['refset'].filter) {
-                    pfs.queryRestriction = pfs.queryRestriction + " AND ";
-                  }
-                  pfs.queryRestriction = pfs.queryRestriction + $scope.paging['refset'].filter;
-                  workflowService.findAvailableReviewRefsets($scope.project.id,
-                    $scope.user.userName, pfs).then(function(data) {
-                    $scope.refsets = data.refsets;
-                    $scope.refsets.totalCount = data.totalCount;
-                    $scope.stats.count = $scope.refsets.totalCount;
-                    $scope.reselect();
-                  });
-                }
-                if ($scope.value == 'AVAILABLE' && $scope.projects.role == 'ADMIN') {
-                  if (pfs.queryRestriction && $scope.paging['refset'].filter) {
-                    pfs.queryRestriction = pfs.queryRestriction + " AND ";
-                  }
-                  pfs.queryRestriction = pfs.queryRestriction + $scope.paging['refset'].filter;
-                  workflowService.findAllAvailableRefsets($scope.project.id, pfs).then(
-                    function(data) {
-                      $scope.refsets = data.refsets;
-                      $scope.refsets.totalCount = data.totalCount;
-                      $scope.stats.count = $scope.refsets.totalCount;
-                      $scope.reselect();
-                    });
-                }
+
                 // TODO: type picklist is not working on ASSIGNED accordion
                 // because it does a lucene search
                 // on TrackingRecords, not on Refsets table

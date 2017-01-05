@@ -3,6 +3,7 @@
  */
 package org.ihtsdo.otf.refset.jpa.services.handlers;
 
+import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
@@ -799,10 +800,8 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     return record;
   }
 
-  /* see superclass */
-  @SuppressWarnings("unchecked")
-  @Override
-  public ConceptList findAvailableEditingConcepts(Translation translation,
+
+  private ConceptList findAvailableEditingConcepts(Translation translation,
     PfsParameter pfs, WorkflowService service) throws Exception {
 
     // Cleanse PFS parameter to turn "concept" fields into concept refset member
@@ -883,10 +882,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
 
   }
 
-  /* see superclass */
-  @SuppressWarnings("unchecked")
-  @Override
-  public ConceptList findAvailableReviewConcepts(Translation translation,
+  private ConceptList findAvailableReviewConcepts(Translation translation,
     PfsParameter pfs, WorkflowService service) throws Exception {
 
     // Concepts of the translation with
@@ -943,10 +939,8 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
 
   }
 
-  /* see superclass */
-  @SuppressWarnings("unchecked")
-  @Override
-  public RefsetList findAvailableEditingRefsets(Long projectId,
+
+  private RefsetList findAvailableEditingRefsets(Long projectId,
     PfsParameter pfs, WorkflowService service) throws Exception {
 
     // TODO: redo this with lucene and set joins (based around id)
@@ -979,9 +973,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
   }
 
   /* see superclass */
-  @SuppressWarnings("unchecked")
-  @Override
-  public RefsetList findAvailableReviewRefsets(Long projectId, PfsParameter pfs,
+  private RefsetList findAvailableReviewRefsets(Long projectId, PfsParameter pfs,
     WorkflowService service) throws Exception {
 
     // Refsets for this project that are ready for review
@@ -1209,5 +1201,56 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     config.setTranslationRoleMap(translationRoleMap);
     
     return config;
+  }
+
+  @Override
+  public ConceptList findAvailableConcepts(UserRole userRole,
+    Translation translation, PfsParameter pfs, WorkflowService service)
+    throws Exception {
+    if (userRole == UserRole.AUTHOR) {
+      return findAvailableEditingConcepts(translation, pfs, service);
+    } else if (userRole == UserRole.REVIEWER) {
+      return findAvailableReviewConcepts(translation, pfs, service);
+    } else if (userRole == UserRole.ADMIN) {
+      List<Concept> concepts = new ArrayList<>();
+      concepts.addAll(findAvailableEditingConcepts(translation, null, service).getObjects());
+      concepts.addAll(findAvailableReviewConcepts(translation, null, service).getObjects());
+      final ConceptList conceptList = new ConceptListJpa();
+      final int[] totalCt = new int[1];
+      conceptList.getObjects().addAll(service.applyPfsToList(concepts,
+          Concept.class, totalCt, pfs));
+      conceptList.setTotalCount(totalCt[0]);
+      for (final Concept concept : conceptList.getObjects()) {
+        service.handleLazyInit(concept);
+      }
+      return conceptList;
+    } else {
+      throw new Exception("User role to find concepts must be AUTHOR, REVIEWER, or ADMIN.");
+    }
+  }
+
+  @Override
+  public RefsetList findAvailableRefsets(UserRole userRole, Long projectId,
+    PfsParameter pfs, WorkflowService service) throws Exception {
+    if (userRole == UserRole.AUTHOR) {
+      return findAvailableEditingRefsets(projectId, pfs, service);
+    } else if (userRole == UserRole.REVIEWER) {
+      return findAvailableReviewRefsets(projectId, pfs, service);
+    } else if (userRole == UserRole.ADMIN) {
+      List<Refset> refsets = new ArrayList<>();
+      refsets.addAll(findAvailableEditingRefsets(projectId, null, service).getObjects());
+      refsets.addAll(findAvailableReviewRefsets(projectId, null, service).getObjects());
+      final RefsetList list = new RefsetListJpa();
+      final int[] totalCt = new int[1];
+      list.getObjects().addAll(
+        service.applyPfsToList(refsets, Refset.class, totalCt, pfs));
+      list.setTotalCount(totalCt[0]);
+      for (final Refset refset : list.getObjects()) {
+        service.handleLazyInit(refset);
+      }
+      return list;
+    } else {
+      throw new Exception("User role to find refsets must be AUTHOR, REVIEWER, or ADMIN.");
+    }
   }
 }

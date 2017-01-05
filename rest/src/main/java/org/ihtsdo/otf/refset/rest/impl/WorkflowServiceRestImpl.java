@@ -35,16 +35,15 @@ import org.ihtsdo.otf.refset.jpa.services.TranslationServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.WorkflowServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.WorkflowServiceRest;
 import org.ihtsdo.otf.refset.rf2.Concept;
-import org.ihtsdo.otf.refset.rf2.Description;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.refset.services.SecurityService;
 import org.ihtsdo.otf.refset.services.TranslationService;
 import org.ihtsdo.otf.refset.services.WorkflowService;
 import org.ihtsdo.otf.refset.services.handlers.WorkflowActionHandler;
-import org.ihtsdo.otf.refset.workflow.TrackingRecordJpa;
-import org.ihtsdo.otf.refset.workflow.TrackingRecordListJpa;
 import org.ihtsdo.otf.refset.workflow.TrackingRecord;
+import org.ihtsdo.otf.refset.workflow.TrackingRecordJpa;
 import org.ihtsdo.otf.refset.workflow.TrackingRecordList;
+import org.ihtsdo.otf.refset.workflow.TrackingRecordListJpa;
 import org.ihtsdo.otf.refset.workflow.WorkflowAction;
 import org.ihtsdo.otf.refset.workflow.WorkflowConfig;
 import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
@@ -189,9 +188,10 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl
   /* see superclass */
   @Override
   @POST
-  @Path("/translation/available/editing")
-  @ApiOperation(value = "Find available editing work", notes = "Finds concepts in the specified translation available for editing by the specified user", response = ConceptListJpa.class)
-  public ConceptList findAvailableEditingConcepts(
+  @Path("/translation/available")
+  @ApiOperation(value = "Find available concepts", notes = "Finds concepts in the specified translation available by the specified user", response = ConceptListJpa.class)
+  public ConceptList findAvailableConcepts(
+    @ApiParam(value = "User role, e.g. 'AUTHOR'", required = true) @QueryParam("userRole") String userRole,    
     @ApiParam(value = "Project id, e.g. 5", required = false) @QueryParam("projectId") Long projectId,
     @ApiParam(value = "Translation id, e.g. 8", required = false) @QueryParam("translationId") Long translationId,
     @ApiParam(value = "User name, e.g. author1", required = true) @QueryParam("userName") String userName,
@@ -199,13 +199,13 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass())
-        .info("RESTful POST call (Workflow): /translation/available/editing "
+        .info("RESTful POST call (Workflow): /translation/available " + userRole + ", " 
             + translationId + ", " + userName + ", " + pfs);
 
     final WorkflowService workflowService = new WorkflowServiceJpa();
     try {
       authorizeProject(workflowService, projectId, securityService, authToken,
-          "perform workflow action on translation", UserRole.AUTHOR);
+          "find available concepts", UserRole.valueOf(userRole));
 
       // Get object references
       final Translation translation =
@@ -219,7 +219,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl
       final WorkflowActionHandler handler = workflowService
           .getWorkflowHandlerForPath(project.getWorkflowPath());
       // Find available editing work
-      final ConceptList list = handler.findAvailableEditingConcepts(translation,
+      final ConceptList list = handler.findAvailableConcepts(UserRole.valueOf(userRole), translation,
           pfs, workflowService);
 
       for (final Concept concept : list.getObjects()) {
@@ -228,7 +228,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl
       return list;
 
     } catch (Exception e) {
-      handleException(e, "trying to find available editing work");
+      handleException(e, "trying to find available concepts");
     } finally {
       workflowService.close();
       securityService.close();
@@ -282,54 +282,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl
     return null;
   }
 
-  /* see superclass */
-  @Override
-  @POST
-  @Path("/translation/available/review")
-  @ApiOperation(value = "Find available review work", notes = "Finds concepts in the specified translation available for review by the specified user", response = ConceptListJpa.class)
-  public ConceptList findAvailableReviewConcepts(
-    @ApiParam(value = "Project id, e.g. 5", required = false) @QueryParam("projectId") Long projectId,
-    @ApiParam(value = "Translation id, e.g. 8", required = false) @QueryParam("translationId") Long translationId,
-    @ApiParam(value = "User name, e.g. author1", required = true) @QueryParam("userName") String userName,
-    @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
-    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
-    Logger.getLogger(getClass())
-        .info("RESTful POST call (Workflow): /translation/available/review "
-            + translationId + ", " + userName);
 
-    final WorkflowService workflowService = new WorkflowServiceJpa();
-    try {
-      authorizeProject(workflowService, projectId, securityService, authToken,
-          "perform workflow action on translation", UserRole.AUTHOR);
-
-      // Get object references
-      final Translation translation =
-          workflowService.getTranslation(translationId);
-      // Get the project
-      final Project project = workflowService.getProject(projectId);
-      
-      // Obtain the handler
-      final WorkflowActionHandler handler = workflowService
-          .getWorkflowHandlerForPath(project.getWorkflowPath());
-      // Find available editing work
-      final ConceptList list = handler.findAvailableReviewConcepts(translation,
-          pfs, workflowService);
-      for (final Concept concept : list.getObjects()) {
-        concept.setDescriptions(new ArrayList<Description>());
-        concept.getNotes().size();
-      }
-
-      return list;
-
-    } catch (Exception e) {
-      handleException(e, "trying to find available review work");
-    } finally {
-      workflowService.close();
-      securityService.close();
-    }
-    return null;
-  }
 
   /* see superclass */
   @Override
@@ -498,27 +451,28 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl
   /* see superclass */
   @Override
   @POST
-  @Path("/refset/available/editing")
-  @ApiOperation(value = "Find available editing work", notes = "Finds refsets available for editing by the specified user", response = RefsetListJpa.class)
-  public RefsetList findAvailableEditingRefsets(
+  @Path("/refset/available")
+  @ApiOperation(value = "Find available refsets", notes = "Finds refsets available  by the specified user", response = RefsetListJpa.class)
+  public RefsetList findAvailableRefsets(
+    @ApiParam(value = "User role, e.g. 'AUTHOR'", required = true) @QueryParam("userRole") String userRole,    
     @ApiParam(value = "Project id, e.g. 5", required = false) @QueryParam("projectId") Long projectId,
     @ApiParam(value = "User name, e.g. author1", required = true) @QueryParam("userName") String userName,
     @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass())
-        .info("RESTful POST call (Workflow): /refset/available/editing "
+        .info("RESTful POST call (Workflow): /refset/available "
             + userName + ", " + pfs);
 
     final WorkflowService workflowService = new WorkflowServiceJpa();
     try {
       authorizeProject(workflowService, projectId, securityService, authToken,
-          "perform workflow action on refset", UserRole.AUTHOR);
+          "find available refsets", UserRole.valueOf(userRole));
 
       // Call helper
       // NOTE: handling for "localSet=..." parameter is in applyPfsToList
       List<Refset> list =
-          findAvailableEditingRefsetsHelper(projectId, workflowService);
+          findAvailableRefsetsHelper(UserRole.valueOf(userRole), projectId, workflowService);
 
       // Apply pfs
       final RefsetList result = new RefsetListJpa();
@@ -532,7 +486,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl
       return result;
 
     } catch (Exception e) {
-      handleException(e, "trying to find available editing work");
+      handleException(e, "trying to find available refsets");
     } finally {
       workflowService.close();
       securityService.close();
@@ -549,7 +503,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl
    * @throws Exception the exception
    */
   @SuppressWarnings("static-method")
-  private List<Refset> findAvailableEditingRefsetsHelper(Long projectId,
+  private List<Refset> findAvailableRefsetsHelper(UserRole userRole, Long projectId,
     WorkflowService workflowService) throws Exception {
 
     // Combine results from all workflow action handlers
@@ -557,7 +511,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl
     for (final WorkflowActionHandler handler : workflowService
         .getWorkflowHandlers()) {
       list.addAll(
-          handler.findAvailableEditingRefsets(projectId, null, workflowService)
+          handler.findAvailableRefsets(userRole, projectId, null, workflowService)
               .getObjects());
     }
     return list;
@@ -657,73 +611,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl
     return null;
   }
 
-  /* see superclass */
-  @Override
-  @POST
-  @Path("/refset/available/review")
-  @ApiOperation(value = "Find available review work", notes = "Finds refsets available for review by the specified user", response = RefsetListJpa.class)
-  public RefsetList findAvailableReviewRefsets(
-    @ApiParam(value = "Project id, e.g. 5", required = false) @QueryParam("projectId") Long projectId,
-    @ApiParam(value = "User name, e.g. author1", required = true) @QueryParam("userName") String userName,
-    @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
-    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
-    Logger.getLogger(getClass()).info(
-        "RESTful POST call (Workflow): /refset/available/review " + userName);
 
-    final WorkflowService workflowService = new WorkflowServiceJpa();
-    try {
-      authorizeProject(workflowService, projectId, securityService, authToken,
-          "trying to find available review work", UserRole.AUTHOR);
-
-      // Call helper
-      List<Refset> list =
-          findAvailableReviewRefsetsHelper(projectId, workflowService);
-
-      // Apply pfs
-      final RefsetList result = new RefsetListJpa();
-      final int[] totalCt = new int[1];
-      list = ((WorkflowServiceJpa) workflowService).applyPfsToList(list,
-          Refset.class, totalCt, pfs);
-      result.setTotalCount(totalCt[0]);
-      result.setObjects(list);
-      for (final Refset refset : list) {
-        workflowService.handleLazyInit(refset);
-      }
-      return result;
-
-    } catch (Exception e) {
-      handleException(e, "trying to find available review work");
-    } finally {
-      workflowService.close();
-      securityService.close();
-    }
-    return null;
-  }
-
-  /**
-   * Find available review refsets helper.
-   *
-   * @param projectId the project id
-   * @param workflowService the workflow service
-   * @return the list
-   * @throws Exception the exception
-   */
-  @SuppressWarnings("static-method")
-  private List<Refset> findAvailableReviewRefsetsHelper(Long projectId,
-    WorkflowService workflowService) throws Exception {
-
-    // Combine results from all workflow action handlers
-    final List<Refset> list = new ArrayList<>();
-    for (final WorkflowActionHandler handler : workflowService
-        .getWorkflowHandlers()) {
-      list.addAll(
-          handler.findAvailableReviewRefsets(projectId, null, workflowService)
-              .getObjects());
-    }
-    return list;
-
-  }
 
   /* see superclass */
   @Override
@@ -770,48 +658,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl
     return null;
   }
 
-  /* see superclass */
-  @Override
-  @POST
-  @Path("/refset/available/all")
-  @ApiOperation(value = "Find available review work", notes = "Finds refsets available for review by the specified user", response = RefsetListJpa.class)
-  public RefsetList findAllAvailableRefsets(
-    @ApiParam(value = "Project id, e.g. 5", required = false) @QueryParam("projectId") Long projectId,
-    @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
-    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
-    Logger.getLogger(getClass())
-        .info("RESTful POST call (Workflow): /refset/available/all ");
 
-    final WorkflowService workflowService = new WorkflowServiceJpa();
-    try {
-      authorizeProject(workflowService, projectId, securityService, authToken,
-          "trying to find refset available review work", UserRole.AUTHOR);
-
-      // Get available refsets
-      final List<Refset> refsets = new ArrayList<>();
-      refsets.addAll(
-          this.findAvailableEditingRefsetsHelper(projectId, workflowService));
-      refsets.addAll(
-          this.findAvailableReviewRefsetsHelper(projectId, workflowService));
-
-      final RefsetList list = new RefsetListJpa();
-      final int[] totalCt = new int[1];
-      list.getObjects().addAll(
-          workflowService.applyPfsToList(refsets, Refset.class, totalCt, pfs));
-      list.setTotalCount(totalCt[0]);
-      for (final Refset refset : list.getObjects()) {
-        workflowService.handleLazyInit(refset);
-      }
-      return list;
-    } catch (Exception e) {
-      handleException(e, "trying to find available review work");
-    } finally {
-      workflowService.close();
-      securityService.close();
-    }
-    return null;
-  }
 
   /* see superclass */
   @Override
@@ -836,12 +683,18 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl
           + " AND (forAuthoring:true OR forReview:true) AND NOT refsetId:0";
       // Perform this search without pfs
       final TrackingRecordList records =
-          workflowService.findTrackingRecordsForQuery(query, pfs);
-      for (final TrackingRecord record : records.getObjects()) {
-        // Handle lazy initialization
+          workflowService.findTrackingRecordsForQuery(query, null);
+      
+      final TrackingRecordList trackingRecordList = new TrackingRecordListJpa();
+      final int[] totalCt = new int[1];
+      trackingRecordList.getObjects().addAll(workflowService.applyPfsToList(records.getObjects(),
+          TrackingRecord.class, totalCt, pfs));
+      trackingRecordList.setTotalCount(totalCt[0]);
+      for (final TrackingRecord record : trackingRecordList.getObjects()) {
         handleLazyInit(record, workflowService);
       }
-      return records;
+      return trackingRecordList;
+
     } catch (Exception e) {
       handleException(e, "trying to find assigned review work");
     } finally {
@@ -876,11 +729,16 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl
       // Perform this search without pfs
       final TrackingRecordList records =
           workflowService.findTrackingRecordsForQuery(query, null);
-      for (final TrackingRecord record : records.getObjects()) {
+
+      final TrackingRecordList trackingRecordList = new TrackingRecordListJpa();
+      final int[] totalCt = new int[1];
+      trackingRecordList.getObjects().addAll(workflowService.applyPfsToList(records.getObjects(),
+          TrackingRecord.class, totalCt, pfs));
+      trackingRecordList.setTotalCount(totalCt[0]);
+      for (final TrackingRecord record : trackingRecordList.getObjects()) {
         handleLazyInit(record, workflowService);
       }
-
-      return records;
+      return trackingRecordList;
     } catch (Exception e) {
       handleException(e, "trying to find all assigned work");
     } finally {
@@ -890,64 +748,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl
     return null;
   }
 
-  /* see superclass */
-  @Override
-  @POST
-  @Path("/translation/available/all")
-  @ApiOperation(value = "Find available translation work", notes = "Finds concepts available for editing by any user", response = ConceptListJpa.class)
-  public ConceptList findAllAvailableConcepts(
-    @ApiParam(value = "Project id, e.g. 5", required = false) @QueryParam("projectId") Long projectId,
-    @ApiParam(value = "Translation id, e.g. 5", required = false) @QueryParam("translationId") Long translationId,
-    @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
-    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
-    Logger.getLogger(getClass())
-        .info("RESTful POST call (Workflow): /translation/available/all ");
 
-    final WorkflowService workflowService = new WorkflowServiceJpa();
-    try {
-      authorizeProject(workflowService, projectId, securityService, authToken,
-          "trying to find refset available review work", UserRole.AUTHOR);
-      
-      // Get the project
-      final Project project = workflowService.getProject(projectId);
-      
-      // Get the translation
-      final Translation translation =
-          workflowService.getTranslation(translationId);
-
-      // Obtain the handler
-      final WorkflowActionHandler handler = workflowService
-          .getWorkflowHandlerForPath(project.getWorkflowPath());
-
-      // Get available concepts for all users with author or reviewer roles on
-      // the project
-      final List<Concept> concepts = new ArrayList<>();
-      concepts.addAll(handler
-          .findAvailableEditingConcepts(translation, null, workflowService)
-          .getObjects());
-      concepts.addAll(handler
-          .findAvailableReviewConcepts(translation, null, workflowService)
-          .getObjects());
-
-      final ConceptList list = new ConceptListJpa();
-      final int[] totalCt = new int[1];
-      list.getObjects().addAll(workflowService.applyPfsToList(concepts,
-          Concept.class, totalCt, pfs));
-      list.setTotalCount(totalCt[0]);
-      for (final Concept concept : list.getObjects()) {
-        workflowService.handleLazyInit(concept);
-      }
-      return list;
-
-    } catch (Exception e) {
-      handleException(e, "trying to find available review work");
-    } finally {
-      workflowService.close();
-      securityService.close();
-    }
-    return null;
-  }
 
   @Override
   @POST

@@ -26,11 +26,11 @@ import org.ihtsdo.otf.refset.jpa.helpers.RefsetListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.TranslationListJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.WorkflowServiceRest;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
+import org.ihtsdo.otf.refset.workflow.TrackingRecord;
 import org.ihtsdo.otf.refset.workflow.TrackingRecordJpa;
+import org.ihtsdo.otf.refset.workflow.TrackingRecordList;
 import org.ihtsdo.otf.refset.workflow.TrackingRecordListJpa;
 import org.ihtsdo.otf.refset.workflow.WorkflowConfig;
-import org.ihtsdo.otf.refset.workflow.TrackingRecord;
-import org.ihtsdo.otf.refset.workflow.TrackingRecordList;
 
 /**
  * Client for connecting to a workflow REST service.
@@ -114,11 +114,11 @@ public class WorkflowClientRest extends RootClientRest implements
 
   /* see superclass */
   @Override
-  public ConceptList findAvailableEditingConcepts(Long projectId,
+  public ConceptList findAvailableConcepts(String userRole, Long projectId,
     Long translationId, String userName, PfsParameterJpa pfs, String authToken)
     throws Exception {
     Logger.getLogger(getClass()).debug(
-        "Workflow Client - find available editing concepts - " + translationId
+        "Workflow Client - find available concepts - " + translationId
             + ", " + userName);
 
     validateNotEmpty(projectId, "projectId");
@@ -128,7 +128,7 @@ public class WorkflowClientRest extends RootClientRest implements
     Client client = ClientBuilder.newClient();
     WebTarget target =
         client.target(config.getProperty("base.url")
-            + "/workflow/translation/available/editing" + "?projectId="
+            + "/workflow/translation/available" + "?userRole=" + userRole + "&projectId="
             + projectId + "&translationId=" + translationId + "&userName="
             + userName);
 
@@ -190,44 +190,7 @@ public class WorkflowClientRest extends RootClientRest implements
         TrackingRecordListJpa.class);
   }
 
-  /* see superclass */
-  @Override
-  public ConceptList findAvailableReviewConcepts(Long projectId,
-    Long translationId, String userName, PfsParameterJpa pfs, String authToken)
-    throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Workflow Client - find available review concepts - " + translationId
-            + ", " + userName);
 
-    validateNotEmpty(projectId, "projectId");
-    validateNotEmpty(translationId, "translationId");
-    validateNotEmpty(userName, "userName");
-
-    Client client = ClientBuilder.newClient();
-    WebTarget target =
-        client.target(config.getProperty("base.url")
-            + "/workflow/translation/available/review" + "?projectId="
-            + projectId + "&translationId=" + translationId + "&userName="
-            + userName);
-
-    String pfsStr =
-        ConfigUtility.getStringForGraph(pfs == null ? new PfsParameterJpa()
-            : pfs);
-    Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken).post(Entity.xml(pfsStr));
-
-    String resultString = response.readEntity(String.class);
-    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-      // n/a
-    } else {
-      throw new Exception(resultString);
-    }
-
-    // converting to object
-    return (ConceptList) ConfigUtility.getGraphForString(resultString,
-        ConceptListJpa.class);
-  }
 
   /* see superclass */
   @Override
@@ -365,10 +328,10 @@ public class WorkflowClientRest extends RootClientRest implements
 
   /* see superclass */
   @Override
-  public RefsetList findAvailableEditingRefsets(Long projectId,
+  public RefsetList findAvailableRefsets(String userRole, Long projectId,
     String userName, PfsParameterJpa pfs, String authToken) throws Exception {
     Logger.getLogger(getClass()).debug(
-        "Workflow Client - find available editing refsets - " + userName);
+        "Workflow Client - find available refsets - " + userName);
 
     validateNotEmpty(projectId, "projectId");
     validateNotEmpty(userName, "userName");
@@ -376,7 +339,7 @@ public class WorkflowClientRest extends RootClientRest implements
     Client client = ClientBuilder.newClient();
     WebTarget target =
         client.target(config.getProperty("base.url")
-            + "/workflow/refset/available/editing" + "?projectId=" + projectId
+            + "/workflow/refset/available" + "?userRole=" + userRole + "&projectId=" + projectId
             + "&userName=" + userName);
 
     String pfsStr =
@@ -433,40 +396,7 @@ public class WorkflowClientRest extends RootClientRest implements
         TrackingRecordListJpa.class);
   }
 
-  /* see superclass */
-  @Override
-  public RefsetList findAvailableReviewRefsets(Long projectId, String userName,
-    PfsParameterJpa pfs, String authToken) throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Workflow Client - find available review refsets - " + userName);
 
-    validateNotEmpty(projectId, "projectId");
-    validateNotEmpty(userName, "userName");
-
-    Client client = ClientBuilder.newClient();
-    WebTarget target =
-        client.target(config.getProperty("base.url")
-            + "/workflow/refset/available/review" + "?projectId=" + projectId
-            + "&userName=" + userName);
-
-    String pfsStr =
-        ConfigUtility.getStringForGraph(pfs == null ? new PfsParameterJpa()
-            : pfs);
-    Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken).post(Entity.xml(pfsStr));
-
-    String resultString = response.readEntity(String.class);
-    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-      // n/a
-    } else {
-      throw new Exception(resultString);
-    }
-
-    // converting to object
-    return (RefsetList) ConfigUtility.getGraphForString(resultString,
-        RefsetListJpa.class);
-  }
 
   /* see superclass */
   @Override
@@ -537,38 +467,7 @@ public class WorkflowClientRest extends RootClientRest implements
         TrackingRecordJpa.class);
   }
 
-  /* see superclass */
-  @Override
-  public RefsetList findAllAvailableRefsets(Long projectId,
-    PfsParameterJpa pfs, String authToken) throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Workflow Client - find all available refsets: " + projectId);
 
-    validateNotEmpty(projectId, "projectId");
-
-    Client client = ClientBuilder.newClient();
-    WebTarget target =
-        client.target(config.getProperty("base.url")
-            + "/workflow/refset/available/all" + "?projectId=" + projectId);
-
-    String pfsStr =
-        ConfigUtility.getStringForGraph(pfs == null ? new PfsParameterJpa()
-            : pfs);
-    Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken).post(Entity.xml(pfsStr));
-
-    String resultString = response.readEntity(String.class);
-    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-      // n/a
-    } else {
-      throw new Exception(resultString);
-    }
-
-    // converting to object
-    return (RefsetList) ConfigUtility.getGraphForString(resultString,
-        RefsetListJpa.class);
-  }
 
   /* see superclass */
   @Override
@@ -637,39 +536,7 @@ public class WorkflowClientRest extends RootClientRest implements
         TranslationListJpa.class);
   }
 
-  @Override
-  public ConceptList findAllAvailableConcepts(Long projectId,
-    Long translationId, PfsParameterJpa pfs, String authToken) throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Workflow Client - find all available concepts - " + translationId);
 
-    validateNotEmpty(projectId, "projectId");
-    validateNotEmpty(translationId, "translationId");
-
-    Client client = ClientBuilder.newClient();
-    WebTarget target =
-        client.target(config.getProperty("base.url")
-            + "/workflow/translation/available/all" + "?projectId=" + projectId
-            + "&translationId=" + translationId);
-
-    String pfsStr =
-        ConfigUtility.getStringForGraph(pfs == null ? new PfsParameterJpa()
-            : pfs);
-    Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken).post(Entity.xml(pfsStr));
-
-    String resultString = response.readEntity(String.class);
-    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-      // n/a
-    } else {
-      throw new Exception(resultString);
-    }
-
-    // converting to object
-    return (ConceptList) ConfigUtility.getGraphForString(resultString,
-        ConceptJpa.class);
-  }
 
   @Override
   public TrackingRecordList findAllAssignedConcepts(Long projectId,
