@@ -55,15 +55,15 @@ tsApp.service('workflowService', [
       return deferred.promise;
     };
 
-    // Find available translation editing work
-    this.findAvailableEditingConcepts = function(projectId, translationId, userName, pfs) {
-      console.debug('findAvailableEditingConcepts');
+    // Find available translation work
+    this.findAvailableConcepts = function(userRole, projectId, translationId, userName, pfs) {
+      console.debug('findAvailableConcepts');
       var deferred = $q.defer();
 
       // Find available editing work
       gpService.increment();
       $http.post(
-        workflowUrl + 'translation/available/editing?projectId=' + projectId + '&translationId='
+        workflowUrl + 'translation/available?userRole=' + userRole + '&projectId=' + projectId + '&translationId='
           + translationId + '&userName=' + userName, utilService.prepPfs(pfs)).then(
       // success
       function(response) {
@@ -105,59 +105,10 @@ tsApp.service('workflowService', [
       return deferred.promise;
     };
 
-    // Find available translation review work
-    this.findAvailableReviewConcepts = function(projectId, translationId, userName, pfs) {
-      console.debug('findAvailableReviewConcepts');
-      var deferred = $q.defer();
-
-      // Find available review work
-      gpService.increment();
-      $http.post(
-        workflowUrl + 'translation/available/review?projectId=' + projectId + '&translationId='
-          + translationId + '&userName=' + userName, utilService.prepPfs(pfs)).then(
-      // success
-      function(response) {
-        console.debug('  work = ', response.data);
-        gpService.decrement();
-        deferred.resolve(response.data);
-      },
-      // error
-      function(response) {
-        utilService.handleError(response);
-        gpService.decrement();
-        deferred.reject(response.data);
-      });
-      return deferred.promise;
-    };
-
-    // Find all available translation  work
-    this.findAllAvailableConcepts = function(projectId, translationId, pfs) {
-      console.debug('findAllAvailableConcepts');
-      var deferred = $q.defer();
-
-      // Find all available  work
-      gpService.increment();
-      $http.post(
-        workflowUrl + 'translation/available/all?projectId=' + projectId + '&translationId='
-          + translationId, utilService.prepPfs(pfs)).then(
-      // success
-      function(response) {
-        console.debug('  work = ', response.data);
-        gpService.decrement();
-        deferred.resolve(response.data);
-      },
-      // error
-      function(response) {
-        utilService.handleError(response);
-        gpService.decrement();
-        deferred.reject(response.data);
-      });
-      return deferred.promise;
-    };
 
     // Find all assigned translation work
     this.findAllAssignedConcepts = function(projectId, translationId, pfs) {
-      console.debug('findAllAvailableConcepts');
+      console.debug('findAllAssignedConcepts');
       var deferred = $q.defer();
 
       // Find all assigned work
@@ -281,15 +232,15 @@ tsApp.service('workflowService', [
       return deferred.promise;
     };
 
-    // Finds refsets available for editing by the specified user
-    this.findAvailableEditingRefsets = function(projectId, userName, pfs) {
-      console.debug('findAvailableEditingRefsets');
+    // Finds refsets available by the specified user
+    this.findAvailableRefsets = function(userRole, projectId, userName, pfs) {
+      console.debug('findAvailableRefsets');
       var deferred = $q.defer();
 
-      // Finds refsets available for editing by the specified user
+      // Finds refsets available by the specified user
       gpService.increment();
       $http.post(
-        workflowUrl + 'refset/available/editing?projectId=' + projectId + '&userName=' + userName,
+        workflowUrl + 'refset/available?userRole=' + userRole + '&projectId=' + projectId + '&userName=' + userName,
         utilService.prepPfs(pfs)).then(
       // success
       function(response) {
@@ -331,30 +282,6 @@ tsApp.service('workflowService', [
       return deferred.promise;
     };
 
-    // Finds refsets available for review by the specified user
-    this.findAvailableReviewRefsets = function(projectId, userName, pfs) {
-      console.debug('findAvailableReviewRefsets');
-      var deferred = $q.defer();
-
-      // Finds refsets available for review by the specified user
-      gpService.increment();
-      $http.post(
-        workflowUrl + 'refset/available/review?projectId=' + projectId + '&userName=' + userName,
-        utilService.prepPfs(pfs)).then(
-      // success
-      function(response) {
-        console.debug('  refset = ', response.data);
-        gpService.decrement();
-        deferred.resolve(response.data);
-      },
-      // error
-      function(response) {
-        utilService.handleError(response);
-        gpService.decrement();
-        deferred.reject(response.data);
-      });
-      return deferred.promise;
-    };
 
     // Finds refsets assigned for review for the specified user
     this.findAssignedReviewRefsets = function(projectId, userName, pfs) {
@@ -381,29 +308,6 @@ tsApp.service('workflowService', [
       return deferred.promise;
     };
 
-    // Finds all refsets available
-    this.findAllAvailableRefsets = function(projectId, pfs) {
-      console.debug('findAllAvailableRefsets');
-      var deferred = $q.defer();
-
-      // Finds refsets available for review by the specified user
-      gpService.increment();
-      $http.post(workflowUrl + 'refset/available/all?projectId=' + projectId,
-        utilService.prepPfs(pfs)).then(
-      // success
-      function(response) {
-        console.debug('  refset = ', response.data);
-        gpService.decrement();
-        deferred.resolve(response.data);
-      },
-      // error
-      function(response) {
-        utilService.handleError(response);
-        gpService.decrement();
-        deferred.reject(response.data);
-      });
-      return deferred.promise;
-    };
 
     // Finds all assigned refsets
     this.findAllAssignedRefsets = function(projectId, pfs) {

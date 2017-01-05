@@ -348,37 +348,14 @@ tsApp
                   queryRestriction : null
                 };
 
-                if ($scope.projects.role == 'AUTHOR') {
-                  pfs.queryRestriction = $scope.paging['available'].filter;
-                  workflowService.findAvailableEditingConcepts($scope.project.id, translation.id,
-                    $scope.user.userName, pfs).then(
-                  // Success
-                  function(data) {
-                    translation.available = data.concepts;
-                    translation.available.totalCount = data.totalCount;
-                  });
-                } else if ($scope.projects.role == 'REVIEWER') {
-                  pfs.queryRestriction = $scope.paging['available'].filter;
-                  workflowService.findAvailableReviewConcepts($scope.project.id, translation.id,
-                    $scope.user.userName, pfs).then(
-                  // Success
-                  function(data) {
-                    translation.available = data.concepts;
-                    translation.available.totalCount = data.totalCount;
-                  });
-                } else if ($scope.projects.role == 'ADMIN') {
-                  pfs.queryRestriction = $scope.paging['available'].filter;
-                  workflowService.findAllAvailableConcepts($scope.project.id, translation.id, pfs)
-                    .then(
-                    // Success
-                    function(data) {
-                      translation.available = data.concepts;
-                      translation.available.totalCount = data.totalCount;
-                    });
-
-                } else {
-                  window.alert('Unexpected role attempting to get available concepts');
-                }
+                pfs.queryRestriction = $scope.paging['available'].filter;
+                workflowService.findAvailableConcepts($scope.projects.role, $scope.project.id,
+                  translation.id, $scope.user.userName, pfs).then(
+                // Success
+                function(data) {
+                  translation.available = data.concepts;
+                  translation.available.totalCount = data.totalCount;
+                });
 
               };
 
@@ -595,7 +572,7 @@ tsApp
 
                       // Now check for available concepts
                       workflowService
-                        .findAllAvailableConcepts($scope.project.id, translation.id, {
+                        .findAvailableConcepts('ADMIN', $scope.project.id, translation.id, $scope.user.userName, {
                           startIndex : 0,
                           maxResults : 1
                         })
@@ -1742,7 +1719,7 @@ tsApp
                   if ($scope.role == 'AUTHOR' && type == 'Available') {
 
                     workflowService
-                      .findAvailableEditingConcepts(project.id, translation.id,
+                      .findAvailableConcepts('AUTHOR', project.id, translation.id,
                         $scope.user.userName, pfs)
                       .then(
                         // Success
@@ -1790,7 +1767,7 @@ tsApp
 
                   else if ($scope.role == 'REVIEWER' && type == 'Available') {
                     workflowService
-                      .findAvailableReviewConcepts(project.id, translation.id,
+                      .findAvailableConcepts('REVIEWER', project.id, translation.id,
                         $scope.user.userName, pfs)
                       .then(
                         // Success

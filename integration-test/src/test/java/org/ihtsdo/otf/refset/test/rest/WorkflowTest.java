@@ -312,7 +312,7 @@ public class WorkflowTest extends RestSupport {
 
     // Nothing returned to start with
     RefsetList availableRefsets =
-        workflowService.findAllAvailableRefsets(project.getId(), null,
+        workflowService.findAvailableRefsets("ADMIN", project.getId(), "admin1", null,
             adminAuthToken);
     // Nothing returned to start with
     TrackingRecordList assignedRefsets =
@@ -331,7 +331,7 @@ public class WorkflowTest extends RestSupport {
 
     // Before any WF Action, have availableRefset due to refset1
     availableRefsets =
-        workflowService.findAllAvailableRefsets(project.getId(), null,
+        workflowService.findAvailableRefsets("ADMIN", project.getId(), "admin1", null,
             adminAuthToken);
     assertEquals(1, availableRefsets.getCount());
     assignedRefsets =
@@ -344,7 +344,7 @@ public class WorkflowTest extends RestSupport {
         author1.getUserName(), UserRole.AUTHOR.toString(), "ASSIGN",
         authorAuthToken);
     availableRefsets =
-        workflowService.findAllAvailableRefsets(project.getId(), null,
+        workflowService.findAvailableRefsets("ADMIN", project.getId(), "admin1", null,
             adminAuthToken);
     assertEquals(0, availableRefsets.getCount());
     assignedRefsets =
@@ -357,7 +357,7 @@ public class WorkflowTest extends RestSupport {
         author1.getUserName(), UserRole.AUTHOR.toString(), "SAVE",
         authorAuthToken);
     availableRefsets =
-        workflowService.findAllAvailableRefsets(project.getId(), null,
+        workflowService.findAvailableRefsets("ADMIN", project.getId(), "admin1", null,
             adminAuthToken);
     assertEquals(0, availableRefsets.getCount());
     assignedRefsets =
@@ -374,7 +374,7 @@ public class WorkflowTest extends RestSupport {
     refsetService.updateRefset(refset2, adminAuthToken);
 
     availableRefsets =
-        workflowService.findAllAvailableRefsets(project.getId(), null,
+        workflowService.findAvailableRefsets("ADMIN", project.getId(), "admin1", null,
             adminAuthToken);
     assertEquals(1, availableRefsets.getCount());
     assignedRefsets =
@@ -388,7 +388,7 @@ public class WorkflowTest extends RestSupport {
         author1.getUserName(), UserRole.AUTHOR.toString(), "FINISH",
         authorAuthToken);
     availableRefsets =
-        workflowService.findAllAvailableRefsets(project.getId(), null,
+        workflowService.findAvailableRefsets("ADMIN", project.getId(), "admin1", null,
             adminAuthToken);
     assertEquals(2, availableRefsets.getCount());
     assignedRefsets =
@@ -402,7 +402,7 @@ public class WorkflowTest extends RestSupport {
         reviewer1.getUserName(), UserRole.REVIEWER.toString(), "ASSIGN",
         reviewerAuthToken);
     availableRefsets =
-        workflowService.findAllAvailableRefsets(project.getId(), null,
+        workflowService.findAvailableRefsets("ADMIN", project.getId(), "admin1", null,
             adminAuthToken);
     assertEquals(1, availableRefsets.getCount());
     assignedRefsets =
@@ -415,7 +415,7 @@ public class WorkflowTest extends RestSupport {
         reviewer1.getUserName(), UserRole.REVIEWER.toString(), "UNASSIGN",
         reviewerAuthToken);
     availableRefsets =
-        workflowService.findAllAvailableRefsets(project.getId(), null,
+        workflowService.findAvailableRefsets("ADMIN", project.getId(), "admin1", null,
             adminAuthToken);
     assertEquals(2, availableRefsets.getCount());
     assignedRefsets =
@@ -428,7 +428,7 @@ public class WorkflowTest extends RestSupport {
         author1.getUserName(), UserRole.AUTHOR.toString(), "ASSIGN",
         authorAuthToken);
     availableRefsets =
-        workflowService.findAllAvailableRefsets(project.getId(), null,
+        workflowService.findAvailableRefsets("ADMIN", project.getId(), "admin1", null,
             adminAuthToken);
     assertEquals(1, availableRefsets.getCount());
     assignedRefsets =
@@ -441,7 +441,7 @@ public class WorkflowTest extends RestSupport {
         reviewer1.getUserName(), UserRole.AUTHOR.toString(), "REASSIGN",
         authorAuthToken);
     availableRefsets =
-        workflowService.findAllAvailableRefsets(project.getId(), null,
+        workflowService.findAvailableRefsets("ADMIN", project.getId(), "admin1", null,
             adminAuthToken);
     assertEquals(0, availableRefsets.getCount());
     assignedRefsets =
@@ -454,7 +454,7 @@ public class WorkflowTest extends RestSupport {
         author1.getUserName(), UserRole.AUTHOR.toString(), "SAVE",
         authorAuthToken);
     availableRefsets =
-        workflowService.findAllAvailableRefsets(project.getId(), null,
+        workflowService.findAvailableRefsets("ADMIN", project.getId(), "admin1", null,
             adminAuthToken);
     assertEquals(0, availableRefsets.getCount());
     assignedRefsets =
@@ -467,7 +467,7 @@ public class WorkflowTest extends RestSupport {
         author1.getUserName(), UserRole.AUTHOR.toString(), "UNASSIGN",
         authorAuthToken);
     availableRefsets =
-        workflowService.findAllAvailableRefsets(project.getId(), null,
+        workflowService.findAvailableRefsets("ADMIN", project.getId(), "admin1", null,
             adminAuthToken);
     assertEquals(1, availableRefsets.getCount());
     assignedRefsets =
@@ -479,7 +479,7 @@ public class WorkflowTest extends RestSupport {
         author1.getUserName(), UserRole.AUTHOR.toString(), "UNASSIGN",
         authorAuthToken);
     availableRefsets =
-        workflowService.findAllAvailableRefsets(project.getId(), null,
+        workflowService.findAvailableRefsets("ADMIN", project.getId(), "admin1", null,
             adminAuthToken);
     assertEquals(2, availableRefsets.getCount());
     assignedRefsets =

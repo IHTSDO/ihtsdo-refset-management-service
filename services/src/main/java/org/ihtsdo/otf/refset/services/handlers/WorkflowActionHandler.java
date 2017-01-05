@@ -39,54 +39,6 @@ public interface WorkflowActionHandler extends Configurable {
     UserRole projectRole, WorkflowAction action, WorkflowService service)
     throws Exception;
 
-  /**
-   * Find available editing work. Something like dual independent review would
-   * force the workflow action handler to implement this differently.
-   *
-   * @param translation the translation
-   * @param pfs the pfs
-   * @param service the service
-   * @return the concept list
-   * @throws Exception the exception
-   */
-  public ConceptList findAvailableEditingConcepts(Translation translation,
-    PfsParameter pfs, WorkflowService service) throws Exception;
-
-  /**
-   * Find available review work.
-   *
-   * @param translation the translation
-   * @param pfs the pfs
-   * @param service the service
-   * @return the concept list
-   * @throws Exception the exception
-   */
-  public ConceptList findAvailableReviewConcepts(Translation translation,
-    PfsParameter pfs, WorkflowService service) throws Exception;
-
-  /**
-   * Find available editing refsets.
-   *
-   * @param projectId the project id
-   * @param pfs the pfs
-   * @param service the service
-   * @return the refset list
-   * @throws Exception the exception
-   */
-  public RefsetList findAvailableEditingRefsets(Long projectId,
-    PfsParameter pfs, WorkflowService service) throws Exception;
-
-  /**
-   * Find available review refsets.
-   *
-   * @param projectId the project id
-   * @param pfs the pfs
-   * @param service the service
-   * @return the refset list
-   * @throws Exception the exception
-   */
-  public RefsetList findAvailableReviewRefsets(Long projectId,
-    PfsParameter pfs, WorkflowService service) throws Exception;
 
   /**
    * Validate workflow action.
@@ -150,4 +102,31 @@ public interface WorkflowActionHandler extends Configurable {
    * @throws Exception the exception
    */
   public WorkflowConfig getWorkflowConfig() throws Exception;
+
+  /**
+   * Find available concepts.
+   *
+   * @param userRole the user role
+   * @param translation the translation
+   * @param pfs the pfs
+   * @param service the service
+   * @return the concept list
+   * @throws Exception the exception
+   */
+  public ConceptList findAvailableConcepts(UserRole userRole, Translation translation,
+    PfsParameter pfs, WorkflowService service) throws Exception;
+
+
+  /**
+   * Find available refsets.
+   *
+   * @param userRole the user role
+   * @param projectId the project id
+   * @param pfs the pfs
+   * @param service the service
+   * @return the refset list
+   * @throws Exception the exception
+   */
+  public RefsetList findAvailableRefsets(UserRole userRole, Long projectId,
+    PfsParameter pfs, WorkflowService service) throws Exception;
 }

@@ -29,18 +29,7 @@ public interface WorkflowServiceRest {
    */
   public StringList getWorkflowPaths(String authToken) throws Exception;
 
-  /**
-   * Find available editing refsets.
-   *
-   * @param projectId the project id
-   * @param userName the user name
-   * @param pfs the pfs
-   * @param authToken the auth token
-   * @return the refset list
-   * @throws Exception the exception
-   */
-  public RefsetList findAvailableEditingRefsets(Long projectId,
-    String userName, PfsParameterJpa pfs, String authToken) throws Exception;
+
 
   /**
    * Find assigned editing refsets.
@@ -55,18 +44,6 @@ public interface WorkflowServiceRest {
   public TrackingRecordList findAssignedEditingRefsets(Long projectId,
     String userName, PfsParameterJpa pfs, String authToken) throws Exception;
 
-  /**
-   * Find available review refsets.
-   *
-   * @param projectId the project id
-   * @param userName the user name
-   * @param pfs the pfs
-   * @param authToken the auth token
-   * @return the refset list
-   * @throws Exception the exception
-   */
-  public RefsetList findAvailableReviewRefsets(Long projectId, String userName,
-    PfsParameterJpa pfs, String authToken) throws Exception;
 
   /**
    * Find assigned review refsets.
@@ -97,20 +74,6 @@ public interface WorkflowServiceRest {
     String userName, String projectRole, String action, String authToken)
     throws Exception;
 
-  /**
-   * Find available editing work.
-   *
-   * @param projectId the project id
-   * @param translationId the translation id
-   * @param userName the user name
-   * @param pfs the pfs
-   * @param authToken the auth token
-   * @return the concept list
-   * @throws Exception the exception
-   */
-  public ConceptList findAvailableEditingConcepts(Long projectId,
-    Long translationId, String userName, PfsParameterJpa pfs, String authToken)
-    throws Exception;
 
   /**
    * Find assigned editing work.
@@ -127,20 +90,7 @@ public interface WorkflowServiceRest {
     Long translationId, String userName, PfsParameterJpa pfs, String authToken)
     throws Exception;
 
-  /**
-   * Find available review work.
-   *
-   * @param projectId the project id
-   * @param translationId the translation id
-   * @param userName the user name
-   * @param pfs the pfs
-   * @param authToken the auth token
-   * @return the concept list
-   * @throws Exception the exception
-   */
-  public ConceptList findAvailableReviewConcepts(Long projectId,
-    Long translationId, String userName, PfsParameterJpa pfs, String authToken)
-    throws Exception;
+
 
   /**
    * Find assigned review work.
@@ -202,17 +152,6 @@ public interface WorkflowServiceRest {
   public TrackingRecord getTrackingRecordForRefset(Long refsetId,
     String authToken) throws Exception;
 
-  /**
-   * Find all available refsets.
-   *
-   * @param projectId the project id
-   * @param pfs the pfs
-   * @param authToken the auth token
-   * @return the refset list
-   * @throws Exception the exception
-   */
-  public RefsetList findAllAvailableRefsets(Long projectId,
-    PfsParameterJpa pfs, String authToken) throws Exception;
 
   /**
    * Find all assigned refsets.
@@ -225,19 +164,6 @@ public interface WorkflowServiceRest {
    */
   public TrackingRecordList findAllAssignedRefsets(Long projectId, PfsParameterJpa pfs,
     String authToken) throws Exception;
-
-  /**
-   * Find all available concepts.
-   *
-   * @param projectId the project id
-   * @param translationId the translation id
-   * @param pfs the pfs
-   * @param authToken the auth token
-   * @return the concept list
-   * @throws Exception the exception
-   */
-  public ConceptList findAllAvailableConcepts(Long projectId,
-    Long translationId, PfsParameterJpa pfs, String authToken) throws Exception;
 
   /**
    * Find all assigned concepts.
@@ -287,4 +213,35 @@ public interface WorkflowServiceRest {
    */
   public WorkflowConfig getWorkflowConfig(Long projectId, String authToken)
     throws Exception;
+
+  /**
+   * Find available concepts.
+   *
+   * @param userRole the user role
+   * @param projectId the project id
+   * @param translationId the translation id
+   * @param userName the user name
+   * @param pfs the pfs
+   * @param authToken the auth token
+   * @return the concept list
+   * @throws Exception the exception
+   */
+  public ConceptList findAvailableConcepts(String userRole, Long projectId,
+    Long translationId, String userName, PfsParameterJpa pfs, String authToken)
+    throws Exception;
+
+
+  /**
+   * Find available refsets.
+   *
+   * @param userRole the user role
+   * @param projectId the project id
+   * @param userName the user name
+   * @param pfs the pfs
+   * @param authToken the auth token
+   * @return the refset list
+   * @throws Exception the exception
+   */
+  public RefsetList findAvailableRefsets(String userRole, Long projectId,
+    String userName, PfsParameterJpa pfs, String authToken) throws Exception;
 }

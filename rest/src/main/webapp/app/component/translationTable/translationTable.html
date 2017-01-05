@@ -107,7 +107,7 @@
                 Effective Time
                 <span ng-bind="getSortIndicator('translation','effectiveTime')"></span>
               </span>
-            </span> <span ng-show="!isDirectory && value != 'RELEASE'">
+            </span> <span ng-show="!isDirectory() && value != 'RELEASE'">
               <span ng-click="setSortField('translation','lastModified')">
                 Last Modified
                 <span ng-bind="getSortIndicator('translation','lastModified')"></span>
@@ -177,7 +177,7 @@
             <span>{{getTerminologyName(translation.terminology)}}
               {{translation.version}} </span>
 
-            <span ng-show="!isDirectory">
+            <span ng-show="!isDirectory()">
               <span ng-show="projects.role == 'ADMIN' || value == 'RELEASE'">
                 <br />{{translation.workflowStatus}}
               </span>
@@ -915,7 +915,6 @@
             title="Click to clear filter text">Clear</button>
 
         </span>
-
         <table ng-show="selected.translation" class="table">
           <thead>
             <tr>
@@ -927,7 +926,7 @@
                 ng-click="setSortField('concept','name', selected.translation)">Name<span
                   ng-bind="getSortIndicator('concept','name')"></span>
               </th>
-              <th ng-show="!isDirectory && value != 'RELEASE'"
+              <th ng-show="!isDirectory() && value != 'RELEASE'"
                 class="col-md-3 col-xs-3"
                 ng-click="setSortField('concept','lastModified', selected.translation)">Last
                 Modified<span
@@ -958,7 +957,7 @@
                   <br /> &bull;&nbsp;{{desc.term}}
                 </span>
               </td>
-              <td ng-show="!isDirectory && value !='RELEASE'">
+              <td ng-show="!isDirectory() && value !='RELEASE'">
                 {{toDate(concept.lastModified)}}
                 <span ng-show="projects.role == 'ADMIN'">
                   <br />{{concept.lastModifiedBy}} <br />{{concept.workflowStatus}}

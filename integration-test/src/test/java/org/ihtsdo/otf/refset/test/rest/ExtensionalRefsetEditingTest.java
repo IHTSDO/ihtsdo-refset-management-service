@@ -54,7 +54,7 @@ public class ExtensionalRefsetEditingTest extends RefsetTestSupport {
 
     // Workflow - Assign the refset
     currentRefset =
-        getNewRefsetInRefsetList(workflowService.findAvailableEditingRefsets(
+        getNewRefsetInRefsetList(workflowService.findAvailableRefsets( "AUTHOR",
             currentRefset.getProject().getId(), testUser,
             new PfsParameterJpa(), adminAuthToken), currentRefset);
     assertTrue(currentRefset != null);
@@ -143,8 +143,8 @@ public class ExtensionalRefsetEditingTest extends RefsetTestSupport {
 
     // Find available review refset
     currentRefset =
-        getNewRefsetInRefsetList(workflowService.findAvailableReviewRefsets(
-            currentRefset.getProject().getId(), testUser,
+        getNewRefsetInRefsetList(workflowService.findAvailableRefsets(
+            "REVIEWER", currentRefset.getProject().getId(), testUser,
             new PfsParameterJpa(), adminAuthToken), record.getRefset());
 
     if (currentRefset == null) {
