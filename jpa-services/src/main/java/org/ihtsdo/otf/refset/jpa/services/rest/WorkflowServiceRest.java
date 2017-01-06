@@ -31,32 +31,6 @@ public interface WorkflowServiceRest {
 
 
 
-  /**
-   * Find assigned editing refsets.
-   *
-   * @param projectId the project id
-   * @param userName the user name
-   * @param pfs the pfs
-   * @param authToken the auth token
-   * @return the tracking record list
-   * @throws Exception the exception
-   */
-  public TrackingRecordList findAssignedEditingRefsets(Long projectId,
-    String userName, PfsParameterJpa pfs, String authToken) throws Exception;
-
-
-  /**
-   * Find assigned review refsets.
-   *
-   * @param projectId the project id
-   * @param userName the user name
-   * @param pfs the pfs
-   * @param authToken the auth token
-   * @return the tracking record list
-   * @throws Exception the exception
-   */
-  public TrackingRecordList findAssignedReviewRefsets(Long projectId,
-    String userName, PfsParameterJpa pfs, String authToken) throws Exception;
 
   /**
    * Perform workflow action for a {@link Refset}.
@@ -75,37 +49,6 @@ public interface WorkflowServiceRest {
     throws Exception;
 
 
-  /**
-   * Find assigned editing work.
-   *
-   * @param projectId the project id
-   * @param translationId the translation id
-   * @param userName the user name
-   * @param pfs the pfs
-   * @param authToken the auth token
-   * @return the concept list
-   * @throws Exception the exception
-   */
-  public TrackingRecordList findAssignedEditingConcepts(Long projectId,
-    Long translationId, String userName, PfsParameterJpa pfs, String authToken)
-    throws Exception;
-
-
-
-  /**
-   * Find assigned review work.
-   *
-   * @param projectId the project id
-   * @param translationId the translation id
-   * @param userName the user name
-   * @param pfs the pfs
-   * @param authToken the auth token
-   * @return the concept list
-   * @throws Exception the exception
-   */
-  public TrackingRecordList findAssignedReviewConcepts(Long projectId,
-    Long translationId, String userName, PfsParameterJpa pfs, String authToken)
-    throws Exception;
 
   /**
    * Perform workflow action.
@@ -152,31 +95,6 @@ public interface WorkflowServiceRest {
   public TrackingRecord getTrackingRecordForRefset(Long refsetId,
     String authToken) throws Exception;
 
-
-  /**
-   * Find all assigned refsets.
-   *
-   * @param projectId the project id
-   * @param pfs the pfs
-   * @param authToken the auth token
-   * @return the tracking record list
-   * @throws Exception the exception
-   */
-  public TrackingRecordList findAllAssignedRefsets(Long projectId, PfsParameterJpa pfs,
-    String authToken) throws Exception;
-
-  /**
-   * Find all assigned concepts.
-   *
-   * @param projectId the project id
-   * @param translationId the translation id
-   * @param pfs the pfs
-   * @param authToken the auth token
-   * @return the concept list
-   * @throws Exception the exception
-   */
-  public TrackingRecordList findAllAssignedConcepts(Long projectId,
-    Long translationId, PfsParameterJpa pfs, String authToken) throws Exception;
 
   /**
    * Find non release process translations.
@@ -243,5 +161,35 @@ public interface WorkflowServiceRest {
    * @throws Exception the exception
    */
   public RefsetList findAvailableRefsets(String userRole, Long projectId,
+    String userName, PfsParameterJpa pfs, String authToken) throws Exception;
+
+  /**
+   * Find assigned concepts.
+   *
+   * @param userRole the user role
+   * @param projectId the project id
+   * @param translationId the translation id
+   * @param userName the user name
+   * @param pfs the pfs
+   * @param authToken the auth token
+   * @return the tracking record list
+   * @throws Exception the exception
+   */
+  public TrackingRecordList findAssignedConcepts(String userRole, Long projectId,
+    Long translationId, String userName, PfsParameterJpa pfs, String authToken)
+    throws Exception;
+
+  /**
+   * Find assigned refsets.
+   *
+   * @param userRole the user role
+   * @param projectId the project id
+   * @param userName the user name
+   * @param pfs the pfs
+   * @param authToken the auth token
+   * @return the tracking record list
+   * @throws Exception the exception
+   */
+  public TrackingRecordList findAssignedRefsets(String userRole, Long projectId,
     String userName, PfsParameterJpa pfs, String authToken) throws Exception;
 }

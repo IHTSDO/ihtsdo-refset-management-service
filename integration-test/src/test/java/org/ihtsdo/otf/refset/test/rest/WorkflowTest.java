@@ -316,7 +316,7 @@ public class WorkflowTest extends RestSupport {
             adminAuthToken);
     // Nothing returned to start with
     TrackingRecordList assignedRefsets =
-        workflowService.findAllAssignedRefsets(project.getId(), null,
+        workflowService.findAssignedRefsets("ADMIN", project.getId(), "admin1", null,
             adminAuthToken);
     assertEquals(0, availableRefsets.getCount());
     assertEquals(0, assignedRefsets.getCount());
@@ -335,7 +335,7 @@ public class WorkflowTest extends RestSupport {
             adminAuthToken);
     assertEquals(1, availableRefsets.getCount());
     assignedRefsets =
-        workflowService.findAllAssignedRefsets(project.getId(), null,
+        workflowService.findAssignedRefsets("ADMIN", project.getId(), "admin1", null,
             adminAuthToken);
     assertEquals(0, assignedRefsets.getCount());
 
@@ -348,7 +348,7 @@ public class WorkflowTest extends RestSupport {
             adminAuthToken);
     assertEquals(0, availableRefsets.getCount());
     assignedRefsets =
-        workflowService.findAllAssignedRefsets(project.getId(), null,
+        workflowService.findAssignedRefsets("ADMIN", project.getId(), "admin1", null,
             adminAuthToken);
     assertEquals(1, assignedRefsets.getCount());
 
@@ -361,7 +361,7 @@ public class WorkflowTest extends RestSupport {
             adminAuthToken);
     assertEquals(0, availableRefsets.getCount());
     assignedRefsets =
-        workflowService.findAllAssignedRefsets(project.getId(), null,
+        workflowService.findAssignedRefsets("ADMIN", project.getId(), "admin1", null,
             adminAuthToken);
     assertEquals(1, assignedRefsets.getCount());
 
@@ -378,7 +378,7 @@ public class WorkflowTest extends RestSupport {
             adminAuthToken);
     assertEquals(1, availableRefsets.getCount());
     assignedRefsets =
-        workflowService.findAllAssignedRefsets(project.getId(), null,
+        workflowService.findAssignedRefsets("ADMIN", project.getId(), "admin1", null,
             adminAuthToken);
     assertEquals(1, assignedRefsets.getCount());
 
@@ -392,7 +392,7 @@ public class WorkflowTest extends RestSupport {
             adminAuthToken);
     assertEquals(2, availableRefsets.getCount());
     assignedRefsets =
-        workflowService.findAllAssignedRefsets(project.getId(), null,
+        workflowService.findAssignedRefsets("ADMIN", project.getId(), "admin1", null,
             adminAuthToken);
     // EDITING_DONE isn't available
     assertEquals(0, assignedRefsets.getCount());
@@ -406,7 +406,7 @@ public class WorkflowTest extends RestSupport {
             adminAuthToken);
     assertEquals(1, availableRefsets.getCount());
     assignedRefsets =
-        workflowService.findAllAssignedRefsets(project.getId(), null,
+        workflowService.findAssignedRefsets("ADMIN", project.getId(), "admin1", null,
             adminAuthToken);
     assertEquals(1, assignedRefsets.getCount());
 
@@ -419,7 +419,7 @@ public class WorkflowTest extends RestSupport {
             adminAuthToken);
     assertEquals(2, availableRefsets.getCount());
     assignedRefsets =
-        workflowService.findAllAssignedRefsets(project.getId(), null,
+        workflowService.findAssignedRefsets("ADMIN", project.getId(), "admin1", null,
             adminAuthToken);
     assertEquals(1, assignedRefsets.getCount());
 
@@ -432,7 +432,7 @@ public class WorkflowTest extends RestSupport {
             adminAuthToken);
     assertEquals(1, availableRefsets.getCount());
     assignedRefsets =
-        workflowService.findAllAssignedRefsets(project.getId(), null,
+        workflowService.findAssignedRefsets("ADMIN", project.getId(), "admin1", null,
             adminAuthToken);
     assertEquals(2, assignedRefsets.getCount());
 
@@ -445,7 +445,7 @@ public class WorkflowTest extends RestSupport {
             adminAuthToken);
     assertEquals(0, availableRefsets.getCount());
     assignedRefsets =
-        workflowService.findAllAssignedRefsets(project.getId(), null,
+        workflowService.findAssignedRefsets("ADMIN", project.getId(), "admin1", null,
             adminAuthToken);
     assertEquals(2, assignedRefsets.getCount());
 
@@ -458,7 +458,7 @@ public class WorkflowTest extends RestSupport {
             adminAuthToken);
     assertEquals(0, availableRefsets.getCount());
     assignedRefsets =
-        workflowService.findAllAssignedRefsets(project.getId(), null,
+        workflowService.findAssignedRefsets("ADMIN", project.getId(), "admin1", null,
             adminAuthToken);
     assertEquals(2, assignedRefsets.getCount());
 
@@ -471,7 +471,7 @@ public class WorkflowTest extends RestSupport {
             adminAuthToken);
     assertEquals(1, availableRefsets.getCount());
     assignedRefsets =
-        workflowService.findAllAssignedRefsets(project.getId(), null,
+        workflowService.findAssignedRefsets("ADMIN", project.getId(), "admin1", null,
             adminAuthToken);
     assertEquals(1, assignedRefsets.getCount());
 
@@ -483,7 +483,7 @@ public class WorkflowTest extends RestSupport {
             adminAuthToken);
     assertEquals(2, availableRefsets.getCount());
     assignedRefsets =
-        workflowService.findAllAssignedRefsets(project.getId(), null,
+        workflowService.findAssignedRefsets("ADMIN", project.getId(), "admin1", null,
             adminAuthToken);
     assertEquals(0, assignedRefsets.getCount());
 

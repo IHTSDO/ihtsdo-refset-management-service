@@ -235,7 +235,7 @@ tsApp
                     pfs.queryRestriction = pfs.queryRestriction + $scope.paging['refset'].filter;
                   }
                   workflowService
-                    .findAllAssignedRefsets($scope.project.id, pfs)
+                    .findAssignedRefsets('ADMIN', $scope.project.id, pfs)
                     .then(
                       // Success
                       function(data) {
@@ -255,14 +255,14 @@ tsApp
                         $scope.reselect();
                       });
                 }
-                if ($scope.value == 'ASSIGNED' && $scope.projects.role == 'AUTHOR') {
+                if ($scope.value == 'ASSIGNED') {
                   if (pfs.queryRestriction && $scope.paging['refset'].filter) {
                     pfs.queryRestriction = pfs.queryRestriction + " AND ";
                   }
                   if ($scope.paging['refset'].filter) {
                     pfs.queryRestriction = pfs.queryRestriction + $scope.paging['refset'].filter;
                   }
-                  workflowService.findAssignedEditingRefsets($scope.project.id,
+                  workflowService.findAssignedRefsets($scope.projects.role, $scope.project.id,
                     $scope.user.userName, pfs).then(
                   // Success
                   function(data) {
@@ -272,23 +272,7 @@ tsApp
                     $scope.reselect();
                   });
                 }
-                if ($scope.value == 'ASSIGNED' && $scope.projects.role == 'REVIEWER') {
-                  if (pfs.queryRestriction && $scope.paging['refset'].filter) {
-                    pfs.queryRestriction = pfs.queryRestriction + " AND ";
-                  }
-                  if ($scope.paging['refset'].filter) {
-                    pfs.queryRestriction = pfs.queryRestriction + $scope.paging['refset'].filter;
-                  }
-                  workflowService.findAssignedReviewRefsets($scope.project.id,
-                    $scope.user.userName, pfs).then(
-                  // Success
-                  function(data) {
-                    $scope.refsets = $scope.getRefsetsFromRecords(data.records);
-                    $scope.refsets.totalCount = data.totalCount;
-                    $scope.stats.count = $scope.refsets.totalCount;
-                    $scope.reselect();
-                  });
-                }
+               
                 if ($scope.value == 'RELEASE') {
                   if (pfs.queryRestriction) {
                     pfs.queryRestriction = pfs.queryRestriction + " AND ";
@@ -644,7 +628,7 @@ tsApp
 
               // Remove a refset
               $scope.removeRefset = function(refset) {
-                workflowService.findAllAssignedRefsets($scope.project.id, {
+                workflowService.findAssignedRefsets('ADMIN', $scope.project.id, {
                   startIndex : 0,
                   maxResults : 1,
                   queryRestriction : 'refsetId:' + refset.id

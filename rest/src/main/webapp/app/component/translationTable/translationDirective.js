@@ -377,9 +377,9 @@ tsApp
                   queryRestriction : null
                 };
 
-                if ($scope.projects.role == 'AUTHOR') {
+                if ($scope.projects.role == 'AUTHOR' || $scope.projects.role == 'REVIEWER') {
                   pfs.queryRestriction = $scope.paging['assigned'].filter;
-                  workflowService.findAssignedEditingConcepts($scope.project.id, translation.id,
+                  workflowService.findAssignedConcepts($scope.projects.role, $scope.project.id, translation.id,
                     $scope.user.userName, pfs).then(
                     // Success
                     function(data) {
@@ -389,23 +389,10 @@ tsApp
                         $scope.openEditConceptModal(translation.assigned[nextIndex].concept,
                           nextIndex);
                       }
-                    });
-                } else if ($scope.projects.role == 'REVIEWER') {
-                  pfs.queryRestriction = $scope.paging['assigned'].filter;
-                  workflowService.findAssignedReviewConcepts($scope.project.id, translation.id,
-                    $scope.user.userName, pfs).then(
-                    // Success
-                    function(data) {
-                      translation.assigned = data.records;
-                      translation.assigned.totalCount = data.totalCount;
-                      if (nextIndex == 0 || nextIndex) {
-                        $scope.openEditConceptModal(translation.assigned[nextIndex].concept,
-                          nextIndex);
-                      }
-                    });
+                    });             
                 } else if ($scope.projects.role == 'ADMIN') {
                   pfs.queryRestriction = $scope.paging['assigned'].filter;
-                  workflowService.findAllAssignedConcepts($scope.project.id, translation.id, pfs)
+                  workflowService.findAssignedConcepts('ADMIN', $scope.project.id, translation.id, $scope.user.userName, pfs)
                     .then(
                     // Success
                     function(data) {
@@ -557,7 +544,7 @@ tsApp
               $scope.removeTranslation = function(translation) {
 
                 workflowService
-                  .findAllAssignedConcepts($scope.project.id, translation.id, {
+                  .findAssignedConcepts('ADMIN', $scope.project.id, translation.id, $scope.user.userName, {
                     startIndex : 0,
                     maxResults : 1
                   })
@@ -657,8 +644,8 @@ tsApp
                   queryRestriction : $scope.paging['assigned'].filter 
                 };
 
-                if ($scope.projects.role == 'AUTHOR') {
-                  workflowService.findAssignedEditingConcepts($scope.project.id,
+                if ($scope.projects.role == 'AUTHOR' || $scope.projects.role == 'REVIEWER') {
+                  workflowService.findAssignedConcepts($scope.projects.role, $scope.project.id,
                     $scope.selected.translation.id, userName, pfs).then(
                     // Success
                     function(data) {
@@ -688,37 +675,7 @@ tsApp
                     }
                   // Error is already handled by service
                   );
-                } else if ($scope.projects.role == 'REVIEWER') {
-                  workflowService.findAssignedReviewConcepts($scope.project.id,
-                    $scope.selected.translation.id, $scope.user.userName, pfs).then(
-                    // Success
-                    function(data) {
-
-                      // Extract concepts from records
-                      var list = new Array();
-                      for (var i = 0; i < data.records.length; i++) {
-                        list.push(data.records[i].concept);
-                      }
-
-                      // Make parameter
-                      var conceptList = {
-                        concepts : list
-                      };
-
-                      // Unassign all concepts
-                      workflowService.performBatchTranslationWorkflowAction($scope.project.id,
-                        $scope.selected.translation.id, $scope.user.userName, $scope.projects.role,
-                        'UNASSIGN', conceptList).then(
-                      // Success
-                      function(data) {
-                        translationService.fireTranslationChanged($scope.selected.translation);
-                      }
-                      // Error is already handled by service
-                      );
-
-                    }
-                  // Error is already handled by service
-                  );
+               
                 } else {
                   alert("Unassign is only available for AUTHOR or REVIEWER roles.");
                 }
@@ -738,8 +695,8 @@ tsApp
                   queryRestriction : $scope.paging['assigned'].filter
                 };
 
-                if ($scope.projects.role == 'AUTHOR') {
-                  workflowService.findAssignedEditingConcepts($scope.project.id,
+                if ($scope.projects.role != 'ADMIN') {
+                  workflowService.findAssignedConcepts($scope.projects.role, $scope.project.id,
                     $scope.selected.translation.id, userName, pfs).then(
                     // Success
                     function(data) {
@@ -756,43 +713,6 @@ tsApp
                         alert('There are no concepts ready to be finished.')
                       }
 
-                      // Make parameter
-                      var conceptList = {
-                        concepts : list
-                      };
-
-                      // Finish all concepts
-                      workflowService.performBatchTranslationWorkflowAction($scope.project.id,
-                        $scope.selected.translation.id, $scope.user.userName, $scope.projects.role,
-                        'FINISH', conceptList).then(
-                      // Success
-                      function(data) {
-                        translationService.fireTranslationChanged($scope.selected.translation);
-                      }
-                      // Error is already handled by service
-                      );
-
-                    }
-                  // Error is already handled by service
-                  );
-                } else if ($scope.projects.role == 'REVIEWER') {
-                  workflowService.findAssignedReviewConcepts($scope.project.id,
-                    $scope.selected.translation.id, $scope.user.userName, pfs).then(
-                    // Success
-                    function(data) {
-
-                      // Extract concepts from records
-                      var list = new Array();
-                      for (var i = 0; i < data.records.length; i++) {
-                        if (data.records[i].concept.workflowStatus.indexOf('IN_PROGRESS') != -1 || 
-                          data.records[i].concept.workflowStatus=='REVIEW_NEW') {
-                          list.push(data.records[i].concept);
-                        }
-                      }
-                      if (list.length == 0) {
-                        alert('There are no concepts ready to be finished.')
-                      }
-                      
                       // Make parameter
                       var conceptList = {
                         concepts : list
@@ -832,7 +752,7 @@ tsApp
                 };
 
                 if ($scope.projects.role == 'REVIEWER') {
-                  workflowService.findAssignedReviewConcepts($scope.project.id,
+                  workflowService.findAssignedConcepts($scope.projects.role, $scope.project.id,
                     $scope.selected.translation.id, $scope.user.userName, pfs).then(
                     // Success
                     function(data) {
