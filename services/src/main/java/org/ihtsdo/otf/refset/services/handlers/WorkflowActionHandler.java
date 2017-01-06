@@ -3,6 +3,7 @@
  */
 package org.ihtsdo.otf.refset.services.handlers;
 
+import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.User;
@@ -16,6 +17,7 @@ import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.services.WorkflowService;
 import org.ihtsdo.otf.refset.workflow.TrackingRecord;
+import org.ihtsdo.otf.refset.workflow.TrackingRecordList;
 import org.ihtsdo.otf.refset.workflow.WorkflowAction;
 import org.ihtsdo.otf.refset.workflow.WorkflowConfig;
 
@@ -129,4 +131,36 @@ public interface WorkflowActionHandler extends Configurable {
    */
   public RefsetList findAvailableRefsets(UserRole userRole, Long projectId,
     PfsParameter pfs, WorkflowService service) throws Exception;
+
+
+  /**
+   * Find assigned concepts.
+   *
+   * @param userRole the user role
+   * @param translation the translation
+   * @param userName the user name
+   * @param pfs the pfs
+   * @param service the service
+   * @return the tracking record list
+   * @throws Exception the exception
+   */
+  public TrackingRecordList findAssignedConcepts(UserRole userRole,
+    Translation translation, String userName, PfsParameter pfs,
+    WorkflowService service) throws Exception;
+
+
+  /**
+   * Find assigned refsets.
+   *
+   * @param userRole the user role
+   * @param project the project
+   * @param userName the user name
+   * @param pfs the pfs
+   * @param service the service
+   * @return the tracking record list
+   * @throws Exception the exception
+   */
+  public TrackingRecordList findAssignedRefsets(UserRole userRole, Project project,
+    String userName, PfsParameter pfs, WorkflowService service)
+    throws Exception;
 }

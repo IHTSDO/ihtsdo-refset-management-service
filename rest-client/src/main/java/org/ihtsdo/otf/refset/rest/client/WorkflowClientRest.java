@@ -151,85 +151,6 @@ public class WorkflowClientRest extends RootClientRest implements
         ConceptJpa.class);
   }
 
-  /* see superclass */
-  @Override
-  public TrackingRecordList findAssignedEditingConcepts(Long projectId,
-    Long translationId, String userName, PfsParameterJpa pfs, String authToken)
-    throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Workflow Client - find assigned editing concepts - " + translationId
-            + ", " + userName);
-
-    validateNotEmpty(projectId, "projectId");
-    validateNotEmpty(translationId, "translationId");
-    validateNotEmpty(userName, "userName");
-
-    Client client = ClientBuilder.newClient();
-    WebTarget target =
-        client.target(config.getProperty("base.url")
-            + "/workflow/translation/assigned/editing" + "?projectId="
-            + projectId + "&translationId=" + translationId + "&userName="
-            + userName);
-
-    String pfsStr =
-        ConfigUtility.getStringForGraph(pfs == null ? new PfsParameterJpa()
-            : pfs);
-    Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken).post(Entity.xml(pfsStr));
-
-    String resultString = response.readEntity(String.class);
-    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-      // n/a
-    } else {
-      throw new Exception(resultString);
-    }
-
-    // converting to object
-    return (TrackingRecordList) ConfigUtility.getGraphForString(resultString,
-        TrackingRecordListJpa.class);
-  }
-
-
-
-  /* see superclass */
-  @Override
-  public TrackingRecordList findAssignedReviewConcepts(Long projectId,
-    Long translationId, String userName, PfsParameterJpa pfs, String authToken)
-    throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Workflow Client - find assigned review concepts - " + translationId
-            + ", " + userName);
-
-    validateNotEmpty(projectId, "projectId");
-    validateNotEmpty(translationId, "translationId");
-    validateNotEmpty(userName, "userName");
-
-    Client client = ClientBuilder.newClient();
-    WebTarget target =
-        client.target(config.getProperty("base.url")
-            + "/workflow/translation/assigned/review" + "?projectId="
-            + projectId + "&translationId=" + translationId + "&userName="
-            + userName);
-
-    String pfsStr =
-        ConfigUtility.getStringForGraph(pfs == null ? new PfsParameterJpa()
-            : pfs);
-    Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken).post(Entity.xml(pfsStr));
-
-    String resultString = response.readEntity(String.class);
-    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-      // n/a
-    } else {
-      throw new Exception(resultString);
-    }
-
-    // converting to object
-    return (TrackingRecordList) ConfigUtility.getGraphForString(resultString,
-        TrackingRecordListJpa.class);
-  }
 
   /* see superclass */
   @Override
@@ -361,77 +282,6 @@ public class WorkflowClientRest extends RootClientRest implements
         RefsetListJpa.class);
   }
 
-  /* see superclass */
-  @Override
-  public TrackingRecordList findAssignedEditingRefsets(Long projectId,
-    String userName, PfsParameterJpa pfs, String authToken) throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Workflow Client - find assigned editing refsets - " + userName);
-
-    validateNotEmpty(projectId, "projectId");
-    validateNotEmpty(userName, "userName");
-
-    Client client = ClientBuilder.newClient();
-    WebTarget target =
-        client.target(config.getProperty("base.url")
-            + "/workflow/refset/assigned/editing" + "?projectId=" + projectId
-            + "&userName=" + userName);
-
-    String pfsStr =
-        ConfigUtility.getStringForGraph(pfs == null ? new PfsParameterJpa()
-            : pfs);
-    Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken).post(Entity.xml(pfsStr));
-
-    String resultString = response.readEntity(String.class);
-    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-      // n/a
-    } else {
-      throw new Exception(resultString);
-    }
-
-    // converting to object
-    return (TrackingRecordList) ConfigUtility.getGraphForString(resultString,
-        TrackingRecordListJpa.class);
-  }
-
-
-
-  /* see superclass */
-  @Override
-  public TrackingRecordList findAssignedReviewRefsets(Long projectId,
-    String userName, PfsParameterJpa pfs, String authToken) throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Workflow Client - find assigned review refsets - " + userName);
-
-    validateNotEmpty(projectId, "projectId");
-    validateNotEmpty(userName, "userName");
-
-    Client client = ClientBuilder.newClient();
-    WebTarget target =
-        client.target(config.getProperty("base.url")
-            + "/workflow/refset/assigned/review" + "?projectId=" + projectId
-            + "&userName=" + userName);
-
-    String pfsStr =
-        ConfigUtility.getStringForGraph(pfs == null ? new PfsParameterJpa()
-            : pfs);
-    Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken).post(Entity.xml(pfsStr));
-
-    String resultString = response.readEntity(String.class);
-    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-      // n/a
-    } else {
-      throw new Exception(resultString);
-    }
-
-    // converting to object
-    return (TrackingRecordList) ConfigUtility.getGraphForString(resultString,
-        TrackingRecordListJpa.class);
-  }
 
   /* see superclass */
   @Override
@@ -467,41 +317,6 @@ public class WorkflowClientRest extends RootClientRest implements
         TrackingRecordJpa.class);
   }
 
-
-
-  /* see superclass */
-  @Override
-  public TrackingRecordList findAllAssignedRefsets(Long projectId,
-    PfsParameterJpa pfs, String authToken) throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Workflow Client - find all assigned refsets - " + projectId);
-
-    validateNotEmpty(projectId, "projectId");
-
-    Client client = ClientBuilder.newClient();
-    WebTarget target =
-        client.target(config.getProperty("base.url")
-            + "/workflow/refset/assigned/all" + "?projectId=" + projectId);
-
-    String pfsStr =
-        ConfigUtility.getStringForGraph(pfs == null ? new PfsParameterJpa()
-            : pfs);
-    Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken).post(Entity.xml(pfsStr));
-
-    String resultString = response.readEntity(String.class);
-    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-      // n/a
-    } else {
-      throw new Exception(resultString);
-    }
-
-    // converting to object
-    return (TrackingRecordList) ConfigUtility.getGraphForString(resultString,
-        TrackingRecordListJpa.class);
-  }
-
   /* see superclass */
   @Override
   public TranslationList findNonReleaseProcessTranslations(Long projectId,
@@ -534,42 +349,6 @@ public class WorkflowClientRest extends RootClientRest implements
     // converting to object
     return (TranslationList) ConfigUtility.getGraphForString(resultString,
         TranslationListJpa.class);
-  }
-
-
-
-  @Override
-  public TrackingRecordList findAllAssignedConcepts(Long projectId,
-    Long translationId, PfsParameterJpa pfs, String authToken) throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Workflow Client - find all assigned concepts - " + translationId);
-
-    validateNotEmpty(projectId, "projectId");
-    validateNotEmpty(translationId, "translationId");
-
-    Client client = ClientBuilder.newClient();
-    WebTarget target =
-        client.target(config.getProperty("base.url")
-            + "/workflow/translation/assigned/all" + "?projectId=" + projectId
-            + "&translationId=" + translationId);
-
-    String pfsStr =
-        ConfigUtility.getStringForGraph(pfs == null ? new PfsParameterJpa()
-            : pfs);
-    Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken).post(Entity.xml(pfsStr));
-
-    String resultString = response.readEntity(String.class);
-    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-      // n/a
-    } else {
-      throw new Exception(resultString);
-    }
-
-    // converting to object
-    return (TrackingRecordList) ConfigUtility.getGraphForString(resultString,
-        TrackingRecordList.class);
   }
 
   @Override
@@ -626,5 +405,77 @@ public class WorkflowClientRest extends RootClientRest implements
     // converting to object
     return (WorkflowConfig) ConfigUtility.getGraphForString(resultString,
         StringList.class);
+  }
+
+  @Override
+  public TrackingRecordList findAssignedConcepts(String userRole,
+    Long projectId, Long translationId, String userName, PfsParameterJpa pfs,
+    String authToken) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Workflow Client - find assigned concepts - " + translationId
+            + ", " + userName);
+
+    validateNotEmpty(projectId, "projectId");
+    validateNotEmpty(translationId, "translationId");
+    validateNotEmpty(userName, "userName");
+
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url")
+            + "/workflow/translation/assigned" + "?userRole=" + userRole + "&projectId="
+            + projectId + "&translationId=" + translationId + "&userName="
+            + userName);
+
+    String pfsStr =
+        ConfigUtility.getStringForGraph(pfs == null ? new PfsParameterJpa()
+            : pfs);
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).post(Entity.xml(pfsStr));
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(resultString);
+    }
+
+    // converting to object
+    return (TrackingRecordList) ConfigUtility.getGraphForString(resultString,
+        TrackingRecordJpa.class);
+  }
+
+  @Override
+  public TrackingRecordList findAssignedRefsets(String userRole, Long projectId,
+    String userName, PfsParameterJpa pfs, String authToken) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Workflow Client - find assigned refsets - " + userName);
+
+    validateNotEmpty(projectId, "projectId");
+    validateNotEmpty(userName, "userName");
+
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url")
+            + "/workflow/refset/assigned" + "?userRole=" + userRole + "&projectId=" + projectId
+            + "&userName=" + userName);
+
+    String pfsStr =
+        ConfigUtility.getStringForGraph(pfs == null ? new PfsParameterJpa()
+            : pfs);
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).post(Entity.xml(pfsStr));
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(resultString);
+    }
+
+    // converting to object
+    return (TrackingRecordList) ConfigUtility.getGraphForString(resultString,
+        TrackingRecordListJpa.class);
   }
 }

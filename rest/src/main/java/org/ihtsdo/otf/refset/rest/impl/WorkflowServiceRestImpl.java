@@ -236,12 +236,14 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl
     return null;
   }
 
+  
   /* see superclass */
   @Override
   @POST
-  @Path("/translation/assigned/editing")
-  @ApiOperation(value = "Find assigned editing work", notes = "Finds concepts in the specified translation assigned for editing by the specified user", response = TrackingRecordListJpa.class)
-  public TrackingRecordList findAssignedEditingConcepts(
+  @Path("/translation/assigned")
+  @ApiOperation(value = "Find assigned concepts", notes = "Finds concepts in the specified translation assigned by the specified user", response = ConceptListJpa.class)
+  public TrackingRecordList findAssignedConcepts(
+    @ApiParam(value = "User role, e.g. 'AUTHOR'", required = true) @QueryParam("userRole") String userRole,    
     @ApiParam(value = "Project id, e.g. 5", required = false) @QueryParam("projectId") Long projectId,
     @ApiParam(value = "Translation id, e.g. 8", required = false) @QueryParam("translationId") Long translationId,
     @ApiParam(value = "User name, e.g. author1", required = true) @QueryParam("userName") String userName,
@@ -249,81 +251,43 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass())
-        .info("RESTful POST call (Workflow): /translation/assigned/editing "
+        .info("RESTful POST call (Workflow): /translation/assigned " + userRole + ", " 
             + translationId + ", " + userName + ", " + pfs);
 
     final WorkflowService workflowService = new WorkflowServiceJpa();
     try {
       authorizeProject(workflowService, projectId, securityService, authToken,
-          "perform workflow action on translation", UserRole.AUTHOR);
+          "find assigned concepts", UserRole.valueOf(userRole));
 
+      // Get object references
+      final Translation translation =
+          workflowService.getTranslation(translationId);
       final User user = securityService.getUser(userName);
-      // Find tracking records where the author is this user,
-      // it is assigned to this translation and marked for editing
-      // and not for review
-      final String query = "projectId:" + projectId + " AND " + "authors:"
-          + user.getUserName() + " AND translationId:" + translationId
-          + " AND forAuthoring:true AND forReview:false";
+      securityService.handleLazyInit(user);
+      // Get the project
+      final Project project = workflowService.getProject(projectId);
+      
+      // Obtain the handler
+      final WorkflowActionHandler handler = workflowService
+          .getWorkflowHandlerForPath(project.getWorkflowPath());
+      // Find assigned editing work
+      final TrackingRecordList list = handler.findAssignedConcepts(UserRole.valueOf(userRole), translation,
+          userName, pfs, workflowService);
 
-      final TrackingRecordList records =
-          workflowService.findTrackingRecordsForQuery(query, pfs);
-      for (final TrackingRecord record : records.getObjects()) {
+      for (final TrackingRecord record : list.getObjects()) {
         handleLazyInit(record, workflowService);
       }
-
-      return records;
+      return list;
 
     } catch (Exception e) {
-      handleException(e, "trying to find assigned editing work");
+      handleException(e, "trying to find assigned concepts");
     } finally {
       workflowService.close();
       securityService.close();
     }
     return null;
   }
-
-
-
-  /* see superclass */
-  @Override
-  @POST
-  @Path("/translation/assigned/review")
-  @ApiOperation(value = "Find assigned review work", notes = "Finds concepts in the specified translation assigned for review by the specified user", response = TrackingRecordListJpa.class)
-  public TrackingRecordList findAssignedReviewConcepts(
-    @ApiParam(value = "Project id, e.g. 5", required = false) @QueryParam("projectId") Long projectId,
-    @ApiParam(value = "Translation id, e.g. 8", required = false) @QueryParam("translationId") Long translationId,
-    @ApiParam(value = "User name, e.g. author1", required = true) @QueryParam("userName") String userName,
-    @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
-    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
-    Logger.getLogger(getClass())
-        .info("RESTful POST call (Workflow): /translation/assigned/review "
-            + translationId + ", " + userName + ", " + pfs);
-
-    final WorkflowService workflowService = new WorkflowServiceJpa();
-    try {
-      authorizeProject(workflowService, projectId, securityService, authToken,
-          "perform workflow action on translation", UserRole.REVIEWER);
-
-      // Find tracking records "for review" for this translation and user
-      final String query =
-          "projectId:" + projectId + " AND " + "reviewers:" + userName
-              + " AND translationId:" + translationId + " AND forReview:true";
-      final TrackingRecordList records =
-          workflowService.findTrackingRecordsForQuery(query, pfs);
-      for (final TrackingRecord record : records.getObjects()) {
-        handleLazyInit(record, workflowService);
-      }
-      return records;
-
-    } catch (Exception e) {
-      handleException(e, "trying to find assigned review work");
-    } finally {
-      workflowService.close();
-      securityService.close();
-    }
-    return null;
-  }
+  
 
   /* see superclass */
   @Override
@@ -517,6 +481,77 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl
     return list;
 
   }
+  
+  /**
+   * Find assigned editing refsets helper.
+   *
+   * @param projectId the project id
+   * @param workflowService the workflow service
+   * @return the list
+   * @throws Exception the exception
+   */
+  @SuppressWarnings("static-method")
+  private List<TrackingRecord> findAssignedRefsetsHelper(UserRole userRole, Long projectId, String userName,
+    WorkflowService workflowService) throws Exception {
+
+    Project project = workflowService.getProject(projectId);
+    // Combine results from all workflow action handlers
+    final List<TrackingRecord> list = new ArrayList<>();
+    for (final WorkflowActionHandler handler : workflowService
+        .getWorkflowHandlers()) {
+      list.addAll(
+          handler.findAssignedRefsets(userRole, project, userName, null, workflowService)
+              .getObjects());
+    }
+    return list;
+
+  }
+
+  /* see superclass */
+  @Override
+  @POST
+  @Path("/refset/assigned")
+  @ApiOperation(value = "Find assigned refsets", notes = "Finds refsets assigned  by the specified user", response = RefsetListJpa.class)
+  public TrackingRecordList findAssignedRefsets(
+    @ApiParam(value = "User role, e.g. 'AUTHOR'", required = true) @QueryParam("userRole") String userRole,    
+    @ApiParam(value = "Project id, e.g. 5", required = false) @QueryParam("projectId") Long projectId,
+    @ApiParam(value = "User name, e.g. author1", required = true) @QueryParam("userName") String userName,
+    @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass())
+        .info("RESTful POST call (Workflow): /refset/assigned "
+            + userName + ", " + pfs);
+
+    final WorkflowService workflowService = new WorkflowServiceJpa();
+    try {
+      authorizeProject(workflowService, projectId, securityService, authToken,
+          "find assigned refsets", UserRole.valueOf(userRole));
+
+      // Call helper
+      // NOTE: handling for "localSet=..." parameter is in applyPfsToList
+      List<TrackingRecord> list =
+          findAssignedRefsetsHelper(UserRole.valueOf(userRole), projectId, userName, workflowService);
+
+      // Apply pfs
+      final TrackingRecordList result = new TrackingRecordListJpa();
+      final int[] totalCt = new int[1];
+      list = workflowService.applyPfsToList(list, TrackingRecord.class, totalCt, pfs);
+      result.setObjects(list);
+      result.setTotalCount(totalCt[0]);
+      for (final TrackingRecord record : result.getObjects()) {
+        handleLazyInit(record, workflowService);
+      }
+      return result;
+
+    } catch (Exception e) {
+      handleException(e, "trying to find assigned refsets");
+    } finally {
+      workflowService.close();
+      securityService.close();
+    }
+    return null;
+  }
 
   /* see superclass */
   @Override
@@ -562,192 +597,6 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl
     }
     return null;
   }
-
-  /* see superclass */
-  @Override
-  @POST
-  @Path("/refset/assigned/editing")
-  @ApiOperation(value = "Find assigned editing work", notes = "Finds refsets assigned for editing by the specified user", response = TrackingRecordListJpa.class)
-  public TrackingRecordList findAssignedEditingRefsets(
-    @ApiParam(value = "Project id, e.g. 5", required = false) @QueryParam("projectId") Long projectId,
-    @ApiParam(value = "User name, e.g. author1", required = true) @QueryParam("userName") String userName,
-    @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
-    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
-    Logger.getLogger(getClass()).info(
-        "RESTful POST call (Workflow): /refset/assigned/editing " + userName);
-
-    final WorkflowService workflowService = new WorkflowServiceJpa();
-    try {
-      authorizeProject(workflowService, projectId, securityService, authToken,
-          "find assigned editing work", UserRole.AUTHOR);
-
-      // Find tracking records for this author that has any refset id
-      // and is marked as forAuthoring but not forReview
-      String query = "";
-      if (userName != null && !userName.equals("")) {
-        query = "projectId:" + projectId + " AND " + "authors:" + userName
-            + " AND NOT refsetId:0"
-            + " AND forAuthoring:true AND forReview:false";
-      } else {
-        query = "NOT refsetId:0 AND forAuthoring:true AND forReview:false";
-      }
-      // Perform this search without pfs
-      final TrackingRecordList records =
-          workflowService.findTrackingRecordsForQuery(query, pfs);
-
-      for (final TrackingRecord record : records.getObjects()) {
-        // Handle lazy initialization
-        handleLazyInit(record, workflowService);
-      }
-      return records;
-
-    } catch (Exception e) {
-      handleException(e, "trying to find assigned editing work");
-    } finally {
-      workflowService.close();
-      securityService.close();
-    }
-    return null;
-  }
-
-
-
-  /* see superclass */
-  @Override
-  @POST
-  @Path("/refset/assigned/review")
-  @ApiOperation(value = "Find assigned review work", notes = "Finds refsets assigned for review by the specified user", response = TrackingRecordListJpa.class)
-  public TrackingRecordList findAssignedReviewRefsets(
-    @ApiParam(value = "Project id, e.g. 5", required = false) @QueryParam("projectId") Long projectId,
-    @ApiParam(value = "User name, e.g. 3", required = true) @QueryParam("userName") String userName,
-    @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
-    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
-    Logger.getLogger(getClass()).info(
-        "RESTful POST call (Workflow): /refset/assigned/review " + userName);
-
-    final WorkflowService workflowService = new WorkflowServiceJpa();
-    try {
-      authorizeProject(workflowService, projectId, securityService, authToken,
-          "trying to find refset assigned review work", UserRole.AUTHOR);
-
-      // Find refset tracking records "for review" for this user
-      String query = "";
-      if (userName != null && !userName.equals("")) {
-        query = "projectId:" + projectId + " AND " + "reviewers:" + userName
-            + " AND NOT refsetId:0" + " AND forReview:true";
-      } else {
-        throw new Exception("UserName must always be set");
-      }
-      final TrackingRecordList records =
-          workflowService.findTrackingRecordsForQuery(query, pfs);
-
-      for (final TrackingRecord record : records.getObjects()) {
-        // Handle lazy initialization
-        handleLazyInit(record, workflowService);
-      }
-      return records;
-
-    } catch (Exception e) {
-      handleException(e, "trying to find assigned review work");
-    } finally {
-      workflowService.close();
-      securityService.close();
-    }
-    return null;
-  }
-
-
-
-  /* see superclass */
-  @Override
-  @POST
-  @Path("/refset/assigned/all")
-  @ApiOperation(value = "Find assigned review work", notes = "Finds refsets assigned for review by the specified user", response = TrackingRecordJpa.class)
-  public TrackingRecordList findAllAssignedRefsets(
-    @ApiParam(value = "Project id, e.g. 5", required = false) @QueryParam("projectId") Long projectId,
-    @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
-    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
-    Logger.getLogger(getClass())
-        .info("RESTful POST call (Workflow): /refset/assigned/all ");
-
-    final WorkflowService workflowService = new WorkflowServiceJpa();
-    try {
-      authorizeProject(workflowService, projectId, securityService, authToken,
-          "trying to find refset assigned review work", UserRole.AUTHOR);
-
-      // Get all assigned editing refsets
-      String query = "projectId:" + projectId
-          + " AND (forAuthoring:true OR forReview:true) AND NOT refsetId:0";
-      // Perform this search without pfs
-      final TrackingRecordList records =
-          workflowService.findTrackingRecordsForQuery(query, null);
-      
-      final TrackingRecordList trackingRecordList = new TrackingRecordListJpa();
-      final int[] totalCt = new int[1];
-      trackingRecordList.getObjects().addAll(workflowService.applyPfsToList(records.getObjects(),
-          TrackingRecord.class, totalCt, pfs));
-      trackingRecordList.setTotalCount(totalCt[0]);
-      for (final TrackingRecord record : trackingRecordList.getObjects()) {
-        handleLazyInit(record, workflowService);
-      }
-      return trackingRecordList;
-
-    } catch (Exception e) {
-      handleException(e, "trying to find assigned review work");
-    } finally {
-      workflowService.close();
-      securityService.close();
-    }
-    return null;
-  }
-
-  /* see superclass */
-  @Override
-  @POST
-  @Path("/translation/assigned/all")
-  @ApiOperation(value = "Find all assigned work", notes = "Finds concepts assigned to any user for the specified translation", response = TrackingRecordListJpa.class)
-  public TrackingRecordList findAllAssignedConcepts(
-    @ApiParam(value = "Project id, e.g. 5", required = false) @QueryParam("projectId") Long projectId,
-    @ApiParam(value = "Translation id, e.g. 5", required = false) @QueryParam("translationId") Long translationId,
-    @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
-    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
-    Logger.getLogger(getClass())
-        .info("RESTful POST call (Workflow): /translation/assigned/all ");
-
-    final WorkflowService workflowService = new WorkflowServiceJpa();
-    try {
-      authorizeProject(workflowService, projectId, securityService, authToken,
-          "trying to find all assigned concepts", UserRole.AUTHOR);
-
-      // Get all assigned editing refsets
-      final String query = "translationId:" + translationId
-          + " AND (forAuthoring:true OR forReview:true)";
-      // Perform this search without pfs
-      final TrackingRecordList records =
-          workflowService.findTrackingRecordsForQuery(query, null);
-
-      final TrackingRecordList trackingRecordList = new TrackingRecordListJpa();
-      final int[] totalCt = new int[1];
-      trackingRecordList.getObjects().addAll(workflowService.applyPfsToList(records.getObjects(),
-          TrackingRecord.class, totalCt, pfs));
-      trackingRecordList.setTotalCount(totalCt[0]);
-      for (final TrackingRecord record : trackingRecordList.getObjects()) {
-        handleLazyInit(record, workflowService);
-      }
-      return trackingRecordList;
-    } catch (Exception e) {
-      handleException(e, "trying to find all assigned work");
-    } finally {
-      workflowService.close();
-      securityService.close();
-    }
-    return null;
-  }
-
 
 
   @Override
@@ -852,7 +701,5 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl
     if (record.getRefset() != null) {
       workflowService.handleLazyInit(record.getRefset());
     }
-    record.getAuthors().size();
-    record.getReviewers().size();
   }
 }

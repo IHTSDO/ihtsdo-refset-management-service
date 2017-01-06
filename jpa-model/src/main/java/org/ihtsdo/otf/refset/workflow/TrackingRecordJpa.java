@@ -38,6 +38,7 @@ import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.CollectionToCsvBridge;
+import org.ihtsdo.otf.refset.jpa.helpers.ListOrderBridge;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.refset.workflow.TrackingRecord;
@@ -175,7 +176,10 @@ public class TrackingRecordJpa implements TrackingRecord {
   }
 
   /* see superclass */
-  @Field(bridge = @FieldBridge(impl = CollectionToCsvBridge.class), index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+  @Fields({
+    @Field(bridge = @FieldBridge(impl = CollectionToCsvBridge.class), index = Index.YES, analyze = Analyze.YES, store = Store.NO),
+    @Field(name="authorsOrder", bridge = @FieldBridge(impl = ListOrderBridge.class), index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+  })
   @Override
   public List<String> getAuthors() {
     if (authors == null) {
@@ -209,7 +213,12 @@ public class TrackingRecordJpa implements TrackingRecord {
   }
 
   /* see superclass */
-  @Field(bridge = @FieldBridge(impl = CollectionToCsvBridge.class), index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+  @Fields({
+      @Field(bridge = @FieldBridge(impl = CollectionToCsvBridge.class), index = Index.YES, analyze = Analyze.YES, store = Store.NO),
+      @Field(name="reviewersOrder", bridge = @FieldBridge(impl = ListOrderBridge.class), index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+
+  })
+  
   @Override
   public List<String> getReviewers() {
     if (reviewers == null) {

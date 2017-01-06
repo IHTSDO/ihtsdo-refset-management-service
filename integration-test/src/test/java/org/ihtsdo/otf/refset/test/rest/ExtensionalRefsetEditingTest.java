@@ -68,7 +68,7 @@ public class ExtensionalRefsetEditingTest extends RefsetTestSupport {
     // Find the assigned refset
     currentRefset =
         getNewRefsetInTrackingRecordList(
-            workflowService.findAssignedEditingRefsets(currentRefset
+            workflowService.findAssignedRefsets("AUTHOR", currentRefset
                 .getProject().getId(), testUser, new PfsParameterJpa(),
                 adminAuthToken), record.getRefset());
     assertTrue(currentRefset != null);
@@ -161,7 +161,7 @@ public class ExtensionalRefsetEditingTest extends RefsetTestSupport {
     // Find assigned review refset
     currentRefset =
         getNewRefsetInTrackingRecordList(
-            workflowService.findAssignedReviewRefsets(currentRefset
+            workflowService.findAssignedRefsets("REVIEWER", currentRefset
                 .getProject().getId(), reviewer1.getUserName(),
                 new PfsParameterJpa(), adminAuthToken), record.getRefset());
 
