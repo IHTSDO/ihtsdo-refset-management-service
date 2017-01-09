@@ -548,11 +548,25 @@ tsApp.service('workflowService', [
     }
 
     this.translationIsAllowed = function(action, role, workflowStatus, workflowConfig) {
-
+      var allowed = workflowConfig.translationAllowedMap[action + role + workflowStatus];
+      if (allowed == null) {
+        allowed = workflowConfig.translationAllowedMap[action + role + '*'];
+      }
+      if (allowed == null) {
+        return false;
+      }
+      return allowed;
     }
 
     this.translationGetRole = function(action, role, workflowStatus, workflowConfig) {
-
+      var allowed = workflowConfig.translationRoleMap[action + role + workflowStatus];
+      if (allowed == null) {
+        allowed = workflowConfig.translationRoleMap[action + role + '*'];
+      }
+      if (allowed == null) {
+        return role;
+      }
+      return allowed;
     }
     // end
 

@@ -761,9 +761,10 @@ tsApp
 
               // Performs a workflow action
               $scope.performWorkflowAction = function(refset, action, userName) {
-
+                var role = workflowService.refsetGetRole(action, $scope.projects.role, refset.workflowStatus,
+                  $scope.metadata.workflowConfig);
                 workflowService.performWorkflowAction($scope.project.id, refset.id, userName,
-                  $scope.projects.role, action).then(function(data) {
+                  role, action).then(function(data) {
                   refsetService.fireRefsetChanged(data);
                 });
               };
@@ -2061,7 +2062,7 @@ tsApp
               };
 
               // Assign refset modal
-              $scope.openAssignRefsetModal = function(lrefset, laction, lrole) {
+              $scope.openAssignRefsetModal = function(lrefset, laction) {
                 console.debug('openAssignRefsetModal ', lrefset, laction);
 
                 var modalInstance = $uibModal.open({
@@ -2088,11 +2089,7 @@ tsApp
                       return $scope.project;
                     },
                     role : function() {
-                      if (lrole) {
-                        return lrole;
-                      } else {
-                        return $scope.projects.role;
-                      }
+                      return $scope.projects.role;
                     },
                     tinymceOptions : function() {
                       return utilService.tinymceOptions;
@@ -2114,9 +2111,11 @@ tsApp
                 console.debug('Entered assign refset modal control', assignedUsers, project.id);
                 $scope.refset = refset;
                 $scope.metadata = metadata;
+                $scope.workflowConfig = metadata.workflowConfig;
                 $scope.action = action;
                 $scope.project = project;
-                $scope.role = role;
+                $scope.role = workflowService.refsetGetRole(action, role, refset.workflowStatus,
+                  $scope.workflowConfig);
                 $scope.tinymceOptions = tinymceOptions;
                 $scope.assignedUsers = [];
                 $scope.user = utilService.findBy(assignedUsers, currentUser, 'userName');
@@ -2173,7 +2172,7 @@ tsApp
                   // else reassign
                   else if (action == 'REASSIGN') {
                     workflowService.performWorkflowAction($scope.project.id, refset.id,
-                      $scope.user.userName, 'AUTHOR', 'REASSIGN').then(
+                      $scope.user.userName, $scope.role, 'REASSIGN').then(
                     // success - reassign
                     function(data) {
                       // Add a note as well
@@ -2201,14 +2200,18 @@ tsApp
 
                   // else unassign, then reassign
                   else if (action == 'UNASSIGN-REASSIGN') {
+                    $scope.role = workflowService.refsetGetRole('UNASSIGN', role, refset.workflowStatus,
+                      $scope.workflowConfig);
                     workflowService.performWorkflowAction($scope.project.id, refset.id,
                       $scope.user.userName, $scope.role, 'UNASSIGN').then(
                       // Success - unassign
                       function(data) {
                         // The username doesn't matter - it'll go back to the
                         // author
+                        $scope.role = workflowService.refsetGetRole('REASSIGN', role, refset.workflowStatus,
+                          $scope.workflowConfig);
                         workflowService.performWorkflowAction($scope.project.id, refset.id,
-                          $scope.user.userName, 'AUTHOR', 'REASSIGN').then(
+                          $scope.user.userName, $scope.role, 'REASSIGN').then(
                         // success - reassign
                         function(data) {
                           // Add a note as well
