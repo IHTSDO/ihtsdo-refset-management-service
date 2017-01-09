@@ -673,7 +673,7 @@
     <div class="col-md-12 col-xs-12"></div>
 
     <h4 ng-show="selected.translation">
-      Assigned Concepts
+      {{projectsRole}} Assigned Concepts
       <span ng-show="selected.translation.assigned.totalCount>0">
         ({{selected.translation.assigned.totalCount}})</span>
     </h4>
@@ -737,15 +737,15 @@
               ng-show="selected.translation.assigned.totalCount > 0"
               confirm="Are you sure you want to unassign all concepts?"
               ng-click="unassignAll(user.userName)" title="Unassign all"
-              class="noul material-icons md-18">assignment_return</i>
-              <i ng-show="selected.translation.assigned.totalCount > 0"
+              class="noul material-icons md-18">assignment_return</i> <i
+              ng-show="selected.translation.assigned.totalCount > 0"
               ng-click="finishAll(user.userName)" title="Finish all"
-              class="noul material-icons md-18">done</i>
-              <i ng-show="selected.translation.assigned.totalCount > 0 && projects.role == 'REVIEWER'"
+              class="noul material-icons md-18">done</i> <i
+              ng-show="selected.translation.assigned.totalCount > 0 && projects.role == 'REVIEWER'"
               ng-click="publishAll(user.userName)" title="Publish all"
               class="noul material-icons md-18">open_in_new</i>
           </th>
-          
+
         </tr>
       </thead>
       <tbody>
@@ -949,9 +949,9 @@
                 Time<span ng-bind="getSortIndicator('concept','effectiveTime')"></span>
               </th>
               <th ng-show="value == 'EDITING'">Actions <i
-                ng-show="selected.translation.concepts.totalCount > 0 && projects.role != 'ADMIN'"
-                ng-click="openBatchAssignConceptModal('Finished'); $event.stopPropagation()"
-                title="Assign batch" class="noul material-icons md-18">assignment_ind</i></th>
+                  ng-show="selected.translation.concepts.totalCount > 0 && projects.role != 'ADMIN'"
+                  ng-click="openBatchAssignConceptModal('Finished'); $event.stopPropagation()"
+                  title="Assign batch" class="noul material-icons md-18">assignment_ind</i></th>
             </tr>
           </thead>
           <tbody>

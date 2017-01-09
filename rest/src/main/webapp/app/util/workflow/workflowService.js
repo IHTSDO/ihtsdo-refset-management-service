@@ -130,12 +130,12 @@ tsApp.service('workflowService', [
       return deferred.promise;
     };
 
-    // Find all available translation  work
+    // Find all available translation work
     this.findAllAvailableConcepts = function(projectId, translationId, pfs) {
       console.debug('findAllAvailableConcepts');
       var deferred = $q.defer();
 
-      // Find all available  work
+      // Find all available work
       gpService.increment();
       $http.post(
         workflowUrl + 'translation/available/all?projectId=' + projectId + '&translationId='
@@ -523,7 +523,6 @@ tsApp.service('workflowService', [
       return deferred.promise;
     };
 
-    
     this.refsetIsAllowed = function(action, role, workflowStatus, workflowConfig) {
       var allowed = workflowConfig.refsetAllowedMap[action + role + workflowStatus];
       if (allowed == null) {
@@ -534,24 +533,26 @@ tsApp.service('workflowService', [
       }
       return allowed;
     }
-    
+
+    // Get the role with which to perform the action
+    // The default role is the role passed in
     this.refsetGetRole = function(action, role, workflowStatus, workflowConfig) {
       var allowed = workflowConfig.refsetRoleMap[action + role + workflowStatus];
       if (allowed == null) {
         allowed = workflowConfig.refsetRoleMap[action + role + '*'];
       }
       if (allowed == null) {
-        return 'AUTHOR';
+        return role;
       }
       return allowed;
     }
-    
+
     this.translationIsAllowed = function(action, role, workflowStatus, workflowConfig) {
-      
+
     }
-    
+
     this.translationGetRole = function(action, role, workflowStatus, workflowConfig) {
-      
+
     }
     // end
 
