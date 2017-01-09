@@ -172,13 +172,21 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
         authorFlag = projectRole == UserRole.AUTHOR && record != null
             && EnumSet
                 .of(WorkflowStatus.NEW, WorkflowStatus.EDITING_IN_PROGRESS,
-                    WorkflowStatus.EDITING_DONE)
+                    WorkflowStatus.EDITING_DONE,
+                    // allowed for fixing errors
+                    WorkflowStatus.READY_FOR_PUBLICATION)
                 .contains(refset.getWorkflowStatus());
         reviewerFlag = projectRole == UserRole.REVIEWER && record != null
             && EnumSet.of(WorkflowStatus.REVIEW_NEW,
                 WorkflowStatus.REVIEW_IN_PROGRESS, WorkflowStatus.REVIEW_DONE)
                 .contains(refset.getWorkflowStatus());
         flag = authorFlag || reviewerFlag;
+        break;
+        
+      case PREPARE_FOR_PUBLICATION:
+        flag = projectRole == UserRole.REVIEWER && record != null
+            && EnumSet.of(WorkflowStatus.REVIEW_DONE)
+                .contains(refset.getWorkflowStatus());
         break;
 
       case BETA:
@@ -351,8 +359,9 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
 
       case FINISH:
         // EDITING_IN_PROGRESS => EDITING_DONE (and mark as not for authoring)
-        if (refset.getWorkflowStatus() == WorkflowStatus.NEW || refset
-            .getWorkflowStatus() == WorkflowStatus.EDITING_IN_PROGRESS) {
+        if (EnumSet
+            .of(WorkflowStatus.NEW, WorkflowStatus.EDITING_IN_PROGRESS, WorkflowStatus.READY_FOR_PUBLICATION)
+            .contains(refset.getWorkflowStatus())) {
           record.setForAuthoring(false);
           refset.setWorkflowStatus(WorkflowStatus.EDITING_DONE);
         }
@@ -363,9 +372,11 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
             .contains(refset.getWorkflowStatus())) {
           refset.setWorkflowStatus(WorkflowStatus.REVIEW_DONE);
         }
-
+        break;
+        
+      case PREPARE_FOR_PUBLICATION:
         // REVIEW_DONE => READY_FOR_PUBLICATION
-        else if (EnumSet.of(WorkflowStatus.REVIEW_DONE)
+        if (EnumSet.of(WorkflowStatus.REVIEW_DONE)
             .contains(refset.getWorkflowStatus())) {
           refset.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
           service.removeTrackingRecord(record.getId());
@@ -407,8 +418,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     // supposed
     // to have been deleted
     if (action != WorkflowAction.UNASSIGN
-        && !(action == WorkflowAction.FINISH && refset
-            .getWorkflowStatus() == WorkflowStatus.READY_FOR_PUBLICATION)) {
+        && action != WorkflowAction.PREPARE_FOR_PUBLICATION) {
       record.setLastModifiedBy(user.getUserName());
       service.updateTrackingRecord(record);
     }
@@ -518,13 +528,22 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
         authorFlag = projectRole == UserRole.AUTHOR && record != null
             && EnumSet
                 .of(WorkflowStatus.EDITING_IN_PROGRESS,
-                    WorkflowStatus.EDITING_DONE)
+                    WorkflowStatus.EDITING_DONE,
+                    WorkflowStatus.READY_FOR_PUBLICATION)
                 .contains(concept.getWorkflowStatus());
         reviewerFlag = projectRole == UserRole.REVIEWER && record != null
             && EnumSet.of(WorkflowStatus.REVIEW_NEW,
                 WorkflowStatus.REVIEW_IN_PROGRESS, WorkflowStatus.REVIEW_DONE)
                 .contains(concept.getWorkflowStatus());
         flag = authorFlag || reviewerFlag;
+
+        break;
+        
+      case PREPARE_FOR_PUBLICATION:
+        
+        flag = projectRole == UserRole.REVIEWER && record != null
+            && EnumSet.of(WorkflowStatus.REVIEW_DONE)
+                .contains(concept.getWorkflowStatus());
 
         break;
 
@@ -714,7 +733,9 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
       case FINISH:
 
         // EDITING_IN_PROGRESS => EDITING_DONE
-        if (concept.getWorkflowStatus() == WorkflowStatus.EDITING_IN_PROGRESS) {
+        if (EnumSet
+            .of(WorkflowStatus.NEW, WorkflowStatus.EDITING_IN_PROGRESS, WorkflowStatus.READY_FOR_PUBLICATION)
+            .contains(concept.getWorkflowStatus())) {
           record.setForAuthoring(false);
           concept.setWorkflowStatus(WorkflowStatus.EDITING_DONE);
         }
@@ -725,9 +746,11 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
             .contains(concept.getWorkflowStatus())) {
           concept.setWorkflowStatus(WorkflowStatus.REVIEW_DONE);
         }
-
+        break;
+        
+      case PREPARE_FOR_PUBLICATION:
         // REVIEW_DONE => READY_FOR_PUBLICATION
-        else if (concept.getWorkflowStatus() == WorkflowStatus.REVIEW_DONE) {
+        if (concept.getWorkflowStatus() == WorkflowStatus.REVIEW_DONE) {
           concept.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
           service.removeTrackingRecord(record.getId());
           concept.setRevision(false);
@@ -768,11 +791,11 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     // concept assigned also for FINISH, this would persist the tracking record
     // that was just supposed to have been deleted
     if (action != WorkflowAction.UNASSIGN
-        && !(action == WorkflowAction.FINISH && concept
-            .getWorkflowStatus() == WorkflowStatus.READY_FOR_PUBLICATION)) {
+        && action != WorkflowAction.PREPARE_FOR_PUBLICATION) {
       record.setLastModifiedBy(user.getUserName());
       service.updateTrackingRecord(record);
     }
+    
     return record;
   }
 
@@ -1063,36 +1086,31 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     
     // Refset Admin Options
     refsetAllowedMap.put("ASSIGN" + "ADMIN" + "*", true);
-    refsetAllowedMap.put("UNASSIGN" + "ADMIN" + "*", true);
+    refsetAllowedMap.put("UNASSIGN" + "ADMIN" + "EDITING_IN_PROGRESS", true);
+    refsetAllowedMap.put("UNASSIGN" + "ADMIN" + "EDITING_DONE", true);
+    refsetAllowedMap.put("UNASSIGN" + "ADMIN" + "REVIEW_NEW", true);
+    refsetAllowedMap.put("UNASSIGN" + "ADMIN" + "REVIEW_IN_PROGRESS", true);
+    refsetAllowedMap.put("UNASSIGN" + "ADMIN" + "REVIEW_DONE", true);
     refsetAllowedMap.put("REASSIGN" + "ADMIN" + "*", true);
-    refsetAllowedMap.put("SAVE" + "ADMIN" + "*", true);
-    refsetAllowedMap.put("FINISH" + "ADMIN" + "*", true);
-    refsetAllowedMap.put("CANCEL" + "ADMIN" + "*", true);
     
     // Refset Author Options
     refsetAllowedMap.put("ASSIGN" + "AUTHOR" + "NEW", true);
     refsetAllowedMap.put("ASSIGN" + "AUTHOR" + "READY_FOR_PUBLICATION", true);
-    refsetAllowedMap.put("UNASSIGN" + "AUTHOR" + "NEW", true);
+    //refsetAllowedMap.put("UNASSIGN" + "AUTHOR" + "NEW", true);
     refsetAllowedMap.put("UNASSIGN" + "AUTHOR" + "EDITING_IN_PROGRESS", true);
     refsetAllowedMap.put("UNASSIGN" + "AUTHOR" + "EDITING_DONE", true);
-    refsetAllowedMap.put("UNASSIGN" + "AUTHOR" + "REVIEW_NEW", true);
-    refsetAllowedMap.put("UNASSIGN" + "AUTHOR" + "REVIEW_IN_PROGRESS", true);
-    refsetAllowedMap.put("UNASSIGN" + "AUTHOR" + "REVIEW_DONE", true);
     //refsetAllowedMap.put("REASSIGN" + "AUTHOR" + "EDITING_DONE", true);
     refsetAllowedMap.put("SAVE" + "AUTHOR" + "NEW", true);
     refsetAllowedMap.put("SAVE" + "AUTHOR" + "EDITING_IN_PROGRESS", true);
-    refsetAllowedMap.put("SAVE" + "AUTHOR" + "EDITING_DONE", true);
     refsetAllowedMap.put("SAVE" + "AUTHOR" + "READY_FOR_PUBLICATION", true);
     refsetAllowedMap.put("FINISH" + "AUTHOR" + "NEW", true);
     refsetAllowedMap.put("FINISH" + "AUTHOR" + "EDITING_IN_PROGRESS", true);
-    refsetAllowedMap.put("FINISH" + "AUTHOR" + "EDITING_DONE", true);
+    refsetAllowedMap.put("FINISH" + "AUTHOR" + "READY_FOR_PUBLICATION", true);
     refsetAllowedMap.put("CANCEL" + "AUTHOR" + "*", true);
     
     // Refset Reviewer Options
     refsetAllowedMap.put("ASSIGN" + "REVIEWER" + "EDITING_DONE", true);
-    refsetAllowedMap.put("UNASSIGN" + "REVIEWER" + "NEW", true);
-    refsetAllowedMap.put("UNASSIGN" + "REVIEWER" + "EDITING_IN_PROGRESS", true);
-    refsetAllowedMap.put("UNASSIGN" + "REVIEWER" + "EDITING_DONE", true);
+    refsetAllowedMap.put("ASSIGN" + "REVIEWER" + "READY_FOR_PUBLICATION", true);
     refsetAllowedMap.put("UNASSIGN" + "REVIEWER" + "REVIEW_NEW", true);
     refsetAllowedMap.put("UNASSIGN" + "REVIEWER" + "REVIEW_IN_PROGRESS", true);
     refsetAllowedMap.put("UNASSIGN" + "REVIEWER" + "REVIEW_DONE", true);
@@ -1102,28 +1120,25 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     refsetAllowedMap.put("SAVE" + "REVIEWER" + "REVIEW_DONE", true);
     refsetAllowedMap.put("FINISH" + "REVIEWER" + "REVIEW_NEW", true);
     refsetAllowedMap.put("FINISH" + "REVIEWER" + "REVIEW_IN_PROGRESS", true);
-    //refsetAllowedMap.put("FINISH" + "REVIEWER" + "REVIEW_DONE", true);
+    refsetAllowedMap.put("PREPARE_FOR_PUBLICATION" + "REVIEWER" + "REVIEW_DONE", true);
     refsetAllowedMap.put("CANCEL" + "REVIEWER" + "*", true);
     
     config.setRefsetAllowedMap(refsetAllowedMap);
     
     // Refset Role Map
     // Answers question: "What are the details of what it does?"
-    Map<String, String> refsetRoleMap = new HashMap<>();
-    
+    Map<String, String> refsetRoleMap = new HashMap<>();   
     refsetRoleMap.put("ASSIGN" + "ADMIN" + "NEW", "AUTHOR");
     refsetRoleMap.put("ASSIGN" + "ADMIN" + "READY_FOR_PUBLICATION", "AUTHOR");
     refsetRoleMap.put("ASSIGN" + "ADMIN" + "*", "REVIEWER");
-    refsetRoleMap.put("ASSIGN" + "REVIEWER" + "EDITING_DONE", "REVIEWER");
     refsetRoleMap.put("ASSIGN" + "REVIEWER" + "READY_FOR_PUBLICATION", "AUTHOR");
     refsetRoleMap.put("UNASSIGN" + "ADMIN" + "NEW", "AUTHOR");
     refsetRoleMap.put("UNASSIGN" + "ADMIN" + "EDITING_IN_PROGRESS", "AUTHOR");
     refsetRoleMap.put("UNASSIGN" + "ADMIN" + "EDITING_DONE", "AUTHOR");
     refsetRoleMap.put("UNASSIGN" + "ADMIN" + "*", "REVIEWER");
-    refsetRoleMap.put("UNASSIGN" + "AUTHOR" + "*", "AUTHOR");
-    refsetRoleMap.put("UNASSIGN" + "REVIEWER" + "*", "REVIEWER");
-    // REASSIGN TODO
-    // SAVE TODO
+    refsetRoleMap.put("REASSIGN" + "ADMIN" + "*", "AUTHOR");
+    refsetRoleMap.put("REASSIGN" + "REVIEWER" + "*", "AUTHOR");
+    // SAVE n/a
     
     
     
@@ -1135,50 +1150,62 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     
     // Translation Admin Options
     translationAllowedMap.put("ASSIGN" + "ADMIN" + "*", true);
-    translationAllowedMap.put("UNASSIGN" + "ADMIN" + "*", true);
-    translationAllowedMap.put("REASSIGN" + "ADMIN" + "*", true);
-    translationAllowedMap.put("SAVE" + "ADMIN" + "*", true);
-    translationAllowedMap.put("FINISH" + "ADMIN" + "*", true);
-    translationAllowedMap.put("CANCEL" + "ADMIN" + "*", true);
+    translationAllowedMap.put("UNASSIGN" + "ADMIN" + "EDITING_IN_PROGRESS", true);
+    translationAllowedMap.put("UNASSIGN" + "ADMIN" + "EDITING_DONE", true);
+    translationAllowedMap.put("UNASSIGN" + "ADMIN" + "REVIEW_NEW", true);
+    translationAllowedMap.put("UNASSIGN" + "ADMIN" + "REVIEW_IN_PROGRESS", true);
+    translationAllowedMap.put("UNASSIGN" + "ADMIN" + "REVIEW_DONE", true);
+    //translationAllowedMap.put("REASSIGN" + "ADMIN" + "*", true);
     
     // Translation Author Options
     translationAllowedMap.put("ASSIGN" + "AUTHOR" + "NEW", true);
     translationAllowedMap.put("ASSIGN" + "AUTHOR" + "READY_FOR_PUBLICATION", true);
-    translationAllowedMap.put("UNASSIGN" + "AUTHOR" + "NEW", true);
+    //translationAllowedMap.put("UNASSIGN" + "AUTHOR" + "NEW", true);
     translationAllowedMap.put("UNASSIGN" + "AUTHOR" + "EDITING_IN_PROGRESS", true);
     translationAllowedMap.put("UNASSIGN" + "AUTHOR" + "EDITING_DONE", true);
-    translationAllowedMap.put("UNASSIGN" + "AUTHOR" + "REVIEW_NEW", true);
-    translationAllowedMap.put("UNASSIGN" + "AUTHOR" + "REVIEW_IN_PROGRESS", true);
-    translationAllowedMap.put("UNASSIGN" + "AUTHOR" + "REVIEW_DONE", true);
-    translationAllowedMap.put("REASSIGN" + "AUTHOR" + "EDITING_DONE", true);
     translationAllowedMap.put("SAVE" + "AUTHOR" + "NEW", true);
     translationAllowedMap.put("SAVE" + "AUTHOR" + "EDITING_IN_PROGRESS", true);
-    translationAllowedMap.put("SAVE" + "AUTHOR" + "EDITING_DONE", true);
     translationAllowedMap.put("SAVE" + "AUTHOR" + "READY_FOR_PUBLICATION", true);
+    //translationAllowedMap.put("FINISH" + "AUTHOR" + "NEW", true);
     translationAllowedMap.put("FINISH" + "AUTHOR" + "EDITING_IN_PROGRESS", true);
-    translationAllowedMap.put("FINISH" + "AUTHOR" + "EDITING_DONE", true);
+    translationAllowedMap.put("FINISH" + "AUTHOR" + "READY_FOR_PUBLICATION", true);
     translationAllowedMap.put("CANCEL" + "AUTHOR" + "*", true);
     
     // Translation Reviewer Options
     translationAllowedMap.put("ASSIGN" + "REVIEWER" + "EDITING_DONE", true);
-    translationAllowedMap.put("UNASSIGN" + "REVIEWER" + "NEW", true);
-    translationAllowedMap.put("UNASSIGN" + "REVIEWER" + "EDITING_IN_PROGRESS", true);
-    translationAllowedMap.put("UNASSIGN" + "REVIEWER" + "EDITING_DONE", true);
+    translationAllowedMap.put("ASSIGN" + "REVIEWER" + "READY_FOR_PUBLICATION", true);
     translationAllowedMap.put("UNASSIGN" + "REVIEWER" + "REVIEW_NEW", true);
     translationAllowedMap.put("UNASSIGN" + "REVIEWER" + "REVIEW_IN_PROGRESS", true);
     translationAllowedMap.put("UNASSIGN" + "REVIEWER" + "REVIEW_DONE", true);
+    translationAllowedMap.put("REASSIGN" + "REVIEWER" + "REVIEW_NEW", true);
+    translationAllowedMap.put("REASSIGN" + "REVIEWER" + "REVIEW_IN_PROGRESS", true);
+    translationAllowedMap.put("REASSIGN" + "REVIEWER" + "REVIEW_DONE", true);
+    translationAllowedMap.put("REASSIGN" + "REVIEWER" + "EDITING_DONE", true);
     translationAllowedMap.put("SAVE" + "REVIEWER" + "REVIEW_NEW", true);
     translationAllowedMap.put("SAVE" + "REVIEWER" + "REVIEW_IN_PROGRESS", true);
     translationAllowedMap.put("SAVE" + "REVIEWER" + "REVIEW_DONE", true);
     translationAllowedMap.put("FINISH" + "REVIEWER" + "REVIEW_NEW", true);
     translationAllowedMap.put("FINISH" + "REVIEWER" + "REVIEW_IN_PROGRESS", true);
-    translationAllowedMap.put("FINISH" + "REVIEWER" + "REVIEW_DONE", true);  
-    translationAllowedMap.put("CANCEL" + "REVIEWER" + "*", true);  
+    translationAllowedMap.put("PREPARE_FOR_PUBLICATION" + "REVIEWER" + "REVIEW_DONE", true);
+    translationAllowedMap.put("CANCEL" + "REVIEWER" + "*", true);
     
     config.setTranslationAllowedMap(translationAllowedMap);
-
-    /** The translation role map. key = action+role+workflowStatus */
-    Map<String, String> translationRoleMap = new HashMap<>();
+  
+    // Translation Role Map
+    // Answers question: "What are the details of what it does?"
+    Map<String, String> translationRoleMap = new HashMap<>();   
+    translationRoleMap.put("ASSIGN" + "ADMIN" + "NEW", "AUTHOR");
+    translationRoleMap.put("ASSIGN" + "ADMIN" + "READY_FOR_PUBLICATION", "AUTHOR");
+    translationRoleMap.put("ASSIGN" + "ADMIN" + "*", "REVIEWER");
+    translationRoleMap.put("ASSIGN" + "REVIEWER" + "READY_FOR_PUBLICATION", "AUTHOR");
+    translationRoleMap.put("UNASSIGN" + "ADMIN" + "NEW", "AUTHOR");
+    translationRoleMap.put("UNASSIGN" + "ADMIN" + "EDITING_IN_PROGRESS", "AUTHOR");
+    translationRoleMap.put("UNASSIGN" + "ADMIN" + "EDITING_DONE", "AUTHOR");
+    translationRoleMap.put("UNASSIGN" + "ADMIN" + "*", "REVIEWER");
+    translationRoleMap.put("REASSIGN" + "ADMIN" + "*", "AUTHOR");
+    translationRoleMap.put("REASSIGN" + "REVIEWER" + "*", "AUTHOR");
+    // SAVE n/a
+        
     config.setTranslationRoleMap(translationRoleMap);
     
     return config;

@@ -222,20 +222,20 @@
             <!-- Assign -->
             <i
               ng-show="isAllowed('ASSIGN', refset)"
-              ng-click="openAssignRefsetModal(refset,'ASSIGN', getRole('ASSIGN', refset)); $event.stopPropagation()"
+              ng-click="openAssignRefsetModal(refset,'ASSIGN'); $event.stopPropagation()"
               title="Assign" class="noul material-icons md-18">assignment_ind</i>
            
             <!-- Reassign back to author -->
             <i
               ng-show="isAllowed('REASSIGN', refset)"
-              confirm="Are you sure you want to unassign the refset ({{refset.name}})?"
+              confirm="Are you sure you want to reassign the refset ({{refset.name}})?"
               ng-click="openAssignRefsetModal(refset,'REASSIGN'); $event.stopPropagation()"
               title="Reassign back to author" class="noul material-icons md-18">assignment_returned</i>
 
             <!-- As admin/reviewer, unassign completely and return back to pool-->
             <i
               confirm="Are you sure you want to unassign the refset ({{refset.name}})?"
-              ng-show="projects.role == 'ADMIN' && refset.workflowStatus != 'NEW'"
+              ng-show="isAllowed('UNASSIGN', refset)"
               ng-click="unassign(refset,user.userName); $event.stopPropagation()"
               title="Unassign" class="noul material-icons md-18">assignment_return</i>
 
@@ -287,8 +287,8 @@
               ng-show="isAllowed('FINISH', refset)"
               ng-click="performWorkflowAction(refset, 'FINISH', user.userName)"
               title="Finish" class="noul material-icons md-18">done</i>
-            <i ng-show="refset.workflowStatus == 'REVIEW_DONE'"
-              ng-click="performWorkflowAction(refset, 'FINISH', user.userName)"
+            <i ng-show="isAllowed('PREPARE_FOR_PUBLICATION', refset)"
+              ng-click="performWorkflowAction(refset, 'PREPARE_FOR_PUBLICATION', user.userName)"
               title="Mark ready for publication"
               class="noul material-icons md-18">open_in_new</i>
 
@@ -337,8 +337,9 @@
               ng-show="projects.role == 'ADMIN' && !refset.staged && !refset.inPublicationProcess && (refset.workflowStatus == 'PUBLISHED' || refset.workflowStatus == 'READY_FOR_PUBLICATION')"
               ng-click="removeRefset(refset); $event.stopPropagation()"
               title="Remove" class="noul material-icons md-18">delete</i>
-            <i ng-show="refset.workflowStatus == 'READY_FOR_PUBLICATION'"
-              ng-click="openAssignRefsetModal(refset,'ASSIGN','AUTHOR'); $event.stopPropagation()"
+              <!-- TODO -->
+            <i ng-show="isAllowed('ASSIGN', refset)"   
+              ng-click="openAssignRefsetModal(refset,'ASSIGN'); $event.stopPropagation()"
               title="Assign" class="noul material-icons md-18">assignment_ind</i>
 
             <!-- only if READY_FOR_PUBLICATION -->
