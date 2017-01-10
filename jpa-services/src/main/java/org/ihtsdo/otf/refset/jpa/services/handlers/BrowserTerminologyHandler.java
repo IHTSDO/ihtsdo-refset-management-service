@@ -86,6 +86,7 @@ public class BrowserTerminologyHandler extends AbstractTerminologyHandler {
   public TerminologyHandler copy() throws Exception {
     final BrowserTerminologyHandler handler = new BrowserTerminologyHandler();
     handler.defaultUrl = this.defaultUrl;
+    handler.setApiKey(getApiKey());
     return handler;
   }
 
@@ -1050,8 +1051,8 @@ public class BrowserTerminologyHandler extends AbstractTerminologyHandler {
     String terminology, String version) throws Exception {
     final ConceptList conceptList = new ConceptListJpa();
 
-    // TODO figure out where to put this
-    List<String> languages = this.getLanguages(terminology, version);
+    // Browser doesn't support languages on children call
+    // List<String> languages = this.getLanguages(terminology, version);
 
     final Client client = ClientBuilder.newClient();
     final String targetUrl = url + "/snomed/" + terminology + "/v" + version
@@ -1157,7 +1158,6 @@ public class BrowserTerminologyHandler extends AbstractTerminologyHandler {
       List<String> languages = new ArrayList<String>();
       final ObjectMapper mapper = new ObjectMapper();
       final JsonNode doc = mapper.readTree(resultString);
-      System.out.println("resultString " + resultString);
       if (doc.get("filters") == null) {
         languages.add("english");
         return languages;

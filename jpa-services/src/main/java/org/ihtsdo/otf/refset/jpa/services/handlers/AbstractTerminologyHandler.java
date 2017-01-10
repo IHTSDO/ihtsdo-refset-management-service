@@ -49,7 +49,7 @@ public abstract class AbstractTerminologyHandler implements TerminologyHandler {
     }
     GoogleTranslate.setHttpReferrer(
         ConfigUtility.getConfigProperties().getProperty("base.url"));
-    GoogleTranslate.setKey("***REMOVED***");
+    GoogleTranslate.setKey(getApiKey());
     return GoogleTranslate.execute(text, "en", language);
   }
 
