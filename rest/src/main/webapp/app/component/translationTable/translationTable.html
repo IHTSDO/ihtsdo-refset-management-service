@@ -631,7 +631,7 @@
               ng-show="isAllowed('REASSIGN', concept)"
               confirm="Are you sure you want to reassign this concept ({{concept.terminologyId}}, {{concept.name}})"
               ng-click="openAssignConceptModal(concept, 'REASSIGN'); $event.stopPropagation()"
-              title="Reassign back to author" class="noul material-icons md-18">assignment_returned</i>
+              title="Reassign back to {{getRole('REASSIGN', concept)}}" class="noul material-icons md-18">assignment_returned</i>
 
             <!-- Unassign - n/a - these are available concepts -->
 
@@ -728,10 +728,10 @@
               confirm="Are you sure you want to unassign all concepts?"
               ng-click="unassignAll(user.userName)" title="Unassign all"
               class="noul material-icons md-18">assignment_return</i>
-              <i ng-show="selected.translation.assigned.totalCount > 0"
+              <i ng-show="selected.translation.assigned.totalCount > 0 && projects.role != 'ADMIN'"
               ng-click="finishAll(user.userName)" title="Finish all"
               class="noul material-icons md-18">done</i>
-              <i ng-show="selected.translation.assigned.totalCount > 0 && projects.role == 'REVIEWER'"
+              <i ng-show="selected.translation.assigned.totalCount > 0 && projects.role != 'ADMIN' && projects.role != 'AUTHOR'"
               ng-click="publishAll(user.userName)" title="Publish all"
               class="noul material-icons md-18">open_in_new</i>
           </th>
@@ -750,8 +750,11 @@
             {{toDate(record.lastModified)}}
             <span ng-show="projects.role == 'ADMIN'">
               <br />
-              <span ng-repeat="author in record.authors">{{author}}</span>
-              <span ng-repeat="reviewer in record.reviewers">{{reviewer}}</span>
+              <span ng-show="record.authors.length > 0">authors:
+              <span ng-repeat="author in record.authors track by $index">{{author}} </span></span>  
+              <span ng-show="record.reviewers.length > 0">reviewers:           
+              <span ng-repeat="reviewer in record.reviewers track by $index">{{reviewer}} </span></span>
+              <!-- <span ng-show="record.reviewers.length > 0">reviewers: {{record.reviewers[0]}} {{record.reviewers[1]}}</span> -->
               <br /> {{record.concept.workflowStatus}}
             </span>
 
@@ -767,36 +770,18 @@
               title="Edit concept" class="noul material-icons md-18">edit</i>
 
             <!-- UnAssign (instead of delete) -->
-            <i ng-show="projects.role != 'ADMIN'"
+            <i ng-show="isAllowed('UNASSIGN', record.concept)"
               confirm="Are you sure you want to unassign this concept ({{record.concept.terminologyId}}, {{record.concept.name}})"
               ng-click="unassign(record.concept, user.userName)"
               title="Unassign" class="noul material-icons md-18">assignment_return</i>
 
-            <span ng-show="projects.role == 'ADMIN'">
-              <span ng-repeat="author in record.authors">
-                <!-- Only unassign if there are no reviewers -->
-                <i ng-show="!record.reviewers || record.reviewers.length == 0"
-                  title="Unassign author: {{author}}"
-                  confirm="Are you sure you want to unassign this concept ({{record.concept.terminologyId}}, {{record.concept.name}})"
-                  ng-click="unassign(record.concept, user.userName)"
-                  class="noul material-icons md-18">assignment_return</i>
-                <i ng-show="record.reviewers.length > 0"
-                  title="Author: {{author}}, unassign reviewer first"
-                  class="md-grey material-icons md-18">assignment_ind</i>
-              </span>
-              <span ng-repeat="reviewer in record.reviewers">
-                <i title="Unassign reviewer: {{reviewer}}"
-                  confirm="Are you sure you want to unassign this concept ({{record.concept.terminologyId}}, {{record.concept.name}})"
-                  ng-click="unassign(record.concept, user.userName)"
-                  class="noul material-icons md-18">assignment_return</i>
-              </span>
-            </span>
+           
 
             <!-- Reassign -->
-            <i ng-show="projects.role == 'REVIEWER'"
+            <i ng-show="isAllowed('REASSIGN', record.concept)"
               confirm="Are you sure you want to reassign this concept ({{concept.terminologyId}}, {{concept.name}})"
               ng-click="openAssignConceptModal(record.concept, 'UNASSIGN-REASSIGN'); $event.stopPropagation()"
-              title="Reassign back to author" class="noul material-icons md-18">assignment_returned</i>
+              title="Reassign back to {{getRole('REASSIGN', record.concept)}}" class="noul material-icons md-18">assignment_returned</i>
 
             <!-- Finish -->
             <i confirm="Are you sure you want to finalize editing/review?"
@@ -971,7 +956,7 @@
                   title="Assign" class="noul material-icons md-18">assignment_ind</i>
                 <!-- Unassign (for ADMIN fixing) -->
                 <i
-                  ng-show="projects.role == 'ADMIN' && concept.workflowStatus != 'READY_FOR_PUBLICATION' && concept.workflowStatus != 'NEW'"
+                  ng-show="isAllowed('UNASSIGN', concept)"
                   confirm="Are you sure you want to unassign this concept ({{concept.terminologyId}}, {{concept.name}})"
                   title="Unassign concept"
                   ng-click="unassign(concept, user.userName)"

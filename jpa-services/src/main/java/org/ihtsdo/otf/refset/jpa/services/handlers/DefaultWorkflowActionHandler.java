@@ -11,10 +11,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import javax.persistence.Query;
-import javax.ws.rs.HeaderParam;
-import javax.ws.rs.QueryParam;
 
-import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
@@ -33,7 +30,6 @@ import org.ihtsdo.otf.refset.jpa.helpers.RefsetListJpa;
 import org.ihtsdo.otf.refset.jpa.services.RefsetServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.RootServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.TranslationServiceJpa;
-import org.ihtsdo.otf.refset.jpa.services.WorkflowServiceJpa;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
@@ -49,8 +45,6 @@ import org.ihtsdo.otf.refset.workflow.WorkflowAction;
 import org.ihtsdo.otf.refset.workflow.WorkflowConfig;
 import org.ihtsdo.otf.refset.workflow.WorkflowConfigJpa;
 import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
-
-import com.wordnik.swagger.annotations.ApiParam;
 
 /**
  * Default implementation of {@link WorkflowActionHandler}.
@@ -108,16 +102,6 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
           "Unexpected number of tracking records for " + refset.getId());
     }
 
-    // TODO: possibly support this after testing
-    // if (projectRole == UserRole.REVIEWER
-    // && refset.getWorkflowStatus() == WorkflowStatus.EDITING_DONE
-    // && action == WorkflowAction.ASSIGN
-    // && record.getAuthors().contains(user.getUserName())) {
-    // result
-    // .addError("Reviewer cannot review work that was authored by him/her - "
-    // + action + ", " + user);
-    // return result;
-    // }
 
     // Validate actions that workflow status will allow
     boolean flag = false;
@@ -1063,7 +1047,17 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
   }
 
   @Override
-  public StringList getAvailableRoles() throws Exception {
+  public StringList getRefsetAvailableRoles() throws Exception {
+    final StringList list = new StringList();
+    list.setTotalCount(3);
+    list.getObjects().add(UserRole.AUTHOR.toString());
+    list.getObjects().add(UserRole.REVIEWER.toString());
+    list.getObjects().add(UserRole.ADMIN.toString());
+    return list;
+  }
+  
+  @Override
+  public StringList getTranslationAvailableRoles() throws Exception {
     final StringList list = new StringList();
     list.setTotalCount(3);
     list.getObjects().add(UserRole.AUTHOR.toString());
@@ -1077,7 +1071,8 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     WorkflowConfig config = new WorkflowConfigJpa();
     
     // Available Roles
-    config.setAvailableRoles(getAvailableRoles());
+    config.setRefsetAvailableRoles(getRefsetAvailableRoles());
+    config.setTranslationAvailableRoles(getTranslationAvailableRoles());
     
     // Refset Allowed Map
     // Will answer question: Is the control for action X visible?
@@ -1085,6 +1080,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     
     // Refset Admin Options
     refsetAllowedMap.put("ASSIGN" + "ADMIN" + "*", true);
+    refsetAllowedMap.put("UNASSIGN" + "ADMIN" + "NEW", true);
     refsetAllowedMap.put("UNASSIGN" + "ADMIN" + "EDITING_IN_PROGRESS", true);
     refsetAllowedMap.put("UNASSIGN" + "ADMIN" + "EDITING_DONE", true);
     refsetAllowedMap.put("UNASSIGN" + "ADMIN" + "REVIEW_NEW", true);
@@ -1149,6 +1145,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     
     // Translation Admin Options
     translationAllowedMap.put("ASSIGN" + "ADMIN" + "*", true);
+    translationAllowedMap.put("UNASSIGN" + "ADMIN" + "NEW", true);  
     translationAllowedMap.put("UNASSIGN" + "ADMIN" + "EDITING_IN_PROGRESS", true);
     translationAllowedMap.put("UNASSIGN" + "ADMIN" + "EDITING_DONE", true);
     translationAllowedMap.put("UNASSIGN" + "ADMIN" + "REVIEW_NEW", true);

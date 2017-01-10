@@ -688,7 +688,7 @@ public class GenerateSampleDataMojo extends AbstractMojo {
           test9.getId(), "reviewer1", "REVIEWER", "FINISH",
           reviewer1.getAuthToken());
       new WorkflowServiceRestImpl().performWorkflowAction(project1.getId(),
-          test9.getId(), "reviewer1", "REVIEWER", "FINISH",
+          test9.getId(), "reviewer1", "REVIEWER", "PREPARE_FOR_PUBLICATION",
           reviewer1.getAuthToken());
 
       new ReleaseServiceRestImpl().beginRefsetRelease(test9.getId(),

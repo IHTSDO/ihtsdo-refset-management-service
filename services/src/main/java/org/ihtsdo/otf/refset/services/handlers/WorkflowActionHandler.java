@@ -90,13 +90,21 @@ public interface WorkflowActionHandler extends Configurable {
     WorkflowService service) throws Exception;
 
   /**
-   * Gets the available roles.
+   * Gets the refset available roles.
    *
    * @return the available roles
    * @throws Exception the exception
    */
-  public StringList getAvailableRoles() throws Exception;
+  public StringList getRefsetAvailableRoles() throws Exception;
 
+  /**
+   * Gets the translation available roles.
+   *
+   * @return the translation available roles
+   * @throws Exception the exception
+   */
+  public StringList getTranslationAvailableRoles() throws Exception;
+  
   /**
    * Gets the workflow config.
    *

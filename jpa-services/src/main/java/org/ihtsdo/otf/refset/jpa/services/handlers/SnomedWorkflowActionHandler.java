@@ -8,15 +8,9 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
 import javax.persistence.Query;
-import javax.ws.rs.HeaderParam;
-import javax.ws.rs.QueryParam;
 
-import org.apache.log4j.Logger;
-import org.ihtsdo.otf.refset.Project;
-import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.UserRole;
@@ -24,21 +18,14 @@ import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
-import org.ihtsdo.otf.refset.helpers.RefsetList;
 import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.jpa.ValidationResultJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
-import org.ihtsdo.otf.refset.jpa.helpers.RefsetListJpa;
-import org.ihtsdo.otf.refset.jpa.services.RefsetServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.RootServiceJpa;
-import org.ihtsdo.otf.refset.jpa.services.TranslationServiceJpa;
-import org.ihtsdo.otf.refset.jpa.services.WorkflowServiceJpa;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
-import org.ihtsdo.otf.refset.services.RefsetService;
-import org.ihtsdo.otf.refset.services.TranslationService;
 import org.ihtsdo.otf.refset.services.WorkflowService;
 import org.ihtsdo.otf.refset.services.handlers.WorkflowActionHandler;
 import org.ihtsdo.otf.refset.workflow.TrackingRecord;
@@ -47,10 +34,7 @@ import org.ihtsdo.otf.refset.workflow.TrackingRecordList;
 import org.ihtsdo.otf.refset.workflow.TrackingRecordListJpa;
 import org.ihtsdo.otf.refset.workflow.WorkflowAction;
 import org.ihtsdo.otf.refset.workflow.WorkflowConfig;
-import org.ihtsdo.otf.refset.workflow.WorkflowConfigJpa;
 import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
-
-import com.wordnik.swagger.annotations.ApiParam;
 
 /**
  * Snomed implementation of {@link WorkflowActionHandler}.
@@ -359,8 +343,8 @@ public class SnomedWorkflowActionHandler extends DefaultWorkflowActionHandler {
           // no need to do this, sync takes care of it
           // concept.setWorkflowStatus(WorkflowStatus.EDITING_DONE);
         }        
-        // For review, it removes the reviewer and sets the status back to
-        // EDITING_DONE
+        // For review, it removes the reviewer2 and sets the status back to
+        // REVIEW_DONE
         else if (EnumSet
             .of(WorkflowStatus.REVIEW_NEW, WorkflowStatus.REVIEW_IN_PROGRESS,
                 WorkflowStatus.REVIEW_DONE)
@@ -632,19 +616,13 @@ public class SnomedWorkflowActionHandler extends DefaultWorkflowActionHandler {
     // Concepts of the translation with
     // workflow status in a certain state
     // that do not yet have tracking records
+       
     final String queryStr =
-        "select a from ConceptJpa a, TranslationJpa b, TrackingRecordJpa c "
-            + "where a.translation = b and c.translation = b "
-            + "and a = c.concept and a.workflowStatus = :editingDone "
-            + "and b.id = :translationId";
-
-    
-   /* final String queryStr =
         "select a from ConceptJpa a, TranslationJpa b, TrackingRecordJpa c "
             + "where a.translation = b and c.translation = b "
             + "and a = c.concept and a.workflowStatus = :reviewDone "
             + "and b.id = :translationId and c in (select t from TrackingRecordJpa t join t.reviewers group by t having count(*) = 1)";
-    */
+    
     List<Concept> results = null;
     final ConceptListJpa list = new ConceptListJpa();
     int totalCount = 0;
@@ -656,14 +634,14 @@ public class SnomedWorkflowActionHandler extends DefaultWorkflowActionHandler {
           ((RootServiceJpa) service).getEntityManager().createQuery(
               "select count(*) from ConceptJpa a, TranslationJpa b, TrackingRecordJpa c "
                   + "where a.translation = b and c.translation = b "
-                  + "and a = c.concept and a.workflowStatus = :editingDone "
-                  + "and b.id = :translationId");
-      ctQuery.setParameter("editingDone", WorkflowStatus.EDITING_DONE);
+                  + "and a = c.concept and a.workflowStatus = :reviewDone "
+                  + "and b.id = :translationId and c in (select t from TrackingRecordJpa t join t.reviewers group by t having count(*) = 1)");
+      ctQuery.setParameter("reviewDone", WorkflowStatus.REVIEW_DONE);
       ctQuery.setParameter("translationId", translation.getId());
 
       final Query query =
           ((RootServiceJpa) service).applyPfsToJqlQuery(queryStr, pfs);
-      query.setParameter("editingDone", WorkflowStatus.EDITING_DONE);
+      query.setParameter("reviewDone", WorkflowStatus.REVIEW_DONE);
       query.setParameter("translationId", translation.getId());
       results = query.getResultList();
       totalCount = ((Long) ctQuery.getSingleResult()).intValue();
@@ -675,7 +653,7 @@ public class SnomedWorkflowActionHandler extends DefaultWorkflowActionHandler {
       // Remove query restriction, add it back in later.
       final Query query =
           ((RootServiceJpa) service).applyPfsToJqlQuery(queryStr, null);
-      query.setParameter("editingDone", WorkflowStatus.EDITING_DONE);
+      query.setParameter("reviewDone", WorkflowStatus.REVIEW_DONE);
       query.setParameter("translationId", translation.getId());
       int[] totalCt = new int[1];
       results = query.getResultList();
@@ -691,7 +669,17 @@ public class SnomedWorkflowActionHandler extends DefaultWorkflowActionHandler {
   }
 
   @Override
-  public StringList getAvailableRoles() throws Exception {
+  public StringList getRefsetAvailableRoles() throws Exception {
+    final StringList list = new StringList();
+    list.setTotalCount(3);
+    list.getObjects().add(UserRole.AUTHOR.toString());
+    list.getObjects().add(UserRole.REVIEWER.toString());
+    list.getObjects().add(UserRole.ADMIN.toString());
+    return list;
+  }
+  
+  @Override
+  public StringList getTranslationAvailableRoles() throws Exception {
     final StringList list = new StringList();
     list.setTotalCount(3);
     list.getObjects().add(UserRole.AUTHOR.toString());
@@ -706,13 +694,15 @@ public class SnomedWorkflowActionHandler extends DefaultWorkflowActionHandler {
     WorkflowConfig config = super.getWorkflowConfig();
     
     // Available Roles
-    config.setAvailableRoles(getAvailableRoles());
+    config.setRefsetAvailableRoles(getRefsetAvailableRoles());
+    config.setTranslationAvailableRoles(getTranslationAvailableRoles());
 
     // Translation Allowed Map
     Map<String, Boolean> translationAllowedMap = new HashMap<>();
     
     // Translation Admin Options
     translationAllowedMap.put("ASSIGN" + "ADMIN" + "*", true);
+    translationAllowedMap.put("UNASSIGN" + "ADMIN" + "NEW", true); 
     translationAllowedMap.put("UNASSIGN" + "ADMIN" + "EDITING_IN_PROGRESS", true);
     translationAllowedMap.put("UNASSIGN" + "ADMIN" + "EDITING_DONE", true);
     translationAllowedMap.put("UNASSIGN" + "ADMIN" + "REVIEW_NEW", true);
@@ -798,6 +788,7 @@ public class SnomedWorkflowActionHandler extends DefaultWorkflowActionHandler {
       List<Concept> concepts = new ArrayList<>();
       concepts.addAll(findAvailableEditingConcepts(translation, null, service).getObjects());
       concepts.addAll(findAvailableReviewConcepts(translation, null, service).getObjects());
+      concepts.addAll(findAvailableReview2Concepts(translation, null, service).getObjects());
       final ConceptList conceptList = new ConceptListJpa();
       final int[] totalCt = new int[1];
       conceptList.getObjects().addAll(service.applyPfsToList(concepts,
@@ -808,7 +799,7 @@ public class SnomedWorkflowActionHandler extends DefaultWorkflowActionHandler {
       }
       return conceptList;
     } else {
-      throw new Exception("User role to find concepts must be AUTHOR, REVIEWER, or ADMIN.");
+      throw new Exception("User role to find concepts must be AUTHOR, REVIEWER, REVIEWER2, or ADMIN.");
     }
   }
 
@@ -840,7 +831,7 @@ public class SnomedWorkflowActionHandler extends DefaultWorkflowActionHandler {
       // Find tracking records "for review" for this translation and user
       final String query =
           "projectId:" + projectId + " AND " + "reviewersOrder:1" + userName + " AND NOT reviewersOrder:2* "
-              + " AND translationId:" + translationId + " AND forReview:true";
+              + " AND translationId:" + translationId + " AND forReview:true AND NOT workflowStatus:REVIEW_DONE";
       final TrackingRecordList records =
           service.findTrackingRecordsForQuery(query, pfs);
       for (final TrackingRecord record : records.getObjects()) {
@@ -882,6 +873,7 @@ public class SnomedWorkflowActionHandler extends DefaultWorkflowActionHandler {
       List<TrackingRecord> records = new ArrayList<>();
       records.addAll(findAssignedEditingConcepts(translation.getProject().getId(), translation.getId(), userName, null, service).getObjects());
       records.addAll(findAssignedReviewConcepts(translation.getProject().getId(), translation.getId(), userName, null, service).getObjects());
+      records.addAll(findAssignedReview2Concepts(translation.getProject().getId(), translation.getId(), userName, null, service).getObjects());
       final TrackingRecordList recordList = new TrackingRecordListJpa();
       final int[] totalCt = new int[1];
       recordList.getObjects().addAll(service.applyPfsToList(records,
@@ -892,7 +884,7 @@ public class SnomedWorkflowActionHandler extends DefaultWorkflowActionHandler {
       }
       return recordList;
     } else {
-      throw new Exception("User role to find assigned concepts must be AUTHOR, REVIEWER, or ADMIN.");
+      throw new Exception("User role to find assigned concepts must be AUTHOR, REVIEWER, REVIEWER2 or ADMIN.");
     }
   }
 }

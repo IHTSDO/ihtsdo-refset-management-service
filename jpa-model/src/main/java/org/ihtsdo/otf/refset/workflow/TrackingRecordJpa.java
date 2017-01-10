@@ -16,6 +16,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
+import javax.persistence.OrderColumn;
 import javax.persistence.Table;
 import javax.persistence.TableGenerator;
 import javax.persistence.Temporal;
@@ -83,11 +84,13 @@ public class TrackingRecordJpa implements TrackingRecord {
   /** The authors. */
   @ElementCollection
   @CollectionTable(name = "tracking_record_authors")
+  @OrderColumn
   private List<String> authors = new ArrayList<>();
 
   /** The reviewers. */
   @ElementCollection
   @CollectionTable(name = "tracking_record_reviewers")
+  @OrderColumn
   private List<String> reviewers = new ArrayList<>();
 
   /** The Translation. */
@@ -217,8 +220,7 @@ public class TrackingRecordJpa implements TrackingRecord {
       @Field(bridge = @FieldBridge(impl = CollectionToCsvBridge.class), index = Index.YES, analyze = Analyze.YES, store = Store.NO),
       @Field(name="reviewersOrder", bridge = @FieldBridge(impl = ListOrderBridge.class), index = Index.YES, analyze = Analyze.YES, store = Store.NO)
 
-  })
-  
+  }) 
   @Override
   public List<String> getReviewers() {
     if (reviewers == null) {
