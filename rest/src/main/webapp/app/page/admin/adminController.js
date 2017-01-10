@@ -229,14 +229,18 @@ tsApp
 
         // Get $scope.projectRoles
         $scope.getProjectRoles = function() {
-          projectService.getProjectRoles().then(function(data) {
+          projectService.getProjectRoles().then(
+            // Success
+            function(data) {
             $scope.projectRoles = data.strings;
           });
         };
         
         // Get $scope.metadata.workflowPaths
         $scope.getWorkflowPaths = function() {
-          workflowService.getWorkflowPaths().then(function(data) {
+          workflowService.getWorkflowPaths().then(
+            // Success
+            function(data) {
             $scope.metadata.workflowPaths = data.strings;
           });
         };

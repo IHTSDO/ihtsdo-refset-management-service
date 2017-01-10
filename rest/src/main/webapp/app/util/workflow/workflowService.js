@@ -326,7 +326,6 @@ tsApp.service('workflowService', [
       return deferred.promise;
     };
 
-    
     this.refsetIsAllowed = function(action, role, workflowStatus, workflowConfig) {
       var allowed = workflowConfig.refsetAllowedMap[action + role + workflowStatus];
       if (allowed == null) {
@@ -337,7 +336,9 @@ tsApp.service('workflowService', [
       }
       return allowed;
     }
-    
+
+    // Get the role with which to perform the action
+    // The default role is the role passed in
     this.refsetGetRole = function(action, role, workflowStatus, workflowConfig) {
       var allowed = workflowConfig.refsetRoleMap[action + role + workflowStatus];
       if (allowed == null) {
@@ -348,7 +349,7 @@ tsApp.service('workflowService', [
       }
       return allowed;
     }
-    
+
     this.translationIsAllowed = function(action, role, workflowStatus, workflowConfig) {
       var allowed = workflowConfig.translationAllowedMap[action + role + workflowStatus];
       if (allowed == null) {
@@ -359,7 +360,7 @@ tsApp.service('workflowService', [
       }
       return allowed;
     }
-    
+
     this.translationGetRole = function(action, role, workflowStatus, workflowConfig) {
       var allowed = workflowConfig.translationRoleMap[action + role + workflowStatus];
       if (allowed == null) {

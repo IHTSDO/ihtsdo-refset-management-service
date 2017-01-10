@@ -21,7 +21,7 @@ tsApp
         this.tinymceOptions = {
           menubar : false,
           statusbar : false,
-          plugins : 'autolink autoresize link image charmap searchreplace lists paste',
+          plugins : 'autolink link image charmap searchreplace lists paste',
           toolbar : 'undo redo | styleselect lists | bold italic underline strikethrough | charmap link image',
           forced_root_block : ''
         };
@@ -50,8 +50,7 @@ tsApp
 
           // Add a * to the filter if set and doesn't contain a :
           if (pfs.queryRestriction && pfs.queryRestriction.indexOf(":") == -1
-            && pfs.queryRestriction.indexOf("=") == -1
-            && pfs.queryRestriction.indexOf("\"") == -1) {
+            && pfs.queryRestriction.indexOf("=") == -1 && pfs.queryRestriction.indexOf("\"") == -1) {
             var pfs2 = angular.copy(pfs);
             pfs2.queryRestriction += "*";
             return pfs2;
