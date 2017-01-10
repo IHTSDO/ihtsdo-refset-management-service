@@ -470,14 +470,14 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl
   private List<Refset> findAvailableRefsetsHelper(UserRole userRole, Long projectId,
     WorkflowService workflowService) throws Exception {
 
-    // Combine results from all workflow action handlers
     final List<Refset> list = new ArrayList<>();
-    for (final WorkflowActionHandler handler : workflowService
-        .getWorkflowHandlers()) {
-      list.addAll(
-          handler.findAvailableRefsets(userRole, projectId, null, workflowService)
-              .getObjects());
-    }
+    Project project = workflowService.getProject(projectId);
+    final WorkflowActionHandler handler =
+        workflowService.getWorkflowHandlerForPath(project.getWorkflowPath());
+    list.addAll(
+        handler.findAvailableRefsets(userRole, projectId, null, workflowService)
+            .getObjects());
+    
     return list;
 
   }
@@ -494,15 +494,15 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl
   private List<TrackingRecord> findAssignedRefsetsHelper(UserRole userRole, Long projectId, String userName,
     WorkflowService workflowService) throws Exception {
 
-    Project project = workflowService.getProject(projectId);
     // Combine results from all workflow action handlers
     final List<TrackingRecord> list = new ArrayList<>();
-    for (final WorkflowActionHandler handler : workflowService
-        .getWorkflowHandlers()) {
-      list.addAll(
-          handler.findAssignedRefsets(userRole, project, userName, null, workflowService)
-              .getObjects());
-    }
+    Project project = workflowService.getProject(projectId);
+    final WorkflowActionHandler handler =
+        workflowService.getWorkflowHandlerForPath(project.getWorkflowPath());
+    list.addAll(
+        handler.findAssignedRefsets(userRole, project, userName, null, workflowService)
+            .getObjects());
+    
     return list;
 
   }

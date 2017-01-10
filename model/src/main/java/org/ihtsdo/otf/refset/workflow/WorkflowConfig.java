@@ -16,20 +16,33 @@ public interface WorkflowConfig {
 
 
   /**
-   * Gets the available roles.
+   * Gets the refset available roles.
    *
    * @return the available roles
    */
-  public StringList getAvailableRoles();
+  public StringList getRefsetAvailableRoles();
 
 
   /**
-   * Sets the available roles.
+   * Sets the refset available roles.
    *
    * @param roles the new available roles
    */
-  public void setAvailableRoles(StringList roles);
-
+  public void setRefsetAvailableRoles(StringList roles);
+  
+  /**
+   * Gets the translation available roles.
+   *
+   * @return the translation available roles
+   */
+  public StringList getTranslationAvailableRoles();
+  
+  /**
+   * Sets the translation available roles.
+   *
+   * @param roles the new translation available roles
+   */
+  public void setTranslationAvailableRoles(StringList roles);
 
   /**
    * Gets the translation allowed map.

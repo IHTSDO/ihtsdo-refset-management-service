@@ -132,15 +132,20 @@ tsApp
                 for (var i = 0; i < $scope.projects.assignedUsers.length; i++) {
                   if ($scope.projects.assignedUsers[i].userName == $scope.user.userName) {
                     $scope.projects.role = $scope.projects.assignedUsers[i].projectRoleMap[$scope.project.id];
-                    if ($scope.projects.role == 'ADMIN') {
-                      $scope.roleOptions = [ 'ADMIN', /*'REVIEWER2',*/ 'REVIEWER', 'AUTHOR' ];
-                   /* } else if ($scope.projects.role == 'REVIEWER2') {
-                      $scope.roleOptions = [ 'REVIEWER2', 'REVIEWER', 'AUTHOR' ];*/
-                    } else if ($scope.projects.role == 'REVIEWER') {
-                      $scope.roleOptions = [ 'REVIEWER', 'AUTHOR' ];
-                    } else if ($scope.projects.role == 'AUTHOR') {
-                      $scope.roleOptions = [ 'AUTHOR' ];
+                    var availableRoles = $scope.metadata.workflowConfig.refsetAvailableRoles.strings;
+                    
+                    // determine role options for each project given the user's project role
+                    // make all roles equal or lower to user's project role available
+                    $scope.roleOptions = [];
+                    for (var j=0; j<availableRoles.length; j++) {
+                      if ($scope.projects.role == availableRoles[j]) {
+                        $scope.roleOptions.unshift(availableRoles[j]);
+                        break;
+                      } else {
+                        $scope.roleOptions.unshift(availableRoles[j]);
+                      }
                     }
+                   
                     // Force the initial choice to be "AUTHOR" instead of
                     // "ADMIN"
                     if ($scope.projects.role == 'ADMIN'
@@ -149,6 +154,18 @@ tsApp
                     }
                     if ($scope.user.userPreferences.lastProjectRole) {
                       $scope.projects.role = $scope.user.userPreferences.lastProjectRole;
+                    }
+                    
+                    // ensure that user's role is allowed on refset tab - if not, assign user to be AUTHOR
+                    var found = false;
+                    for (var j=0; j<availableRoles.length; j++) {
+                      if ($scope.projects.role == availableRoles[j]) {
+                        found = true;
+                        break;
+                      }
+                    }
+                    if (!found) {
+                      $scope.projects.role = 'AUTHOR';
                     }
                     break;
                   }

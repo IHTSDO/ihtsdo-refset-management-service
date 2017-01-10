@@ -377,7 +377,7 @@ tsApp
                   queryRestriction : null
                 };
 
-                if ($scope.projects.role == 'AUTHOR' || $scope.projects.role == 'REVIEWER') {
+                if ($scope.projects.role != 'ADMIN') {
                   pfs.queryRestriction = $scope.paging['assigned'].filter;
                   workflowService.findAssignedConcepts($scope.projects.role, $scope.project.id, translation.id,
                     $scope.user.userName, pfs).then(
@@ -400,9 +400,7 @@ tsApp
                       translation.assigned.totalCount = data.totalCount;
                     });
 
-                } else {
-                  window.alert('Unexpected role attempting to get available concepts');
-                }
+                } 
 
               };
               // get translation release info
@@ -622,7 +620,7 @@ tsApp
                 }
 
                 workflowService.performTranslationWorkflowAction($scope.project.id,
-                  $scope.selected.translation.id, userName, $scope.projects.role, 'UNASSIGN',
+                  $scope.selected.translation.id, userName, getRole('UNASSIGN', concept), 'UNASSIGN',
                   concept).then(
                 // Success
                 function(data) {
@@ -796,7 +794,7 @@ tsApp
               $scope.performWorkflowAction = function(concept, action) {
 
                 workflowService.performTranslationWorkflowAction($scope.project.id,
-                  $scope.selected.translation.id, $scope.user.userName, $scope.projects.role,
+                  $scope.selected.translation.id, $scope.user.userName, getRole(action, concept),
                   action, concept).then(
                 // Success
                 function(data) {
@@ -927,7 +925,13 @@ tsApp
                   $scope.metadata.workflowConfig);
               }
               
+              
               $scope.getRole = function(action, concept) {
+                getRole(action, concept);
+              };
+
+              // Start lookup again
+              function getRole(action, concept) {
                 return workflowService.translationGetRole(action, $scope.projects.role, concept.workflowStatus,
                   $scope.metadata.workflowConfig);
               }
@@ -1410,7 +1414,7 @@ tsApp
 
                   if (action == 'ASSIGN') {
                     workflowService.performTranslationWorkflowAction($scope.project.id,
-                      translation.id, $scope.user.userName, $scope.role, 'ASSIGN', $scope.concept)
+                      translation.id, $scope.user.userName, getRole('ASSIGN', concept), 'ASSIGN', $scope.concept)
                       .then(
                         // Success
                         function(data) {
@@ -1445,7 +1449,7 @@ tsApp
                     $scope.role = workflowService.translationGetRole('REASSIGN', role, concept.workflowStatus,
                       $scope.workflowConfig);                 
                     workflowService.performTranslationWorkflowAction($scope.project.id,
-                      translation.id, $scope.user.userName, $scope.role, 'REASSIGN', $scope.concept)
+                      translation.id, $scope.user.userName, getRole('REASSIGN', concept), 'REASSIGN', $scope.concept)
                       .then(
                         // Success - reassign
                         function(data) {
@@ -1479,7 +1483,7 @@ tsApp
                     
                     workflowService
                       .performTranslationWorkflowAction($scope.project.id, translation.id,
-                        $scope.user.userName, $scope.role, 'UNASSIGN', $scope.concept).then(
+                        $scope.user.userName, getRole('UNASSIGN', concept), 'UNASSIGN', $scope.concept).then(
                         // Success - unassign
                         function(data) {
                           $scope.role = workflowService.translationGetRole('REASSIGN', role, concept.workflowStatus,
@@ -1488,7 +1492,7 @@ tsApp
                           // The username doesn't matter - it'll go back to the
                           // author
                           workflowService.performTranslationWorkflowAction($scope.project.id,
-                            translation.id, $scope.user.userName, $scope.role, 'REASSIGN',
+                            translation.id, $scope.user.userName, getRole('REASSIGN', concept), 'REASSIGN',
                             $scope.concept).then(
                             // Success - reassign
                             function(data) {

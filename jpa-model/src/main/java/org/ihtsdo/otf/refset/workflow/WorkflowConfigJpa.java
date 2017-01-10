@@ -26,8 +26,11 @@ public class WorkflowConfigJpa implements WorkflowConfig {
   /** The translation role map. key = action+role+workflowStatus */
   private Map<String, String> translationRoleMap = new HashMap<>();
 
-  /** The available roles. */
-  private StringList availableRoles = new StringList();
+  /** The refset available roles. */
+  private StringList refsetAvailableRoles = new StringList();
+  
+  /** The translation available roles. */
+  private StringList translationAvailableRoles = new StringList();
 
   /**
    * The default constructor.
@@ -42,7 +45,8 @@ public class WorkflowConfigJpa implements WorkflowConfig {
    * @param config the config
    */
   public WorkflowConfigJpa(WorkflowConfigJpa config) {
-    availableRoles = config.getAvailableRoles();
+    refsetAvailableRoles = config.getRefsetAvailableRoles();
+    translationAvailableRoles = config.getTranslationAvailableRoles();
   }
 
   /*
@@ -52,11 +56,11 @@ public class WorkflowConfigJpa implements WorkflowConfig {
    */
   /* see superclass */
   @Override
-  public StringList getAvailableRoles() {
-    if (availableRoles == null) {
-      availableRoles = new StringList();
+  public StringList getRefsetAvailableRoles() {
+    if (refsetAvailableRoles == null) {
+      refsetAvailableRoles = new StringList();
     }
-    return availableRoles;
+    return refsetAvailableRoles;
   }
 
   /*
@@ -68,8 +72,8 @@ public class WorkflowConfigJpa implements WorkflowConfig {
    */
   /* see superclass */
   @Override
-  public void setAvailableRoles(StringList availableRoles) {
-    this.availableRoles = availableRoles;
+  public void setRefsetAvailableRoles(StringList refsetAvailableRoles) {
+    this.refsetAvailableRoles = refsetAvailableRoles;
   }
 
   @Override
@@ -114,17 +118,29 @@ public class WorkflowConfigJpa implements WorkflowConfig {
   }
 
   @Override
+  public StringList getTranslationAvailableRoles() {
+    return translationAvailableRoles;
+  }
+
+  @Override
+  public void setTranslationAvailableRoles(StringList roles) {
+    this.translationAvailableRoles = roles;
+  }
+
+  @Override
   public int hashCode() {
     final int prime = 31;
     int result = 1;
     result = prime * result
-        + ((availableRoles == null) ? 0 : availableRoles.hashCode());
-    result = prime * result
         + ((refsetAllowedMap == null) ? 0 : refsetAllowedMap.hashCode());
+    result = prime * result + ((refsetAvailableRoles == null) ? 0
+        : refsetAvailableRoles.hashCode());
     result = prime * result
         + ((refsetRoleMap == null) ? 0 : refsetRoleMap.hashCode());
     result = prime * result + ((translationAllowedMap == null) ? 0
         : translationAllowedMap.hashCode());
+    result = prime * result + ((translationAvailableRoles == null) ? 0
+        : translationAvailableRoles.hashCode());
     result = prime * result
         + ((translationRoleMap == null) ? 0 : translationRoleMap.hashCode());
     return result;
@@ -139,15 +155,15 @@ public class WorkflowConfigJpa implements WorkflowConfig {
     if (getClass() != obj.getClass())
       return false;
     WorkflowConfigJpa other = (WorkflowConfigJpa) obj;
-    if (availableRoles == null) {
-      if (other.availableRoles != null)
-        return false;
-    } else if (!availableRoles.equals(other.availableRoles))
-      return false;
     if (refsetAllowedMap == null) {
       if (other.refsetAllowedMap != null)
         return false;
     } else if (!refsetAllowedMap.equals(other.refsetAllowedMap))
+      return false;
+    if (refsetAvailableRoles == null) {
+      if (other.refsetAvailableRoles != null)
+        return false;
+    } else if (!refsetAvailableRoles.equals(other.refsetAvailableRoles))
       return false;
     if (refsetRoleMap == null) {
       if (other.refsetRoleMap != null)
@@ -158,6 +174,12 @@ public class WorkflowConfigJpa implements WorkflowConfig {
       if (other.translationAllowedMap != null)
         return false;
     } else if (!translationAllowedMap.equals(other.translationAllowedMap))
+      return false;
+    if (translationAvailableRoles == null) {
+      if (other.translationAvailableRoles != null)
+        return false;
+    } else if (!translationAvailableRoles
+        .equals(other.translationAvailableRoles))
       return false;
     if (translationRoleMap == null) {
       if (other.translationRoleMap != null)
@@ -172,7 +194,10 @@ public class WorkflowConfigJpa implements WorkflowConfig {
     return "WorkflowConfigJpa [refsetAllowedMap=" + refsetAllowedMap
         + ", refsetRoleMap=" + refsetRoleMap + ", translationAllowedMap="
         + translationAllowedMap + ", translationRoleMap=" + translationRoleMap
-        + ", availableRoles=" + availableRoles + "]";
+        + ", refsetAvailableRoles=" + refsetAvailableRoles
+        + ", translationAvailableRoles=" + translationAvailableRoles + "]";
   }
 
+  
+  
 }

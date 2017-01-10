@@ -239,37 +239,10 @@
               ng-click="unassign(refset,user.userName); $event.stopPropagation()"
               title="Unassign" class="noul material-icons md-18">assignment_return</i>
 
-            <!-- ASSIGNED ADMIN actions -->
-          <td class="nobreak"
-            ng-show="value == 'ASSIGNED' && projects.role == 'ADMIN'">
-            <i ng-show="!refset.staged"
-              confirm="Are you sure you want to remove the refset ({{refset.name}})?"
-              ng-click="removeRefset(refset); $event.stopPropagation()"
-              title="Remove" class="noul material-icons md-18">delete</i>
-            <span ng-repeat="author in refsetAuthorsMap[refset.id]">
-              <!-- Only unassign if there are no reviewers -->
-              <i
-                confirm="Are you sure you want to unassign the refset ({{refset.name}})?"
-                ng-show="!refsetReviewersMap[refset.id]"
-                title="Unassign author: {{author}}"
-                ng-click="unassign(refset, author);"
-                class="noul material-icons md-18">assignment_return</i>
-              <i ng-show="refsetReviewersMap[refset.id]"
-                title="Author: {{author}}, unassign reviewer first"
-                class="md-grey material-icons md-18">assignment_return</i>
-            </span>
-            <span ng-repeat="reviewer in refsetReviewersMap[refset.id]">
-              <i title="Unassign reviewer: {{reviewer}}"
-                confirm="Are you sure you want to unassign the refset ({{refset.name}})?"
-                ng-click="unassign(refset, reviewer);"
-                class="noul material-icons md-18">assignment_return</i>
-            </span>
-          </td>
 
-          <!-- ASSIGNED non-ADMIN actions -->
-          <td class="nobreak"
-            ng-show="value == 'ASSIGNED' && projects.role != 'ADMIN'">
-            <i ng-click="openEditRefsetModal(refset); $event.stopPropagation()"
+          <!-- ASSIGNED actions -->
+          <td class="nobreak" ng-show="value == 'ASSIGNED'">
+            <i ng-show="projects.role != 'ADMIN'" ng-click="openEditRefsetModal(refset); $event.stopPropagation()"
               title="Edit" class="noul material-icons md-18">edit</i>
             <i ng-show="!refset.staged"
               confirm="Are you sure you want to remove the refset ({{refset.name}})?"
@@ -279,7 +252,7 @@
               confirm="Are you sure you want to unassign the refset ({{refset.name}})?"
               ng-click="unassign(refset, user.userName);" title="Unassign"
               class="noul material-icons md-18">assignment_return</i>
-            <i ng-show="projects.role == 'REVIEWER'"
+            <i ng-show="isAllowed('REASSIGN', refset)"
               confirm="Are you sure you want to reassign the refset ({{refset.name}})?"
               ng-click="openAssignRefsetModal(refset,'UNASSIGN-REASSIGN'); $event.stopPropagation()"
               title="Reassign back to author" class="noul material-icons md-18">assignment_returned</i>
