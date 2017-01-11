@@ -75,7 +75,8 @@ public class ProjectUserQueryTest extends ProjectTestSupport {
     project.setOrganization("IHTSDO");
     project.addValidationCheck("DEFAULT");
     project.setWorkflowPath("DEFAULT");
-
+    project.setTerminologyHandlerKey("BROWSER");
+    project.setTerminologyHandlerUrl("https://sct-rest.ihtsdotools.org/api");
     project = (ProjectJpa) projectService.addProject(project, adminAuthToken);
 
     return project;
