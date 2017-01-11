@@ -626,13 +626,6 @@
               ng-click="openAssignConceptModal(concept, 'ASSIGN'); $event.stopPropagation()"
               title="Assign" class="noul material-icons md-18">assignment_ind</i>
 
-            <!-- Reassign -->
-            <i
-              ng-show="isAllowed('REASSIGN', concept)"
-              confirm="Are you sure you want to reassign this concept ({{concept.terminologyId}}, {{concept.name}})"
-              ng-click="openAssignConceptModal(concept, 'REASSIGN'); $event.stopPropagation()"
-              title="Reassign back to {{getRole('REASSIGN', concept)}}" class="noul material-icons md-18">assignment_returned</i>
-
             <!-- Unassign - n/a - these are available concepts -->
 
             <!-- Notes -->
@@ -775,13 +768,6 @@
               ng-click="unassign(record.concept, user.userName)"
               title="Unassign" class="noul material-icons md-18">assignment_return</i>
 
-           
-
-            <!-- Reassign -->
-            <i ng-show="isAllowed('REASSIGN', record.concept)"
-              confirm="Are you sure you want to reassign this concept ({{concept.terminologyId}}, {{concept.name}})"
-              ng-click="openAssignConceptModal(record.concept, 'UNASSIGN-REASSIGN'); $event.stopPropagation()"
-              title="Reassign back to {{getRole('REASSIGN', record.concept)}}" class="noul material-icons md-18">assignment_returned</i>
 
             <!-- Finish -->
             <i confirm="Are you sure you want to finalize editing/review?"

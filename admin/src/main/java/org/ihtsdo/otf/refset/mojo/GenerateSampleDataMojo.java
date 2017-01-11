@@ -737,9 +737,7 @@ public class GenerateSampleDataMojo extends AbstractMojo {
       new WorkflowServiceRestImpl().performWorkflowAction(project1.getId(),
           test10.getId(), "reviewer1", "REVIEWER", "UNASSIGN",
           reviewer1.getAuthToken());
-      new WorkflowServiceRestImpl().performWorkflowAction(project1.getId(),
-          test10.getId(), "author1", "AUTHOR", "REASSIGN",
-          reviewer1.getAuthToken());
+      
 
       // test 11
       RefsetJpa test11 = makeRefset("test11",

@@ -436,19 +436,6 @@ public class WorkflowTest extends RestSupport {
             adminAuthToken);
     assertEquals(2, assignedRefsets.getCount());
 
-    // AUTHOR-REASSIGN-R1
-    workflowService.performWorkflowAction(project.getId(), refset1.getId(),
-        reviewer1.getUserName(), UserRole.AUTHOR.toString(), "REASSIGN",
-        authorAuthToken);
-    availableRefsets =
-        workflowService.findAvailableRefsets("ADMIN", project.getId(), "admin1", null,
-            adminAuthToken);
-    assertEquals(0, availableRefsets.getCount());
-    assignedRefsets =
-        workflowService.findAssignedRefsets("ADMIN", project.getId(), "admin1", null,
-            adminAuthToken);
-    assertEquals(2, assignedRefsets.getCount());
-
     // AUTHOR-SAVE-R1
     workflowService.performWorkflowAction(project.getId(), refset1.getId(),
         author1.getUserName(), UserRole.AUTHOR.toString(), "SAVE",
