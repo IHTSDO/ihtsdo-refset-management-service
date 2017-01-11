@@ -1574,6 +1574,16 @@ tsApp
                   $scope.validVersion = null;
                 }
                 
+                $scope.versionNotInPicklist = function() {
+                  for (var i=0; i<$scope.versions.length; i++) {
+                    if ($scope.versions[i] == $scope.refset.version) {
+                      $scope.validVersion = 'true';
+                      return false;
+                    }
+                  }
+                  return true;
+                }
+                
                 // Initialize terminology/version/module
                 if ($scope.refset.terminology && $scope.refset.version) {
                   $scope.getModules();
@@ -2091,7 +2101,7 @@ tsApp
                   }
                 }
 
-                // Assign (or reassign)
+                // Assign 
                 $scope.assignRefset = function() {
                   if (!$scope.user) {
                     $scope.errors[0] = 'The user must be selected. ';
@@ -2127,80 +2137,7 @@ tsApp
                       handleError($scope.errors, data);
                     });
                   }
-
-                  // else reassign
-                  else if (action == 'REASSIGN') {
-                    workflowService.performWorkflowAction($scope.project.id, refset.id,
-                      $scope.user.userName, $scope.role, 'REASSIGN').then(
-                    // success - reassign
-                    function(data) {
-                      // Add a note as well
-                      if ($scope.note) {
-                        refsetService.addRefsetNote(refset.id, $scope.note).then(
-                        // Success - add note
-                        function(data) {
-                          $uibModalInstance.close(refset);
-                        },
-                        // Error - remove note
-                        function(data) {
-                          handleError($scope.errors, data);
-                        });
-                      }
-                      // close dialog if no note
-                      else {
-                        $uibModalInstance.close(refset);
-                      }
-                    },
-                    // Error - reassign
-                    function(data) {
-                      handleError($scope.errors, data);
-                    });
-                  }
-
-                  // else unassign, then reassign
-                  else if (action == 'UNASSIGN-REASSIGN') {
-                    $scope.role = workflowService.refsetGetRole('UNASSIGN', role, refset.workflowStatus,
-                      $scope.workflowConfig);
-                    workflowService.performWorkflowAction($scope.project.id, refset.id,
-                      $scope.user.userName, $scope.role, 'UNASSIGN').then(
-                      // Success - unassign
-                      function(data) {
-                        // The username doesn't matter - it'll go back to the
-                        // author
-                        $scope.role = workflowService.refsetGetRole('REASSIGN', role, refset.workflowStatus,
-                          $scope.workflowConfig);
-                        workflowService.performWorkflowAction($scope.project.id, refset.id,
-                          $scope.user.userName, $scope.role, 'REASSIGN').then(
-                        // success - reassign
-                        function(data) {
-                          // Add a note as well
-                          if ($scope.note) {
-                            refsetService.addRefsetNote(refset.id, $scope.note).then(
-                            // Success - add note
-                            function(data) {
-                              $uibModalInstance.close(refset);
-                            },
-                            // Error - remove note
-                            function(data) {
-                              handleError($scope.errors, data);
-                            });
-                          }
-                          // close dialog if no note
-                          else {
-                            $uibModalInstance.close(refset);
-                          }
-                        },
-                        // Error - reassign
-                        function(data) {
-                          handleError($scope.errors, data);
-                        });
-                      },
-                      // Error - unassign
-                      function(data) {
-                        handleError($scope.errors, data);
-                      });
-                  }
-                };
+                }
 
                 // Dismiss modal
                 $scope.cancel = function() {
@@ -2531,6 +2468,16 @@ tsApp
                   $scope.validVersion = null;
                 }
                 
+                $scope.versionNotInPicklist = function() {
+                  for (var i=0; i<$scope.versions.length; i++) {
+                    if ($scope.versions[i] == $scope.refset.version) {
+                      $scope.validVersion = 'true';
+                      return false;
+                    }
+                  }
+                  return true;
+                }
+                
                 // Initialize modules if terminology/version set
                 if ($scope.refset.terminology && $scope.refset.version) {
                   $scope.getModules();
@@ -2735,6 +2682,16 @@ tsApp
                  
                  $scope.resetValidVersion = function() {
                    $scope.validVersion = null;
+                 }
+                 
+                 $scope.versionNotInPicklist = function() {
+                   for (var i=0; i<$scope.versions.length; i++) {
+                     if ($scope.versions[i] == $scope.refset.version) {
+                       $scope.validVersion = 'true';
+                       return false;
+                     }
+                   }
+                   return true;
                  }
 
                 // Assign refset id
@@ -3228,6 +3185,16 @@ tsApp
                 
                 $scope.resetValidVersion = function() {
                   $scope.validVersion = null;
+                }
+                
+                $scope.versionNotInPicklist = function() {
+                  for (var i=0; i<$scope.versions.length; i++) {
+                    if ($scope.versions[i] == $scope.newVersion) {
+                      $scope.validVersion = 'true';
+                      return false;
+                    }
+                  }
+                  return true;
                 }
                 
                 // get diff report

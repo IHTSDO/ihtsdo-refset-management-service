@@ -136,13 +136,6 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
         }
         break;
 
-      case REASSIGN:
-        // record has been unassigned from reviewer and is in EDITING_DONE
-        // Should be set back to EDITING_IN_PROGRESS
-        flag = projectRole == UserRole.AUTHOR && record != null
-            && EnumSet.of(WorkflowStatus.EDITING_DONE)
-                .contains(refset.getWorkflowStatus());
-        break;
       case SAVE:
         // dependent on project role
         authorFlag = projectRole == UserRole.AUTHOR && record != null
@@ -325,13 +318,6 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
 
         break;
 
-      case REASSIGN:
-        // No need to set the author again because we've removed reference to
-        // the reviewer
-        record.setForAuthoring(true);
-        refset.setWorkflowStatus(WorkflowStatus.EDITING_IN_PROGRESS);
-        break;
-
       case SAVE:
         // AUTHOR - NEW becomes EDITING_IN_PROGRESS
         if (projectRole == UserRole.AUTHOR && EnumSet
@@ -491,14 +477,6 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
         }
         break;
 
-      case REASSIGN:
-        // record has been unassigned from reviewer and is in EDITING_DONE
-        // Should be set back to EDITING_IN_PROGRESS
-        flag = projectRole == UserRole.AUTHOR && record != null
-            && EnumSet.of(WorkflowStatus.EDITING_DONE)
-                .contains(concept.getWorkflowStatus());
-
-        break;
       case SAVE:
         // dependent on project role
         authorFlag = projectRole == UserRole.AUTHOR && record != null
@@ -696,13 +674,6 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
           service.removeTrackingRecord(record.getId());
           concept.setRevision(false);
         }
-        break;
-
-      case REASSIGN:
-        // No need to set the author again because we've removed reference to
-        // the reviewer
-        record.setForAuthoring(true);
-        concept.setWorkflowStatus(WorkflowStatus.EDITING_IN_PROGRESS);
         break;
 
       case SAVE:
@@ -1086,7 +1057,6 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     refsetAllowedMap.put("UNASSIGN" + "ADMIN" + "REVIEW_NEW", true);
     refsetAllowedMap.put("UNASSIGN" + "ADMIN" + "REVIEW_IN_PROGRESS", true);
     refsetAllowedMap.put("UNASSIGN" + "ADMIN" + "REVIEW_DONE", true);
-    refsetAllowedMap.put("REASSIGN" + "ADMIN" + "*", true);
     
     // Refset Author Options
     refsetAllowedMap.put("ASSIGN" + "AUTHOR" + "NEW", true);
@@ -1094,7 +1064,6 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     //refsetAllowedMap.put("UNASSIGN" + "AUTHOR" + "NEW", true);
     refsetAllowedMap.put("UNASSIGN" + "AUTHOR" + "EDITING_IN_PROGRESS", true);
     refsetAllowedMap.put("UNASSIGN" + "AUTHOR" + "EDITING_DONE", true);
-    //refsetAllowedMap.put("REASSIGN" + "AUTHOR" + "EDITING_DONE", true);
     refsetAllowedMap.put("SAVE" + "AUTHOR" + "NEW", true);
     refsetAllowedMap.put("SAVE" + "AUTHOR" + "EDITING_IN_PROGRESS", true);
     refsetAllowedMap.put("SAVE" + "AUTHOR" + "READY_FOR_PUBLICATION", true);
@@ -1109,7 +1078,6 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     refsetAllowedMap.put("UNASSIGN" + "REVIEWER" + "REVIEW_NEW", true);
     refsetAllowedMap.put("UNASSIGN" + "REVIEWER" + "REVIEW_IN_PROGRESS", true);
     refsetAllowedMap.put("UNASSIGN" + "REVIEWER" + "REVIEW_DONE", true);
-    refsetAllowedMap.put("REASSIGN" + "REVIEWER" + "EDITING_DONE", true);
     refsetAllowedMap.put("SAVE" + "REVIEWER" + "REVIEW_NEW", true);
     refsetAllowedMap.put("SAVE" + "REVIEWER" + "REVIEW_IN_PROGRESS", true);
     refsetAllowedMap.put("SAVE" + "REVIEWER" + "REVIEW_DONE", true);
@@ -1131,8 +1099,6 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     refsetRoleMap.put("UNASSIGN" + "ADMIN" + "EDITING_IN_PROGRESS", "AUTHOR");
     refsetRoleMap.put("UNASSIGN" + "ADMIN" + "EDITING_DONE", "AUTHOR");
     refsetRoleMap.put("UNASSIGN" + "ADMIN" + "*", "REVIEWER");
-    refsetRoleMap.put("REASSIGN" + "ADMIN" + "*", "AUTHOR");
-    refsetRoleMap.put("REASSIGN" + "REVIEWER" + "*", "AUTHOR");
     // SAVE n/a
     
     
@@ -1151,7 +1117,6 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     translationAllowedMap.put("UNASSIGN" + "ADMIN" + "REVIEW_NEW", true);
     translationAllowedMap.put("UNASSIGN" + "ADMIN" + "REVIEW_IN_PROGRESS", true);
     translationAllowedMap.put("UNASSIGN" + "ADMIN" + "REVIEW_DONE", true);
-    //translationAllowedMap.put("REASSIGN" + "ADMIN" + "*", true);
     
     // Translation Author Options
     translationAllowedMap.put("ASSIGN" + "AUTHOR" + "NEW", true);
@@ -1173,10 +1138,6 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     translationAllowedMap.put("UNASSIGN" + "REVIEWER" + "REVIEW_NEW", true);
     translationAllowedMap.put("UNASSIGN" + "REVIEWER" + "REVIEW_IN_PROGRESS", true);
     translationAllowedMap.put("UNASSIGN" + "REVIEWER" + "REVIEW_DONE", true);
-    translationAllowedMap.put("REASSIGN" + "REVIEWER" + "REVIEW_NEW", true);
-    translationAllowedMap.put("REASSIGN" + "REVIEWER" + "REVIEW_IN_PROGRESS", true);
-    translationAllowedMap.put("REASSIGN" + "REVIEWER" + "REVIEW_DONE", true);
-    translationAllowedMap.put("REASSIGN" + "REVIEWER" + "EDITING_DONE", true);
     translationAllowedMap.put("SAVE" + "REVIEWER" + "REVIEW_NEW", true);
     translationAllowedMap.put("SAVE" + "REVIEWER" + "REVIEW_IN_PROGRESS", true);
     translationAllowedMap.put("SAVE" + "REVIEWER" + "REVIEW_DONE", true);
@@ -1198,8 +1159,6 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     translationRoleMap.put("UNASSIGN" + "ADMIN" + "EDITING_IN_PROGRESS", "AUTHOR");
     translationRoleMap.put("UNASSIGN" + "ADMIN" + "EDITING_DONE", "AUTHOR");
     translationRoleMap.put("UNASSIGN" + "ADMIN" + "*", "REVIEWER");
-    translationRoleMap.put("REASSIGN" + "ADMIN" + "*", "AUTHOR");
-    translationRoleMap.put("REASSIGN" + "REVIEWER" + "*", "AUTHOR");
     // SAVE n/a
         
     config.setTranslationRoleMap(translationRoleMap);

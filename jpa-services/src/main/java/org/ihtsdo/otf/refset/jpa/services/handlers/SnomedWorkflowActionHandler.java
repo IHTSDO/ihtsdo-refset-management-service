@@ -121,18 +121,6 @@ public class SnomedWorkflowActionHandler extends DefaultWorkflowActionHandler {
         }
         break;
 
-      case REASSIGN:
-        // record has been unassigned from reviewer and is in EDITING_DONE
-        // Should be set back to EDITING_IN_PROGRESS
-        authorFlag = projectRole == UserRole.AUTHOR && record != null
-            && EnumSet.of(WorkflowStatus.EDITING_DONE)
-                .contains(concept.getWorkflowStatus());
-        reviewerFlag = projectRole == UserRole.REVIEWER && record != null
-            && EnumSet.of(WorkflowStatus.REVIEW_DONE)
-                .contains(concept.getWorkflowStatus());
-        flag = authorFlag || reviewerFlag;
-        
-        break;
       case SAVE:
         // dependent on project role
         authorFlag = projectRole == UserRole.AUTHOR && record != null
@@ -287,6 +275,9 @@ public class SnomedWorkflowActionHandler extends DefaultWorkflowActionHandler {
         } else if (projectRole == UserRole.REVIEWER2){
           record.setForAuthoring(false);
           record.setForReview(true);
+          // Set the review origin revision, so we can revert on unassign
+          record.setReviewOriginRevision(
+              service.getConceptRevisionNumber(concept.getId()));
           record.getReviewers().add(user.getUserName());
           record.setLastModifiedBy(user.getUserName());
           concept.setWorkflowStatus(WorkflowStatus.REVIEW_NEW);
@@ -353,25 +344,15 @@ public class SnomedWorkflowActionHandler extends DefaultWorkflowActionHandler {
           record.setForAuthoring(true);
           record.setForReview(true);
           record.setLastModifiedBy(user.getUserName());
-          record.getConcept().setWorkflowStatus(WorkflowStatus.REVIEW_DONE);
+          final Concept originConcept = getOriginConcept(concept.getId(),
+              record.getReviewOriginRevision());
+          // Restore it.
+          service.syncConcept(concept.getId(), originConcept);
+          // Set the flag to avoid saving the refset later, this is the final
+          // saved state.
+          skipUpdate = true;
         }
         
-        break;
-
-      case REASSIGN:
-        if (EnumSet.of(WorkflowStatus.EDITING_DONE)
-            .contains(concept.getWorkflowStatus())) {
-          // No need to set the author again because we've removed reference to
-          // the reviewer
-          record.setForAuthoring(true);
-          concept.setWorkflowStatus(WorkflowStatus.EDITING_IN_PROGRESS);
-        } else if (EnumSet.of(WorkflowStatus.REVIEW_DONE)
-            .contains(concept.getWorkflowStatus())) {
-          // No need to set the author again because we've removed reference to
-          // the reviewer
-          concept.setWorkflowStatus(WorkflowStatus.REVIEW_IN_PROGRESS);
-
-        }
         break;
 
       case SAVE:
@@ -708,12 +689,11 @@ public class SnomedWorkflowActionHandler extends DefaultWorkflowActionHandler {
     translationAllowedMap.put("UNASSIGN" + "ADMIN" + "REVIEW_NEW", true);
     translationAllowedMap.put("UNASSIGN" + "ADMIN" + "REVIEW_IN_PROGRESS", true);
     translationAllowedMap.put("UNASSIGN" + "ADMIN" + "REVIEW_DONE", true);
-    //translationAllowedMap.put("REASSIGN" + "ADMIN" + "*", true);
     
     // Translation Author Options
     translationAllowedMap.put("ASSIGN" + "AUTHOR" + "NEW", true);
     translationAllowedMap.put("ASSIGN" + "AUTHOR" + "READY_FOR_PUBLICATION", true);
-    //translationAllowedMap.put("UNASSIGN" + "AUTHOR" + "NEW", true);
+    translationAllowedMap.put("UNASSIGN" + "AUTHOR" + "NEW", true);
     translationAllowedMap.put("UNASSIGN" + "AUTHOR" + "EDITING_IN_PROGRESS", true);
     translationAllowedMap.put("UNASSIGN" + "AUTHOR" + "EDITING_DONE", true);
     translationAllowedMap.put("SAVE" + "AUTHOR" + "NEW", true);
@@ -729,9 +709,6 @@ public class SnomedWorkflowActionHandler extends DefaultWorkflowActionHandler {
     translationAllowedMap.put("ASSIGN" + "REVIEWER" + "READY_FOR_PUBLICATION", true);
     translationAllowedMap.put("UNASSIGN" + "REVIEWER" + "REVIEW_NEW", true);
     translationAllowedMap.put("UNASSIGN" + "REVIEWER" + "REVIEW_IN_PROGRESS", true);
-    translationAllowedMap.put("REASSIGN" + "REVIEWER" + "REVIEW_NEW", true);
-    translationAllowedMap.put("REASSIGN" + "REVIEWER" + "REVIEW_IN_PROGRESS", true);
-    translationAllowedMap.put("REASSIGN" + "REVIEWER" + "EDITING_DONE", true);
     translationAllowedMap.put("SAVE" + "REVIEWER" + "REVIEW_NEW", true);
     translationAllowedMap.put("SAVE" + "REVIEWER" + "REVIEW_IN_PROGRESS", true);
     translationAllowedMap.put("FINISH" + "REVIEWER" + "REVIEW_NEW", true);
@@ -743,9 +720,6 @@ public class SnomedWorkflowActionHandler extends DefaultWorkflowActionHandler {
     translationAllowedMap.put("UNASSIGN" + "REVIEWER2" + "REVIEW_NEW", true);
     translationAllowedMap.put("UNASSIGN" + "REVIEWER2" + "REVIEW_IN_PROGRESS", true);
     translationAllowedMap.put("UNASSIGN" + "REVIEWER2" + "REVIEW_DONE", true);
-    translationAllowedMap.put("REASSIGN" + "REVIEWER2" + "REVIEW_NEW", true);
-    translationAllowedMap.put("REASSIGN" + "REVIEWER2" + "REVIEW_IN_PROGRESS", true);
-    translationAllowedMap.put("REASSIGN" + "REVIEWER2" + "REVIEW_DONE", true);
     translationAllowedMap.put("SAVE" + "REVIEWER2" + "REVIEW_NEW", true);
     translationAllowedMap.put("SAVE" + "REVIEWER2" + "REVIEW_IN_PROGRESS", true);
     translationAllowedMap.put("SAVE" + "REVIEWER2" + "REVIEW_DONE", true);
@@ -765,8 +739,6 @@ public class SnomedWorkflowActionHandler extends DefaultWorkflowActionHandler {
     translationRoleMap.put("ASSIGN" + "REVIEWER" + "READY_FOR_PUBLICATION", "AUTHOR");
     translationRoleMap.put("ASSIGN" + "REVIEWER2" + "READY_FOR_PUBLICATION", "AUTHOR");
     // The correct unassign role is determined by performWorkflowAction based on the state of the record
-    translationRoleMap.put("REASSIGN" + "REVIEWER" + "*", "AUTHOR");
-    translationRoleMap.put("REASSIGN" + "REVIEWER2" + "*", "REVIEWER");
     // SAVE n/a
         
     config.setTranslationRoleMap(translationRoleMap);

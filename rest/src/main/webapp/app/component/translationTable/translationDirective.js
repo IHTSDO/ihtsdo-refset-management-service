@@ -1405,7 +1405,7 @@ tsApp
                   }
                 }
 
-                // Assign (or reassign) concept
+                // Assign 
                 $scope.assignConcept = function() {
                   if (!$scope.user) {
                     $scope.errors[0] = 'The user must be selected. ';
@@ -1443,88 +1443,8 @@ tsApp
                           handleError($scope.errors, data);
                         });
                   }
+                }
 
-                  // else, reassign
-                  else if (action == 'REASSIGN') {
-                    $scope.role = workflowService.translationGetRole('REASSIGN', role, concept.workflowStatus,
-                      $scope.workflowConfig);                 
-                    workflowService.performTranslationWorkflowAction($scope.project.id,
-                      translation.id, $scope.user.userName, getRole('REASSIGN', concept), 'REASSIGN', $scope.concept)
-                      .then(
-                        // Success - reassign
-                        function(data) {
-                          if ($scope.note) {
-                            translationService.addTranslationConceptNote(translation.id,
-                              concept.id, $scope.note).then(
-                            // Success - add note
-                            function(data) {
-                              $uibModalInstance.close(translation);
-                            },
-                            // Error - add note
-                            function(data) {
-                              handleError($scope.errors, data);
-                            });
-                          }
-                          // close dialog if no note
-                          else {
-                            $uibModalInstance.close(translation);
-                          }
-                        },
-                        // Error - reassign
-                        function(data) {
-                          handleError($scope.errors, data);
-                        });
-                  }
-
-                  // else, unassign, then reassign
-                  else if (action == 'UNASSIGN-REASSIGN') {
-                    $scope.role = workflowService.translationGetRole('UNASSIGN', role, concept.workflowStatus,
-                      $scope.workflowConfig);
-                    
-                    workflowService
-                      .performTranslationWorkflowAction($scope.project.id, translation.id,
-                        $scope.user.userName, getRole('UNASSIGN', concept), 'UNASSIGN', $scope.concept).then(
-                        // Success - unassign
-                        function(data) {
-                          $scope.role = workflowService.translationGetRole('REASSIGN', role, concept.workflowStatus,
-                            $scope.workflowConfig);
-                          
-                          // The username doesn't matter - it'll go back to the
-                          // author
-                          workflowService.performTranslationWorkflowAction($scope.project.id,
-                            translation.id, $scope.user.userName, getRole('REASSIGN', concept), 'REASSIGN',
-                            $scope.concept).then(
-                            // Success - reassign
-                            function(data) {
-                              if ($scope.note) {
-                                translationService.addTranslationConceptNote(translation.id,
-                                  concept.id, $scope.note).then(
-                                // Success - add note
-                                function(data) {
-                                  $uibModalInstance.close(translation);
-                                },
-                                // Error - add note
-                                function(data) {
-                                  handleError($scope.errors, data);
-                                });
-                              }
-                              // close dialog if no note
-                              else {
-                                $uibModalInstance.close(translation);
-                              }
-                            },
-                            // Error - reassign
-                            function(data) {
-                              handleError($scope.errors, data);
-                            });
-                        },
-                        // Error - unassign
-                        function(data) {
-                          handleError($scope.errors, data);
-                        });
-
-                  }
-                };
 
                 // Dismiss modal
                 $scope.cancel = function() {

@@ -38,7 +38,7 @@
           </datalist>
           <button class="btn btn-xs btn-warning" ng-show="newVersion"
             ng-click="newVersion=''">Clear</button>
-          <button class="btn btn-xs btn-primary" ng-show="newVersion"
+          <button class="btn btn-xs btn-primary" ng-show="newVersion && versionNotInPicklist()"
             ng-click="testTerminologyVersion();">Test</button>
           &nbsp;&nbsp;
           <span flag-icon obj="refset"></span>
@@ -64,7 +64,7 @@
 
   <div class="row">
     <!-- Errors table -->
-    <div class="col-md-12 col-md-12" ng-show="errors.length > 0">
+    <div class="col-md-12 col-md-12" >
       <table>
         <tr ng-show="errors.length > 0">
           <td>
@@ -80,6 +80,11 @@
                 <br />{{errors[1]}}
               </p>
             </div>
+          </td>
+        </tr>
+        <tr ng-show="validVersion == 'false'">
+          <td colspan="2">
+            <div class="alert alert-danger">Enter valid version.</div>
           </td>
         </tr>
       </table>
