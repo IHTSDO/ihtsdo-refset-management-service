@@ -446,6 +446,15 @@ public class SnomedWorkflowActionHandler extends DefaultWorkflowActionHandler {
   }
 
 
+  /**
+   * Find available editing concepts.
+   *
+   * @param translation the translation
+   * @param pfs the pfs
+   * @param service the service
+   * @return the concept list
+   * @throws Exception the exception
+   */
   private ConceptList findAvailableEditingConcepts(Translation translation,
     PfsParameter pfs, WorkflowService service) throws Exception {
 

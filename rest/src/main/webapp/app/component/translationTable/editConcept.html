@@ -51,7 +51,7 @@
           <span style="float: right;">
             <button ng-click="addDescription();" title="Add description"
               class="btn btn-xs btn-primary">Add Description</button>
-                          <!-- Notes -->
+            <!-- Notes -->
             <i ng-show="concept.notes.length > 0"
               ng-click="openNotesModal(concept, 'Concept');"
               title="Edit concept notes" class="noul material-icons md-18">assignment</i>
@@ -60,7 +60,7 @@
               title="Add concept notes (no notes yet)"
               class="md-grey material-icons md-18">assignment</i>
             <i ng-click="openLogModal(concept)" title="Retrieve log"
-                  class="noul material-icons md-18">event_note</i>
+              class="noul material-icons md-18">event_note</i>
           </span>
         </span>
 
@@ -112,13 +112,14 @@
 
 
       <h5>
-            <span uib-tooltip="Open spelling and memory controls">Spelling and Memory Controls</span>
-            <span style="float: right;"><i ng-show="displayControls"
-                  ng-click="toggleDisplayControls()"
-                  title="Hide controls" class="noul material-icons md-18">arrow_drop_down</i>
-                  <i ng-show="!displayControls"
-                  ng-click="toggleDisplayControls()"
-                  title="Show controls" class="noul material-icons md-18">arrow_drop_up</i></span>
+        <span uib-tooltip="Open spelling and memory controls">Spelling
+          and Memory Controls</span>
+        <span style="float: right;">
+          <i ng-show="displayControls" ng-click="toggleDisplayControls()"
+            title="Hide controls" class="noul material-icons md-18">arrow_drop_down</i>
+          <i ng-show="!displayControls" ng-click="toggleDisplayControls()"
+            title="Show controls" class="noul material-icons md-18">arrow_drop_up</i>
+        </span>
       </h5>
       <div class="col-md-12 col-xs-12" ng-show="displayControls">
         <table class="table">
@@ -194,7 +195,7 @@
         </table>
 
       </div>
-      
+
 
       <div ng-show="errors.length > 0 || warnings.length> 0"
         class="col-md-10 col-xs-12">
@@ -218,9 +219,11 @@
 </div>
 
 <div class="modal-footer">
-  <span style="float: left;" class="truncate">{{googleResult}}</span>
-  <span style="float: left;"><button class="btn btn-xs btn-primary" ng-click="addGoogleDescription(googleResult);"
-    title="Add description">Add</button></span>
+  <span ng-show="googleResult" style="float: left">
+    <span class="truncate">{{googleResult}}</span>
+    <button class="btn btn-xs btn-primary"
+      ng-click="addGoogleDescription(googleResult);" title="Add description">Add</button>
+  </span>
   <button class="btn btn-primary" ng-click="saveConcept(conceptTranslated);"
     title="Save work">Save/Next</button>
   <button confirm="Are you sure you want to finish editing this concept?"

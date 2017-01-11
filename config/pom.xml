@@ -45,7 +45,6 @@
   <!-- Create your own version of one of these projects for custom config -->
   <modules>
     <module>dev-windows</module>
-    <module>uat</module>
     <module>prod</module>
     <module>prod-wci</module>
   </modules>
