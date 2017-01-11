@@ -258,22 +258,36 @@ public class GenerateSampleDataMojo extends AbstractMojo {
       // Create projects
       //
       Logger.getLogger(getClass()).info("Add new projects");
-      ProjectJpa project1 = makeProject("Project 1", "1000001", admin, "BROWSER", "https://sct-rest.ihtsdotools.org/api");
-      ProjectJpa project2 = makeProject("Project 2", "1000036", admin, "BROWSER", "https://sct-rest.ihtsdotools.org/api");
-      ProjectJpa project3 = makeProject("Project 3", "1000124", admin, "BROWSER", "https://sct-rest.ihtsdotools.org/api");
-      ProjectJpa project4 = makeProject("Project 4", null, admin, "BROWSER", "https://sct-rest.ihtsdotools.org/api");
+      ProjectJpa project1 = makeProject("Project 1", "1000001", admin,
+          "BROWSER", "https://sct-rest.ihtsdotools.org/api");
+      ProjectJpa project2 = makeProject("Project 2", "1000036", admin,
+          "BROWSER", "https://sct-rest.ihtsdotools.org/api");
+      ProjectJpa project3 = makeProject("Project 3", "1000124", admin,
+          "BROWSER", "https://sct-rest.ihtsdotools.org/api");
+      ProjectJpa project4 = makeProject("Project 4", null, admin, "BROWSER",
+          "https://sct-rest.ihtsdotools.org/api");
 
       // Make additional projects to trigger paging
-      ProjectJpa project5 = makeProject("Project 5", null, admin, "BROWSER", "https://sct-rest.ihtsdotools.org/api");
-      ProjectJpa project6 = makeProject("Project 6", null, admin, "BROWSER", "https://sct-rest.ihtsdotools.org/api");
-      makeProject("Project 7", null, admin, "BROWSER", "https://sct-rest.ihtsdotools.org/api");
-      makeProject("Project 8", null, admin, "BROWSER", "https://sct-rest.ihtsdotools.org/api");
-      makeProject("Project 9", null, admin, "BROWSER", "https://sct-rest.ihtsdotools.org/api");
-      makeProject("Project 10", null, admin, "BROWSER", "https://sct-rest.ihtsdotools.org/api");
-      makeProject("Project 11", null, admin, "BROWSER", "https://sct-rest.ihtsdotools.org/api");
-      makeProject("Project 12", null, admin, "BROWSER", "https://sct-rest.ihtsdotools.org/api");
-      ProjectJpa project13 = makeProject("Project 13", null, admin, "SNOWOWL", "http://local.ihtsdotools.org:8081/snowowl");
-      ProjectJpa project14 = makeProject("Project 14", null, admin, "SNOWOWL", "http://local.ihtsdotools.org:8081/snowowl-se");
+      ProjectJpa project5 = makeProject("Project 5", null, admin, "BROWSER",
+          "https://sct-rest.ihtsdotools.org/api");
+      ProjectJpa project6 = makeProject("Project 6", null, admin, "BROWSER",
+          "https://sct-rest.ihtsdotools.org/api");
+      makeProject("Project 7", null, admin, "BROWSER",
+          "https://sct-rest.ihtsdotools.org/api");
+      makeProject("Project 8", null, admin, "BROWSER",
+          "https://sct-rest.ihtsdotools.org/api");
+      makeProject("Project 9", null, admin, "BROWSER",
+          "https://sct-rest.ihtsdotools.org/api");
+      makeProject("Project 10", null, admin, "BROWSER",
+          "https://sct-rest.ihtsdotools.org/api");
+      makeProject("Project 11", null, admin, "BROWSER",
+          "https://sct-rest.ihtsdotools.org/api");
+      makeProject("Project 12", null, admin, "BROWSER",
+          "https://sct-rest.ihtsdotools.org/api");
+      ProjectJpa project13 = makeProject("Project 13", null, admin, "SNOWOWL",
+          "http://local.ihtsdotools.org:8081/snowowl");
+      ProjectJpa project14 = makeProject("Project 14", null, admin, "SNOWOWL",
+          "http://local.ihtsdotools.org:8081/snowowl-se");
 
       //
       // Assign project roles
@@ -501,7 +515,6 @@ public class GenerateSampleDataMojo extends AbstractMojo {
       refset.setWorkflowStatus(WorkflowStatus.BETA);
       new RefsetServiceRestImpl().updateRefset(refset, admin.getAuthToken());
 
-
       // Add users to Snowowl projects 13 & 14
       project = new ProjectServiceRestImpl();
       project.assignUserToProject(project13.getId(), admin1.getUserName(),
@@ -515,8 +528,7 @@ public class GenerateSampleDataMojo extends AbstractMojo {
       project = new ProjectServiceRestImpl();
       project.assignUserToProject(project14.getId(), refsetadmin1.getUserName(),
           UserRole.ADMIN.toString(), admin.getAuthToken());
-      
-      
+
       // take a refset entirely through the release cycle, including release
       // artifacts
 
@@ -847,12 +859,14 @@ public class GenerateSampleDataMojo extends AbstractMojo {
    * @param name the name
    * @param namespace the namespace
    * @param auth the auth
+   * @param handlerKey the handler key
+   * @param handlerUrl the handler url
    * @return the project jpa
    * @throws Exception the exception
    */
   @SuppressWarnings("static-method")
-  private ProjectJpa makeProject(String name, String namespace, User auth, String handlerKey, String handlerUrl)
-    throws Exception {
+  private ProjectJpa makeProject(String name, String namespace, User auth,
+    String handlerKey, String handlerUrl) throws Exception {
     final ProjectJpa project = new ProjectJpa();
     project.setName(name);
     project.setDescription("Description of project " + name);

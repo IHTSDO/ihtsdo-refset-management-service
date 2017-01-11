@@ -298,10 +298,11 @@ public class RootServiceRestImpl {
         Logger.getLogger(getClass())
             .warn("UNEXPECTED number of Cookie headers = " + cookies.size());
       }
-    } else {
-      Logger.getLogger(getClass())
-          .warn("UNEXPECTED number of Referer headers = " + referers.size());
     }
+    // else {
+    // Logger.getLogger(getClass())
+    // .warn("UNEXPECTED number of Referer headers = " + referers.size());
+    // }
     return new HashMap<>();
   }
 }
