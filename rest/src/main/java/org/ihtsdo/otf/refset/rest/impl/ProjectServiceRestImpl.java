@@ -1162,7 +1162,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
 
     final TranslationService translationService = new TranslationServiceJpa(getHeaders(headers));
     try {
-      final String userName = authorizeProject(translationService, projectId,
+      authorizeProject(translationService, projectId,
           securityService, authToken, "get full concept", UserRole.AUTHOR);
 
       final Project project = translationService.getProject(projectId);

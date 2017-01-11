@@ -97,31 +97,40 @@ public class PatchDataMojo extends AbstractMojo {
           service.updateProject(project);
         }
 
-        // Reindex
-        getLog().info("  Reindex");
-        // login as "admin", use token
-        final Properties properties = ConfigUtility.getConfigProperties();
-        SecurityService securityService = new SecurityServiceJpa();
-        String authToken =
-            securityService.authenticate(properties.getProperty("admin.user"),
-                properties.getProperty("admin.password")).getAuthToken();
-        service.close();
-        ProjectServiceRestImpl contentService = new ProjectServiceRestImpl();
-        contentService.luceneReindex(null, authToken);
+      }
 
-      }
-      
-      // Patch 1000002
-      // Set projects default 
-      getLog().info(
-          "Processing patch 1000002 - set project workflow path");
-      for (final Project project : service.findProjectsForQuery(null, null)
-          .getObjects()) {
-        project.setWorkflowPath("DEFAULT");
+      // Patch 1000001
+      // Set project handler key/url for all projects
+      if ("20170110".compareTo(start) >= 0 && "20170110".compareTo(end) <= 0) {
         getLog().info(
-            "  project = " + project.getId() + ", " + project.getName());
-        service.updateProject(project);
+            "Processing patch 20170110 - set project terminology handler key/url"); // Patch
+
+        // This patch requires an "Updatedb"
+        // authors_ORDER column (for tracking_record_authors)
+        // reviewers_ORDER column (for tracking_record_reviewers)
+        // default value should be 1
+        // workflowPath column for projects
+
+        // Set projects default
+        for (final Project project : service.findProjectsForQuery(null, null)
+            .getObjects()) {
+          project.setWorkflowPath("DEFAULT");
+          getLog().info(
+              "  project = " + project.getId() + ", " + project.getName());
+          service.updateProject(project);
+        }
       }
+
+      // Reindex
+      getLog().info("  Reindex");
+      // login as "admin", use token
+      final Properties properties = ConfigUtility.getConfigProperties();
+      SecurityService securityService = new SecurityServiceJpa();
+      String authToken =
+          securityService.authenticate(properties.getProperty("admin.user"),
+              properties.getProperty("admin.password")).getAuthToken();
+      ProjectServiceRestImpl contentService = new ProjectServiceRestImpl();
+      contentService.luceneReindex(null, authToken);
 
       service.close();
       getLog().info("Done ...");
