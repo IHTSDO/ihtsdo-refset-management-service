@@ -61,8 +61,9 @@ tsApp
               $scope.filters = [];
 
               // Page metadata
-              $scope.memberTypes = [ 'Member', 'Exclusion', 'Inclusion', 'Active', 'Inactive', 'Translated', 'Not Translated'  ];
-              $scope.refsetTypes = [ 'Refset', 'Local', 'Extensional', 'Intensional', 'External'];
+              $scope.memberTypes = [ 'Member', 'Exclusion', 'Inclusion', 'Active', 'Inactive',
+                'Translated', 'Not Translated' ];
+              $scope.refsetTypes = [ 'Refset', 'Local', 'Extensional', 'Intensional', 'External' ];
 
               // Used for project admin to know what users are assigned to
               // something.
@@ -272,7 +273,7 @@ tsApp
                     $scope.reselect();
                   });
                 }
-               
+
                 if ($scope.value == 'RELEASE') {
                   if (pfs.queryRestriction) {
                     pfs.queryRestriction = pfs.queryRestriction + " AND ";
@@ -468,8 +469,7 @@ tsApp
                     value = value.replace(' ', '_').toUpperCase();
                     pfs.queryRestriction = 'memberType:' + value;
                   }
-                  
-                  
+
                 }
 
                 if ($scope.withNotesOnly && pfs.queryRestriction) {
@@ -720,10 +720,10 @@ tsApp
 
               // Performs a workflow action
               $scope.performWorkflowAction = function(refset, action, userName) {
-                var role = workflowService.refsetGetRole(action, $scope.projects.role, refset.workflowStatus,
-                  $scope.metadata.workflowConfig);
-                workflowService.performWorkflowAction($scope.project.id, refset.id, userName,
-                  role, action).then(function(data) {
+                var role = workflowService.refsetGetRole(action, $scope.projects.role,
+                  refset.workflowStatus, $scope.metadata.workflowConfig);
+                workflowService.performWorkflowAction($scope.project.id, refset.id, userName, role,
+                  action).then(function(data) {
                   refsetService.fireRefsetChanged(data);
                 });
               };
@@ -906,15 +906,22 @@ tsApp
               }
 
               $scope.isAllowed = function(action, refset) {
-                return workflowService.refsetIsAllowed(action, $scope.projects.role, refset.workflowStatus,
-                  $scope.metadata.workflowConfig);
+                if ($scope.value == 'PUBLISHED' || $scope.value == 'BETA') {
+                  return false;
+                }
+
+                return workflowService.refsetIsAllowed(action, $scope.projects.role,
+                  refset.workflowStatus, $scope.metadata.workflowConfig);
               }
-              
+
               $scope.getRole = function(action, refset) {
-                return workflowService.refsetGetRole(action, $scope.projects.role, refset.workflowStatus,
-                  $scope.metadata.workflowConfig);
+                if ($scope.value == 'PUBLISHED' || $scope.value == 'BETA') {
+                  return $scope.projects.role;
+                }
+                return workflowService.refsetGetRole(action, $scope.projects.role,
+                  refset.workflowStatus, $scope.metadata.workflowConfig);
               }
-              
+
               //
               // MODALS
               //
@@ -1440,9 +1447,6 @@ tsApp
                   controller : CloneRefsetModalCtrl,
                   backdrop : 'static',
                   resolve : {
-                    project : function() {
-                      return $scope.project;
-                    },
                     refset : function() {
                       return lrefset;
                     },
@@ -1482,12 +1486,12 @@ tsApp
               };
 
               // Clone Refset controller
-              var CloneRefsetModalCtrl = function($scope, $uibModalInstance, project, refset,
-                filters, metadata, projects) {
+              var CloneRefsetModalCtrl = function($scope, $uibModalInstance, refset, filters,
+                metadata, projects) {
                 console.debug('Entered clone refset modal control', refset, projects);
 
                 $scope.action = 'Clone';
-                $scope.project = project;
+                $scope.project = null;
                 $scope.projects = projects;
                 $scope.metadata = metadata;
                 $scope.filters = filters;
@@ -1506,6 +1510,7 @@ tsApp
 
                 // Handler for project change
                 $scope.projectSelected = function(project) {
+                  $scope.project = project;
                   $scope.refset.namespace = project.namespace;
                   $scope.refset.moduleId = project.moduleId;
                   $scope.getTerminologyEditions();
@@ -1513,13 +1518,13 @@ tsApp
 
                 // Get $scope.terminologies
                 $scope.getTerminologyEditions = function() {
-                  projectService.getTerminologyEditions(project).then(function(data) {
+                  projectService.getTerminologyEditions($scope.project).then(function(data) {
                     $scope.terminologies = data.terminologies;
                     // Look up all versions
                     for (var i = 0; i < data.terminologies.length; i++) {
-                      $scope.getTerminologyVersions(project, data.terminologies[i].terminology);
+                      $scope.getTerminologyVersions(data.terminologies[i].terminology);
                     }
-                    $scope.refset.terminology = project.terminology;
+                    $scope.refset.terminology = $scope.project.terminology;
                     if (!$scope.refset.terminology) {
                       $scope.refset.terminology = data.terminologies[0];
                     }
@@ -1528,65 +1533,63 @@ tsApp
                 };
 
                 // Get $scope.versions
-                $scope.getTerminologyVersions = function(project, terminology) {
-                  projectService.getTerminologyVersions(project, terminology).then(
+                $scope.getTerminologyVersions = function(terminology) {
+                  projectService.getTerminologyVersions($scope.project, terminology).then(
                     function(data) {
                       $scope.versionsMap[terminology] = [];
                       found = false;
                       for (var i = 0; i < data.terminologies.length; i++) {
                         $scope.versionsMap[terminology].push(data.terminologies[i].version);
                         if ($scope.refset.terminology == terminology) {
-                          $scope.refset.version = data.terminologies[i].version;
+                          $scope.versions = angular.copy($scope.versionsMap[terminology].sort()
+                            .reverse());
+                          $scope.versionSelected(data.terminologies[i].version);
                           found = true;
+                          break;
                         }
                       }
-                      if ($scope.refset.terminology == terminology) {
+                      if (!found && $scope.refset.terminology == terminology) {
                         $scope.versions = angular.copy($scope.versionsMap[terminology].sort()
                           .reverse());
-                        if (!found) {
-                          $scope.refset.version = data.terminologies[0].version;
-                        }
+                        $scope.versionSelected(data.terminologies[0].version);
                       }
-
                     });
 
                 };
 
                 // Get $scope.modules
                 $scope.getModules = function() {
-                  projectService.getModules(project, $scope.refset.terminology,
-                    $scope.refset.version).then(
-                  // Success
-                  function(data) {
-                    $scope.modules = data.concepts;
-                  });
+                  if ($scope.refset.terminology && $scope.refset.version) {
+                    projectService.getModules($scope.project, $scope.refset.terminology,
+                      $scope.refset.version).then(
+                    // Success
+                    function(data) {
+                      $scope.modules = data.concepts;
+                    });
+                  }
                 };
 
                 $scope.testTerminologyVersion = function() {
-                  refsetService.isTerminologyVersionValid($scope.project.id, $scope.refset.terminology, 
-                     $scope.refset.version).then(
-                       function(data) {
-                         $scope.validVersion = data;
-                       });
-                 }
-                
+                  refsetService.isTerminologyVersionValid($scope.project.id,
+                    $scope.refset.terminology, $scope.refset.version).then(function(data) {
+                    $scope.validVersion = data;
+                  });
+                }
+
                 $scope.resetValidVersion = function() {
                   $scope.validVersion = null;
                 }
-                
+
+                // Determine whether the refset version is in the list
                 $scope.versionNotInPicklist = function() {
-                  for (var i=0; i<$scope.versions.length; i++) {
+                  console.debug('xxx',$scope.refset.version, $scope.versions);
+                  for (var i = 0; i < $scope.versions.length; i++) {
                     if ($scope.versions[i] == $scope.refset.version) {
                       $scope.validVersion = 'true';
                       return false;
                     }
                   }
                   return true;
-                }
-                
-                // Initialize terminology/version/module
-                if ($scope.refset.terminology && $scope.refset.version) {
-                  $scope.getModules();
                 }
 
                 // Handle terminology selected
@@ -1617,7 +1620,7 @@ tsApp
                 // Submit refset
                 $scope.submitRefset = function(refset) {
 
-                  if (!refset.project) {
+                  if (!$scope.project) {
                     $scope.errors[0] = 'A project must be chosen from the picklist.';
                     return;
                   }
@@ -1643,7 +1646,7 @@ tsApp
                         $scope.warnings = [];
                       }
                       $scope.comments = [];
-                      refsetService.cloneRefset(refset.project.id, refset).then(
+                      refsetService.cloneRefset($scope.project.id, refset).then(
                         // Success - clone refset
                         function(data) {
                           $scope.newRefset = data;
@@ -2101,7 +2104,7 @@ tsApp
                   }
                 }
 
-                // Assign 
+                // Assign
                 $scope.assignRefset = function() {
                   if (!$scope.user) {
                     $scope.errors[0] = 'The user must be selected. ';
@@ -2457,19 +2460,18 @@ tsApp
                 };
 
                 $scope.testTerminologyVersion = function() {
-                  refsetService.isTerminologyVersionValid($scope.project.id, $scope.refset.terminology, 
-                     $scope.refset.version).then(
-                       function(data) {
-                         $scope.validVersion = data;
-                       });
-                 }
-                
+                  refsetService.isTerminologyVersionValid($scope.project.id,
+                    $scope.refset.terminology, $scope.refset.version).then(function(data) {
+                    $scope.validVersion = data;
+                  });
+                }
+
                 $scope.resetValidVersion = function() {
                   $scope.validVersion = null;
                 }
-                
+
                 $scope.versionNotInPicklist = function() {
-                  for (var i=0; i<$scope.versions.length; i++) {
+                  for (var i = 0; i < $scope.versions.length; i++) {
                     if ($scope.versions[i] == $scope.refset.version) {
                       $scope.validVersion = 'true';
                       return false;
@@ -2477,7 +2479,7 @@ tsApp
                   }
                   return true;
                 }
-                
+
                 // Initialize modules if terminology/version set
                 if ($scope.refset.terminology && $scope.refset.version) {
                   $scope.getModules();
@@ -2652,13 +2654,12 @@ tsApp
                 };
 
                 $scope.testTerminologyVersion = function() {
-                  refsetService.isTerminologyVersionValid($scope.project.id, $scope.refset.terminology, 
-                     $scope.refset.version).then(
-                       function(data) {
-                         $scope.validVersion = data;
-                       });
-                 }
-                
+                  refsetService.isTerminologyVersionValid($scope.project.id,
+                    $scope.refset.terminology, $scope.refset.version).then(function(data) {
+                    $scope.validVersion = data;
+                  });
+                }
+
                 // Initialize modules if terminology/version set
                 if ($scope.refset.terminology && $scope.refset.version) {
                   $scope.getModules();
@@ -2679,20 +2680,20 @@ tsApp
                 $scope.versionSelected = function(version) {
                   $scope.getModules();
                 };
-                 
-                 $scope.resetValidVersion = function() {
-                   $scope.validVersion = null;
-                 }
-                 
-                 $scope.versionNotInPicklist = function() {
-                   for (var i=0; i<$scope.versions.length; i++) {
-                     if ($scope.versions[i] == $scope.refset.version) {
-                       $scope.validVersion = 'true';
-                       return false;
-                     }
-                   }
-                   return true;
-                 }
+
+                $scope.resetValidVersion = function() {
+                  $scope.validVersion = null;
+                }
+
+                $scope.versionNotInPicklist = function() {
+                  for (var i = 0; i < $scope.versions.length; i++) {
+                    if ($scope.versions[i] == $scope.refset.version) {
+                      $scope.validVersion = 'true';
+                      return false;
+                    }
+                  }
+                  return true;
+                }
 
                 // Assign refset id
                 $scope.assignRefsetTerminologyId = function(refset) {
@@ -3176,19 +3177,18 @@ tsApp
                 }
 
                 $scope.testTerminologyVersion = function() {
-                 refsetService.isTerminologyVersionValid($scope.project.id, $scope.newTerminology, 
-                    $scope.newVersion).then(
-                      function(data) {
-                        $scope.validVersion = data;
-                      });
+                  refsetService.isTerminologyVersionValid($scope.project.id, $scope.newTerminology,
+                    $scope.newVersion).then(function(data) {
+                    $scope.validVersion = data;
+                  });
                 }
-                
+
                 $scope.resetValidVersion = function() {
                   $scope.validVersion = null;
                 }
-                
+
                 $scope.versionNotInPicklist = function() {
-                  for (var i=0; i<$scope.versions.length; i++) {
+                  for (var i = 0; i < $scope.versions.length; i++) {
                     if ($scope.versions[i] == $scope.newVersion) {
                       $scope.validVersion = 'true';
                       return false;
@@ -3196,7 +3196,7 @@ tsApp
                   }
                   return true;
                 }
-                
+
                 // get diff report
                 $scope.getDiffReport = function() {
                   refsetService.getDiffReport($scope.reportToken).then(

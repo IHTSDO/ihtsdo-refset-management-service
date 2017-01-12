@@ -1403,14 +1403,14 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
 
       if (translated == null) {
         final ConceptRefsetMemberList list =
-          refsetService.findMembersForRefset(refsetId, query, pfs);
+            refsetService.findMembersForRefset(refsetId, query, pfs);
         for (ConceptRefsetMember member : list.getObjects()) {
           refsetService.handleLazyInit(member);
         }
         return list;
       } else if (translated != null) {
-        final ConceptRefsetMemberList list =
-            refsetService.findMembersForRefset(refsetId, query, new PfsParameterJpa());
+        final ConceptRefsetMemberList list = refsetService
+            .findMembersForRefset(refsetId, query, new PfsParameterJpa());
         for (ConceptRefsetMember member : list.getObjects()) {
           refsetService.handleLazyInit(member);
         }
@@ -1422,8 +1422,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         }
         for (Translation translation : refset.getTranslations()) {
           for (Concept concept : translation.getConcepts()) {
-            if (concept.getWorkflowStatus() == WorkflowStatus.READY_FOR_PUBLICATION ||
-                concept.getWorkflowStatus() == WorkflowStatus.PUBLISHED) {
+            if (concept
+                .getWorkflowStatus() == WorkflowStatus.READY_FOR_PUBLICATION
+                || concept.getWorkflowStatus() == WorkflowStatus.PUBLISHED) {
               translationConceptIds.add(concept.getTerminologyId());
             }
           }
@@ -1445,14 +1446,14 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         list.setTotalCount(totalCt[0]);
         return list;
       }
-      return null;
     } catch (Exception e) {
       handleException(e, "trying to find members ");
-      return null;
+
     } finally {
       refsetService.close();
       securityService.close();
     }
+    return null;
 
   }
 
@@ -1908,7 +1909,6 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       addLogEntry(refsetService, userName, "CONVERT REFSET",
           refset.getProject().getId(), refset.getId(),
           refset.getTerminologyId() + " => " + refsetType);
-
 
       return refset;
 
@@ -3530,8 +3530,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass())
-        .info("RESTful PUT call (Refset): /version/valid " + terminology
-            + ", " + version);
+        .info("RESTful PUT call (Refset): /version/valid " + terminology + ", "
+            + version);
 
     // Create service and configure transaction scope
     final RefsetService refsetService =

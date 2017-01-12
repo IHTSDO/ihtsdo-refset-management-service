@@ -17,8 +17,8 @@
           <b><span ng-show="action == 'Clone'">Clone to </span>Project:</b>
         </td>
         <td>
-          <select ng-model="refset.project"
-            ng-change="projectSelected(refset.project)"
+          <select ng-model="project"
+            ng-change="projectSelected(project)"
             ng-options="item.name.concat(' (',item.id,')') for item in projects.data">
           </select>
         </td>

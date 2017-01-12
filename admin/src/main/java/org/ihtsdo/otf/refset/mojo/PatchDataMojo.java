@@ -105,6 +105,8 @@ public class PatchDataMojo extends AbstractMojo {
         getLog().info(
             "Processing patch 20170110 - set project terminology handler key/url"); // Patch
 
+        // PRIOR to this patch update DB and run admin/src/main/resources/patch20170110.sql
+
         // This patch requires an "Updatedb"
         // authors_ORDER column (for tracking_record_authors)
         // reviewers_ORDER column (for tracking_record_reviewers)
