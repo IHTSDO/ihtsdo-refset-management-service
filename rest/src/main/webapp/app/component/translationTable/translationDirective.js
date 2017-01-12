@@ -379,8 +379,8 @@ tsApp
 
                 if ($scope.projects.role != 'ADMIN') {
                   pfs.queryRestriction = $scope.paging['assigned'].filter;
-                  workflowService.findAssignedConcepts($scope.projects.role, $scope.project.id, translation.id,
-                    $scope.user.userName, pfs).then(
+                  workflowService.findAssignedConcepts($scope.projects.role, $scope.project.id,
+                    translation.id, $scope.user.userName, pfs).then(
                     // Success
                     function(data) {
                       translation.assigned = data.records;
@@ -389,18 +389,18 @@ tsApp
                         $scope.openEditConceptModal(translation.assigned[nextIndex].concept,
                           nextIndex);
                       }
-                    });             
+                    });
                 } else if ($scope.projects.role == 'ADMIN') {
                   pfs.queryRestriction = $scope.paging['assigned'].filter;
-                  workflowService.findAssignedConcepts('ADMIN', $scope.project.id, translation.id, $scope.user.userName, pfs)
-                    .then(
-                    // Success
-                    function(data) {
-                      translation.assigned = data.records;
-                      translation.assigned.totalCount = data.totalCount;
-                    });
+                  workflowService.findAssignedConcepts('ADMIN', $scope.project.id, translation.id,
+                    $scope.user.userName, pfs).then(
+                  // Success
+                  function(data) {
+                    translation.assigned = data.records;
+                    translation.assigned.totalCount = data.totalCount;
+                  });
 
-                } 
+                }
 
               };
               // get translation release info
@@ -542,10 +542,11 @@ tsApp
               $scope.removeTranslation = function(translation) {
 
                 workflowService
-                  .findAssignedConcepts('ADMIN', $scope.project.id, translation.id, $scope.user.userName, {
-                    startIndex : 0,
-                    maxResults : 1
-                  })
+                  .findAssignedConcepts('ADMIN', $scope.project.id, translation.id,
+                    $scope.user.userName, {
+                      startIndex : 0,
+                      maxResults : 1
+                    })
                   .then(
                     // Success
                     function(data) {
@@ -557,10 +558,11 @@ tsApp
 
                       // Now check for available concepts
                       workflowService
-                        .findAvailableConcepts('ADMIN', $scope.project.id, translation.id, $scope.user.userName, {
-                          startIndex : 0,
-                          maxResults : 1
-                        })
+                        .findAvailableConcepts('ADMIN', $scope.project.id, translation.id,
+                          $scope.user.userName, {
+                            startIndex : 0,
+                            maxResults : 1
+                          })
                         .then(
                           // Success
                           function(data) {
@@ -620,8 +622,8 @@ tsApp
                 }
 
                 workflowService.performTranslationWorkflowAction($scope.project.id,
-                  $scope.selected.translation.id, userName, getRole('UNASSIGN', concept), 'UNASSIGN',
-                  concept).then(
+                  $scope.selected.translation.id, userName, getRole('UNASSIGN', concept),
+                  'UNASSIGN', concept).then(
                 // Success
                 function(data) {
                   translationService.fireTranslationChanged($scope.selected.translation);
@@ -634,46 +636,45 @@ tsApp
 
                 // load all concepts assigned to the user
                 var pfs = {
-                  startIndex : ($scope.paging['assigned'].page - 1) * $scope.paging['assigned'].pageSize,
+                  startIndex : ($scope.paging['assigned'].page - 1)
+                    * $scope.paging['assigned'].pageSize,
                   maxResults : $scope.paging['assigned'].pageSize,
                   sortField : $scope.paging['assigned'].sortField,
                   ascending : $scope.paging['assigned'].ascending == null ? false
                     : $scope.paging['assigned'].ascending,
-                  queryRestriction : $scope.paging['assigned'].filter 
+                  queryRestriction : $scope.paging['assigned'].filter
                 };
 
                 workflowService.findAssignedConcepts($scope.projects.role, $scope.project.id,
-                    $scope.selected.translation.id, userName, pfs).then(
+                  $scope.selected.translation.id, userName, pfs).then(
+                  // Success
+                  function(data) {
+
+                    // Extract concepts from records
+                    var list = new Array();
+                    for (var i = 0; i < data.records.length; i++) {
+                      list.push(data.records[i].concept);
+                    }
+
+                    // Make parameter
+                    var conceptList = {
+                      concepts : list
+                    };
+
+                    // Unassign all concepts
+                    workflowService.performBatchTranslationWorkflowAction($scope.project.id,
+                      $scope.selected.translation.id, $scope.user.userName, $scope.projects.role,
+                      'UNASSIGN', conceptList).then(
                     // Success
                     function(data) {
-
-                      // Extract concepts from records
-                      var list = new Array();
-                      for (var i = 0; i < data.records.length; i++) {
-                        list.push(data.records[i].concept);
-                      }
-
-                      // Make parameter
-                      var conceptList = {
-                        concepts : list
-                      };
-
-                      // Unassign all concepts
-                      workflowService.performBatchTranslationWorkflowAction($scope.project.id,
-                        $scope.selected.translation.id, $scope.user.userName, $scope.projects.role,
-                        'UNASSIGN', conceptList).then(
-                      // Success
-                      function(data) {
-                        translationService.fireTranslationChanged($scope.selected.translation);
-                      }
-                      // Error is already handled by service
-                      );
-
+                      translationService.fireTranslationChanged($scope.selected.translation);
                     }
-                  // Error is already handled by service
-                  );
-               
-                
+                    // Error is already handled by service
+                    );
+
+                  }
+                // Error is already handled by service
+                );
 
               };
 
@@ -682,7 +683,8 @@ tsApp
 
                 // load all concepts assigned to the user
                 var pfs = {
-                  startIndex : ($scope.paging['assigned'].page - 1) * $scope.paging['assigned'].pageSize,
+                  startIndex : ($scope.paging['assigned'].page - 1)
+                    * $scope.paging['assigned'].pageSize,
                   maxResults : $scope.paging['assigned'].pageSize,
                   sortField : $scope.paging['assigned'].sortField,
                   ascending : $scope.paging['assigned'].ascending == null ? false
@@ -699,8 +701,8 @@ tsApp
                       // Extract concepts from records
                       var list = new Array();
                       for (var i = 0; i < data.records.length; i++) {
-                        if (data.records[i].concept.workflowStatus.indexOf('IN_PROGRESS') != -1 || 
-                          data.records[i].concept.workflowStatus=='REVIEW_NEW') {
+                        if (data.records[i].concept.workflowStatus.indexOf('IN_PROGRESS') != -1
+                          || data.records[i].concept.workflowStatus == 'REVIEW_NEW') {
                           list.push(data.records[i].concept);
                         }
                       }
@@ -732,13 +734,14 @@ tsApp
                 }
 
               };
-              
+
               // Publish all concepts assigned to this user
               $scope.publishAll = function(userName) {
 
                 // load all concepts assigned to the user
                 var pfs = {
-                  startIndex : ($scope.paging['assigned'].page - 1) * $scope.paging['assigned'].pageSize,
+                  startIndex : ($scope.paging['assigned'].page - 1)
+                    * $scope.paging['assigned'].pageSize,
                   maxResults : $scope.paging['assigned'].pageSize,
                   sortField : $scope.paging['assigned'].sortField,
                   ascending : $scope.paging['assigned'].ascending == null ? false
@@ -747,41 +750,40 @@ tsApp
                 };
 
                 workflowService.findAssignedConcepts($scope.projects.role, $scope.project.id,
-                    $scope.selected.translation.id, $scope.user.userName, pfs).then(
+                  $scope.selected.translation.id, $scope.user.userName, pfs).then(
+                  // Success
+                  function(data) {
+
+                    // Extract concepts from records
+                    var list = new Array();
+                    for (var i = 0; i < data.records.length; i++) {
+                      if (data.records[i].concept.workflowStatus == 'REVIEW_DONE') {
+                        list.push(data.records[i].concept);
+                      }
+                    }
+                    if (list.length == 0) {
+                      alert('There are no concepts ready to be published.')
+                    }
+
+                    // Make parameter
+                    var conceptList = {
+                      concepts : list
+                    };
+
+                    // Publish all concepts
+                    workflowService.performBatchTranslationWorkflowAction($scope.project.id,
+                      $scope.selected.translation.id, $scope.user.userName, $scope.projects.role,
+                      'PREPARE_FOR_PUBLICATION', conceptList).then(
                     // Success
                     function(data) {
-
-                      // Extract concepts from records
-                      var list = new Array();
-                      for (var i = 0; i < data.records.length; i++) {
-                        if (data.records[i].concept.workflowStatus=='REVIEW_DONE') {
-                          list.push(data.records[i].concept);
-                        }
-                      }
-                      if (list.length == 0) {
-                        alert('There are no concepts ready to be published.')
-                      }
-                      
-                      // Make parameter
-                      var conceptList = {
-                        concepts : list
-                      };
-
-                      // Publish all concepts
-                      workflowService.performBatchTranslationWorkflowAction($scope.project.id,
-                        $scope.selected.translation.id, $scope.user.userName, $scope.projects.role,
-                        'PREPARE_FOR_PUBLICATION', conceptList).then(
-                      // Success
-                      function(data) {
-                        translationService.fireTranslationChanged($scope.selected.translation);
-                      }
-                      // Error is already handled by service
-                      );
-
+                      translationService.fireTranslationChanged($scope.selected.translation);
                     }
-                  // Error is already handled by service
-                  );
-               
+                    // Error is already handled by service
+                    );
+
+                  }
+                // Error is already handled by service
+                );
 
               };
               // Performs a workflow action
@@ -915,21 +917,26 @@ tsApp
               };
 
               $scope.isAllowed = function(action, concept) {
-                return workflowService.translationIsAllowed(action, $scope.projects.role, concept.workflowStatus,
-                  $scope.metadata.workflowConfig);
+                if ($scope.value == 'PUBLISHED' || $scope.value == 'BETA') {
+                  return false;
+                }
+                return workflowService.translationIsAllowed(action, $scope.projects.role,
+                  concept.workflowStatus, $scope.metadata.workflowConfig);
               }
-              
-              
+
               $scope.getRole = function(action, concept) {
                 getRole(action, concept);
               };
 
               // Start lookup again
               function getRole(action, concept) {
-                return workflowService.translationGetRole(action, $scope.projects.role, concept.workflowStatus,
-                  $scope.metadata.workflowConfig);
+                if ($scope.value == 'PUBLISHED' || $scope.value == 'BETA') {
+                  return $scope.projects.role;
+                }
+                return workflowService.translationGetRole(action, $scope.projects.role,
+                  concept.workflowStatus, $scope.metadata.workflowConfig);
               }
-              
+
               // 
               // MODALS
               //
@@ -1351,7 +1358,7 @@ tsApp
                     project : function() {
                       return $scope.project;
                     },
-                    role : function() {            
+                    role : function() {
                       return $scope.projects.role;
                     },
                     tinymceOptions : function() {
@@ -1381,8 +1388,8 @@ tsApp
                 $scope.translation = translation;
                 $scope.action = action;
                 $scope.project = project;
-                $scope.role = workflowService.translationGetRole(action, role, concept.workflowStatus,
-                  $scope.workflowConfig);
+                $scope.role = workflowService.translationGetRole(action, role,
+                  concept.workflowStatus, $scope.workflowConfig);
                 $scope.assignedUsers = [];
                 $scope.user = utilService.findBy(assignedUsers, currentUser, 'userName');
                 $scope.tinymceOptions = tinymceOptions;
@@ -1399,7 +1406,7 @@ tsApp
                   }
                 }
 
-                // Assign 
+                // Assign
                 $scope.assignConcept = function() {
                   if (!$scope.user) {
                     $scope.errors[0] = 'The user must be selected. ';
@@ -1408,37 +1415,36 @@ tsApp
 
                   if (action == 'ASSIGN') {
                     workflowService.performTranslationWorkflowAction($scope.project.id,
-                      translation.id, $scope.user.userName, getRole('ASSIGN', concept), 'ASSIGN', $scope.concept)
-                      .then(
-                        // Success
-                        function(data) {
+                      translation.id, $scope.user.userName, getRole('ASSIGN', concept), 'ASSIGN',
+                      $scope.concept).then(
+                      // Success
+                      function(data) {
 
-                          // Add a note as well
-                          if ($scope.note) {
-                            translationService.addTranslationConceptNote(translation.id,
-                              concept.id, $scope.note).then(
-                            // Success
-                            function(data) {
-                              $uibModalInstance.close(translation);
-                            },
-                            // Error
-                            function(data) {
-                              handleError($scope.errors, data);
-                            });
-                          }
-                          // close dialog if no note
-                          else {
+                        // Add a note as well
+                        if ($scope.note) {
+                          translationService.addTranslationConceptNote(translation.id, concept.id,
+                            $scope.note).then(
+                          // Success
+                          function(data) {
                             $uibModalInstance.close(translation);
-                          }
+                          },
+                          // Error
+                          function(data) {
+                            handleError($scope.errors, data);
+                          });
+                        }
+                        // close dialog if no note
+                        else {
+                          $uibModalInstance.close(translation);
+                        }
 
-                        },
-                        // Error
-                        function(data) {
-                          handleError($scope.errors, data);
-                        });
+                      },
+                      // Error
+                      function(data) {
+                        handleError($scope.errors, data);
+                      });
                   }
                 }
-
 
                 // Dismiss modal
                 $scope.cancel = function() {
@@ -1545,13 +1551,13 @@ tsApp
                       sortField : paging['concept'].sortField,
                       ascending : paging['concept'].ascending == null ? true
                         : paging['concept'].ascending,
-                      queryRestriction : null                      
+                      queryRestriction : null
                     }
                     pfs.queryRestriction = 'workflowStatus:READY_FOR_PUBLICATION AND revision:false';
                     if ($scope.withNotesOnly) {
                       pfs.queryRestriction += ' AND notes.value:[* TO *]';
                     }
-                    
+
                   }
 
                   if ($scope.role == 'AUTHOR' && type == 'Available') {
@@ -1650,8 +1656,10 @@ tsApp
                           handleError($scope.errors, data);
                         });
                   } else if (type == 'Finished') {
-                    translationService.findTranslationConceptsForQuery(translation.id,
-                      paging['concept'].filter, pfs).then(
+                    translationService
+                      .findTranslationConceptsForQuery(translation.id, paging['concept'].filter,
+                        pfs)
+                      .then(
                         // Success
                         function(data) {
 
@@ -1676,17 +1684,17 @@ tsApp
                           };
 
                           workflowService.performBatchTranslationWorkflowAction($scope.project.id,
-                            translation.id, $scope.user.userName, 'AUTHOR', 'ASSIGN',
-                            conceptList).then(
-                          // Success
-                          function(data) {
-                            // close modal
-                            $uibModalInstance.close(translation);
-                          },
-                          // Error
-                          function(data) {
-                            handleError($scope.errors, data);
-                          });
+                            translation.id, $scope.user.userName, 'AUTHOR', 'ASSIGN', conceptList)
+                            .then(
+                            // Success
+                            function(data) {
+                              // close modal
+                              $uibModalInstance.close(translation);
+                            },
+                            // Error
+                            function(data) {
+                              handleError($scope.errors, data);
+                            });
 
                         },
                         // Error
@@ -1796,7 +1804,6 @@ tsApp
                   });
               };
 
- 
               // Import/Export modal
               $scope.openImportExportModal = function(ltranslation, loperation, ltype) {
                 console.debug('exportModal ', ltranslation);
