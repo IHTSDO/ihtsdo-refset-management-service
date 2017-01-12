@@ -62,7 +62,7 @@ public class ProjectUserQueryTest extends ProjectTestSupport {
   private ProjectJpa makeProject(String name, String namespace,
     String authToken) throws Exception {
     ProjectJpa project = new ProjectJpa();
-    project.setName(name);
+    project.setName(name + new Date());
     project.setDescription("Description of project " + name);
     project.setLastModified(new Date());
     project.setTerminology("en-edition");
@@ -136,7 +136,7 @@ public class ProjectUserQueryTest extends ProjectTestSupport {
     assertTrue(users.getCount() == 0);
     users = projectService.findUnassignedUsersForProject(project.getId(),
         "applicationRole:ADMIN", null, adminAuthToken);
-    assertTrue(users.getCount() == 1);
+    assertTrue(users.getCount() == 2);
 
     // Clean Up
     projectService.unassignUserFromProject(project.getId(),
