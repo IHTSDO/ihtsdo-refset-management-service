@@ -349,8 +349,7 @@ public class RefsetTest extends RefsetTestSupport {
     assertEquals(1, newRegularMembers.getCount());
     assertEquals(createdMember.getConceptId(), newRegularMembers.getObjects()
         .get(0).getConceptId());
-    // Name is recomputed now, so it won't match "Test Name"
-    assertEquals(TerminologyHandler.UNABLE_TO_DETERMINE_NAME, newRegularMembers
+    assertEquals("TestMember", newRegularMembers
         .getObjects().get(0).getConceptName());
 
     // Add identical member to Jan refset and regenerate report

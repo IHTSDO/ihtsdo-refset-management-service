@@ -2974,7 +2974,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
 
       // remove note
       translationService.removeNote(noteId, TranslationNoteJpa.class);
-
+      
       // for indexing
       Note note = null;
       for (int i = 0; i < translation.getNotes().size(); i++) {
@@ -2988,7 +2988,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
       translationService.updateTranslation(translation);
 
       addLogEntry(translationService, userName, "REMOVE translation note",
-          translation.getProject().getId(), translationId, note.toString());
+          translation.getProject().getId(), translationId, noteId.toString());
 
     } catch (Exception e) {
       handleException(e, "trying to remove a translation note");
