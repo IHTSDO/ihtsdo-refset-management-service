@@ -1643,7 +1643,7 @@ tsApp
                         $scope.warnings = [];
                       }
                       $scope.comments = [];
-                      refsetService.cloneRefset(refset.projectId, refset).then(
+                      refsetService.cloneRefset(refset.project.id, refset).then(
                         // Success - clone refset
                         function(data) {
                           $scope.newRefset = data;

@@ -642,8 +642,7 @@ tsApp
                   queryRestriction : $scope.paging['assigned'].filter 
                 };
 
-                if ($scope.projects.role == 'AUTHOR' || $scope.projects.role == 'REVIEWER') {
-                  workflowService.findAssignedConcepts($scope.projects.role, $scope.project.id,
+                workflowService.findAssignedConcepts($scope.projects.role, $scope.project.id,
                     $scope.selected.translation.id, userName, pfs).then(
                     // Success
                     function(data) {
@@ -674,9 +673,7 @@ tsApp
                   // Error is already handled by service
                   );
                
-                } else {
-                  alert("Unassign is only available for AUTHOR or REVIEWER roles.");
-                }
+                
 
               };
 
@@ -749,8 +746,7 @@ tsApp
                   queryRestriction : $scope.paging['assigned'].filter
                 };
 
-                if ($scope.projects.role == 'REVIEWER') {
-                  workflowService.findAssignedConcepts($scope.projects.role, $scope.project.id,
+                workflowService.findAssignedConcepts($scope.projects.role, $scope.project.id,
                     $scope.selected.translation.id, $scope.user.userName, pfs).then(
                     // Success
                     function(data) {
@@ -774,7 +770,7 @@ tsApp
                       // Publish all concepts
                       workflowService.performBatchTranslationWorkflowAction($scope.project.id,
                         $scope.selected.translation.id, $scope.user.userName, $scope.projects.role,
-                        'FINISH', conceptList).then(
+                        'PREPARE_FOR_PUBLICATION', conceptList).then(
                       // Success
                       function(data) {
                         translationService.fireTranslationChanged($scope.selected.translation);
@@ -785,9 +781,7 @@ tsApp
                     }
                   // Error is already handled by service
                   );
-                } else {
-                  alert("Publish is only available for REVIEWER role.");
-                }
+               
 
               };
               // Performs a workflow action
