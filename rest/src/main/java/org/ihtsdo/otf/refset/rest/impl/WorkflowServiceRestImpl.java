@@ -337,6 +337,11 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl
       addLogEntry(workflowService, userName, "WORKFLOW action", projectId,
           translationId, action + " as " + projectRole + " on concept "
               + concept.getTerminologyId() + ", " + concept.getName());
+      
+      addLogEntry(workflowService, userName, "WORKFLOW action", projectId,
+          concept.getId(), action + " as " + projectRole + " on concept "
+              + concept.getTerminologyId() + ", " + concept.getName());
+
 
       handleLazyInit(record, workflowService);
 
