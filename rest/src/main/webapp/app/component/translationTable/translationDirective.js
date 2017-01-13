@@ -1519,7 +1519,7 @@ tsApp
                 var sortedUsers = assignedUsers.sort(utilService.sortBy('name'));
                 for (var i = 0; i < sortedUsers.length; i++) {
                   if ($scope.role == 'AUTHOR'
-                    || $scope.project.userRoleMap[sortedUsers[i].userName] == 'REVIEWER'
+                    || $scope.project.userRoleMap[sortedUsers[i].userName].startsWith('REVIEWER')
                     || $scope.project.userRoleMap[sortedUsers[i].userName] == 'ADMIN') {
                     $scope.assignedUsers.push(sortedUsers[i]);
                   }
@@ -1610,10 +1610,10 @@ tsApp
                           handleError($scope.errors, data);
                         });
                   }
-
-                  else if ($scope.role == 'REVIEWER' && type == 'Available') {
+                  // Reviewer roles
+                  else if (type == 'Available') {
                     workflowService
-                      .findAvailableConcepts('REVIEWER', project.id, translation.id,
+                      .findAvailableConcepts($scope.role, project.id, translation.id,
                         $scope.user.userName, pfs)
                       .then(
                         // Success
