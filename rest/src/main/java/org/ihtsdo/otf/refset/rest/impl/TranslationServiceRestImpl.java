@@ -2974,12 +2974,11 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
 
       // remove note
       translationService.removeNote(noteId, TranslationNoteJpa.class);
-      
+
       // for indexing
-      Note note = null;
       for (int i = 0; i < translation.getNotes().size(); i++) {
         if (translation.getNotes().get(i).getId().equals(noteId)) {
-          note = translation.getNotes().get(i);
+          translation.getNotes().get(i);
           translation.getNotes().remove(i);
           break;
         }

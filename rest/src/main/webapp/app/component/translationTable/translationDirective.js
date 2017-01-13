@@ -64,6 +64,7 @@ tsApp
               $scope.conceptIdToReviewersMap = {};
 
               // Paging variables
+              $scope.pageSizes = utilService.getPageSizes();
               $scope.paging = {};
               $scope.paging['translation'] = {
                 page : 1,
@@ -986,6 +987,7 @@ tsApp
                 // Paging parameters
                 $scope.pageSize = 5;
                 $scope.pagedNotes = [];
+                $scope.pageSizes = utilService.getPageSizes();
                 $scope.paging = {};
                 $scope.paging['notes'] = {
                   page : 1,
@@ -1746,9 +1748,12 @@ tsApp
                   .then(
                   // Success
                   function(data) {
+                    var action = data.action;
+                    var closeFlag = data.closeFlag;
+
                     // data is an action:
                     // CLOSE => fire concept changed with the concept
-                    if (data === 'CLOSE') {
+                    if (action === 'CLOSE') {
                       translationService.fireConceptChanged(lconcept);
                       return;
                     }
@@ -1756,7 +1761,8 @@ tsApp
                     // If the index is at the end of the total count of assigned
                     // concepts, then we are finished. simulate "close" but
                     // with a window confirm.
-                    if ($scope.selected.translation.assigned.length == $scope.selected.translation.assigned.totalCount
+                    if (!closeFlag
+                      && $scope.selected.translation.assigned.length == $scope.selected.translation.assigned.totalCount
                       && (index + 1) == $scope.selected.translation.assigned.totalCount) {
                       window.confirm("The end of the list of concepts to edit has been reached.");
                       translationService.fireConceptChanged(lconcept);
@@ -1768,13 +1774,13 @@ tsApp
                     // Search results in $scope.selected.translation.assigned
                     var searchAgain = false;
                     var nextIndex = index;
-                    if (data === 'FINISH') {
+                    if (action === 'FINISH') {
                       // search again if there are more past the current index
                       if ((index + 1) < $scope.selected.translation.assigned.totalCount) {
                         searchAgain = true;
                       }
                       // nextIndex remains unchanged
-                    } else if (data === 'SAVE') {
+                    } else if (action === 'SAVE') {
                       // search again if we are at the end of the current search
                       // results, but not at the end of the total search results
                       if ((index + 1) == $scope.selected.translation.assigned.length
@@ -1790,17 +1796,18 @@ tsApp
                       alert('SHOULD NEVER HAPPEN: ' + data);
                     }
 
-                    // Search, then open the concept modal
-                    if (searchAgain) {
-                      $scope.getAssignedConcepts($scope.selected.translation, nextIndex);
-                    }
+                    if (!closeFlag) {
+                      // Search, then open the concept modal
+                      if (searchAgain) {
+                        $scope.getAssignedConcepts($scope.selected.translation, nextIndex);
+                      }
 
-                    // Otherwise, just open the modal for the next concept
-                    else {
-                      $scope.openEditConceptModal(
-                        $scope.selected.translation.assigned[nextIndex].concept, nextIndex);
+                      // Otherwise, just open the modal for the next concept
+                      else {
+                        $scope.openEditConceptModal(
+                          $scope.selected.translation.assigned[nextIndex].concept, nextIndex);
+                      }
                     }
-
                   });
               };
 

@@ -4,7 +4,7 @@
   <h4 style="display: inline" ng-show="refset.type == 'EXTENSIONAL'">Add
     Member(s)</h4>
   <span style="float: right">
-    <i class="glyphicon glyphicon-remove" ng-click="cancel()"></i>
+    <i class="noul glyphicon glyphicon-remove" ng-click="cancel()"></i>
   </span>
 </div>
 
@@ -83,16 +83,16 @@
 </div>
 
 <div class="modal-footer">
-  <button class="btn btn-primary" ng-show="warnings.length == 0"
+  <button class="btn btn-xs btn-primary" ng-show="warnings.length == 0"
     ng-click="add(refset, member, includeClause)">Add</button>
   <button
     confirm="Are you sure you want to add an expression for large number of members?"
-    class="btn btn-primary"
+    class="btn btn-xs btn-primary"
     ng-show="warnings.length != 0 && refset.type == 'INTENSIONAL'"
     ng-click="continueAdd(refset, member, includeClause)">Add</button>
   <button confirm="Are you sure you want to add a large number of members?"
-    class="btn btn-primary"
+    class="btn btn-xs btn-primary"
     ng-show="warnings.length != 0 && refset.type == 'EXTENSIONAL'"
     ng-click="continueAddRefsetMembers(refset, member, includeClause)">Add</button>
-  <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
+  <button class="btn btn-xs btn-warning" ng-click="cancel()">Cancel</button>
 </div>

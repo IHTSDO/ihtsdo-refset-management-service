@@ -8,12 +8,8 @@
       <span class="info-text" ng-show="translations.totalCount > 10"
         style="float: right; margin-top: 4px">
         Page size: <select ng-model="paging['translation'].page"
-          title="Page Size" ng-change="getTranslations()">
-          <option value="10">10</option>
-          <option value="50">50</option>
-          <option value="100">100</option>
-          <option value="200">200</option>
-          <option value="10000">All</option>
+          title="Page Size" ng-change="getTranslations()"
+          ng-options="item.value as item.name for item in pageSizes">
         </select>
       </span>
 
@@ -541,12 +537,9 @@
         style="float: right; margin-top: 4px">
         Page size: <select ng-model="paging['available'].pageSize"
           title="Page Size"
-          ng-change="getAvailableConcepts(selected.translation)">
-          <option value="10">10</option>
-          <option value="50">50</option>
-          <option value="100">100</option>
-          <option value="200">200</option>
-          <option value="10000">All</option>
+          ng-change="getAvailableConcepts(selected.translation)"
+          ng-options="item.value as item.name for item in pageSizes">
+
         </select>
       </span>
       <uib-pagination items-per-page="paging['available'].pageSize" max-size="5"
@@ -592,16 +585,19 @@
               <span ng-bind="getSortIndicator('available','workflowStatus')"></span>
             </span>
           </th>
-          <th class="col-md-2 col-xs-2">Actions <!-- Assign --> <i
-              ng-show="selected.translation.available.totalCount > 0 && projects.role != 'ADMIN'"
-              ng-click="openBatchAssignConceptModal('Available'); $event.stopPropagation()"
-              title="Assign batch" class="noul material-icons md-18">assignment_ind</i>
+          <th class="col-md-2 col-xs-2"><span class="nobreak">
+              Actions
+              <!-- Assign -->
+              <i
+                ng-show="selected.translation.available.totalCount > 0 && projects.role != 'ADMIN'"
+                ng-click="openBatchAssignConceptModal('Available'); $event.stopPropagation()"
+                title="Assign batch" class="noul material-icons md-18">assignment_ind</i>
 
-            <i
-              ng-show="selected.translation.available.totalCount > 0 && projects.role == 'ADMIN'"
-              title="Assign batch - not allowed as ADMIN"
-              class="md-grey material-icons md-18">assignment_ind</i>
-          </th>
+              <i
+                ng-show="selected.translation.available.totalCount > 0 && projects.role == 'ADMIN'"
+                title="Assign batch - not allowed as ADMIN"
+                class="md-grey material-icons md-18">assignment_ind</i>
+            </span></th>
         </tr>
       </thead>
       <tbody>
@@ -619,10 +615,9 @@
           </td>
           <!-- Actions -->
           <td class="nobreak">
-            
+
             <!-- Assign -->
-            <i
-              ng-show="isAllowed('ASSIGN', concept)"
+            <i ng-show="isAllowed('ASSIGN', concept)"
               ng-click="openAssignConceptModal(concept, 'ASSIGN'); $event.stopPropagation()"
               title="Assign" class="noul material-icons md-18">assignment_ind</i>
 
@@ -666,12 +661,8 @@
         style="float: right; margin-top: 4px">
         Page size: <select ng-model="paging['assigned'].pageSize"
           title="Page Size"
-          ng-change="getAssignedConcepts(selected.translation)">
-          <option value="10">10</option>
-          <option value="50">50</option>
-          <option value="100">100</option>
-          <option value="200">200</option>
-          <option value="10000">All</option>
+          ng-change="getAssignedConcepts(selected.translation)"
+          ng-options="item.value as item.name for item in pageSizes">
         </select>
       </span>
 
@@ -716,17 +707,22 @@
                 Status</span>
               <span ng-bind="getSortIndicator('assigned','workflowStatus')"></span>
             </span></th>
-          <th class="col-md-2 col-xs-2">Actions <!--  Unassign all --> <i
-              ng-show="selected.translation.assigned.totalCount > 0"
-              confirm="Are you sure you want to unassign all concepts?"
-              ng-click="unassignAll(user.userName)" title="Unassign all"
-              class="noul material-icons md-18">assignment_return</i>
-              <i ng-show="selected.translation.assigned.totalCount > 0 && projects.role != 'ADMIN'"
-              ng-click="finishAll(user.userName)" title="Finish all"
-              class="noul material-icons md-18">done</i>
-              <i ng-show="selected.translation.assigned.totalCount > 0 && projects.role != 'ADMIN' && projects.role != 'AUTHOR'"
-              ng-click="publishAll(user.userName)" title="Publish all"
-              class="noul material-icons md-18">open_in_new</i>
+          <th class="col-md-2 col-xs-2">Actions<br /> <span
+              class="nobreak">
+              <!--  Unassign all -->
+              <i ng-show="selected.translation.assigned.totalCount > 0"
+                confirm="Are you sure you want to unassign all concepts?"
+                ng-click="unassignAll(user.userName)" title="Unassign all"
+                class="noul material-icons md-18">assignment_return</i>
+              <i
+                ng-show="selected.translation.assigned.totalCount > 0 && projects.role != 'ADMIN'"
+                ng-click="finishAll(user.userName)" title="Finish all"
+                class="noul material-icons md-18">done</i>
+              <i
+                ng-show="selected.translation.assigned.totalCount > 0 && projects.role != 'ADMIN' && projects.role != 'AUTHOR'"
+                ng-click="publishAll(user.userName)" title="Publish all"
+                class="noul material-icons md-18">open_in_new</i>
+            </span>
           </th>
 
         </tr>
@@ -743,10 +739,16 @@
             {{toDate(record.lastModified)}}
             <span ng-show="projects.role == 'ADMIN'">
               <br />
-              <span ng-show="record.authors.length > 0">authors:
-              <span ng-repeat="author in record.authors track by $index">{{author}} </span></span>  
-              <span ng-show="record.reviewers.length > 0">reviewers:           
-              <span ng-repeat="reviewer in record.reviewers track by $index">{{reviewer}} </span></span>
+              <span ng-show="record.authors.length > 0">
+                authors:
+                <span ng-repeat="author in record.authors track by $index">{{author}}
+                </span>
+              </span>
+              <span ng-show="record.reviewers.length > 0">
+                reviewers:
+                <span ng-repeat="reviewer in record.reviewers track by $index">{{reviewer}}
+                </span>
+              </span>
               <!-- <span ng-show="record.reviewers.length > 0">reviewers: {{record.reviewers[0]}} {{record.reviewers[1]}}</span> -->
               <br /> {{record.concept.workflowStatus}}
             </span>
@@ -776,8 +778,7 @@
               title="Finish" class="noul material-icons md-18">done</i>
 
             <!-- Mark ready for publication -->
-            <i
-              ng-show="isAllowed('PREPARE_FOR_PUBLICATION', record.concept)"
+            <i ng-show="isAllowed('PREPARE_FOR_PUBLICATION', record.concept)"
               ng-click="performWorkflowAction(record.concept, 'PREPARE_FOR_PUBLICATION')"
               title="Mark ready for publication"
               class="noul material-icons md-18">open_in_new</i>
@@ -851,12 +852,8 @@
             ng-show="selected.translation.concepts.totalCount  > 10"
             style="float: right; margin-top: 4px">
             Page size: <select ng-model="paging['concept'].pageSize"
-              title="Page Size" ng-change="getConcepts(selected.translation)">
-              <option value="10">10</option>
-              <option value="50">50</option>
-              <option value="100">100</option>
-              <option value="200">200</option>
-              <option value="10000">All</option>
+              title="Page Size" ng-change="getConcepts(selected.translation)"
+              ng-options="item.value as item.name for item in pageSizes">
             </select>
           </span>
           <uib-pagination items-per-page="paging['concept'].pageSize"
@@ -935,14 +932,13 @@
                 </span>
               </td>
               <td ng-show="isDirectory() || value == 'RELEASE'">{{toSimpleDate(concept.effectiveTime)}}</td>
-              <td ng-show="value == 'EDITING'">
+              <td class="nobreak" ng-show="value == 'EDITING'">
                 <!-- Assign (for error fixing) -->
                 <i ng-show="projects.role != 'ADMIN'"
                   ng-click="openAssignConceptModal(concept, 'ASSIGN'); $event.stopPropagation()"
                   title="Assign" class="noul material-icons md-18">assignment_ind</i>
                 <!-- Unassign (for ADMIN fixing) -->
-                <i
-                  ng-show="isAllowed('UNASSIGN', concept)"
+                <i ng-show="isAllowed('UNASSIGN', concept)"
                   confirm="Are you sure you want to unassign this concept ({{concept.terminologyId}}, {{concept.name}})"
                   title="Unassign concept"
                   ng-click="unassign(concept, user.userName)"

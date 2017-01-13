@@ -37,8 +37,8 @@ import org.ihtsdo.otf.refset.services.handlers.SpellingCorrectionHandler;
  * IHTSDO SpellingCorrection server to the extent possible for interacting with
  * SpellingCorrection components. Uses local storage where not possible.
  */
-public class DefaultSpellingCorrectionHandler implements
-    SpellingCorrectionHandler {
+public class DefaultSpellingCorrectionHandler
+    implements SpellingCorrectionHandler {
 
   /** The spell checker. */
   private SpellChecker checker;
@@ -62,9 +62,8 @@ public class DefaultSpellingCorrectionHandler implements
   @Override
   public void setTranslation(Translation translation) throws Exception {
 
-    String dir =
-        ConfigUtility.getConfigProperties().getProperty(
-            "hibernate.search.default.indexBase");
+    String dir = ConfigUtility.getConfigProperties()
+        .getProperty("hibernate.search.default.indexBase");
     if (dir == null) {
       throw new Exception(
           "Index directory hibernate.search.default.indexBase not set in config.properties");
@@ -93,7 +92,7 @@ public class DefaultSpellingCorrectionHandler implements
           "Set translation must be called prior to calling reindex");
     }
     IndexWriterConfig iwConfig = new IndexWriterConfig(Version.LATEST,
-    // lowercase keyword analyzer
+        // lowercase keyword analyzer
         new Analyzer() {
           @Override
           protected TokenStreamComponents createComponents(String fieldName,
@@ -170,8 +169,9 @@ public class DefaultSpellingCorrectionHandler implements
       throw new LocalException(
           "Set translation must be called prior to calling suggest spelling");
     }
-    // Assume terms of length 1 or 2 always exist
-    if (!checker.exist(term) && term.length() > 2) {
+    // DONT: Assume terms of length 1 or 2 always exist
+    // if (!checker.exist(term) && term.length() > 2) {
+    if (!checker.exist(term)) {
       String[] results = checker.suggestSimilar(term, amt);
 
       // Handle the case of no suggestions, determine whether it exists

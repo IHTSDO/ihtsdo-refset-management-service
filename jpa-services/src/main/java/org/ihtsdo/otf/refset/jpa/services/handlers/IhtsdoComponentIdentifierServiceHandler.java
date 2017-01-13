@@ -303,9 +303,11 @@ public class IhtsdoComponentIdentifierServiceHandler
         + "\"software\": \"ihtsdo-refset\", " + "\"comment\": \"string\", "
         + "\"generateLegacyIds\": \"false\" " + "}";
 
+    System.out.println("  post data = "+postData);
     Response response = target.request(accept).post(Entity.json(postData));
 
     String resultString = response.readEntity(String.class);
+    System.out.println("  result = "+resultString);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
     } else {

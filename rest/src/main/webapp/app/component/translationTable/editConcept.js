@@ -16,6 +16,8 @@ tsApp.controller('EditConceptModalCtrl', [
   function($scope, $uibModalInstance, $uibModal, projectService, utilService, translationService,
     validationService, workflowService, concept, translation, project, user, role) {
     console.debug('Entered edit concept modal control');
+
+    $scope.displaySuggest = true;
     // Paging params
     $scope.pageSize = 4;
     $scope.paging = {};
@@ -27,13 +29,16 @@ tsApp.controller('EditConceptModalCtrl', [
     };
     $scope.pagedDescriptions;
 
+    // make the callback function actually a scope function (and a regular
+    // function), then ditch the "abc" button, and instaed
+    // just call it on blur, change or debounce.
     // tinymce config
     $scope.tinymceOptions = {
+      oninit : "setPlainText",
       resize : false,
       max_height : 80,
       height : 80,
-      width : 300,
-      plugins : 'spellchecker',
+      plugins : 'spellchecker paste',
       menubar : false,
       statusbar : false,
       toolbar : 'spellchecker',
@@ -117,7 +122,7 @@ tsApp.controller('EditConceptModalCtrl', [
     // Save this so we can set the workflow status and it shows up
     // immediately
     $scope.concept = concept;
-    $scope.googleResult = null;
+    $scope.autoResult = null;
     $scope.displayControls = false;
 
     // Data structure for case significance - we just need the
@@ -148,17 +153,13 @@ tsApp.controller('EditConceptModalCtrl', [
         return;
       }
       $scope.getMemoryEntries();
-      console.debug('bacxxx', $scope.data, $scope.data.descriptions,
-        $scope.data.descriptions.length);
 
       var translateTerm = '';
       // translate the first 'en' PT in the descriptions
       for (var i = 0; i < $scope.data.descriptions.length; i++) {
-        console.debug('bacxxx2', $scope.data.descriptions[i]);
         if ($scope.getDescriptionType($scope.data.descriptions[i]) == 'PT'
           && $scope.data.descriptions[i].languageCode == 'en') {
           translateTerm = $scope.data.descriptions[i].term;
-          console.debug('bacxxx2b', translateTerm);
           break;
         }
       }
@@ -166,8 +167,7 @@ tsApp.controller('EditConceptModalCtrl', [
       if (translateTerm) {
         projectService.translate($scope.project.id, translateTerm, $scope.translation.language)
           .then(function(data) {
-            console.debug('bacxxx3', translateTerm, "x" + data + "y");
-            $scope.googleResult = data;
+            $scope.autoResult = data;
           });
       }
 
@@ -199,6 +199,7 @@ tsApp.controller('EditConceptModalCtrl', [
     $scope.setSortField = function(field, object) {
       utilService.setSortField('descriptions', field, $scope.paging);
       $scope.getPagedDescriptions();
+      $scope.$broadcast('$tinymce:refresh');
     };
     $scope.getSortIndicator = function(field) {
       return utilService.getSortIndicator('descriptions', field, $scope.paging);
@@ -492,11 +493,26 @@ tsApp.controller('EditConceptModalCtrl', [
     };
     // Get paged descriptions (assume all are loaded)
     $scope.getPagedDescriptions = function() {
-      $scope.pagedDescriptions = utilService.getPagedArray($scope.conceptTranslated.descriptions,
-        $scope.paging['descriptions'], $scope.pageSize);
+      // special handling for "typeId"
+      if ($scope.paging['descriptions'].sortField == 'typeId') {
+        var paging = angular.copy($scope.paging['descriptions']);
+        paging.sortField = '';
+        var arr = $scope.conceptTranslated.descriptions.sort(function(a, b) {
+          var retval = 0;
+          if (a.type.name < b.type.name)
+            retval = paging.ascending ? -1 : 1;
+          if (a.type.name > b.type.name)
+            retval = paging.ascending ? 1 : -1;
+          return retval;
+        });
+        $scope.pagedDescriptions = utilService.getPagedArray(arr, paging, $scope.pageSize);
+      } else {
+        $scope.pagedDescriptions = utilService.getPagedArray($scope.conceptTranslated.descriptions,
+          $scope.paging['descriptions'], $scope.pageSize);
+      }
     };
 
-    $scope.addGoogleDescription = function(term) {
+    $scope.addAutoDescription = function(term) {
       if ($scope.conceptTranslated.descriptions.length == 1
         && $scope.conceptTranslated.descriptions[0].term == '') {
         $scope.conceptTranslated.descriptions[0].term = term;
@@ -514,13 +530,13 @@ tsApp.controller('EditConceptModalCtrl', [
         description.term = '';
       }
       description.caseSignificanceId = $scope.caseSignificanceTypes[0].key;
-      // Pick the last one by default (e.g. Synonym)
+      // Pick PT or SY by default depending on how many descriptions there are
       var types = $scope.getDescriptionTypes();
       description.type = types.filter(function(item) {
-        return item.name == 'PT';
+        return $scope.conceptTranslated.descriptions.length == 0 ? item.name == 'PT'
+          : item.name == 'SY';
       })[0];
-
-      $scope.conceptTranslated.descriptions.unshift(description);
+      $scope.conceptTranslated.descriptions.push(description);
       $scope.getPagedDescriptions();
     };
 
@@ -533,18 +549,18 @@ tsApp.controller('EditConceptModalCtrl', [
     // Concept stuff
 
     // Save concept
-    $scope.saveConcept = function(concept) {
-      $scope.saveOrFinishConcept(concept, 'SAVE');
+    $scope.saveConcept = function(concept, closeFlag) {
+      $scope.saveOrFinishConcept(concept, 'SAVE', closeFlag);
     };
 
     // Finish concept
-    $scope.finishConcept = function(concept) {
-      $scope.saveOrFinishConcept(concept, 'FINISH');
+    $scope.finishConcept = function(concept, closeFlag) {
+      $scope.saveOrFinishConcept(concept, 'FINISH', closeFlag);
     };
 
     // Handle both save and finish - different workflow
     // action is used after validate
-    $scope.saveOrFinishConcept = function(concept, action) {
+    $scope.saveOrFinishConcept = function(concept, action, closeFlag) {
       // Iterate through concept, set description types and
       // languages
       var spliceIndexes = new Array();
@@ -571,11 +587,11 @@ tsApp.controller('EditConceptModalCtrl', [
         return;
       }
 
-      $scope.validateConcept(copy, action);
+      $scope.validateConcept(copy, action, closeFlag);
     };
 
     // Validate the concept
-    $scope.validateConcept = function(concept, action) {
+    $scope.validateConcept = function(concept, action, closeFlag) {
       // Validate the concept
       validationService.validateConcept(concept, $scope.project.id).then(
       // Success
@@ -599,7 +615,7 @@ tsApp.controller('EditConceptModalCtrl', [
 
         // Otherwise, there are no errors and either no warnings
         // or the user has clicked through warnings. Proceed
-        $scope.submitConceptHelper(concept, action);
+        $scope.submitConceptHelper(concept, action, closeFlag);
 
       },
       // Error
@@ -609,7 +625,7 @@ tsApp.controller('EditConceptModalCtrl', [
     };
 
     // Helper (so there's not so much nesting
-    $scope.submitConceptHelper = function(concept, action) {
+    $scope.submitConceptHelper = function(concept, action, closeFlag) {
 
       translationService.updateTranslationConcept(concept).then(
         // Success - update concept
@@ -634,7 +650,10 @@ tsApp.controller('EditConceptModalCtrl', [
                   // Set the workflow status in the assigned
                   // concepts list
                   $scope.concept.workflowStatus = data.concept.workflowStatus;
-                  $uibModalInstance.close(action);
+                  $uibModalInstance.close({
+                    action : action,
+                    closeFlag : closeFlag
+                  });
                 },
                 // Error
                 function(data) {
@@ -642,7 +661,10 @@ tsApp.controller('EditConceptModalCtrl', [
                 });
 
               } else {
-                $uibModalInstance.close(action);
+                $uibModalInstance.close({
+                  action : action,
+                  closeFlag : closeFlag
+                });
               }
             },
             // Error
@@ -659,7 +681,10 @@ tsApp.controller('EditConceptModalCtrl', [
 
     // Close modal
     $scope.close = function() {
-      $uibModalInstance.close('CLOSE');
+      $uibModalInstance.close({
+        action : 'CLOSE',
+        closeFlag : true
+      });
     };
 
     // Initialize

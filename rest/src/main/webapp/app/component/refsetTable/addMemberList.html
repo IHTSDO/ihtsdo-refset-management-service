@@ -1,9 +1,9 @@
 <div class="modal-header">
   <h4 style="display: inline">Add Refset Member List</h4>
   <span style="float: right">
-    <i ng-show="!hasResults()" class="glyphicon glyphicon-remove"
+    <i ng-show="!hasResults()" class="noul glyphicon glyphicon-remove"
       ng-click="cancel()"></i>
-    <i ng-show="hasResults()" class="glyphicon glyphicon-remove"
+    <i ng-show="hasResults()" class="noul glyphicon glyphicon-remove"
       ng-click="close()"></i>
   </span>
 </div>
@@ -120,15 +120,15 @@
   </div>
 
   <div class="modal-footer">
-    <button ng-show="refset.type == 'EXTENSIONAL'" class="btn btn-primary"
+    <button ng-show="refset.type == 'EXTENSIONAL'" class="btn btn-xs btn-primary"
       ng-disabled="!memberIdList || hasResults()" ng-click="includeMembers();">Add</button>
-    <button ng-show="refset.type == 'EXTENSIONAL'" class="btn btn-primary"
+    <button ng-show="refset.type == 'EXTENSIONAL'" class="btn btn-xs btn-primary"
       ng-disabled="!memberIdList || hasResults()" ng-click="excludeMembers();">Remove</button>
-    <button ng-show="refset.type == 'INTENSIONAL'" class="btn btn-primary"
+    <button ng-show="refset.type == 'INTENSIONAL'" class="btn btn-xs btn-primary"
       ng-disabled="!memberIdList || hasResults()" ng-click="includeMembers();">Include</button>
-    <button ng-show="refset.type == 'INTENSIONAL'" class="btn btn-primary"
+    <button ng-show="refset.type == 'INTENSIONAL'" class="btn btn-xs btn-primary"
       ng-disabled="!memberIdList || hasResults()" ng-click="excludeMembers();">Exclude</button>
-    <button ng-show="!hasResults()" class="btn btn-warning" ng-click="cancel()">Cancel</button>
-    <button ng-show="hasResults()" class="btn btn-warning" ng-click="close()">Close</button>
+    <button ng-show="!hasResults()" class="btn btn-xs btn-warning" ng-click="cancel()">Cancel</button>
+    <button ng-show="hasResults()" class="btn btn-xs btn-warning" ng-click="close()">Close</button>
   </div>
 </div>

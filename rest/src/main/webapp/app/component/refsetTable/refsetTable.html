@@ -8,12 +8,8 @@
       <span class="info-text" ng-show="refsets.totalCount > 10"
         style="float: right; margin-top: 4px">
         Page size: <select ng-model="paging['refset'].pageSize"
-          title="Page Size" ng-change="paging['refset'].page = 0; getRefsets()">
-          <option value="10">10</option>
-          <option value="50">50</option>
-          <option value="100">100</option>
-          <option value="200">200</option>
-          <option value="10000">All</option>
+          title="Page Size" ng-change="paging['refset'].page = 0; getRefsets()"
+          ng-options="item.value as item.name for item in pageSizes">
         </select>
       </span>
       <uib-pagination items-per-page="paging['refset'].pageSize" max-size="5"
@@ -218,13 +214,12 @@
               confirm="Are you sure you want to remove the refset ({{refset.name}})?"
               ng-click="removeRefset(refset); $event.stopPropagation()"
               class="noul material-icons md-18">delete</i>
-            
+
             <!-- Assign -->
-            <i
-              ng-show="isAllowed('ASSIGN', refset)"
+            <i ng-show="isAllowed('ASSIGN', refset)"
               ng-click="openAssignRefsetModal(refset,'ASSIGN'); $event.stopPropagation()"
               title="Assign" class="noul material-icons md-18">assignment_ind</i>
-           
+
             <!-- As admin/reviewer, unassign completely and return back to pool-->
             <i
               confirm="Are you sure you want to unassign the refset ({{refset.name}})?"
@@ -233,9 +228,10 @@
               title="Unassign" class="noul material-icons md-18">assignment_return</i>
 
 
-          <!-- ASSIGNED actions -->
+            <!-- ASSIGNED actions -->
           <td class="nobreak" ng-show="value == 'ASSIGNED'">
-            <i ng-show="projects.role != 'ADMIN'" ng-click="openEditRefsetModal(refset); $event.stopPropagation()"
+            <i ng-show="projects.role != 'ADMIN'"
+              ng-click="openEditRefsetModal(refset); $event.stopPropagation()"
               title="Edit" class="noul material-icons md-18">edit</i>
             <i ng-show="!refset.staged"
               confirm="Are you sure you want to remove the refset ({{refset.name}})?"
@@ -299,8 +295,8 @@
               ng-show="projects.role == 'ADMIN' && !refset.staged && !refset.inPublicationProcess && (refset.workflowStatus == 'PUBLISHED' || refset.workflowStatus == 'READY_FOR_PUBLICATION')"
               ng-click="removeRefset(refset); $event.stopPropagation()"
               title="Remove" class="noul material-icons md-18">delete</i>
-              <!-- TODO -->
-            <i ng-show="isAllowed('ASSIGN', refset)"   
+            <!-- TODO -->
+            <i ng-show="isAllowed('ASSIGN', refset)"
               ng-click="openAssignRefsetModal(refset,'ASSIGN'); $event.stopPropagation()"
               title="Assign" class="noul material-icons md-18">assignment_ind</i>
 
@@ -676,12 +672,8 @@
             style="float: right; margin-top: 4px">
             Page size: <select ng-model="paging['member'].pageSize"
               title="Page Size"
-              ng-change="paging['member'].page = 1; getMembers(selected.refset)">
-              <option value="10">10</option>
-              <option value="50">50</option>
-              <option value="100">100</option>
-              <option value="200">200</option>
-              <option value="10000">All</option>
+              ng-change="paging['member'].page = 1; getMembers(selected.refset)"
+              ng-options="item.value as item.name for item in pageSizes">
             </select>
           </span>
 

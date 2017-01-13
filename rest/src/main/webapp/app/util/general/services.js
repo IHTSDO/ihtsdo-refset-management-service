@@ -26,6 +26,25 @@ tsApp
           forced_root_block : ''
         };
 
+        // Get page sizes
+        this.getPageSizes = function() {
+          return [ {
+            name : 10,
+            value : 10
+          }, {
+            name : 20,
+            value : 30
+          }, {
+            name : 40,
+            value : 50
+          }, {
+            name : 100,
+            value : 100
+          }, {
+            name : 'All',
+            value : 100000
+          } ];
+        }
         // Prep query
         this.prepQuery = function(query, wildcardFlag) {
           if (!query) {

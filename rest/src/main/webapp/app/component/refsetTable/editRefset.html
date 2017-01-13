@@ -2,9 +2,9 @@
   <h4 style="display: inline" ng-show="!localSet">{{action}} Refset</h4>
   <h4 style="display: inline" ng-show="localSet">{{action}} Local Set</h4>
   <span style="float: right">
-    <i ng-show="comments.length == 0" class="glyphicon glyphicon-remove"
+    <i ng-show="comments.length == 0" class="noul glyphicon glyphicon-remove"
       ng-click="cancel()"></i>
-    <i ng-show="comments.length > 0" class="glyphicon glyphicon-remove"
+    <i ng-show="comments.length > 0" class="noul glyphicon glyphicon-remove"
       ng-click="close()"></i>
   </span>
 </div>
@@ -248,14 +248,14 @@
   </p>
 
   <div class="modal-footer">
-    <button ng-show="action == 'Add'" class="btn btn-primary" 
+    <button ng-show="action == 'Add'" class="btn btn-xs btn-primary" 
       ng-click="submitRefset(refset);" ng-disabled="validVersion != 'true'">Add</button>
-    <button ng-show="action == 'Edit'" class="btn btn-primary" 
+    <button ng-show="action == 'Edit'" class="btn btn-xs btn-primary" 
       ng-click="submitRefset(refset);" ng-disabled="validVersion != 'true'">Save</button>
     <button ng-show="action == 'Clone' && comments.length == 0" ng-disabled="validVersion != 'true'"
-      class="btn btn-primary" ng-click="submitRefset(refset); ">Clone</button>
-    <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
-    <button ng-show="comments.length > 0" class="btn btn-warning"
+      class="btn btn-xs btn-primary" ng-click="submitRefset(refset); ">Clone</button>
+    <button class="btn btn-xs btn-warning" ng-click="cancel()">Cancel</button>
+    <button ng-show="comments.length > 0" class="btn btn-xs btn-warning"
       ng-click="close()">Close</button>
   </div>
 </div>

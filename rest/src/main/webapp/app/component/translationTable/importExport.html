@@ -1,7 +1,7 @@
 <div class="modal-header">
   <h4 style="display: inline">{{operation}} {{type}}</h4>
   <span style="float: right">
-    <i class="glyphicon glyphicon-remove" ng-click="close()"> </i>
+    <i class="noul glyphicon glyphicon-remove" ng-click="close()"> </i>
   </span>
 </div>
 
@@ -87,22 +87,22 @@
 </div>
 
 <div class="modal-footer">
-  <button class="btn btn-primary" ng-show="operation == 'Export'"
+  <button class="btn btn-xs btn-primary" ng-show="operation == 'Export'"
     ng-click="export();">Export</button>
   <!-- spelling/memory import button -->
-  <button class="btn btn-primary" ng-disabled="!file"
+  <button class="btn btn-xs btn-primary" ng-disabled="!file"
     ng-show="operation == 'Import' && type != 'Translation'"
     ng-click="import(file);">Import</button>
 
   <!--  translation import button -->
-  <button class="btn btn-primary" ng-disabled="!file"
+  <button class="btn btn-xs btn-primary" ng-disabled="!file"
     ng-show="operation == 'Import' && errors.length == 0 && comments.length == 0 && type == 'Translation'"
     ng-click="import(file);">Import</button>
-  <button class="btn btn-primary" ng-disabled="!file"
+  <button class="btn btn-xs btn-primary" ng-disabled="!file"
     ng-show="operation == 'Import' && errors.length > 0 && type == 'Translation'"
     ng-click="continueImport(file);">Continue With Import</button>
-  <button class="btn btn-warning" ng-show="comments.length == 0"
+  <button class="btn btn-xs btn-warning" ng-show="comments.length == 0"
     ng-click="cancel()">Cancel</button>
-  <button class="btn btn-warning" ng-click="close()">Close</button>
+  <button class="btn btn-xs btn-warning" ng-click="close()">Close</button>
 
 </div>

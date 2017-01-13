@@ -1,7 +1,7 @@
 <div class="modal-header">
   <h4 style="display: inline">{{action}} Translation</h4>
   <span style="float: right">
-    <i class="glyphicon glyphicon-remove" ng-click="cancel()"> </i>
+    <i class="noul glyphicon glyphicon-remove" ng-click="cancel()"> </i>
   </span>
 </div>
 
@@ -122,11 +122,11 @@
 
   <div class="modal-footer">
 
-    <button ng-show="action == 'Add'" class="btn btn-primary"
+    <button ng-show="action == 'Add'" class="btn btn-xs btn-primary"
       ng-click="submitTranslation(translation); ">Add</button>
-    <button ng-show="action == 'Edit'" class="btn btn-primary"
+    <button ng-show="action == 'Edit'" class="btn btn-xs btn-primary"
       ng-click="submitTranslation(translation); ">Save</button>
 
-    <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
+    <button class="btn btn-xs btn-warning" ng-click="cancel()">Cancel</button>
   </div>
 </div>
