@@ -230,21 +230,20 @@ tsApp
         // Get $scope.projectRoles
         $scope.getProjectRoles = function() {
           projectService.getProjectRoles().then(
-            // Success
-            function(data) {
+          // Success
+          function(data) {
             $scope.projectRoles = data.strings;
           });
         };
-        
+
         // Get $scope.metadata.workflowPaths
         $scope.getWorkflowPaths = function() {
           workflowService.getWorkflowPaths().then(
-            // Success
-            function(data) {
+          // Success
+          function(data) {
             $scope.metadata.workflowPaths = data.strings;
           });
         };
-
 
         // Sets the selected project
         $scope.setProject = function(project) {
@@ -581,7 +580,8 @@ tsApp
             namespace : user.userPreferences.namespace,
             organization : user.userPreferences.organization,
             exclusionClause : user.userPreferences.exclusionClause,
-            feedbackEmail : user.userPreferences.feedbackEmail
+            feedbackEmail : user.userPreferences.feedbackEmail,
+            workflowPath : metadata.workflowPaths[0]
           };
           $scope.clause = {
             value : null
@@ -690,7 +690,7 @@ tsApp
             var index = $scope.selectedChecks.indexOf(check);
             $scope.selectedChecks.splice(index, 1);
           };
-          
+
           // Add the project
           $scope.submitProject = function(project) {
             if (!project || !project.name || !project.description || !project.terminology) {
@@ -699,6 +699,10 @@ tsApp
             }
             if (!project.terminologyHandlerKey || !project.terminologyHandlerUrl) {
               window.alert('The handler and URL fields cannot be blank. ');
+              return;
+            }
+            if (!project.workflowPath) {
+              window.alert('The workflow path cannot be blank');
               return;
             }
             // Connect validation checks
@@ -717,22 +721,22 @@ tsApp
               // Success
               function(data) {
                 var projectId = data.id;
-                  projectService.assignUserToProject(data.id, $scope.user.userName, 'ADMIN').then(
-                    function(data) {
-                      // Update 'anyrole'
-                      projectService.getUserHasAnyRole();
+                projectService.assignUserToProject(data.id, $scope.user.userName, 'ADMIN').then(
+                  function(data) {
+                    // Update 'anyrole'
+                    projectService.getUserHasAnyRole();
 
-                      // Set the "last project" setting to this project
-                      $scope.user.userPreferences.lastProjectId = projectId;
-                      securityService.updateUserPreferences($scope.user.userPreferences);
-                      $uibModalInstance.close(data);
-                    },
-                    // Error
-                    function(data) {
-                      $scope.errors[0] = data;
-                      utilService.clearError();
-                    });
-                
+                    // Set the "last project" setting to this project
+                    $scope.user.userPreferences.lastProjectId = projectId;
+                    securityService.updateUserPreferences($scope.user.userPreferences);
+                    $uibModalInstance.close(data);
+                  },
+                  // Error
+                  function(data) {
+                    $scope.errors[0] = data;
+                    utilService.clearError();
+                  });
+
               },
               // Error
               function(data) {
@@ -899,6 +903,10 @@ tsApp
           $scope.submitProject = function(project) {
             if (!project || !project.name || !project.description || !project.terminology) {
               window.alert('The name, description, and terminology fields cannot be blank. ');
+              return;
+            }
+            if (!project.workflowPath) {
+              window.alert('The workflow path cannot be blank');
               return;
             }
 
