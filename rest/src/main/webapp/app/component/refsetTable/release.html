@@ -1,7 +1,7 @@
 <div class="modal-header">
   <h4 style="display: inline">Release Refset</h4>
   <span style="float: right">
-    <i class="glyphicon glyphicon-remove" ng-click="close()"> </i>
+    <i class="noul glyphicon glyphicon-remove" ng-click="close()"> </i>
   </span>
 </div>
 
@@ -96,7 +96,7 @@
                 is-open="status.opened" datepicker-options="dateOptions"
                 date-disabled="disabled(date, mode)" ng-required="true"
                 close-text="Close" placeholder="YYYYMMDD" />
-              <button type="button" class="btn btn-default"
+              <button type="button" class="btn btn-xs btn-default"
                 ng-click="open($event)">
                 <i title="Calendar" class="glyphicon glyphicon-calendar"></i>
               </button>
@@ -139,19 +139,19 @@
 </div>
 <div class="modal-footer">
 
-  <button class="btn btn-primary" ng-show="!refset.inPublicationProcess"
+  <button class="btn btn-xs btn-primary" ng-show="!refset.inPublicationProcess"
     ng-click="beginRefsetRelease(refset)">Release</button>
-  <button class="btn btn-primary"
+  <button class="btn btn-xs btn-primary"
     ng-show="refset.inPublicationProcess && !validationResult && refset.stagingType != 'BETA' && stagedRefset.workflowStatus != 'BETA'"
     ng-click="validateRefsetRelease(refset)">Validate</button>
-  <button class="btn btn-primary"
+  <button class="btn btn-xs btn-primary"
     ng-show="validationResult && validationResult.errors.length==0 && refset.stagingType != 'BETA'"
     ng-click="betaRefsetRelease(refset)">Beta</button>
-  <button class="btn btn-primary"
+  <button class="btn btn-xs btn-primary"
     ng-show="refset.stagingType == 'BETA' || stagedRefset.workflowStatus == 'BETA'"
     ng-click="finishRefsetRelease(refset)">Finish</button>
   <button confirm="Are you sure you want to cancel the refset release?"
-    class="btn btn-warning" ng-show="refset.inPublicationProcess"
+    class="btn btn-xs btn-warning" ng-show="refset.inPublicationProcess"
     ng-click="cancel()">Cancel</button>
   <button class="btn" ng-click="close()">Close</button>
 </div>

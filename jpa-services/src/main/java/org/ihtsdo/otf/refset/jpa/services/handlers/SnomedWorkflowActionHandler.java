@@ -51,15 +51,11 @@ public class SnomedWorkflowActionHandler extends DefaultWorkflowActionHandler {
     // n/a
   }
 
-
   /* see superclass */
   @Override
   public String getName() {
     return "Snomed workflow handler";
   }
-
-
-
 
   /* see superclass */
   @Override
@@ -67,7 +63,6 @@ public class SnomedWorkflowActionHandler extends DefaultWorkflowActionHandler {
     User user, UserRole projectRole, WorkflowAction action, Concept concept,
     WorkflowService service) throws Exception {
     ValidationResult result = new ValidationResultJpa();
-
 
     // Validate tracking record
     TrackingRecordList recordList = new TrackingRecordListJpa();
@@ -97,11 +92,11 @@ public class SnomedWorkflowActionHandler extends DefaultWorkflowActionHandler {
         boolean reviewerFlag = projectRole == UserRole.REVIEWER
             && record != null && EnumSet.of(WorkflowStatus.EDITING_DONE)
                 .contains(concept.getWorkflowStatus());
-        
+
         boolean reviewer2Flag = projectRole == UserRole.REVIEWER2
             && record != null && EnumSet.of(WorkflowStatus.REVIEW_DONE)
                 .contains(concept.getWorkflowStatus());
-        
+
         flag = authorFlag || reviewerFlag || reviewer2Flag;
         break;
 
@@ -131,9 +126,10 @@ public class SnomedWorkflowActionHandler extends DefaultWorkflowActionHandler {
                     WorkflowStatus.READY_FOR_PUBLICATION)
                 .contains(concept.getWorkflowStatus());
         reviewerFlag = projectRole == UserRole.REVIEWER && record != null
-            && EnumSet.of(WorkflowStatus.REVIEW_NEW,
-                WorkflowStatus.REVIEW_IN_PROGRESS)
-                .contains(concept.getWorkflowStatus());       
+            && EnumSet
+                .of(WorkflowStatus.REVIEW_NEW,
+                    WorkflowStatus.REVIEW_IN_PROGRESS)
+                .contains(concept.getWorkflowStatus());
         reviewer2Flag = projectRole == UserRole.REVIEWER2 && record != null
             && EnumSet.of(WorkflowStatus.REVIEW_NEW,
                 WorkflowStatus.REVIEW_IN_PROGRESS, WorkflowStatus.REVIEW_DONE)
@@ -143,15 +139,14 @@ public class SnomedWorkflowActionHandler extends DefaultWorkflowActionHandler {
 
       case FINISH:
         // dependent on project role
-        authorFlag = projectRole == UserRole.AUTHOR && record != null
-            && EnumSet
-                .of(WorkflowStatus.EDITING_IN_PROGRESS,
-                    WorkflowStatus.EDITING_DONE,
-                    WorkflowStatus.READY_FOR_PUBLICATION)
-                .contains(concept.getWorkflowStatus());
+        authorFlag = projectRole == UserRole.AUTHOR && record != null && EnumSet
+            .of(WorkflowStatus.EDITING_IN_PROGRESS, WorkflowStatus.EDITING_DONE,
+                WorkflowStatus.READY_FOR_PUBLICATION)
+            .contains(concept.getWorkflowStatus());
         reviewerFlag = projectRole == UserRole.REVIEWER && record != null
-            && EnumSet.of(WorkflowStatus.REVIEW_NEW,
-                WorkflowStatus.REVIEW_IN_PROGRESS)
+            && EnumSet
+                .of(WorkflowStatus.REVIEW_NEW,
+                    WorkflowStatus.REVIEW_IN_PROGRESS)
                 .contains(concept.getWorkflowStatus());
         reviewer2Flag = projectRole == UserRole.REVIEWER2 && record != null
             && EnumSet.of(WorkflowStatus.REVIEW_NEW,
@@ -160,9 +155,9 @@ public class SnomedWorkflowActionHandler extends DefaultWorkflowActionHandler {
         flag = authorFlag || reviewerFlag || reviewer2Flag;
 
         break;
-        
+
       case PREPARE_FOR_PUBLICATION:
-        
+
         flag = projectRole == UserRole.REVIEWER2 && record != null
             && EnumSet.of(WorkflowStatus.REVIEW_DONE)
                 .contains(concept.getWorkflowStatus());
@@ -262,7 +257,7 @@ public class SnomedWorkflowActionHandler extends DefaultWorkflowActionHandler {
         }
 
         // Reviewer case
-        else if (projectRole == UserRole.REVIEWER){
+        else if (projectRole == UserRole.REVIEWER) {
           record.setForAuthoring(false);
           record.setForReview(true);
           // Set the review origin revision, so we can revert on unassign
@@ -272,7 +267,7 @@ public class SnomedWorkflowActionHandler extends DefaultWorkflowActionHandler {
           record.setLastModifiedBy(user.getUserName());
           concept.setWorkflowStatus(WorkflowStatus.REVIEW_NEW);
 
-        } else if (projectRole == UserRole.REVIEWER2){
+        } else if (projectRole == UserRole.REVIEWER2) {
           record.setForAuthoring(false);
           record.setForReview(true);
           // Set the review origin revision, so we can revert on unassign
@@ -333,7 +328,7 @@ public class SnomedWorkflowActionHandler extends DefaultWorkflowActionHandler {
           skipUpdate = true;
           // no need to do this, sync takes care of it
           // concept.setWorkflowStatus(WorkflowStatus.EDITING_DONE);
-        }        
+        }
         // For review, it removes the reviewer2 and sets the status back to
         // REVIEW_DONE
         else if (EnumSet
@@ -352,7 +347,7 @@ public class SnomedWorkflowActionHandler extends DefaultWorkflowActionHandler {
           // saved state.
           skipUpdate = true;
         }
-        
+
         break;
 
       case SAVE:
@@ -369,7 +364,7 @@ public class SnomedWorkflowActionHandler extends DefaultWorkflowActionHandler {
           concept.setWorkflowStatus(WorkflowStatus.REVIEW_IN_PROGRESS);
         } else if (projectRole == UserRole.REVIEWER2
             && EnumSet.of(WorkflowStatus.REVIEW_NEW)
-            .contains(concept.getWorkflowStatus())) {
+                .contains(concept.getWorkflowStatus())) {
           concept.setWorkflowStatus(WorkflowStatus.REVIEW_IN_PROGRESS);
         }
         // all other cases, status remains the same
@@ -380,7 +375,8 @@ public class SnomedWorkflowActionHandler extends DefaultWorkflowActionHandler {
 
         // EDITING_IN_PROGRESS => EDITING_DONE
         if (EnumSet
-            .of(WorkflowStatus.NEW, WorkflowStatus.EDITING_IN_PROGRESS, WorkflowStatus.READY_FOR_PUBLICATION)
+            .of(WorkflowStatus.NEW, WorkflowStatus.EDITING_IN_PROGRESS,
+                WorkflowStatus.READY_FOR_PUBLICATION)
             .contains(concept.getWorkflowStatus())) {
           record.setForAuthoring(false);
           concept.setWorkflowStatus(WorkflowStatus.EDITING_DONE);
@@ -393,10 +389,11 @@ public class SnomedWorkflowActionHandler extends DefaultWorkflowActionHandler {
           concept.setWorkflowStatus(WorkflowStatus.REVIEW_DONE);
         }
         break;
-        
+
       case PREPARE_FOR_PUBLICATION:
         // REVIEW_DONE => READY_FOR_PUBLICATION
-        if (projectRole == UserRole.REVIEWER2 && concept.getWorkflowStatus() == WorkflowStatus.REVIEW_DONE) {
+        if (projectRole == UserRole.REVIEWER2
+            && concept.getWorkflowStatus() == WorkflowStatus.REVIEW_DONE) {
           concept.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
           service.removeTrackingRecord(record.getId());
           concept.setRevision(false);
@@ -441,10 +438,9 @@ public class SnomedWorkflowActionHandler extends DefaultWorkflowActionHandler {
       record.setLastModifiedBy(user.getUserName());
       service.updateTrackingRecord(record);
     }
-    
+
     return record;
   }
-
 
   /**
    * Find available editing concepts.
@@ -455,6 +451,9 @@ public class SnomedWorkflowActionHandler extends DefaultWorkflowActionHandler {
    * @return the concept list
    * @throws Exception the exception
    */
+  @SuppressWarnings({
+      "static-method", "unchecked"
+  })
   private ConceptList findAvailableEditingConcepts(Translation translation,
     PfsParameter pfs, WorkflowService service) throws Exception {
 
@@ -536,6 +535,18 @@ public class SnomedWorkflowActionHandler extends DefaultWorkflowActionHandler {
 
   }
 
+  /**
+   * Find available review concepts.
+   *
+   * @param translation the translation
+   * @param pfs the pfs
+   * @param service the service
+   * @return the concept list
+   * @throws Exception the exception
+   */
+  @SuppressWarnings({
+      "static-method", "unchecked"
+  })
   private ConceptList findAvailableReviewConcepts(Translation translation,
     PfsParameter pfs, WorkflowService service) throws Exception {
 
@@ -548,13 +559,14 @@ public class SnomedWorkflowActionHandler extends DefaultWorkflowActionHandler {
             + "and a = c.concept and a.workflowStatus = :editingDone "
             + "and b.id = :translationId";
 
-    
-   /* final String queryStr =
-        "select a from ConceptJpa a, TranslationJpa b, TrackingRecordJpa c "
-            + "where a.translation = b and c.translation = b "
-            + "and a = c.concept and a.workflowStatus = :reviewDone "
-            + "and b.id = :translationId and c in (select t from TrackingRecordJpa t join t.reviewers group by t having count(*) = 1)";
-    */
+    /*
+     * final String queryStr =
+     * "select a from ConceptJpa a, TranslationJpa b, TrackingRecordJpa c " +
+     * "where a.translation = b and c.translation = b " +
+     * "and a = c.concept and a.workflowStatus = :reviewDone " +
+     * "and b.id = :translationId and c in (select t from TrackingRecordJpa t join t.reviewers group by t having count(*) = 1)"
+     * ;
+     */
     List<Concept> results = null;
     final ConceptListJpa list = new ConceptListJpa();
     int totalCount = 0;
@@ -600,19 +612,31 @@ public class SnomedWorkflowActionHandler extends DefaultWorkflowActionHandler {
 
   }
 
+  /**
+   * Find available review 2 concepts.
+   *
+   * @param translation the translation
+   * @param pfs the pfs
+   * @param service the service
+   * @return the concept list
+   * @throws Exception the exception
+   */
+  @SuppressWarnings({
+      "static-method", "unchecked"
+  })
   private ConceptList findAvailableReview2Concepts(Translation translation,
     PfsParameter pfs, WorkflowService service) throws Exception {
 
     // Concepts of the translation with
     // workflow status in a certain state
     // that do not yet have tracking records
-       
+
     final String queryStr =
         "select a from ConceptJpa a, TranslationJpa b, TrackingRecordJpa c "
             + "where a.translation = b and c.translation = b "
             + "and a = c.concept and a.workflowStatus = :reviewDone "
             + "and b.id = :translationId and c in (select t from TrackingRecordJpa t join t.reviewers group by t having count(*) = 1)";
-    
+
     List<Concept> results = null;
     final ConceptListJpa list = new ConceptListJpa();
     int totalCount = 0;
@@ -667,7 +691,7 @@ public class SnomedWorkflowActionHandler extends DefaultWorkflowActionHandler {
     list.getObjects().add(UserRole.ADMIN.toString());
     return list;
   }
-  
+
   @Override
   public StringList getTranslationAvailableRoles() throws Exception {
     final StringList list = new StringList();
@@ -678,80 +702,99 @@ public class SnomedWorkflowActionHandler extends DefaultWorkflowActionHandler {
     list.getObjects().add(UserRole.ADMIN.toString());
     return list;
   }
-  
+
   @Override
   public WorkflowConfig getWorkflowConfig() throws Exception {
     WorkflowConfig config = super.getWorkflowConfig();
-    
+
     // Available Roles
     config.setRefsetAvailableRoles(getRefsetAvailableRoles());
     config.setTranslationAvailableRoles(getTranslationAvailableRoles());
 
     // Translation Allowed Map
     Map<String, Boolean> translationAllowedMap = new HashMap<>();
-    
+
     // Translation Admin Options
     translationAllowedMap.put("ASSIGN" + "ADMIN" + "*", true);
-    translationAllowedMap.put("UNASSIGN" + "ADMIN" + "NEW", true); 
-    translationAllowedMap.put("UNASSIGN" + "ADMIN" + "EDITING_IN_PROGRESS", true);
+    translationAllowedMap.put("UNASSIGN" + "ADMIN" + "NEW", true);
+    translationAllowedMap.put("UNASSIGN" + "ADMIN" + "EDITING_IN_PROGRESS",
+        true);
     translationAllowedMap.put("UNASSIGN" + "ADMIN" + "EDITING_DONE", true);
     translationAllowedMap.put("UNASSIGN" + "ADMIN" + "REVIEW_NEW", true);
-    translationAllowedMap.put("UNASSIGN" + "ADMIN" + "REVIEW_IN_PROGRESS", true);
+    translationAllowedMap.put("UNASSIGN" + "ADMIN" + "REVIEW_IN_PROGRESS",
+        true);
     translationAllowedMap.put("UNASSIGN" + "ADMIN" + "REVIEW_DONE", true);
-    
+
     // Translation Author Options
     translationAllowedMap.put("ASSIGN" + "AUTHOR" + "NEW", true);
-    translationAllowedMap.put("ASSIGN" + "AUTHOR" + "READY_FOR_PUBLICATION", true);
+    translationAllowedMap.put("ASSIGN" + "AUTHOR" + "READY_FOR_PUBLICATION",
+        true);
     translationAllowedMap.put("UNASSIGN" + "AUTHOR" + "NEW", true);
-    translationAllowedMap.put("UNASSIGN" + "AUTHOR" + "EDITING_IN_PROGRESS", true);
+    translationAllowedMap.put("UNASSIGN" + "AUTHOR" + "EDITING_IN_PROGRESS",
+        true);
     translationAllowedMap.put("UNASSIGN" + "AUTHOR" + "EDITING_DONE", true);
     translationAllowedMap.put("SAVE" + "AUTHOR" + "NEW", true);
     translationAllowedMap.put("SAVE" + "AUTHOR" + "EDITING_IN_PROGRESS", true);
-    translationAllowedMap.put("SAVE" + "AUTHOR" + "READY_FOR_PUBLICATION", true);
-    //translationAllowedMap.put("FINISH" + "AUTHOR" + "NEW", true);
-    translationAllowedMap.put("FINISH" + "AUTHOR" + "EDITING_IN_PROGRESS", true);
-    translationAllowedMap.put("FINISH" + "AUTHOR" + "READY_FOR_PUBLICATION", true);
+    translationAllowedMap.put("SAVE" + "AUTHOR" + "READY_FOR_PUBLICATION",
+        true);
+    // translationAllowedMap.put("FINISH" + "AUTHOR" + "NEW", true);
+    translationAllowedMap.put("FINISH" + "AUTHOR" + "EDITING_IN_PROGRESS",
+        true);
+    translationAllowedMap.put("FINISH" + "AUTHOR" + "READY_FOR_PUBLICATION",
+        true);
     translationAllowedMap.put("CANCEL" + "AUTHOR" + "*", true);
-    
+
     // Translation Reviewer Options
     translationAllowedMap.put("ASSIGN" + "REVIEWER" + "EDITING_DONE", true);
-    translationAllowedMap.put("ASSIGN" + "REVIEWER" + "READY_FOR_PUBLICATION", true);
+    translationAllowedMap.put("ASSIGN" + "REVIEWER" + "READY_FOR_PUBLICATION",
+        true);
     translationAllowedMap.put("UNASSIGN" + "REVIEWER" + "REVIEW_NEW", true);
-    translationAllowedMap.put("UNASSIGN" + "REVIEWER" + "REVIEW_IN_PROGRESS", true);
+    translationAllowedMap.put("UNASSIGN" + "REVIEWER" + "REVIEW_IN_PROGRESS",
+        true);
     translationAllowedMap.put("SAVE" + "REVIEWER" + "REVIEW_NEW", true);
     translationAllowedMap.put("SAVE" + "REVIEWER" + "REVIEW_IN_PROGRESS", true);
     translationAllowedMap.put("FINISH" + "REVIEWER" + "REVIEW_NEW", true);
-    translationAllowedMap.put("FINISH" + "REVIEWER" + "REVIEW_IN_PROGRESS", true);
+    translationAllowedMap.put("FINISH" + "REVIEWER" + "REVIEW_IN_PROGRESS",
+        true);
     translationAllowedMap.put("CANCEL" + "REVIEWER" + "*", true);
-    
+
     translationAllowedMap.put("ASSIGN" + "REVIEWER2" + "REVIEW_DONE", true);
-    translationAllowedMap.put("ASSIGN" + "REVIEWER2" + "READY_FOR_PUBLICATION", true);
+    translationAllowedMap.put("ASSIGN" + "REVIEWER2" + "READY_FOR_PUBLICATION",
+        true);
     translationAllowedMap.put("UNASSIGN" + "REVIEWER2" + "REVIEW_NEW", true);
-    translationAllowedMap.put("UNASSIGN" + "REVIEWER2" + "REVIEW_IN_PROGRESS", true);
+    translationAllowedMap.put("UNASSIGN" + "REVIEWER2" + "REVIEW_IN_PROGRESS",
+        true);
     translationAllowedMap.put("UNASSIGN" + "REVIEWER2" + "REVIEW_DONE", true);
     translationAllowedMap.put("SAVE" + "REVIEWER2" + "REVIEW_NEW", true);
-    translationAllowedMap.put("SAVE" + "REVIEWER2" + "REVIEW_IN_PROGRESS", true);
+    translationAllowedMap.put("SAVE" + "REVIEWER2" + "REVIEW_IN_PROGRESS",
+        true);
     translationAllowedMap.put("SAVE" + "REVIEWER2" + "REVIEW_DONE", true);
     translationAllowedMap.put("FINISH" + "REVIEWER2" + "REVIEW_NEW", true);
-    translationAllowedMap.put("FINISH" + "REVIEWER2" + "REVIEW_IN_PROGRESS", true);
-    translationAllowedMap.put("PREPARE_FOR_PUBLICATION" + "REVIEWER2" + "REVIEW_DONE", true);
+    translationAllowedMap.put("FINISH" + "REVIEWER2" + "REVIEW_IN_PROGRESS",
+        true);
+    translationAllowedMap
+        .put("PREPARE_FOR_PUBLICATION" + "REVIEWER2" + "REVIEW_DONE", true);
     translationAllowedMap.put("CANCEL" + "REVIEWER2" + "*", true);
-    
+
     config.setTranslationAllowedMap(translationAllowedMap);
-  
+
     // Translation Role Map
     // Answers question: "What are the details of what it does?"
-    Map<String, String> translationRoleMap = new HashMap<>();   
+    Map<String, String> translationRoleMap = new HashMap<>();
     translationRoleMap.put("ASSIGN" + "ADMIN" + "NEW", "AUTHOR");
-    translationRoleMap.put("ASSIGN" + "ADMIN" + "READY_FOR_PUBLICATION", "AUTHOR");
+    translationRoleMap.put("ASSIGN" + "ADMIN" + "READY_FOR_PUBLICATION",
+        "AUTHOR");
     translationRoleMap.put("ASSIGN" + "ADMIN" + "*", "REVIEWER");
-    translationRoleMap.put("ASSIGN" + "REVIEWER" + "READY_FOR_PUBLICATION", "AUTHOR");
-    translationRoleMap.put("ASSIGN" + "REVIEWER2" + "READY_FOR_PUBLICATION", "AUTHOR");
-    // The correct unassign role is determined by performWorkflowAction based on the state of the record
+    translationRoleMap.put("ASSIGN" + "REVIEWER" + "READY_FOR_PUBLICATION",
+        "AUTHOR");
+    translationRoleMap.put("ASSIGN" + "REVIEWER2" + "READY_FOR_PUBLICATION",
+        "AUTHOR");
+    // The correct unassign role is determined by performWorkflowAction based on
+    // the state of the record
     // SAVE n/a
-        
+
     config.setTranslationRoleMap(translationRoleMap);
-    
+
     return config;
   }
 
@@ -767,105 +810,67 @@ public class SnomedWorkflowActionHandler extends DefaultWorkflowActionHandler {
       return findAvailableReview2Concepts(translation, pfs, service);
     } else if (userRole == UserRole.ADMIN) {
       List<Concept> concepts = new ArrayList<>();
-      concepts.addAll(findAvailableEditingConcepts(translation, null, service).getObjects());
-      concepts.addAll(findAvailableReviewConcepts(translation, null, service).getObjects());
-      concepts.addAll(findAvailableReview2Concepts(translation, null, service).getObjects());
+      concepts.addAll(findAvailableEditingConcepts(translation, null, service)
+          .getObjects());
+      concepts.addAll(
+          findAvailableReviewConcepts(translation, null, service).getObjects());
+      concepts.addAll(findAvailableReview2Concepts(translation, null, service)
+          .getObjects());
       final ConceptList conceptList = new ConceptListJpa();
       final int[] totalCt = new int[1];
-      conceptList.getObjects().addAll(service.applyPfsToList(concepts,
-          Concept.class, totalCt, pfs));
+      conceptList.getObjects().addAll(
+          service.applyPfsToList(concepts, Concept.class, totalCt, pfs));
       conceptList.setTotalCount(totalCt[0]);
       for (final Concept concept : conceptList.getObjects()) {
         service.handleLazyInit(concept);
       }
       return conceptList;
     } else {
-      throw new Exception("User role to find concepts must be AUTHOR, REVIEWER, REVIEWER2, or ADMIN.");
+      throw new Exception(
+          "User role to find concepts must be AUTHOR, REVIEWER, REVIEWER2, or ADMIN.");
     }
   }
 
-
-
-  
-  private TrackingRecordList findAssignedEditingConcepts(Long projectId, Long translationId, String userName, PfsParameterJpa pfs, WorkflowService service)
-    throws Exception {
-    
-      // Find tracking records where the author is this user,
-      // it is assigned to this translation and marked for editing
-      // and not for review
-      final String query = "projectId:" + projectId + " AND " + "authors:"
-          + userName + " AND translationId:" + translationId
-          + " AND forAuthoring:true AND forReview:false";
-
-      final TrackingRecordList records =
-          service.findTrackingRecordsForQuery(query, pfs);
-      for (final TrackingRecord record : records.getObjects()) {
-        service.handleLazyInit(record);
-      }
-
-      return records;   
-  }
-  
-  private TrackingRecordList findAssignedReviewConcepts(Long projectId, Long translationId, String userName, PfsParameterJpa pfs, WorkflowService service)
-    throws Exception {
-    
-      // Find tracking records "for review" for this translation and user
-      final String query =
-          "projectId:" + projectId + " AND " + "reviewersOrder:1" + userName + " AND NOT reviewersOrder:2* "
-              + " AND translationId:" + translationId + " AND forReview:true AND NOT workflowStatus:REVIEW_DONE";
-      final TrackingRecordList records =
-          service.findTrackingRecordsForQuery(query, pfs);
-      for (final TrackingRecord record : records.getObjects()) {
-        service.handleLazyInit(record);
-      }
-      return records;
-
-  }
-
-  private TrackingRecordList findAssignedReview2Concepts(Long projectId, Long translationId, String userName, PfsParameterJpa pfs, WorkflowService service)
-      throws Exception {
-      
-        // Find tracking records "for review" for this translation and user
-        final String query =
-            "projectId:" + projectId + " AND " + "reviewersOrder:2" + userName 
-                + " AND translationId:" + translationId + " AND forReview:true";
-        final TrackingRecordList records =
-            service.findTrackingRecordsForQuery(query, pfs);
-        for (final TrackingRecord record : records.getObjects()) {
-          service.handleLazyInit(record);
-        }
-        return records;
-
-    } 
-  
+  /* see superclass */
   @Override
   public TrackingRecordList findAssignedConcepts(UserRole userRole,
-    Translation translation, String userName, PfsParameter pfs, WorkflowService service)
-    throws Exception {
-    final PfsParameterJpa localPfs =
-        pfs == null ? new PfsParameterJpa() : new PfsParameterJpa(pfs);
+    Translation translation, String userName, PfsParameter pfs,
+    WorkflowService service) throws Exception {
+
+    final long projectId = translation.getProject().getId();
+    final long translationId = translation.getId();
+    String query = null;
+
     if (userRole == UserRole.AUTHOR) {
-      return findAssignedEditingConcepts(translation.getProject().getId(), translation.getId(), userName, localPfs, service);
+      query = "projectId:" + projectId + " AND " + "authors:" + userName
+          + " AND translationId:" + translationId
+          + " AND forAuthoring:true AND forReview:false";
+
     } else if (userRole == UserRole.REVIEWER) {
-      return findAssignedReviewConcepts(translation.getProject().getId(), translation.getId(), userName, localPfs, service);
+      query = "projectId:" + projectId + " AND " + "reviewersOrder:1" + userName
+          + " AND NOT reviewersOrder:2* " + " AND translationId:"
+          + translationId
+          + " AND forReview:true AND NOT workflowStatus:REVIEW_DONE";
     } else if (userRole == UserRole.REVIEWER2) {
-      return findAssignedReview2Concepts(translation.getProject().getId(), translation.getId(), userName, localPfs, service);
+      query = "projectId:" + projectId + " AND " + "reviewersOrder:2" + userName
+          + " AND translationId:" + translationId + " AND forReview:true";
     } else if (userRole == UserRole.ADMIN) {
-      List<TrackingRecord> records = new ArrayList<>();
-      records.addAll(findAssignedEditingConcepts(translation.getProject().getId(), translation.getId(), userName, null, service).getObjects());
-      records.addAll(findAssignedReviewConcepts(translation.getProject().getId(), translation.getId(), userName, null, service).getObjects());
-      records.addAll(findAssignedReview2Concepts(translation.getProject().getId(), translation.getId(), userName, null, service).getObjects());
-      final TrackingRecordList recordList = new TrackingRecordListJpa();
-      final int[] totalCt = new int[1];
-      recordList.getObjects().addAll(service.applyPfsToList(records,
-          TrackingRecord.class, totalCt, pfs));
-      recordList.setTotalCount(totalCt[0]);
-      for (final TrackingRecord record : recordList.getObjects()) {
-        service.handleLazyInit(record);
-      }
-      return recordList;
+      query = "projectId:" + projectId + " AND translationId:" + translationId
+      // author
+          + " AND ((authors:" + userName
+          + " AND forAuthoring:true AND forReview:false) OR "
+          // reviewer
+          + "(reviewersOrder:1" + userName
+          + " AND NOT reviewersOrder:2* AND forReview:true "
+          + " AND NOT worflowStatus:REVIEW_DONE) OR "
+          // reviewer2
+          + " (reviewersOrder:2" + userName + " AND forReview:true))";
     } else {
-      throw new Exception("User role to find assigned concepts must be AUTHOR, REVIEWER, REVIEWER2 or ADMIN.");
+      throw new Exception(
+          "User role to find assigned concepts must be AUTHOR, REVIEWER, REVIEWER2 or ADMIN.");
     }
+    final TrackingRecordList records =
+        service.findTrackingRecordsForQuery(query, pfs);
+    return records;
   }
 }

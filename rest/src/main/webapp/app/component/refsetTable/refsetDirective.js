@@ -71,6 +71,7 @@ tsApp
               $scope.refsetReviewersMap = {};
 
               // Paging variables
+              $scope.pageSizes = utilService.getPageSizes();
               $scope.paging = {};
               $scope.paging['refset'] = {
                 page : 1,
@@ -1104,7 +1105,7 @@ tsApp
               };
 
               // Definition clauses controller
-              var DefinitionClausesModalCtrl = function($scope, $uibModalInstance, refset,
+              var DefinitionClausesModalCtrl = function($scope, $uibModalInstance, utilService, refset,
                 metadata, value) {
                 console.debug('Entered definition clauses modal control', refset, value);
 
@@ -1308,7 +1309,7 @@ tsApp
               };
 
               // Notes controller
-              var NotesModalCtrl = function($scope, $uibModalInstance, $sce, object, type,
+              var NotesModalCtrl = function($scope, $uibModalInstance, $sce, utilService,object, type,
                 tinymceOptions) {
                 console.debug('Entered notes modal control', object, type);
                 $scope.object = object;
@@ -1319,6 +1320,7 @@ tsApp
                 // Paging parameters
                 $scope.pageSize = 5;
                 $scope.pagedNotes = [];
+                $scope.pageSizes = utilService.getPageSizes();
                 $scope.paging = {};
                 $scope.paging['notes'] = {
                   page : 1,
@@ -2794,7 +2796,7 @@ tsApp
               };
 
               // Add member controller
-              var AddMemberModalCtrl = function($scope, $uibModalInstance, metadata, refset,
+              var AddMemberModalCtrl = function($scope, $uibModalInstance,utilService, metadata, refset,
                 project, value) {
                 console.debug('Entered add member modal control');
                 $scope.value = value;
@@ -2810,6 +2812,7 @@ tsApp
                   memberTypes : {}
                 };
                 $scope.pageSize = 10;
+                $scope.pageSizes = utilService.getPageSizes();
                 $scope.paging = {};
                 $scope.paging['search'] = {
                   page : 1,
@@ -3015,7 +3018,7 @@ tsApp
               };
 
               // Migration modal controller
-              var MigrationModalCtrl = function($scope, $uibModalInstance, $interval, gpService,
+              var MigrationModalCtrl = function($scope, $uibModalInstance, $interval, gpService, utilService,
                 project, refset, paging, metadata) {
                 console.debug('Entered migration modal control');
 
@@ -3025,6 +3028,7 @@ tsApp
                 $scope.newTerminology = refset.terminology;
                 $scope.membersInCommon = null;
                 $scope.pageSize = 5;
+                $scope.pageSizes = utilService.getPageSizes();
                 $scope.paging = paging;
                 $scope.metadata = metadata;
                 $scope.terminologies = [];

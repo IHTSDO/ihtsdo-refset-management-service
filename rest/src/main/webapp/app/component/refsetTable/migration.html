@@ -118,12 +118,8 @@
           <span class="info-text" ng-show="membersInCommon.totalCount > 10"
             style="float: right; margin-top: 4px">
             Page size: <select ng-model="pageSize" title="Page Size"
-              ng-change="findMembersInCommon()">
-              <option value="10">10</option>
-              <option value="50">50</option>
-              <option value="100">100</option>
-              <option value="200">200</option>
-              <option value="10000">All</option>
+              ng-change="findMembersInCommon()"
+              ng-options="item.value as item.name for item in pageSizes">
             </select>
           </span>
 
@@ -806,28 +802,28 @@
 <div class="modal-footer">
 
   <span style="float: left">
-    <button ng-show="refset.staged" class="btn btn-primary"
+    <button ng-show="refset.staged" class="btn btn-xs btn-primary"
       ng-click="exportDiffReport();">Export Report</button>
   </span>
-  <button class="btn btn-primary"
+  <button class="btn btn-xs btn-primary"
     ng-disabled="refset.staged || validVersion != 'true'"
     title="Test version before migrating"
     ng-click="beginMigration(newTerminology, newVersion);">Migrate</button>
 
-  <button ng-show="refset.staged" class="btn btn-primary"
+  <button ng-show="refset.staged" class="btn btn-xs btn-primary"
     ng-click="saveForLater(refset);">Save for later</button>
 
-  <button class="btn btn-primary"
+  <button class="btn btn-xs btn-primary"
     confirm="Are you sure you want to finish migration?"
     ng-disabled="!refset.staged || stagedRefset.lookupInProgress || refset.lookupInProgress"
     ng-click="finish(refset); ">Finish</button>
 
   <button confirm="Are you sure you want to cancel migration?"
-    class="btn btn-warning"
+    class="btn btn-xs btn-warning"
     ng-disabled="!refset.staged || stagedRefset.lookupInProgress || refset.lookupInProgress"
     title="Cancel migration" ng-click="cancel(refset);">Cancel</button>
 
-  <button class="btn btn-warning"
+  <button class="btn btn-xs btn-warning"
     ng-show="!refset.staged && !stagedRefset.lookupInProgress && !refset.lookupInProgress"
     title="Close" ng-click="close(refset);">Close</button>
 </div>

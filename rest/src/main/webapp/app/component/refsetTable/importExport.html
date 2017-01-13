@@ -2,9 +2,9 @@
   <h4 style="display: inline">{{operation}} {{type}}</h4>
   <span style="float: right">
     <i ng-show="importStarted && !importFinished && comments.length == 0"
-      class="glyphicon glyphicon-remove" ng-click="cancel()"> </i>
+      class="noul glyphicon glyphicon-remove" ng-click="cancel()"> </i>
     <i ng-show="importFinished || !importStarted"
-      class="glyphicon glyphicon-remove" ng-click="close()"> </i>
+      class="noul glyphicon glyphicon-remove" ng-click="close()"> </i>
   </span>
 </div>
 
@@ -79,17 +79,17 @@
 </div>
 
 <div class="modal-footer">
-  <button class="btn btn-primary" ng-show="operation == 'Export'"
+  <button class="btn btn-xs btn-primary" ng-show="operation == 'Export'"
     ng-click="export();">Export</button>
-  <button class="btn btn-primary" ng-disabled="!file"
+  <button class="btn btn-xs btn-primary" ng-disabled="!file"
     ng-show="operation == 'Import' && errors.length == 0  && comments.length == 0"
     ng-click="import(file);">Import</button>
-  <button class="btn btn-primary"
+  <button class="btn btn-xs btn-primary"
     ng-show="operation == 'Import' && errors.length > 0"
     ng-click="continueImport(file);">Continue With Import</button>
-  <button class="btn btn-warning"
+  <button class="btn btn-xs btn-warning"
     ng-show="importStarted && !importFinished && comments.length == 0"
     ng-click="cancel()">Cancel</button>
-  <button class="btn btn-warning" ng-show="importFinished || !importStarted"
+  <button class="btn btn-xs btn-warning" ng-show="importFinished || !importStarted"
     ng-click="close()">Close</button>
 </div>

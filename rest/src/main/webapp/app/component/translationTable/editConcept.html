@@ -2,12 +2,12 @@
   <h4 style="display: inline">Edit Concept
     {{conceptTranslated.terminologyId}} {{conceptTranslated.name}}</h4>
   <span style="float: right">
-    <i class="glyphicon glyphicon-remove" ng-click="cancel()"> </i>
+    <i title="Close" class="noul glyphicon glyphicon-remove" ng-click="close()">
+    </i>
   </span>
 </div>
 
 <div class="modal-body">
-
   <!-- R1 -->
   <div class="row">
 
@@ -22,8 +22,28 @@
     <div class="col-md-7 col-xs-12">
 
       <!-- Descriptions -->
-      <h5>Translation Descriptions
-        ({{conceptTranslated.descriptions.length}})</h5>
+      <div>
+        <h5 style="display: inline;">Translation Descriptions
+          ({{conceptTranslated.descriptions.length}})</h5>
+        <span style="float: right">
+          <span>
+            <!-- Notes -->
+            <i ng-show="concept.notes.length > 0"
+              ng-click="openNotesModal(concept, 'Concept');"
+              title="Edit concept notes" class="noul material-icons md-18">assignment</i>
+            <i ng-show="concept.notes.length == 0"
+              ng-click="openNotesModal(concept, 'Concept');"
+              title="Add concept notes (no notes yet)"
+              class="md-grey material-icons md-18">assignment</i>
+            <i ng-click="openLogModal(concept)" title="Retrieve log"
+              class="noul material-icons md-18">event_note</i>
+            &nbsp;
+            <button style="margin-bottom: 10px" ng-click="addDescription();"
+              title="Add description" class="btn btn-xs btn-primary">Add
+              Description</button>
+          </span>
+        </span>
+      </div>
       <div style="min-height: 200px;">
         <!-- Existing descriptions -->
 
@@ -47,21 +67,6 @@
             ng-show="paging['descriptions'].filter"
             ng-click="paging['descriptions'].filter = ''; getPagedDescriptions()"
             title="Click to clear filter text">Clear</button>
-
-          <span style="float: right;">
-            <button ng-click="addDescription();" title="Add description"
-              class="btn btn-xs btn-primary">Add Description</button>
-            <!-- Notes -->
-            <i ng-show="concept.notes.length > 0"
-              ng-click="openNotesModal(concept, 'Concept');"
-              title="Edit concept notes" class="noul material-icons md-18">assignment</i>
-            <i ng-show="concept.notes.length == 0"
-              ng-click="openNotesModal(concept, 'Concept');"
-              title="Add concept notes (no notes yet)"
-              class="md-grey material-icons md-18">assignment</i>
-            <i ng-click="openLogModal(concept)" title="Retrieve log"
-              class="noul material-icons md-18">event_note</i>
-          </span>
         </span>
 
 
@@ -81,8 +86,9 @@
             <tr ng-repeat="description in pagedDescriptions">
               <td>
                 <div ng-class="{redborder: hasSuggestions(description)}">
-                  <textarea title="Description term" spellcheck="false"
-                    ng-model="description.term" ui-tinymce="tinymceOptions"
+                  <textarea id="tinymceId" title="Description term"
+                    spellcheck="false" ng-model="description.term"
+                    ui-tinymce="tinymceOptions"
                     ng-model-options="{ debounce: 300 }"
                     ng-change="getSuggestions()"></textarea>
                 </div>
@@ -110,15 +116,34 @@
 
       </div>
 
-
+      <!-- Auto suggestion -->
       <h5>
-        <span uib-tooltip="Open spelling and memory controls">Spelling
-          and Memory Controls</span>
-        <span style="float: right;">
-          <i ng-show="displayControls" ng-click="toggleDisplayControls()"
-            title="Hide controls" class="noul material-icons md-18">arrow_drop_down</i>
-          <i ng-show="!displayControls" ng-click="toggleDisplayControls()"
-            title="Show controls" class="noul material-icons md-18">arrow_drop_up</i>
+        <span uib-tooltip="Open spelling and memory controls">
+          Translation Suggestion(s)
+          <i style="float: left" class="noul glyphicon"
+            ng-click="displaySuggest = !displaySuggest"
+            ng-class="[{'glyphicon-chevron-down' : displaySuggest}, {'glyphicon-chevron-right' : !displaySuggest}]"></i>
+        </span>
+      </h5>
+      <div class="col-md-12 col-xs-12" ng-show="displaySuggest">
+        &nbsp;
+        <span ng-show="autoResult">{{autoResult}}</span>
+        <span ng-show="!autoResult">
+          <small>No auto translation available</small>
+        </span>
+        &nbsp;
+        <button class="btn btn-xs btn-primary"
+          ng-click="addAutoDescription(autoResult);" title="Add description">Add</button>
+      </div>
+      <br />
+
+      <!--  Spelling and memory controls -->
+      <h5>
+        <span uib-tooltip="Open spelling and memory controls">
+          Spelling and Memory Controls
+          <i style="float: left" class="noul glyphicon"
+            ng-click="displayControls = !displayControls"
+            ng-class="[{'glyphicon-chevron-down' : displayControls}, {'glyphicon-chevron-right' : !displayControls}]"></i>
         </span>
       </h5>
       <div class="col-md-12 col-xs-12" ng-show="displayControls">
@@ -204,7 +229,7 @@
           {{error}}
           <div
             style="cursor: pointer; display: inline; float: right; width: 3%;">
-            <i class="glyphicon glyphicon-remove" ng-click="clearError()"></i>
+            <i class="noul glyphicon glyphicon-remove" ng-click="clearError()"></i>
           </div>
         </div>
         <!-- Warnings -->
@@ -219,15 +244,21 @@
 </div>
 
 <div class="modal-footer">
-  <span ng-show="googleResult" style="float: left">
-    <span class="truncate">{{googleResult}}</span>
-    <button class="btn btn-xs btn-primary"
-      ng-click="addGoogleDescription(googleResult);" title="Add description">Add</button>
-  </span>
-  <button class="btn btn-primary" ng-click="saveConcept(conceptTranslated);"
-    title="Save work">Save/Next</button>
+
+  <button class="btn btn-xs btn-primary"
+    ng-click="saveConcept(conceptTranslated);"
+    title="Save and go to next concept">Save/Next</button>
+
   <button confirm="Are you sure you want to finish editing this concept?"
-    class="btn btn-primary" ng-click="finishConcept(conceptTranslated);"
+    class="btn btn-xs btn-primary" ng-click="finishConcept(conceptTranslated);"
     title="Save work">Finish/Next</button>
-  <button class="btn btn-warning" ng-click="close()">Close</button>
+  <span class="md-grey">&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;</span>
+
+  <button class="btn btn-xs btn-primary"
+    ng-click="saveConcept(conceptTranslated, true);" title="Save and close">Save/Close</button>
+  <button class="btn btn-xs btn-primary"
+    ng-click="finishConcept(conceptTranslated, true);" title="Finish and close">Finish/Close</button>
+  <button class="btn btn-xs btn-warning" ng-click="close()">Close</button>
+
+
 </div>

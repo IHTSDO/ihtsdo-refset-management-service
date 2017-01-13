@@ -23,7 +23,7 @@ a:hover {
 }
 
 .redborder {
-	border: 1px solid red;
+	border: 1px solid orange;
 }
 
 .login-field {
@@ -192,7 +192,7 @@ a:hover {
 }
 
 .noul-red {
-	color: red;
+	color: orange;
 	cursor: pointer;
 	text-decoration: none;
 }
@@ -261,4 +261,9 @@ a:hover {
 	padding: 3px 5.5px;
 	font-size: 12px;
 	line-height: 1.5;
+}
+
+.modal-lg {
+	width: 90%;
+	min-width: 900px;
 }

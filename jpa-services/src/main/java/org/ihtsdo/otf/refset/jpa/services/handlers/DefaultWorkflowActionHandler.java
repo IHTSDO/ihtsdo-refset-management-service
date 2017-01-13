@@ -1165,7 +1165,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     translationAllowedMap.put("UNASSIGN" + "ADMIN" + "REVIEW_IN_PROGRESS",
         true);
     translationAllowedMap.put("UNASSIGN" + "ADMIN" + "REVIEW_DONE", true);
-    
+
     // translationAllowedMap.put("REASSIGN" + "ADMIN" + "*", true);
 
     // Translation Author Options
@@ -1283,157 +1283,45 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     }
   }
 
-  /**
-   * Find assigned editing refsets.
-   *
-   * @param projectId the project id
-   * @param userName the user name
-   * @param pfs the pfs
-   * @param service the service
-   * @return the tracking record list
-   * @throws Exception the exception
-   */
-  @SuppressWarnings("static-method")
-  private TrackingRecordList findAssignedEditingRefsets(Long projectId,
-    String userName, PfsParameterJpa pfs, WorkflowService service)
-    throws Exception {
-
-    // Find tracking records for this author that has any refset id
-    // and is marked as forAuthoring but not forReview
-    String query = "";
-    if (userName != null && !userName.equals("")) {
-      query = "projectId:" + projectId + " AND " + "authors:" + userName
-          + " AND NOT refsetId:0"
-          + " AND forAuthoring:true AND forReview:false";
-    } else {
-      query = "NOT refsetId:0 AND forAuthoring:true AND forReview:false";
-    }
-
-    final TrackingRecordList records =
-        service.findTrackingRecordsForQuery(query, pfs);
-
-    return records;
-
-  }
-
-  /**
-   * Find assigned review refsets.
-   *
-   * @param projectId the project id
-   * @param userName the user name
-   * @param pfs the pfs
-   * @param service the service
-   * @return the tracking record list
-   * @throws Exception the exception
-   */
-  @SuppressWarnings("static-method")
-  private TrackingRecordList findAssignedReviewRefsets(Long projectId,
-    String userName, PfsParameterJpa pfs, WorkflowService service)
-    throws Exception {
-
-    // Find refset tracking records "for review" for this user
-    String query = "";
-    if (userName != null && !userName.equals("")) {
-      query = "projectId:" + projectId + " AND " + "reviewers:" + userName
-          + " AND NOT refsetId:0" + " AND forReview:true";
-    } else {
-      throw new Exception("UserName must always be set");
-    }
-    final TrackingRecordList records =
-        service.findTrackingRecordsForQuery(query, pfs);
-
-    return records;
-
-  }
-
-  /**
-   * Find assigned editing concepts.
-   *
-   * @param projectId the project id
-   * @param translationId the translation id
-   * @param userName the user name
-   * @param pfs the pfs
-   * @param service the service
-   * @return the tracking record list
-   * @throws Exception the exception
-   */
-  @SuppressWarnings("static-method")
-  private TrackingRecordList findAssignedEditingConcepts(Long projectId,
-    Long translationId, String userName, PfsParameterJpa pfs,
-    WorkflowService service) throws Exception {
-
-    // Find tracking records where the author is this user,
-    // it is assigned to this translation and marked for editing
-    // and not for review
-    final String query = "projectId:" + projectId + " AND " + "authors:"
-        + userName + " AND translationId:" + translationId
-        + " AND forAuthoring:true AND forReview:false";
-
-    final TrackingRecordList records =
-        service.findTrackingRecordsForQuery(query, pfs);
-
-    return records;
-  }
-
-  /**
-   * Find assigned review concepts.
-   *
-   * @param projectId the project id
-   * @param translationId the translation id
-   * @param userName the user name
-   * @param pfs the pfs
-   * @param service the service
-   * @return the tracking record list
-   * @throws Exception the exception
-   */
-  @SuppressWarnings("static-method")
-  private TrackingRecordList findAssignedReviewConcepts(Long projectId,
-    Long translationId, String userName, PfsParameterJpa pfs,
-    WorkflowService service) throws Exception {
-
-    // Find tracking records "for review" for this translation and user
-    final String query =
-        "projectId:" + projectId + " AND " + "reviewers:" + userName
-            + " AND translationId:" + translationId + " AND forReview:true";
-    final TrackingRecordList records =
-        service.findTrackingRecordsForQuery(query, pfs);
-
-    return records;
-
-  }
-
   /* see superclass */
   @Override
   public TrackingRecordList findAssignedRefsets(UserRole userRole,
     Project project, String userName, PfsParameter pfs, WorkflowService service)
     throws Exception {
-    final PfsParameterJpa localPfs =
-        pfs == null ? new PfsParameterJpa() : new PfsParameterJpa(pfs);
-    if (userRole == UserRole.AUTHOR) {
-      return findAssignedEditingRefsets(project.getId(), userName, localPfs,
-          service);
-    } else if (userRole == UserRole.REVIEWER) {
-      return findAssignedReviewRefsets(project.getId(), userName, localPfs,
-          service);
-    } else if (userRole == UserRole.ADMIN) {
-      List<TrackingRecord> records = new ArrayList<>();
-      records.addAll(
-          findAssignedEditingRefsets(project.getId(), userName, null, service)
-              .getObjects());
-      records.addAll(
-          findAssignedReviewRefsets(project.getId(), userName, null, service)
-              .getObjects());
-      final TrackingRecordList trackingRecordList = new TrackingRecordListJpa();
-      final int[] totalCt = new int[1];
-      trackingRecordList.getObjects().addAll(
-          service.applyPfsToList(records, TrackingRecord.class, totalCt, pfs));
-      trackingRecordList.setTotalCount(totalCt[0]);
 
-      return trackingRecordList;
+    final long projectId = project.getId();
+    String query = null;
+    if (userRole == UserRole.AUTHOR) {
+      if (userName != null && !userName.equals("")) {
+        query = "projectId:" + projectId + " AND " + "authors:" + userName
+            + " AND NOT refsetId:0"
+            + " AND forAuthoring:true AND forReview:false";
+      } else {
+        query = "NOT refsetId:0 AND forAuthoring:true AND forReview:false";
+      }
+    } else if (userRole == UserRole.REVIEWER) {
+      if (userName != null && !userName.equals("")) {
+        query = "projectId:" + projectId + " AND " + "reviewers:" + userName
+            + " AND NOT refsetId:0" + " AND forReview:true";
+      } else {
+        throw new Exception("UserName must always be set");
+      }
+    } else if (userRole == UserRole.ADMIN) {
+      if (userName != null && !userName.equals("")) {
+        query = "projectId:" + projectId + " AND " + "( (authors:" + userName
+            + " AND forAuthoring:true) OR" + "  (reviewers:" + userName
+            + " AND forReview:true) )" + " AND NOT refsetId:0";
+      } else {
+        throw new Exception("UserName must always be set");
+      }
     } else {
       throw new Exception(
           "User role to find assigned refsets must be AUTHOR, REVIEWER, or ADMIN.");
     }
+    final TrackingRecordList records =
+        service.findTrackingRecordsForQuery(query, pfs);
+
+    return records;
   }
 
   /* see superclass */
@@ -1441,32 +1329,28 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
   public TrackingRecordList findAssignedConcepts(UserRole userRole,
     Translation translation, String userName, PfsParameter pfs,
     WorkflowService service) throws Exception {
-    final PfsParameterJpa localPfs =
-        pfs == null ? new PfsParameterJpa() : new PfsParameterJpa(pfs);
-    if (userRole == UserRole.AUTHOR) {
-      return findAssignedEditingConcepts(translation.getProject().getId(),
-          translation.getId(), userName, localPfs, service);
-    } else if (userRole == UserRole.REVIEWER) {
-      return findAssignedReviewConcepts(translation.getProject().getId(),
-          translation.getId(), userName, localPfs, service);
-    } else if (userRole == UserRole.ADMIN) {
-      List<TrackingRecord> records = new ArrayList<>();
-      records
-          .addAll(findAssignedEditingConcepts(translation.getProject().getId(),
-              translation.getId(), userName, null, service).getObjects());
-      records
-          .addAll(findAssignedReviewConcepts(translation.getProject().getId(),
-              translation.getId(), userName, null, service).getObjects());
-      final TrackingRecordList recordList = new TrackingRecordListJpa();
-      final int[] totalCt = new int[1];
-      recordList.getObjects().addAll(
-          service.applyPfsToList(records, TrackingRecord.class, totalCt, pfs));
-      recordList.setTotalCount(totalCt[0]);
 
-      return recordList;
+    final long projectId = translation.getProject().getId();
+    final long translationId = translation.getId();
+    String query = null;
+    if (userRole == UserRole.AUTHOR) {
+      query = "projectId:" + projectId + " AND " + "authors:" + userName
+          + " AND translationId:" + translationId
+          + " AND forAuthoring:true AND forReview:false";
+
+    } else if (userRole == UserRole.REVIEWER) {
+      query = "projectId:" + projectId + " AND " + "reviewers:" + userName
+          + " AND translationId:" + translationId + " AND forReview:true";
+
+    } else if (userRole == UserRole.ADMIN) {
+      query = "projectId:" + projectId + " AND " + "reviewers:" + userName
+          + " AND translationId:" + translationId;
     } else {
       throw new Exception(
           "User role to find assigned concepts must be AUTHOR, REVIEWER, or ADMIN.");
     }
+    final TrackingRecordList records =
+        service.findTrackingRecordsForQuery(query, pfs);
+    return records;
   }
 }

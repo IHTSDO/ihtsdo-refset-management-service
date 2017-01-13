@@ -1426,16 +1426,19 @@ tsApp.service('refsetService', [
       console.debug('assignRefsetTerminologyId', projectId, refset);
       // Setup deferred
       var deferred = $q.defer();
+      gpService.increment();
 
       $http.post(refsetUrl + 'assign?projectId=' + projectId, refset).then(
       // success
       function(response) {
         console.debug('  terminologyId = ', response.data);
+        gpService.decrement();
         deferred.resolve(response.data);
       },
       // error
       function(response) {
         utilService.handleError(response);
+        gpService.decrement();
         deferred.reject(response.data);
       });
       return deferred.promise;
