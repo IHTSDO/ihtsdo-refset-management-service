@@ -359,7 +359,7 @@ tsApp
                   }
                 }
 
-                // If still no selection, clear lastRefsetId
+                // If still no selection, clear lastRefsetId and select first in list
                 else {
                   $scope.clearLastRefsetId();
                 }
@@ -370,6 +370,7 @@ tsApp
                     $scope.refreshLookupProgress($scope.refsets[i]);
                   }
                 }
+                
               };
 
               // clear the last refset id
@@ -439,6 +440,7 @@ tsApp
                     if (found) {
                       $scope.requiresNameLookup = true;
                     }
+                    
                   });
 
               };

@@ -842,7 +842,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
       }
 
       // Authorize the call
-      authorizeProject(translationService, translation.getProject().getId(),
+      final String userName = authorizeProject(translationService, translation.getProject().getId(),
           securityService, authToken, "import translation concepts",
           UserRole.AUTHOR);
 
@@ -862,6 +862,11 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
       } else {
         return result;
       }
+      
+
+      addLogEntry(translationService, userName, "RESUME IMPORT translation",
+          translation.getProject().getId(), translation.getId(),
+          translation.toString());
 
     } catch (Exception e) {
       handleException(e, "trying to resume import translation concepts");
@@ -1267,6 +1272,11 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
       translation.setStagingType(null);
       translation.setLastModifiedBy(userName);
       translationService.updateTranslation(translation);
+      
+
+      addLogEntry(translationService, userName, "CANCEL IMPORT translation",
+          translation.getProject().getId(), translation.getId(),
+          translation.toString());
 
     } catch (Exception e) {
       handleException(e, "trying to resume import translation concepts");
@@ -3049,7 +3059,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
       translationService.updateConcept(concept);
 
       addLogEntry(translationService, userName, "ADD concept note",
-          translation.getProject().getId(), translation.getId(),
+          translation.getProject().getId(), concept.getId(),
           concept.getTerminologyId() + " = " + note);
 
       return newNote;
@@ -3108,7 +3118,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
       translationService.updateConcept(concept);
 
       addLogEntry(translationService, userName, "REMOVE concept note",
-          translation.getProject().getId(), translation.getId(),
+          translation.getProject().getId(), concept.getId(),
           concept.getTerminologyId() + " = " + note);
 
     } catch (Exception e) {

@@ -327,6 +327,9 @@ tsApp.service('workflowService', [
     };
 
     this.refsetIsAllowed = function(action, role, workflowStatus, workflowConfig) {
+      if (workflowConfig == undefined) {
+        return false;
+      }
       var allowed = workflowConfig.refsetAllowedMap[action + role + workflowStatus];
       if (allowed == null) {
         allowed = workflowConfig.refsetAllowedMap[action + role + '*'];
