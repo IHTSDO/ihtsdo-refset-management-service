@@ -5,6 +5,11 @@
   <div class="col-md-6 col-xs-12">
 
     <div>
+      <span ng-show="value == 'AVAILABLE'" style="float: right; margin-left: 3px;">
+        <button ng-click="openAddRefsetModal(true); $event.stopPropagation()"
+          title="Add local set" class="btn btn-xs btn-primary">Add
+          Local Set</button>
+      </span>
       <span class="info-text" ng-show="refsets.totalCount > 10"
         style="float: right; margin-top: 4px">
         Page size: <select ng-model="paging['refset'].pageSize"
@@ -34,7 +39,7 @@
         title="{{paging['refset'].filter}}" list="filter{{value}}">
       <datalist id="filter{{value}}">
         <option ng-repeat="filter in filters | orderBy:'key'"
-          value="{{filter.key}}:{{filter.value}}">{{filter.value}}</option>
+          value="{{filter.value}}">{{filter.key}}:{{filter.value}}</option>
       </datalist>
 
       <button class="btn btn-xs btn-warning" ng-show="paging['refset'].filter"
@@ -52,11 +57,7 @@
           title="Showing only most recent, click to toggle">All</span>
       </button>
 
-      <span ng-show="value == 'AVAILABLE'" style="float: right;">
-        <button ng-click="openAddRefsetModal(true); $event.stopPropagation()"
-          title="Add local set" class="btn btn-xs btn-primary">Add
-          Local Set</button>
-      </span>
+      
 
     </div>
 
