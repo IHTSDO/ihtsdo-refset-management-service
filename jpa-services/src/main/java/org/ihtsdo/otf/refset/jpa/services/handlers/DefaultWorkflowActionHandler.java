@@ -1312,7 +1312,8 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
             + " AND forAuthoring:true) OR" + "  (reviewers:" + userName
             + " AND forReview:true) )" + " AND NOT refsetId:0";
       } else {
-        query = "NOT refsetId:0 AND (forAuthoring:true OR forReview:true)";
+        query = "projectId:" + projectId
+            + " AND NOT refsetId:0 AND (forAuthoring:true OR forReview:true)";
       }
     } else {
       throw new Exception(
