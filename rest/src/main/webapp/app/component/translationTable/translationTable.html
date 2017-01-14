@@ -738,18 +738,18 @@
           <td>
             {{toDate(record.lastModified)}}
             <span ng-show="projects.role == 'ADMIN'">
-              <br />
+              <!-- Need to show how to effectively display this info, user can look at the log to see the info -->
+              <!--               <br />
               <span ng-show="record.authors.length > 0">
-                authors:
-                <span ng-repeat="author in record.authors track by $index">{{author}}
-                </span>
+                author<span ng-show="record.authors.length>1">s</span>:
+                <span ng-repeat="author in record.authors track by $index">{{author}}</span>
               </span>
               <span ng-show="record.reviewers.length > 0">
                 reviewers:
                 <span ng-repeat="reviewer in record.reviewers track by $index">{{reviewer}}
                 </span>
               </span>
-              <!-- <span ng-show="record.reviewers.length > 0">reviewers: {{record.reviewers[0]}} {{record.reviewers[1]}}</span> -->
+ -->
               <br /> {{record.concept.workflowStatus}}
             </span>
 
