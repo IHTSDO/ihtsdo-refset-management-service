@@ -1797,8 +1797,9 @@ tsApp
                     }
 
                     // Search, then open the concept modal
-                    if (searchAgain) {
-                      $scope.getAssignedConcepts($scope.selected.translation, nextIndex);
+                    if (closeFlag || searchAgain) {
+                      $scope.getAssignedConcepts($scope.selected.translation, 
+                        closeFlag ? null : nextIndex);
                     }
 
                     // Otherwise, just open the modal for the next concept
