@@ -262,7 +262,10 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl
       final Translation translation =
           workflowService.getTranslation(translationId);
       final User user = securityService.getUser(userName);
-      securityService.handleLazyInit(user);
+      if (user != null) {
+        securityService.handleLazyInit(user);
+      }
+      
       // Get the project
       final Project project = workflowService.getProject(projectId);
 
@@ -336,11 +339,10 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl
       addLogEntry(workflowService, userName, "WORKFLOW action", projectId,
           translationId, action + " as " + projectRole + " on concept "
               + concept.getTerminologyId() + ", " + concept.getName());
-      
+
       addLogEntry(workflowService, userName, "WORKFLOW action", projectId,
           concept.getId(), action + " as " + projectRole + " on concept "
               + concept.getTerminologyId() + ", " + concept.getName());
-
 
       handleLazyInit(record, workflowService);
 
