@@ -1050,7 +1050,7 @@ tsApp.service('translationService', [
         a.href = fileURL;
         a.target = '_blank';
         a.download = 'concepts_' + utilService.toCamelCase(translation.name) + translation.terminologyId +
-        '_' + utilService.yyyymmdd(new Date()) + '.txt';
+        '_' + utilService.yyyymmdd(new Date()) + handler.fileTypeFilter;
         document.body.appendChild(a);
         gpService.decrement();
         a.click();

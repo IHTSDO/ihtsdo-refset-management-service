@@ -1796,14 +1796,14 @@ tsApp
                       alert('SHOULD NEVER HAPPEN: ' + data);
                     }
 
-                    if (!closeFlag) {
-                      // Search, then open the concept modal
-                      if (searchAgain) {
-                        $scope.getAssignedConcepts($scope.selected.translation, nextIndex);
-                      }
+                    // Search, then open the concept modal
+                    if (searchAgain) {
+                      $scope.getAssignedConcepts($scope.selected.translation, nextIndex);
+                    }
 
-                      // Otherwise, just open the modal for the next concept
-                      else {
+                    // Otherwise, just open the modal for the next concept
+                    else {
+                      if (!closeFlag) {
                         $scope.openEditConceptModal(
                           $scope.selected.translation.assigned[nextIndex].concept, nextIndex);
                       }
