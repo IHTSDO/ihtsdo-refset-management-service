@@ -63,20 +63,21 @@ tsApp.service('workflowService', [
       // Find available editing work
       gpService.increment();
       $http.post(
-        workflowUrl + 'translation/available?userRole=' + userRole + '&projectId=' + projectId + '&translationId='
-          + translationId + '&userName=' + userName, utilService.prepPfs(pfs)).then(
-      // success
-      function(response) {
-        console.debug('  work = ', response.data);
-        gpService.decrement();
-        deferred.resolve(response.data);
-      },
-      // error
-      function(response) {
-        utilService.handleError(response);
-        gpService.decrement();
-        deferred.reject(response.data);
-      });
+        workflowUrl + 'translation/available?userRole=' + userRole + '&projectId=' + projectId
+          + '&translationId=' + translationId + '&userName=' + userName, utilService.prepPfs(pfs))
+        .then(
+        // success
+        function(response) {
+          console.debug('  work = ', response.data);
+          gpService.decrement();
+          deferred.resolve(response.data);
+        },
+        // error
+        function(response) {
+          utilService.handleError(response);
+          gpService.decrement();
+          deferred.reject(response.data);
+        });
       return deferred.promise;
     };
 
@@ -88,8 +89,9 @@ tsApp.service('workflowService', [
       // Find assigned editing work
       gpService.increment();
       $http.post(
-        workflowUrl + 'translation/assigned?userRole=' + userRole + '&projectId=' + projectId + '&translationId='
-          + translationId + '&userName=' + userName, utilService.prepPfs(pfs)).then(
+        workflowUrl + 'translation/assigned?userRole=' + userRole + '&projectId=' + projectId
+          + '&translationId=' + translationId + (userName ? '&userName=' + userName : ''),
+        utilService.prepPfs(pfs)).then(
       // success
       function(response) {
         console.debug('  work = ', response.data);
@@ -113,7 +115,8 @@ tsApp.service('workflowService', [
       // Find assigned refset work
       gpService.increment();
       $http.post(
-        workflowUrl + 'refset/assigned?userRole=' + userRole + '&projectId=' + projectId + '&userName=' + userName, utilService.prepPfs(pfs)).then(
+        workflowUrl + 'refset/assigned?userRole=' + userRole + '&projectId=' + projectId
+          + (userName ? '&userName=' + userName : ''), utilService.prepPfs(pfs)).then(
       // success
       function(response) {
         console.debug('  work = ', response.data);
@@ -213,8 +216,8 @@ tsApp.service('workflowService', [
       // Finds refsets available by the specified user
       gpService.increment();
       $http.post(
-        workflowUrl + 'refset/available?userRole=' + userRole + '&projectId=' + projectId + '&userName=' + userName,
-        utilService.prepPfs(pfs)).then(
+        workflowUrl + 'refset/available?userRole=' + userRole + '&projectId=' + projectId
+          + '&userName=' + userName, utilService.prepPfs(pfs)).then(
       // success
       function(response) {
         console.debug('  refset = ', response.data);
@@ -229,8 +232,6 @@ tsApp.service('workflowService', [
       });
       return deferred.promise;
     };
-
-
 
     this.getTrackingRecordForRefset = function(refsetId) {
       console.debug('getTrackingRecordForRefset');

@@ -1312,7 +1312,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
             + " AND forAuthoring:true) OR" + "  (reviewers:" + userName
             + " AND forReview:true) )" + " AND NOT refsetId:0";
       } else {
-        throw new Exception("UserName must always be set");
+        query = "NOT refsetId:0 AND (forAuthoring:true OR forReview:true)";
       }
     } else {
       throw new Exception(
@@ -1343,8 +1343,8 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
           + " AND translationId:" + translationId + " AND forReview:true";
 
     } else if (userRole == UserRole.ADMIN) {
-      query = "projectId:" + projectId + " AND " + "reviewers:" + userName
-          + " AND translationId:" + translationId;
+      query = "projectId:" + projectId + " AND translationId:" + translationId
+          + " AND (forAuthoring:true OR forReview:true)";
     } else {
       throw new Exception(
           "User role to find assigned concepts must be AUTHOR, REVIEWER, or ADMIN.");
