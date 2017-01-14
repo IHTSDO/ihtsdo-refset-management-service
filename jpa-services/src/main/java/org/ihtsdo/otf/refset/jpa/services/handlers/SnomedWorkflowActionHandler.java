@@ -856,15 +856,7 @@ public class SnomedWorkflowActionHandler extends DefaultWorkflowActionHandler {
           + " AND translationId:" + translationId + " AND forReview:true";
     } else if (userRole == UserRole.ADMIN) {
       query = "projectId:" + projectId + " AND translationId:" + translationId
-      // author
-          + " AND ((authors:" + userName
-          + " AND forAuthoring:true AND forReview:false) OR "
-          // reviewer
-          + "(reviewersOrder:1" + userName
-          + " AND NOT reviewersOrder:2* AND forReview:true "
-          + " AND NOT worflowStatus:REVIEW_DONE) OR "
-          // reviewer2
-          + " (reviewersOrder:2" + userName + " AND forReview:true))";
+          + " AND (forAuthoring:true OR forReview:true)";
     } else {
       throw new Exception(
           "User role to find assigned concepts must be AUTHOR, REVIEWER, REVIEWER2 or ADMIN.");

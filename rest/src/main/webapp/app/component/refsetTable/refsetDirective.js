@@ -226,8 +226,6 @@ tsApp
                   });
                 }
 
-                // TODO: type picklist is not working on ASSIGNED accordion
-                // because it does a lucene search
                 // on TrackingRecords, not on Refsets table
                 if ($scope.value == 'ASSIGNED' && $scope.projects.role == 'ADMIN') {
                   if (pfs.queryRestriction && $scope.paging['refset'].filter) {
@@ -237,7 +235,7 @@ tsApp
                     pfs.queryRestriction = pfs.queryRestriction + $scope.paging['refset'].filter;
                   }
                   workflowService
-                    .findAssignedRefsets('ADMIN', $scope.project.id, pfs)
+                    .findAssignedRefsets('ADMIN', $scope.project.id, null, pfs)
                     .then(
                       // Success
                       function(data) {
@@ -257,7 +255,7 @@ tsApp
                         $scope.reselect();
                       });
                 }
-                if ($scope.value == 'ASSIGNED') {
+                if ($scope.value == 'ASSIGNED' && $scope.projects.role != 'ADMIN') {
                   if (pfs.queryRestriction && $scope.paging['refset'].filter) {
                     pfs.queryRestriction = pfs.queryRestriction + " AND ";
                   }
@@ -359,7 +357,8 @@ tsApp
                   }
                 }
 
-                // If still no selection, clear lastRefsetId and select first in list
+                // If still no selection, clear lastRefsetId and select first in
+                // list
                 else {
                   $scope.clearLastRefsetId();
                 }
@@ -370,7 +369,7 @@ tsApp
                     $scope.refreshLookupProgress($scope.refsets[i]);
                   }
                 }
-                
+
               };
 
               // clear the last refset id
@@ -440,7 +439,7 @@ tsApp
                     if (found) {
                       $scope.requiresNameLookup = true;
                     }
-                    
+
                   });
 
               };
@@ -631,7 +630,7 @@ tsApp
 
               // Remove a refset
               $scope.removeRefset = function(refset) {
-                workflowService.findAssignedRefsets('ADMIN', $scope.project.id, {
+                workflowService.findAssignedRefsets('ADMIN', $scope.project.id, null, {
                   startIndex : 0,
                   maxResults : 1,
                   queryRestriction : 'refsetId:' + refset.id
@@ -1107,8 +1106,8 @@ tsApp
               };
 
               // Definition clauses controller
-              var DefinitionClausesModalCtrl = function($scope, $uibModalInstance, utilService, refset,
-                metadata, value) {
+              var DefinitionClausesModalCtrl = function($scope, $uibModalInstance, utilService,
+                refset, metadata, value) {
                 console.debug('Entered definition clauses modal control', refset, value);
 
                 $scope.refset = refset;
@@ -1311,8 +1310,8 @@ tsApp
               };
 
               // Notes controller
-              var NotesModalCtrl = function($scope, $uibModalInstance, $sce, utilService,object, type,
-                tinymceOptions) {
+              var NotesModalCtrl = function($scope, $uibModalInstance, $sce, utilService, object,
+                type, tinymceOptions) {
                 console.debug('Entered notes modal control', object, type);
                 $scope.object = object;
                 $scope.type = type;
@@ -1586,7 +1585,7 @@ tsApp
 
                 // Determine whether the refset version is in the list
                 $scope.versionNotInPicklist = function() {
-                  console.debug('xxx',$scope.refset.version, $scope.versions);
+                  console.debug('xxx', $scope.refset.version, $scope.versions);
                   for (var i = 0; i < $scope.versions.length; i++) {
                     if ($scope.versions[i] == $scope.refset.version) {
                       $scope.validVersion = 'true';
@@ -2798,8 +2797,8 @@ tsApp
               };
 
               // Add member controller
-              var AddMemberModalCtrl = function($scope, $uibModalInstance,utilService, metadata, refset,
-                project, value) {
+              var AddMemberModalCtrl = function($scope, $uibModalInstance, utilService, metadata,
+                refset, project, value) {
                 console.debug('Entered add member modal control');
                 $scope.value = value;
                 $scope.activeOnly = true;
@@ -3020,8 +3019,8 @@ tsApp
               };
 
               // Migration modal controller
-              var MigrationModalCtrl = function($scope, $uibModalInstance, $interval, gpService, utilService,
-                project, refset, paging, metadata) {
+              var MigrationModalCtrl = function($scope, $uibModalInstance, $interval, gpService,
+                utilService, project, refset, paging, metadata) {
                 console.debug('Entered migration modal control');
 
                 // set up variables

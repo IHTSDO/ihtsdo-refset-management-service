@@ -394,7 +394,7 @@ tsApp
                 } else if ($scope.projects.role == 'ADMIN') {
                   pfs.queryRestriction = $scope.paging['assigned'].filter;
                   workflowService.findAssignedConcepts('ADMIN', $scope.project.id, translation.id,
-                    $scope.user.userName, pfs).then(
+                    null, pfs).then(
                   // Success
                   function(data) {
                     translation.assigned = data.records;
@@ -544,7 +544,7 @@ tsApp
 
                 workflowService
                   .findAssignedConcepts('ADMIN', $scope.project.id, translation.id,
-                    $scope.user.userName, {
+                   null, {
                       startIndex : 0,
                       maxResults : 1
                     })
