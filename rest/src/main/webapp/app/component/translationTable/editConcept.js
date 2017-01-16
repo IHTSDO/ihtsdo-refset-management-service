@@ -189,6 +189,11 @@ tsApp.controller('EditConceptModalCtrl', [
       return 'UNKNOWN';
     };
 
+    // link to error handling
+    function handleError(errors, error) {
+      utilService.handleDialogError(errors, error);
+    }
+
     // toggles display of memory and spelling controls
     $scope.toggleDisplayControls = function() {
       $scope.displayControls = !$scope.displayControls;

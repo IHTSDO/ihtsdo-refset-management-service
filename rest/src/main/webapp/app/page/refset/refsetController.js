@@ -101,14 +101,7 @@ tsApp
           if (!$scope.project) {
             return;
           }
-          
-          // Lookup workflow config for this project
-          workflowService.getWorkflowConfig($scope.project.id)
-          .then(
-            // Success
-            function(data) {
-              $scope.metadata.workflowConfig = data;
-            });
+
 
           // Lookup terminology info for this project
           $scope.getTerminologyMetadata(project);
@@ -120,58 +113,69 @@ tsApp
             $scope.user.userPreferences.lastTranslationId = null;
           }
           $scope.user.userPreferences.lastProjectId = $scope.project.id;
-          // Empty PFS
-          var pfs = {};
-          // Find role
-          projectService
-            .findAssignedUsersForProject($scope.project.id, '', pfs)
-            .then(
-              // Success
-              function(data) {
-                $scope.projects.assignedUsers = data.users;
-                for (var i = 0; i < $scope.projects.assignedUsers.length; i++) {
-                  if ($scope.projects.assignedUsers[i].userName == $scope.user.userName) {
-                    $scope.projects.role = $scope.projects.assignedUsers[i].projectRoleMap[$scope.project.id];
-                    var availableRoles = $scope.metadata.workflowConfig.refsetAvailableRoles.strings;
-                    
-                    // determine role options for each project given the user's project role
-                    // make all roles equal or lower to user's project role available
-                    $scope.roleOptions = [];
-                    for (var j=0; j<availableRoles.length; j++) {
-                      if ($scope.projects.role == availableRoles[j]) {
-                        $scope.roleOptions.unshift(availableRoles[j]);
-                        break;
-                      } else {
-                        $scope.roleOptions.unshift(availableRoles[j]);
+          
+          // Lookup workflow config for this project
+          workflowService.getWorkflowConfig($scope.project.id)
+          .then(
+            // Success
+            function(data) {
+              $scope.metadata.workflowConfig = data;
+
+              // Empty PFS
+              var pfs = {};
+              // Find role
+              projectService
+              .findAssignedUsersForProject($scope.project.id, '', pfs)
+              .then(
+                // Success
+                function(data) {
+                  $scope.projects.assignedUsers = data.users;
+                  for (var i = 0; i < $scope.projects.assignedUsers.length; i++) {
+                    if ($scope.projects.assignedUsers[i].userName == $scope.user.userName) {
+                      $scope.projects.role = $scope.projects.assignedUsers[i].projectRoleMap[$scope.project.id];
+                      var availableRoles = $scope.metadata.workflowConfig.refsetAvailableRoles.strings;
+                      
+                      // determine role options for each project given the user's project role
+                      // make all roles equal or lower to user's project role available
+                      $scope.roleOptions = [];
+                      for (var j=0; j<availableRoles.length; j++) {
+                        if ($scope.projects.role == availableRoles[j]) {
+                          $scope.roleOptions.unshift(availableRoles[j]);
+                          break;
+                        } else {
+                          $scope.roleOptions.unshift(availableRoles[j]);
+                        }
                       }
-                    }
-                   
-                    // Force the initial choice to be "AUTHOR" instead of
-                    // "ADMIN"
-                    if ($scope.projects.role == 'ADMIN'
-                      && !$scope.user.userPreferences.lastProjectRole) {
-                      $scope.projects.role = 'AUTHOR';
-                    }
-                    if ($scope.user.userPreferences.lastProjectRole) {
-                      $scope.projects.role = $scope.user.userPreferences.lastProjectRole;
-                    }
-                    
-                    // ensure that user's role is allowed on refset tab - if not, assign user to be AUTHOR
-                    var found = false;
-                    for (var j=0; j<availableRoles.length; j++) {
-                      if ($scope.projects.role == availableRoles[j]) {
-                        found = true;
-                        break;
+                     
+                      // Force the initial choice to be "AUTHOR" instead of
+                      // "ADMIN"
+                      if ($scope.projects.role == 'ADMIN'
+                        && !$scope.user.userPreferences.lastProjectRole) {
+                        $scope.projects.role = 'AUTHOR';
                       }
+                      if ($scope.user.userPreferences.lastProjectRole) {
+                        $scope.projects.role = $scope.user.userPreferences.lastProjectRole;
+                      }
+                      
+                      // ensure that user's role is allowed on refset tab - if not, assign user to be AUTHOR
+                      var found = false;
+                      for (var j=0; j<availableRoles.length; j++) {
+                        if ($scope.projects.role == availableRoles[j]) {
+                          found = true;
+                          break;
+                        }
+                      }
+                      if (!found) {
+                        $scope.projects.role = 'AUTHOR';
+                      }
+                      break;
                     }
-                    if (!found) {
-                      $scope.projects.role = 'AUTHOR';
-                    }
-                    break;
                   }
-                }
-                $scope.setRole($scope.projects.role);
-              });
+                  $scope.setRole($scope.projects.role);
+                });
+              
+            });
+                             
         };
 
         $scope.setRole = function() {
