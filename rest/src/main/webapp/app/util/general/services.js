@@ -530,7 +530,6 @@ tsApp.service('securityService', [
 
       // Determine if page has been reloaded
       if (!$http.defaults.headers.common.Authorization) {
-        console.debug('no header');
         // Retrieve cookie
         if ($cookies.get('user')) {
           var cookieUser = JSON.parse($cookies.get('user'));
