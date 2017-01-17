@@ -315,7 +315,6 @@ public class SnomedWorkflowActionHandler extends DefaultWorkflowActionHandler {
             .of(WorkflowStatus.REVIEW_NEW, WorkflowStatus.REVIEW_IN_PROGRESS)
             .contains(concept.getWorkflowStatus())) {
           record.getReviewers().remove(user.getUserName());
-          record.setForAuthoring(true);
           record.setForReview(false);
           record.setLastModifiedBy(user.getUserName());
           // get the origin review concept (e.g. the EDITING_DONE state)

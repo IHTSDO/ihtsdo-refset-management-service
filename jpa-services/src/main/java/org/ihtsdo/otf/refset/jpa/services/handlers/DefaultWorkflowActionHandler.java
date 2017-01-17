@@ -291,7 +291,6 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
                 WorkflowStatus.REVIEW_DONE)
             .contains(refset.getWorkflowStatus())) {
           record.getReviewers().remove(user.getUserName());
-          record.setForAuthoring(true);
           record.setForReview(false);
           record.setLastModifiedBy(user.getUserName());
           // get the origin review refset (e.g. the EDITING_DONE state)
@@ -650,7 +649,6 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
                 WorkflowStatus.REVIEW_DONE)
             .contains(concept.getWorkflowStatus())) {
           record.getReviewers().remove(user.getUserName());
-          record.setForAuthoring(true);
           record.setForReview(false);
           record.setLastModifiedBy(user.getUserName());
           // get the origin review concept (e.g. the EDITING_DONE state)
