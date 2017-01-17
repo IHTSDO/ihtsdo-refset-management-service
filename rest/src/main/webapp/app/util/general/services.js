@@ -93,6 +93,8 @@ tsApp
           .replace(/[-_]+/g, ' ')
           // Removes any non alphanumeric characters
           .replace(/[^\w\s]/g, '')
+          // remove duplicate spaces
+          .replace(/\s{2,}/g, ' ')
           // Uppercases the first character in each group immediately following
           // a space
           // (delimited by spaces)
