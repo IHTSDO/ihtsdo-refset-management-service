@@ -93,6 +93,8 @@ tsApp
           .replace(/[-_]+/g, ' ')
           // Removes any non alphanumeric characters
           .replace(/[^\w\s]/g, '')
+          // remove duplicate spaces
+          .replace(/\s{2,}/g, ' ')
           // Uppercases the first character in each group immediately following
           // a space
           // (delimited by spaces)
@@ -530,7 +532,6 @@ tsApp.service('securityService', [
 
       // Determine if page has been reloaded
       if (!$http.defaults.headers.common.Authorization) {
-        console.debug('no header');
         // Retrieve cookie
         if ($cookies.get('user')) {
           var cookieUser = JSON.parse($cookies.get('user'));

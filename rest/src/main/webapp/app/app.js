@@ -193,7 +193,12 @@ tsApp.controller('TabCtrl', [ '$scope', '$interval', '$timeout', 'securityServic
   } ]);
 
 // Header controller
-tsApp.controller('HeaderCtrl', [ '$scope', '$location', '$http', 'securityService', 'appConfig',
+tsApp.controller('HeaderCtrl', [
+  '$scope',
+  '$location',
+  '$http',
+  'securityService',
+  'appConfig',
   function($scope, $location, $http, securityService, appConfig) {
     console.debug('configure HeaderCtrl');
 
@@ -227,6 +232,12 @@ tsApp.controller('HeaderCtrl', [ '$scope', '$location', '$http', 'securityServic
     $scope.isLoggedIn = function() {
       return securityService.isLoggedIn();
     };
+
+    // For an ng-show
+    $scope.showJiraFeedback = function() {
+      return appConfig['base.url'].indexOf('ihtsdotools') != -1
+        && appConfig['base.url'].indexOf('uat') != -1;
+    }
 
   } ]);
 
