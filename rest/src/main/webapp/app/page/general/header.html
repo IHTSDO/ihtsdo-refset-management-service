@@ -1,8 +1,8 @@
-<div ng-include="showJiraFeedback() ? 'feedback.html' : null"></div>
 
 <!--  header -->
 <nav ng-controller="HeaderCtrl"
   class="navbar navbar-default navbar-fixed-top header-footer-bg">
+  <div ng-include="showJiraFeedback() ? 'feedback.html' : null"></div>
   <div class="container-fluid">
 
     <table style="width: 100%">
