@@ -632,7 +632,7 @@
               title="Add concept notes" class="md-grey material-icons md-18">assignment</i>
 
             <!--  Log -->
-            <i ng-click="openLogModal()" title="Retrieve log"
+            <i ng-click="openLogModal(concept)" title="Retrieve log"
               class="noul material-icons md-18">event_note</i>
           </td>
         </tr>
@@ -966,7 +966,7 @@
                   ng-show="concept.name == 'name lookup in progress' && !selected.translation.lookupInProgress"
                   title="Restart name lookup" class="noul material-icons md-18">play_arrow</i>
                 <!-- log -->
-                <i ng-click="openLogModal()" title="Retrieve log"
+                <i ng-click="openLogModal(concept)" title="Retrieve log"
                   class="noul material-icons md-18">event_note</i>
               </td>
             </tr>
