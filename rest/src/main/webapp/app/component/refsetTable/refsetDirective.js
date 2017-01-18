@@ -180,12 +180,6 @@ tsApp
                   } else if (value == 'External'
                     && ($scope.value == 'RELEASE' || $scope.value == 'PUBLISHED' || $scope.value == 'BETA')) {
                     pfs.queryRestriction = 'type:EXTERNAL';
-                  } else if (value == 'Intensional' && $scope.value == 'ASSIGNED') {
-                    pfs.queryRestriction = 'refsetType:INTENSIONAL';
-                  } else if (value == 'Extensional' && $scope.value == 'ASSIGNED') {
-                    pfs.queryRestriction = 'refsetType:EXTENSIONAL';
-                  } else if (value == 'External' && $scope.value == 'ASSIGNED') {
-                    pfs.queryRestriction = 'refsetType:EXTERNAL';
                   } else if (value == 'Intensional') {
                     pfs.queryRestriction = 'INTENSIONAL';
                   } else if (value == 'Extensional') {
