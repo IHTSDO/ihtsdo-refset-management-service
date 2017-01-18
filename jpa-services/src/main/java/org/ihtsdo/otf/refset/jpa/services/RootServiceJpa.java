@@ -888,11 +888,16 @@ public abstract class RootServiceJpa implements RootService {
       sb.append(query);
     }
 
-    int[] totalCt = new int[1];
-    final List<LogEntry> list = (List<LogEntry>) getQueryResults(sb.toString(),
-        LogEntryJpa.class, LogEntryJpa.class, pfs, totalCt);
+    try {
+      int[] totalCt = new int[1];
+      final List<LogEntry> list =
+          (List<LogEntry>) getQueryResults(sb.toString(), LogEntryJpa.class,
+              LogEntryJpa.class, pfs, totalCt);
 
-    return list;
+      return list;
+    } catch (ParseException e) {
+      return new ArrayList<>();
+    }
   }
 
   /* see superclass */

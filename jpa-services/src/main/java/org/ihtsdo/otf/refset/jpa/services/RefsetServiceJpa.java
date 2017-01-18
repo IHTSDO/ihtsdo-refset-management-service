@@ -17,6 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.persistence.NoResultException;
 
 import org.apache.log4j.Logger;
+import org.apache.lucene.queryparser.classic.ParseException;
 import org.hibernate.envers.AuditReader;
 import org.hibernate.envers.AuditReaderFactory;
 import org.hibernate.envers.query.AuditEntity;
@@ -308,51 +309,58 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
     if (pfs != null && pfs.getLatestOnly()) {
       pfs.setStartIndex(-1);
     }
-    // this will do filtering and sorting, but not paging
-    List<Refset> list = (List<Refset>) getQueryResults(
-        query == null || query.isEmpty() ? "id:[* TO *] AND provisional:false"
-            : query + " AND provisional:false",
-        RefsetJpa.class, RefsetJpa.class, pfs, totalCt);
 
-    final RefsetList result = new RefsetListJpa();
+    try {
+      // this will do filtering and sorting, but not paging
+      List<Refset> list = (List<Refset>) getQueryResults(
+          query == null || query.isEmpty() ? "id:[* TO *] AND provisional:false"
+              : query + " AND provisional:false",
+          RefsetJpa.class, RefsetJpa.class, pfs, totalCt);
 
-    if (pfs != null && pfs.getLatestOnly()) {
-      List<Refset> resultList = new ArrayList<>();
+      final RefsetList result = new RefsetListJpa();
 
-      Map<String, Refset> latestList = new HashMap<>();
-      for (final Refset refset : list) {
-        // This should pick up "READY_FOR_PUBLICATION" entries
-        if (refset.getEffectiveTime() == null) {
-          resultList.add(refset);
-        }
-        // This should catch the first encountered
-        else if (!latestList.containsKey(refset.getName())) {
-          latestList.put(refset.getName(), refset);
-        }
-        // This should update it effectiveTime is later
-        else {
-          Date effectiveTime =
-              latestList.get(refset.getName()).getEffectiveTime();
-          if (refset.getEffectiveTime().after(effectiveTime)) {
+      if (pfs != null && pfs.getLatestOnly()) {
+        List<Refset> resultList = new ArrayList<>();
+
+        Map<String, Refset> latestList = new HashMap<>();
+        for (final Refset refset : list) {
+          // This should pick up "READY_FOR_PUBLICATION" entries
+          if (refset.getEffectiveTime() == null) {
+            resultList.add(refset);
+          }
+          // This should catch the first encountered
+          else if (!latestList.containsKey(refset.getName())) {
             latestList.put(refset.getName(), refset);
           }
+          // This should update it effectiveTime is later
+          else {
+            Date effectiveTime =
+                latestList.get(refset.getName()).getEffectiveTime();
+            if (refset.getEffectiveTime().after(effectiveTime)) {
+              latestList.put(refset.getName(), refset);
+            }
+          }
         }
+        list = new ArrayList<Refset>(latestList.values());
+        list.addAll(resultList);
+        pfs.setStartIndex(origStartIndex);
+        String queryRestriction = pfs.getQueryRestriction();
+        pfs.setQueryRestriction(null);
+        // passing new int[1] because we're only using this for paging
+        result.setObjects(applyPfsToList(list, Refset.class, new int[1], pfs));
+        pfs.setQueryRestriction(queryRestriction);
+        result.setTotalCount(list.size());
+        pfs.setQueryRestriction(queryRestriction);
+      } else {
+        result.setTotalCount(totalCt[0]);
+        result.setObjects(list);
       }
-      list = new ArrayList<Refset>(latestList.values());
-      list.addAll(resultList);
-      pfs.setStartIndex(origStartIndex);
-      String queryRestriction = pfs.getQueryRestriction();
-      pfs.setQueryRestriction(null);
-      // passing new int[1] because we're only using this for paging
-      result.setObjects(applyPfsToList(list, Refset.class, new int[1], pfs));
-      pfs.setQueryRestriction(queryRestriction);
-      result.setTotalCount(list.size());
-      pfs.setQueryRestriction(queryRestriction);
-    } else {
-      result.setTotalCount(totalCt[0]);
-      result.setObjects(list);
+      return result;
+    } catch (ParseException e) {
+      // On parse error, return empty results
+      return new RefsetListJpa();
     }
-    return result;
+
   }
 
   /**
@@ -496,15 +504,20 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
       sb.append("refsetId:" + refsetId);
     }
 
-    int[] totalCt = new int[1];
-    final List<ConceptRefsetMember> list =
-        (List<ConceptRefsetMember>) getQueryResults(sb.toString(),
-            ConceptRefsetMemberJpa.class, ConceptRefsetMemberJpa.class, pfs,
-            totalCt);
-    final ConceptRefsetMemberList result = new ConceptRefsetMemberListJpa();
-    result.setTotalCount(totalCt[0]);
-    result.setObjects(list);
-    return result;
+    try {
+      int[] totalCt = new int[1];
+      final List<ConceptRefsetMember> list =
+          (List<ConceptRefsetMember>) getQueryResults(sb.toString(),
+              ConceptRefsetMemberJpa.class, ConceptRefsetMemberJpa.class, pfs,
+              totalCt);
+      final ConceptRefsetMemberList result = new ConceptRefsetMemberListJpa();
+      result.setTotalCount(totalCt[0]);
+      result.setObjects(list);
+      return result;
+    } catch (ParseException e) {
+      // On parse error, return empty results
+      return new ConceptRefsetMemberListJpa();
+    }
   }
 
   /* see superclass */
@@ -850,14 +863,20 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
       sb.append("refsetId:" + refsetId);
     }
 
-    int[] totalCt = new int[1];
-    final List<ReleaseInfo> list =
-        (List<ReleaseInfo>) getQueryResults(sb.toString(), ReleaseInfoJpa.class,
-            ReleaseInfoJpa.class, pfs, totalCt);
-    final ReleaseInfoList result = new ReleaseInfoListJpa();
-    result.setTotalCount(totalCt[0]);
-    result.setObjects(list);
-    return result;
+    try {
+      int[] totalCt = new int[1];
+      final List<ReleaseInfo> list =
+          (List<ReleaseInfo>) getQueryResults(sb.toString(),
+              ReleaseInfoJpa.class, ReleaseInfoJpa.class, pfs, totalCt);
+      final ReleaseInfoList result = new ReleaseInfoListJpa();
+      result.setTotalCount(totalCt[0]);
+      result.setObjects(list);
+      return result;
+    } catch (ParseException e) {
+      // On parse error, return empty results
+      return new ReleaseInfoListJpa();
+    }
+
   }
 
   /* see superclass */
@@ -1552,6 +1571,5 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
     }
 
   }
-
 
 }
