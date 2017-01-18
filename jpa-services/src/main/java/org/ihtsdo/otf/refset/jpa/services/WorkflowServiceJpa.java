@@ -265,9 +265,13 @@ public class WorkflowServiceJpa extends TranslationServiceJpa
       if (query != null && !query.isEmpty()) {
         escapedPfsQuery = QueryParserBase.escape(query);
       }
-      fullTextQuery =
+      try {
+        fullTextQuery =
           IndexUtility.applyPfsToLuceneQuery(TrackingRecordJpa.class,
               TrackingRecordJpa.class, escapedPfsQuery, pfs, manager);
+      } catch(ParseException pe) {
+        return new TrackingRecordListJpa();
+      }
     }
 
     // execute the query
