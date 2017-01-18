@@ -2295,9 +2295,7 @@ tsApp
                   var objectId = translation.id
                   if (concept && concept.id) {
                     objectId = concept.id;
-                  } else if (concept) {
-                    objectId = translation.concepts[0].id;
-                  }
+                  } 
                   projectService.getLog(project.id, objectId, $scope.filter).then(
                   // Success
                   function(data) {
