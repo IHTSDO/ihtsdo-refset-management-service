@@ -12,6 +12,7 @@ import java.util.Properties;
 import javax.persistence.NoResultException;
 
 import org.apache.log4j.Logger;
+import org.apache.lucene.queryparser.classic.ParseException;
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.KeyValuePair;
@@ -229,17 +230,22 @@ public class ProjectServiceJpa extends RootServiceJpa
     Logger.getLogger(getClass())
         .info("Project Service - find projects " + "/" + query);
 
-    int[] totalCt = new int[1];
-    List<Project> list = (List<Project>) getQueryResults(
-        query == null || query.isEmpty() ? "id:[* TO *]" : query,
-        ProjectJpa.class, ProjectJpa.class, pfs, totalCt);
-    ProjectList result = new ProjectListJpa();
-    result.setTotalCount(totalCt[0]);
-    result.setObjects(list);
-    for (Project project : result.getObjects()) {
-      handleLazyInit(project);
+    try {
+      int[] totalCt = new int[1];
+      List<Project> list = (List<Project>) getQueryResults(
+          query == null || query.isEmpty() ? "id:[* TO *]" : query,
+          ProjectJpa.class, ProjectJpa.class, pfs, totalCt);
+      ProjectList result = new ProjectListJpa();
+      result.setTotalCount(totalCt[0]);
+      result.setObjects(list);
+      for (Project project : result.getObjects()) {
+        handleLazyInit(project);
+      }
+      return result;
+    } catch (ParseException e) {
+      // On parse error, return empty results
+      return new ProjectListJpa();
     }
-    return result;
   }
 
   /**

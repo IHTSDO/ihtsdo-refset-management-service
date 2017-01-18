@@ -14,6 +14,7 @@ import java.util.Map;
 import javax.persistence.NoResultException;
 
 import org.apache.log4j.Logger;
+import org.apache.lucene.queryparser.classic.ParseException;
 import org.hibernate.envers.AuditReader;
 import org.hibernate.envers.AuditReaderFactory;
 import org.hibernate.envers.query.AuditEntity;
@@ -110,7 +111,6 @@ public class TranslationServiceJpa extends RefsetServiceJpa
     }
   }
 
-
   /**
    * Instantiates an empty {@link TranslationServiceJpa}.
    *
@@ -134,7 +134,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa
    * @param headers the headers
    * @throws Exception
    */
-  public TranslationServiceJpa(Map<String,String >headers) throws Exception {
+  public TranslationServiceJpa(Map<String, String> headers) throws Exception {
     this();
     this.headers = headers;
   }
@@ -311,54 +311,60 @@ public class TranslationServiceJpa extends RefsetServiceJpa
     if (pfs != null && pfs.getLatestOnly()) {
       pfs.setStartIndex(-1);
     }
-    // this will do filtering and sorting, but not paging
-    int[] totalCt = new int[1];
-    List<Translation> list = (List<Translation>) getQueryResults(
-        query == null || query.isEmpty() ? "id:[* TO *] AND provisional:false"
-            : query + " AND provisional:false",
-        TranslationJpa.class, TranslationJpa.class, pfs, totalCt);
 
-    final TranslationList result = new TranslationListJpa();
+    try {
+      // this will do filtering and sorting, but not paging
+      int[] totalCt = new int[1];
+      List<Translation> list = (List<Translation>) getQueryResults(
+          query == null || query.isEmpty() ? "id:[* TO *] AND provisional:false"
+              : query + " AND provisional:false",
+          TranslationJpa.class, TranslationJpa.class, pfs, totalCt);
 
-    if (pfs != null && pfs.getLatestOnly()) {
-      final List<Translation> resultList = new ArrayList<>();
+      final TranslationList result = new TranslationListJpa();
 
-      final Map<String, Translation> latestList = new HashMap<>();
-      for (final Translation translation : list) {
-        // This should pick up "READY_FOR_PUBLICATION" entries
-        if (translation.getEffectiveTime() == null) {
-          resultList.add(translation);
-        }
-        // This should catch the first encountered
-        else if (!latestList.containsKey(translation.getName())) {
-          latestList.put(translation.getName(), translation);
-        }
-        // This should update it effectiveTime is later
-        else {
-          Date effectiveTime =
-              latestList.get(translation.getName()).getEffectiveTime();
-          if (translation.getEffectiveTime().after(effectiveTime)) {
+      if (pfs != null && pfs.getLatestOnly()) {
+        final List<Translation> resultList = new ArrayList<>();
+
+        final Map<String, Translation> latestList = new HashMap<>();
+        for (final Translation translation : list) {
+          // This should pick up "READY_FOR_PUBLICATION" entries
+          if (translation.getEffectiveTime() == null) {
+            resultList.add(translation);
+          }
+          // This should catch the first encountered
+          else if (!latestList.containsKey(translation.getName())) {
             latestList.put(translation.getName(), translation);
           }
+          // This should update it effectiveTime is later
+          else {
+            Date effectiveTime =
+                latestList.get(translation.getName()).getEffectiveTime();
+            if (translation.getEffectiveTime().after(effectiveTime)) {
+              latestList.put(translation.getName(), translation);
+            }
+          }
         }
+        list = new ArrayList<Translation>(latestList.values());
+        list.addAll(resultList);
+        pfs.setStartIndex(origStartIndex);
+        String queryRestriction = pfs.getQueryRestriction();
+        pfs.setQueryRestriction(null);
+        // passing new int[1] because we're only using this for paging
+        result.setObjects(
+            applyPfsToList(list, Translation.class, new int[1], pfs));
+        pfs.setQueryRestriction(queryRestriction);
+        result.setTotalCount(list.size());
+        pfs.setQueryRestriction(queryRestriction);
+      } else {
+        result.setTotalCount(totalCt[0]);
+        result.setObjects(list);
       }
-      list = new ArrayList<Translation>(latestList.values());
-      list.addAll(resultList);
-      pfs.setStartIndex(origStartIndex);
-      String queryRestriction = pfs.getQueryRestriction();
-      pfs.setQueryRestriction(null);
-      // passing new int[1] because we're only using this for paging
-      result
-          .setObjects(applyPfsToList(list, Translation.class, new int[1], pfs));
-      pfs.setQueryRestriction(queryRestriction);
-      result.setTotalCount(list.size());
-      pfs.setQueryRestriction(queryRestriction);
-    } else {
-      result.setTotalCount(totalCt[0]);
-      result.setObjects(list);
-    }
 
-    return result;
+      return result;
+    } catch (ParseException e) {
+      // On parse error, return empty results
+      return new TranslationListJpa();
+    }
   }
 
   /* see superclass */
@@ -379,17 +385,22 @@ public class TranslationServiceJpa extends RefsetServiceJpa
       sb.append("translationId:" + translationId);
     }
 
-    final int[] totalCt = new int[1];
-    final List<Concept> list = (List<Concept>) getQueryResults(sb.toString(),
-        ConceptJpa.class, ConceptJpa.class, pfs, totalCt);
-    for (final Concept c : list) {
-      c.getDescriptions().size();
-    }
-    final ConceptList result = new ConceptListJpa();
-    result.setTotalCount(totalCt[0]);
-    result.setObjects(list);
+    try {
+      final int[] totalCt = new int[1];
+      final List<Concept> list = (List<Concept>) getQueryResults(sb.toString(),
+          ConceptJpa.class, ConceptJpa.class, pfs, totalCt);
+      for (final Concept c : list) {
+        c.getDescriptions().size();
+      }
+      final ConceptList result = new ConceptListJpa();
+      result.setTotalCount(totalCt[0]);
+      result.setObjects(list);
 
-    return result;
+      return result;
+    } catch (ParseException e) {
+      // On parse error, return empty results
+      return new ConceptListJpa();
+    }
   }
 
   /* see superclass */
@@ -1157,14 +1168,19 @@ public class TranslationServiceJpa extends RefsetServiceJpa
       sb.append("translationId:" + translationId);
     }
 
-    int[] totalCt = new int[1];
-    final List<ReleaseInfo> list =
-        (List<ReleaseInfo>) getQueryResults(sb.toString(), ReleaseInfoJpa.class,
-            ReleaseInfoJpa.class, pfs, totalCt);
-    final ReleaseInfoList result = new ReleaseInfoListJpa();
-    result.setTotalCount(totalCt[0]);
-    result.setObjects(list);
-    return result;
+    try {
+      int[] totalCt = new int[1];
+      final List<ReleaseInfo> list =
+          (List<ReleaseInfo>) getQueryResults(sb.toString(),
+              ReleaseInfoJpa.class, ReleaseInfoJpa.class, pfs, totalCt);
+      final ReleaseInfoList result = new ReleaseInfoListJpa();
+      result.setTotalCount(totalCt[0]);
+      result.setObjects(list);
+      return result;
+    } catch (ParseException e) {
+      // On parse error, return empty results
+      return new ReleaseInfoListJpa();
+    }
   }
 
   /* see superclass */
@@ -1183,11 +1199,16 @@ public class TranslationServiceJpa extends RefsetServiceJpa
     } else {
       sb.append("translationId:" + translationId);
     }
-    int[] totalCt = new int[1];
-    final List<MemoryEntry> list =
-        (List<MemoryEntry>) getQueryResults(sb.toString(), MemoryEntryJpa.class,
-            MemoryEntryJpa.class, pfs, totalCt);
-    return list;
+    try {
+      int[] totalCt = new int[1];
+      final List<MemoryEntry> list =
+          (List<MemoryEntry>) getQueryResults(sb.toString(),
+              MemoryEntryJpa.class, MemoryEntryJpa.class, pfs, totalCt);
+      return list;
+    } catch (ParseException e) {
+      // On parse error, return empty results
+      return new ArrayList<>();
+    }
   }
 
   /* see superclass */

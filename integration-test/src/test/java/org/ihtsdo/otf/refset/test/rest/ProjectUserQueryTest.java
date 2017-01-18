@@ -6,6 +6,7 @@
  */
 package org.ihtsdo.otf.refset.test.rest;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -133,10 +134,10 @@ public class ProjectUserQueryTest extends ProjectTestSupport {
     // verify able to retrieve expected concept
     users = projectService.findUnassignedUsersForProject(project.getId(),
         "projectAnyRole:" + project.getId(), null, adminAuthToken);
-    assertTrue(users.getCount() == 0);
+    assertEquals(0,users.getCount());
     users = projectService.findUnassignedUsersForProject(project.getId(),
         "applicationRole:ADMIN", null, adminAuthToken);
-    assertTrue(users.getCount() == 2);
+    assertEquals(1,users.getCount());
 
     // Clean Up
     projectService.unassignUserFromProject(project.getId(),
