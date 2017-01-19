@@ -1476,6 +1476,7 @@ tsApp
                       $window.location.reload();
                     } else {
                       $location.url('/refset?clone=true');
+                      $window.location.reload();
                     }
                   });
                 });
@@ -1509,7 +1510,9 @@ tsApp
                 $scope.projectSelected = function(project) {
                   $scope.project = project;
                   $scope.refset.namespace = project.namespace;
-                  $scope.refset.moduleId = project.moduleId;
+                  if (!$scope.refset.localSet) {
+                    $scope.refset.moduleId = project.moduleId;
+                  }
                   $scope.getTerminologyEditions();
                 };
 
