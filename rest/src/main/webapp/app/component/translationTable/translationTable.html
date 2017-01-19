@@ -632,7 +632,7 @@
               title="Add concept notes" class="md-grey material-icons md-18">assignment</i>
 
             <!--  Log -->
-            <i ng-click="openLogModal(concept)" title="Retrieve log"
+            <i ng-show="concept.workflowStatus != 'NEW'" ng-click="openLogModal(concept)" title="Retrieve log"
               class="noul material-icons md-18">event_note</i>
           </td>
         </tr>
