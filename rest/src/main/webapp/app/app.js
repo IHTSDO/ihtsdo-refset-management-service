@@ -235,8 +235,11 @@ tsApp.controller('HeaderCtrl', [
 
     // For an ng-show
     $scope.showJiraFeedback = function() {
-      return appConfig['base.url'].indexOf('ihtsdotools') != -1
-        && appConfig['base.url'].indexOf('uat') != -1;
+      var retval = (appConfig['base.url'].indexOf('ihtsdotools') != -1 && appConfig['base.url']
+        .indexOf('uat') != -1)
+        || appConfig['base.url'].indexOf('localhost') != -1
+        || appConfig['base.url'].indexOf('local.ihtsdotools') != -1;
+      return retval;
     }
 
   } ]);
@@ -344,3 +347,5 @@ tsApp.directive('confirm', function($confirm) {
     }
   };
 });
+
+
