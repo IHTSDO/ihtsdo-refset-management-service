@@ -42,12 +42,12 @@ public interface ExportRefsetHandler extends Configurable {
   /**
    * Returns the beta file name.
    *
-   * @param namespace the namespace
+   * @param refset the refset
    * @param type the type
    * @param version the version
    * @return the beta file name
    */
-  public String getBetaFileName(String namespace, String type, String version);
+  public String getBetaFileName(Refset refset, String type, String version);
 
   /**
    * Returns the mime type.

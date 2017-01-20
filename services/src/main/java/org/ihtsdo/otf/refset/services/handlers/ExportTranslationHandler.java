@@ -43,12 +43,12 @@ public interface ExportTranslationHandler extends Configurable {
   /**
    * Returns the beta file name.
    *
-   * @param namespace the namespace
+   * @param translation the translation
    * @param type the type
    * @param version the version
    * @return the beta file name
    */
-  public String getBetaFileName(String namespace, String type, String version);
+  public String getBetaFileName(Translation translation, String type, String version);
 
   /**
    * Returns the mime type.

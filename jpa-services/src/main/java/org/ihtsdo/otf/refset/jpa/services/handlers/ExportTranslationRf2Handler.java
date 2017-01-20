@@ -6,6 +6,7 @@ package org.ihtsdo.otf.refset.jpa.services.handlers;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 import java.util.zip.ZipEntry;
@@ -287,7 +288,10 @@ public class ExportTranslationRf2Handler implements ExportTranslationHandler {
   /* see superclass */
   @Override
   public String getFileName(String betaFileName) {
-    return betaFileName.substring(1);
+    // Strip off the "x" and remove the build date
+    String fileExt = betaFileName.substring(betaFileName.lastIndexOf('.'));
+    String fileName = betaFileName.substring(1, betaFileName.lastIndexOf('_'));
+    return fileName + fileExt;
   }
 
   /**
@@ -299,10 +303,13 @@ public class ExportTranslationRf2Handler implements ExportTranslationHandler {
    * @return the beta file name
    */
   @Override
-  public String getBetaFileName(String namespace, String type, String version) {
-    return "xder2_translation_" + type + "_"
+  public String getBetaFileName(Translation translation, String type, String version) {
+    String namespace = translation.getProject().getNamespace();
+    return "xder2_translation_"  + ConfigUtility.toCamelCase(translation.getName()) + type + "_"
         + (namespace == null || namespace.isEmpty() ? "INT" : namespace) + "_"
-        + version + getFileTypeFilter();
+        + version + "_" + ConfigUtility.DATE_FORMAT5.format(new Date()) + getFileTypeFilter();
+
+    
   }
 
 }
