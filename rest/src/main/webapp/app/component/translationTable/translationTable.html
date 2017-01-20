@@ -766,14 +766,16 @@
 
             <!-- UnAssign (instead of delete) -->
             <i ng-show="isAllowed('UNASSIGN', record.concept)"
-              confirm="Are you sure you want to unassign this concept ({{record.concept.terminologyId}}, {{record.concept.name}})"
               ng-click="unassign(record.concept, user.userName)"
               title="Unassign" class="noul material-icons md-18">assignment_return</i>
 
+		    <!-- Feedback -->
+			<i ng-show="isAllowed('FEEDBACK', record.concept)"
+              ng-click="openAssignConceptModal(record.concept,'FEEDBACK', record); $event.stopPropagation()"
+              title="Feedback" class="noul material-icons md-18">assignment_returned</i>
 
             <!-- Finish -->
-            <i confirm="Are you sure you want to finalize editing/review?"
-              ng-show="isAllowed('FINISH', record.concept)"
+            <i ng-show="isAllowed('FINISH', record.concept)"
               ng-click="performWorkflowAction(record.concept, 'FINISH');"
               title="Finish" class="noul material-icons md-18">done</i>
 
@@ -939,11 +941,10 @@
                   title="Assign" class="noul material-icons md-18">assignment_ind</i>
                 <!-- Unassign (for ADMIN fixing) -->
                 <i ng-show="isAllowed('UNASSIGN', concept)"
-                  confirm="Are you sure you want to unassign this concept ({{concept.terminologyId}}, {{concept.name}})"
                   title="Unassign concept"
                   ng-click="unassign(concept, user.userName)"
                   class="noul material-icons md-18">assignment_return</i>
-
+				
                 <!-- Remove -->
                 <i
                   ng-show="concept.workflowStatus == 'READY_FOR_PUBLICATION' || concept.workflowStatus == 'NEW'"

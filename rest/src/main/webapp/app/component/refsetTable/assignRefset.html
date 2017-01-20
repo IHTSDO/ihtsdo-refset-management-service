@@ -12,13 +12,22 @@
   <div refset-info refset="refset" form="short" metadata="metadata"></div>
 
   <table class="table">
-    <tr ng-show="action == 'ASSIGN'">
+    
+    <tr>
       <td>
-        <b>Select user</b>
+        <b>User</b>
       </td>
+      <td ng-show="assignedUsers.length > 1" >
+        <select ng-model="user" ng-options="item.name for item in assignedUsers"></select></td>
+      <td ng-show="assignedUsers.length == 1">{{assignedUsers[0].userName}}</td>
+    </tr>
+    <tr ng-show="action == 'FEEDBACK'">
       <td>
-        <select ng-model="user" ng-options="item.name for item in assignedUsers"></select>
+        <b>Role</b>
       </td>
+      <td ng-show="feedbackRoleOptions.length > 1" >
+        <select ng-model="role" ng-options="item for item in feedbackRoleOptions"></select></td>
+      <td ng-show="feedbackRoleOptions.length == 1">{{role}}</td>
     </tr>
     <tr>
       <td colspan="2">
@@ -53,5 +62,7 @@
 <div class="modal-footer">
   <button ng-show="action == 'ASSIGN'" class="btn btn-xs btn-primary"
     ng-click="assignRefset();">Assign</button>
+  <button ng-show="action == 'FEEDBACK'" class="btn btn-xs btn-primary"
+    ng-click="assignRefset();">Feedback</button>
   <button class="btn btn-xs btn-warning" ng-click="cancel()">Cancel</button>
 </div>
