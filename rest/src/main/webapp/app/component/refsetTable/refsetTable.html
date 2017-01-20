@@ -221,6 +221,7 @@
               ng-click="openAssignRefsetModal(refset,'ASSIGN'); $event.stopPropagation()"
               title="Assign" class="noul material-icons md-18">assignment_ind</i>
 
+
             <!-- As admin/reviewer, unassign completely and return back to pool-->
             <i
               confirm="Are you sure you want to unassign the refset ({{refset.name}})?"
@@ -235,15 +236,14 @@
               ng-click="openEditRefsetModal(refset); $event.stopPropagation()"
               title="Edit" class="noul material-icons md-18">edit</i>
             <i ng-show="!refset.staged"
-              confirm="Are you sure you want to remove the refset ({{refset.name}})?"
               ng-click="removeRefset(refset); $event.stopPropagation()"
               title="Remove" class="noul material-icons md-18">delete</i>
-            <i
-              confirm="Are you sure you want to unassign the refset ({{refset.name}})?"
-              ng-click="unassign(refset, user.userName);" title="Unassign"
-              class="noul material-icons md-18">assignment_return</i>
-            <i confirm="Are you sure you want to finalize editing/review?"
-              ng-show="isAllowed('FINISH', refset)"
+            <i ng-click="unassign(refset, user.userName);" title="Unassign"
+              class="noul material-icons md-18">assignment_return</i>                     
+            <i ng-show="isAllowed('FEEDBACK', refset)"
+              ng-click="openAssignRefsetModal(refset,'FEEDBACK'); $event.stopPropagation()"
+              title="Feedback" class="noul material-icons md-18">assignment_returned</i>
+            <i ng-show="isAllowed('FINISH', refset)"
               ng-click="performWorkflowAction(refset, 'FINISH', user.userName)"
               title="Finish" class="noul material-icons md-18">done</i>
             <i ng-show="isAllowed('PREPARE_FOR_PUBLICATION', refset)"
@@ -300,7 +300,9 @@
             <i ng-show="isAllowed('ASSIGN', refset)"
               ng-click="openAssignRefsetModal(refset,'ASSIGN'); $event.stopPropagation()"
               title="Assign" class="noul material-icons md-18">assignment_ind</i>
-
+			<i ng-show="isAllowed('FEEDBACK', refset)"
+              ng-click="openAssignRefsetModal(refset,'FEEDBACK'); $event.stopPropagation()"
+              title="Feedback" class="noul material-icons md-18">assignment_returned</i>
             <!-- only if READY_FOR_PUBLICATION -->
             <i
               ng-show="refset.workflowStatus == 'READY_FOR_PUBLICATION' && !refset.inPublicationProcess"

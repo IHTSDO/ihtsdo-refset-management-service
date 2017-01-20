@@ -263,6 +263,16 @@ tsApp
                     $scope.refsets = $scope.getRefsetsFromRecords(data.records);
                     $scope.refsets.totalCount = data.totalCount;
                     $scope.stats.count = $scope.refsets.totalCount;
+                    // get refset tracking records in order to get refset
+                    // authors
+                    for (var i = 0; i < data.records.length; i++) {
+                      if (data.records[i].authors.length > 0) {
+                        $scope.refsetAuthorsMap[data.records[i].refset.id] = data.records[i].authors;
+                      }
+                      if (data.records[i].reviewers.length > 0) {
+                        $scope.refsetReviewersMap[data.records[i].refset.id] = data.records[i].reviewers;
+                      }
+                    }
                     $scope.reselect();
                   });
                 }
@@ -2062,6 +2072,12 @@ tsApp
                     },
                     tinymceOptions : function() {
                       return utilService.tinymceOptions;
+                    },
+                    refsetAuthorsMap : function() {
+                      return $scope.refsetAuthorsMap;
+                    },
+                    refsetReviewersMap : function() {
+                      return $scope.refsetReviewersMap;
                     }
                   }
 
@@ -2076,7 +2092,8 @@ tsApp
 
               // Assign refset controller
               var AssignRefsetModalCtrl = function($scope, $uibModalInstance, $sce, refset,
-                metadata, action, currentUser, assignedUsers, project, role, tinymceOptions) {
+                metadata, action, currentUser, assignedUsers, project, role, tinymceOptions,
+                refsetAuthorsMap, refsetReviewersMap) {
                 console.debug('Entered assign refset modal control', assignedUsers, project.id);
                 $scope.refset = refset;
                 $scope.metadata = metadata;
@@ -2090,12 +2107,52 @@ tsApp
                 $scope.user = utilService.findBy(assignedUsers, currentUser, 'userName');
                 $scope.note;
                 $scope.errors = [];
+                $scope.feedbackRoleOptions = [];
 
+                // if feedback assignment, only options are users that were authors or reviewers
+                if (action == 'FEEDBACK') {
+                  var previousUsers = [];
+                  $scope.role = 'AUTHOR';
+                  var authors = refsetAuthorsMap[$scope.refset.id];
+                  var reviewers = refsetReviewersMap[$scope.refset.id];
+                  for (var i = 0; i<authors.length; i++) {
+                    for (var j = 0; j<assignedUsers.length; j++) {                     
+                      if (authors[i] == assignedUsers[j].userName &&
+                        currentUser.userName != authors[i] &&
+                        previousUsers.indexOf(assignedUsers[j]) == -1) {
+                        previousUsers.push(assignedUsers[j]);
+                        $scope.feedbackRoleOptions.push('AUTHOR');
+                      }
+                    }
+                  }
+                  for (var i = 0; i<reviewers.length; i++) {
+                    for (var j = 0; j<assignedUsers.length; j++) {
+                      
+                      if (reviewers[i] == assignedUsers[j].userName &&
+                        currentUser.userName != reviewers[i] &&
+                        previousUsers.indexOf(assignedUsers[j]) == -1) {
+                        previousUsers.push(assignedUsers[j]);
+                        if ($scope.feedbackRoleOptions.indexOf('REVIEWER') == -1 &&
+                          role != 'REVIEWER') {
+                          $scope.feedbackRoleOptions.push('REVIEWER');
+                        } 
+                      }
+                    }
+                  }
+                  if (previousUsers.length == 0) {
+                    previousUsers.push(currentUser);
+                    $scope.feedbackRoleOptions.push('AUTHOR');
+                  }
+                  assignedUsers = previousUsers;
+                  $scope.user = assignedUsers[0];
+                }
+                
                 // Sort users by name and role restricts
                 var sortedUsers = assignedUsers.sort(utilService.sortBy('name'));
                 for (var i = 0; i < sortedUsers.length; i++) {
                   if ($scope.role == 'AUTHOR'
                     || $scope.project.userRoleMap[sortedUsers[i].userName] == 'REVIEWER'
+                    || $scope.project.userRoleMap[sortedUsers[i].userName] == 'REVIEWER2'
                     || $scope.project.userRoleMap[sortedUsers[i].userName] == 'ADMIN') {
                     $scope.assignedUsers.push(sortedUsers[i]);
                   }
@@ -2136,7 +2193,35 @@ tsApp
                     function(data) {
                       handleError($scope.errors, data);
                     });
-                  }
+                  } else if (action == 'FEEDBACK') {
+                      workflowService.performWorkflowAction($scope.project.id, refset.id,
+                        $scope.user.userName, $scope.role, 'FEEDBACK').then(
+                      // Success
+                      function(data) {
+
+                        // Add a note as well
+                        if ($scope.note) {
+                          refsetService.addRefsetNote(refset.id, $scope.note).then(
+                          // Success
+                          function(data) {
+                            $uibModalInstance.close(refset);
+                          },
+                          // Error
+                          function(data) {
+                            handleError($scope.errors, data);
+                          });
+                        }
+                        // close dialog if no note
+                        else {
+                          $uibModalInstance.close(refset);
+                        }
+
+                      },
+                      // Error
+                      function(data) {
+                        handleError($scope.errors, data);
+                      });
+                    }
                 }
 
                 // Dismiss modal

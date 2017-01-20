@@ -921,6 +921,7 @@ tsApp
                 if ($scope.value == 'PUBLISHED' || $scope.value == 'BETA') {
                   return false;
                 }
+                
                 return workflowService.translationIsAllowed(action, $scope.projects.role,
                   concept.workflowStatus, $scope.metadata.workflowConfig);
               }
@@ -1331,8 +1332,8 @@ tsApp
               };
 
               // Assign concept modal
-              $scope.openAssignConceptModal = function(lconcept, laction) {
-                console.debug('openAssignConceptModal ', lconcept, laction);
+              $scope.openAssignConceptModal = function(lconcept, laction, lrecord) {
+                console.debug('openAssignConceptModal ', lconcept, laction, lrecord);
 
                 var modalInstance = $uibModal.open({
                   templateUrl : 'app/component/translationTable/assignConcept.html',
@@ -1365,6 +1366,9 @@ tsApp
                     },
                     tinymceOptions : function() {
                       return utilService.tinymceOptions;
+                    },
+                    record : function() {
+                      return lrecord;
                     }
                   }
 
@@ -1379,7 +1383,8 @@ tsApp
 
               // Assign concept controller
               var AssignConceptModalCtrl = function($scope, $uibModalInstance, concept, metadata,
-                action, translation, currentUser, assignedUsers, project, role, tinymceOptions) {
+                action, translation, currentUser, assignedUsers, project, role, tinymceOptions,
+                record) {
 
                 console.debug('Entered assign concept modal control', concept);
 
@@ -1397,12 +1402,52 @@ tsApp
                 $scope.tinymceOptions = tinymceOptions;
                 $scope.note;
                 $scope.errors = [];
+                $scope.feedbackRoleOptions = [];
 
+                // if feedback assignment, only options are users that were authors or reviewers
+                if (action == 'FEEDBACK') {
+                  var previousUsers = [];
+                  $scope.role = 'AUTHOR';
+                  for (var i = 0; i<record.authors.length; i++) {
+                    for (var j = 0; j<assignedUsers.length; j++) {
+                      if (record.authors[i] == assignedUsers[j].userName &&
+                        currentUser.userName != record.authors[i] &&
+                        previousUsers.indexOf(assignedUsers[j]) == -1) {
+                        previousUsers.push(assignedUsers[j]);
+                        $scope.feedbackRoleOptions.push('AUTHOR');
+                      }
+                    }
+                  }
+                  for (var i = 0; i<record.reviewers.length; i++) {
+                    for (var j = 0; j<assignedUsers.length; j++) {
+                      if (record.reviewers[i] == assignedUsers[j].userName &&
+                        currentUser.userName != record.reviewers[i] &&
+                        previousUsers.indexOf(assignedUsers[j]) == -1) {
+                        previousUsers.push(assignedUsers[j]);
+                        if ($scope.feedbackRoleOptions.indexOf('REVIEWER') == -1 &&
+                          role != 'REVIEWER') {
+                          $scope.feedbackRoleOptions.push('REVIEWER');
+                        } else if ($scope.feedbackRoleOptions.indexOf('REVIEWER') != -1 && 
+                          role != 'REVIEWER2'){
+                          $scope.feedbackRoleOptions.push('REVIEWER2');
+                        }
+                      }
+                    }
+                  }
+                  if (previousUsers.length == 0) {
+                    previousUsers.push(currentUser);
+                    $scope.feedbackRoleOptions.push('AUTHOR');
+                  }
+                  assignedUsers = previousUsers;
+                  $scope.user = assignedUsers[0];
+                }
+                
                 // Sort users by name and role restrict
                 var sortedUsers = assignedUsers.sort(utilService.sortBy('name'));
                 for (var i = 0; i < sortedUsers.length; i++) {
                   if ($scope.role == 'AUTHOR'
                     || $scope.project.userRoleMap[sortedUsers[i].userName] == 'REVIEWER'
+                    || $scope.project.userRoleMap[sortedUsers[i].userName] == 'REVIEWER2'
                     || $scope.project.userRoleMap[sortedUsers[i].userName] == 'ADMIN') {
                     $scope.assignedUsers.push(sortedUsers[i]);
                   }
@@ -1418,6 +1463,36 @@ tsApp
                   if (action == 'ASSIGN') {
                     workflowService.performTranslationWorkflowAction($scope.project.id,
                       translation.id, $scope.user.userName, getRole('ASSIGN', concept), 'ASSIGN',
+                      $scope.concept).then(
+                      // Success
+                      function(data) {
+
+                        // Add a note as well
+                        if ($scope.note) {
+                          translationService.addTranslationConceptNote(translation.id, concept.id,
+                            $scope.note).then(
+                          // Success
+                          function(data) {
+                            $uibModalInstance.close(translation);
+                          },
+                          // Error
+                          function(data) {
+                            handleError($scope.errors, data);
+                          });
+                        }
+                        // close dialog if no note
+                        else {
+                          $uibModalInstance.close(translation);
+                        }
+
+                      },
+                      // Error
+                      function(data) {
+                        handleError($scope.errors, data);
+                      });
+                  }   else if (action == 'FEEDBACK') {
+                    workflowService.performTranslationWorkflowAction($scope.project.id,
+                      translation.id, $scope.user.userName, $scope.role, 'FEEDBACK',
                       $scope.concept).then(
                       // Success
                       function(data) {

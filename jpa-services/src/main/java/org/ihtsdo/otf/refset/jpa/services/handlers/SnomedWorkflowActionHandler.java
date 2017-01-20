@@ -164,6 +164,16 @@ public class SnomedWorkflowActionHandler extends DefaultWorkflowActionHandler {
 
         break;
 
+      case FEEDBACK:
+        authorFlag = projectRole == UserRole.AUTHOR && record != null
+          && record.getAuthors().contains(user.getUserName());
+        reviewerFlag = projectRole == UserRole.REVIEWER && record != null
+            && record.getReviewers().get(0).equals(user.getUserName());
+        reviewer2Flag = projectRole == UserRole.REVIEWER2 && record != null
+            && record.getReviewers().get(1).equals(user.getUserName());
+        flag = authorFlag || reviewerFlag || reviewer2Flag;
+        break;
+        
       case BETA:
         // Handled by release process, all editing must be done
         flag = EnumSet.of(WorkflowStatus.NEW)
@@ -401,6 +411,29 @@ public class SnomedWorkflowActionHandler extends DefaultWorkflowActionHandler {
         // Otherwise status stays the same
         break;
 
+      case FEEDBACK:
+        //Save current state of the record
+        record.setRevision(true); 
+        record.setOriginRevision(service.getConceptRevisionNumber(concept.getId()));
+        if (projectRole == UserRole.AUTHOR) {
+          record.setForAuthoring(true); 
+          record.setForReview(false);
+          concept.setWorkflowStatus(WorkflowStatus.EDITING_IN_PROGRESS);
+          record.setReviewers(new ArrayList<String>());
+        } else if (projectRole == UserRole.REVIEWER || projectRole == UserRole.REVIEWER2) {
+          record.setForAuthoring(false); 
+          record.setForReview(true);
+          concept.setWorkflowStatus(WorkflowStatus.REVIEW_IN_PROGRESS);
+          if (record.getReviewers().size() == 1) {
+            record.setReviewers(new ArrayList<String>());
+          } else {
+            ArrayList reviewer1 = new ArrayList<String>();
+            reviewer1.add(record.getReviewers().get(0));
+            record.setReviewers(reviewer1);
+          }
+        }
+        break;
+        
       case BETA:
         // Handled by release process. Simply set status to BETA.
         translation.setLastModifiedBy(user.getUserName());
@@ -774,6 +807,15 @@ public class SnomedWorkflowActionHandler extends DefaultWorkflowActionHandler {
     translationAllowedMap
         .put("PREPARE_FOR_PUBLICATION" + "REVIEWER2" + "REVIEW_DONE", true);
     translationAllowedMap.put("CANCEL" + "REVIEWER2" + "*", true);
+    translationAllowedMap.put("FEEDBACK" + "ADMIN" + "REVIEW_NEW", true);
+    translationAllowedMap.put("FEEDBACK" + "ADMIN" + "REVIEW_IN_PROGRESS", true);
+    translationAllowedMap.put("FEEDBACK" + "ADMIN" + "REVIEW_DONE", true);
+    translationAllowedMap.put("FEEDBACK" + "REVIEWER" + "REVIEW_NEW", true);
+    translationAllowedMap.put("FEEDBACK" + "REVIEWER" + "REVIEW_IN_PROGRESS", true);
+    translationAllowedMap.put("FEEDBACK" + "REVIEWER" + "REVIEW_DONE", true);
+    translationAllowedMap.put("FEEDBACK" + "REVIEWER2" + "REVIEW_NEW", true);
+    translationAllowedMap.put("FEEDBACK" + "REVIEWER2" + "REVIEW_IN_PROGRESS", true);
+    translationAllowedMap.put("FEEDBACK" + "REVIEWER2" + "REVIEW_DONE", true);
 
     config.setTranslationAllowedMap(translationAllowedMap);
 
@@ -788,7 +830,19 @@ public class SnomedWorkflowActionHandler extends DefaultWorkflowActionHandler {
         "AUTHOR");
     translationRoleMap.put("ASSIGN" + "REVIEWER2" + "READY_FOR_PUBLICATION",
         "AUTHOR");
-    // The correct unassign role is determined by performWorkflowAction based on
+    /*translationRoleMap.put("UNASSIGN" + "ADMIN" + "EDITING_DONE", "AUTHOR");
+    translationRoleMap.put("UNASSIGN" + "ADMIN" + "*", "REVIEWER");
+    translationRoleMap.put("FEEDBACK" + "ADMIN" + "REVIEW_NEW", "AUTHOR");
+    translationRoleMap.put("FEEDBACK" + "ADMIN" + "REVIEW_IN_PROGRESS", "AUTHOR");
+    translationRoleMap.put("FEEDBACK" + "ADMIN" + "REVIEW_DONE", "AUTHOR");
+    translationRoleMap.put("FEEDBACK" + "REVIEWER" + "REVIEW_NEW", "AUTHOR");
+    translationRoleMap.put("FEEDBACK" + "REVIEWER" + "REVIEW_IN_PROGRESS", "AUTHOR");
+    translationRoleMap.put("FEEDBACK" + "REVIEWER" + "REVIEW_DONE", "AUTHOR");
+    translationRoleMap.put("FEEDBACK" + "REVIEWER2" + "REVIEW_NEW", "AUTHOR");
+    translationRoleMap.put("FEEDBACK" + "REVIEWER2" + "REVIEW_IN_PROGRESS", "AUTHOR");
+    translationRoleMap.put("FEEDBACK" + "REVIEWER2" + "REVIEW_DONE", "AUTHOR");
+    // TODO: REVIEWER2 goes to AUTHOR or REVIEWER?
+*/    // The correct unassign role is determined by performWorkflowAction based on
     // the state of the record
     // SAVE n/a
 
