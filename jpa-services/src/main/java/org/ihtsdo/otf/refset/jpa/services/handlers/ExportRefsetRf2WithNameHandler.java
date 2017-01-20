@@ -5,6 +5,7 @@ package org.ihtsdo.otf.refset.jpa.services.handlers;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.util.Date;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -37,15 +38,19 @@ public class ExportRefsetRf2WithNameHandler extends ExportRefsetRf2Handler {
   /* see superclass */
   @Override
   public String getFileName(String betaFileName) {
-    return betaFileName.substring(1);
+    // Strip off the "x" and remove the build date
+    String fileExt = betaFileName.substring(betaFileName.lastIndexOf('.'));
+    String fileName = betaFileName.substring(1, betaFileName.lastIndexOf('_'));
+    return fileName + fileExt;
   }
 
   /* see superclass */
   @Override
-  public String getBetaFileName(String namespace, String type, String version) {
-    return "xder2_sRefset_Simple" + type + "_"
+  public String getBetaFileName(Refset refset, String type, String version) {
+    String namespace = refset.getProject().getNamespace();
+    return "xder2_sRefset_" + ConfigUtility.toCamelCase(refset.getName()) + type + "_"
         + (namespace == null || namespace.isEmpty() ? "INT" : namespace) + "_"
-        + version + getFileTypeFilter();
+        + version + "_" + ConfigUtility.DATE_FORMAT5.format(new Date()) + getFileTypeFilter();
   }
 
   /* see superclass */

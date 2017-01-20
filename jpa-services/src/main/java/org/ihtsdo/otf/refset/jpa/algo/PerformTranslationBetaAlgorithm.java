@@ -168,7 +168,7 @@ public class PerformTranslationBetaAlgorithm extends TranslationServiceJpa
     artifact.setIoHandlerId(ioHandlerId);
     artifact.setData(ByteStreams.toByteArray(inputStream));
     artifact.setName(
-        handler.getBetaFileName(translation.getProject().getNamespace(),
+        handler.getBetaFileName(translation,
             "ActiveSnapshot", releaseInfo.getName()));
     artifact.setTimestamp(releaseInfo.getEffectiveTime());
     artifact.setLastModified(releaseInfo.getEffectiveTime());
@@ -301,7 +301,7 @@ public class PerformTranslationBetaAlgorithm extends TranslationServiceJpa
       artifact.setIoHandlerId(ioHandlerId);
       artifact.setData(ByteStreams.toByteArray(inputStream));
       artifact.setName(
-          handler.getBetaFileName(stagedTranslation.getProject().getNamespace(),
+          handler.getBetaFileName(stagedTranslation,
               "Delta", stageReleaseInfo.getName()));
       artifact.setTimestamp(stageReleaseInfo.getEffectiveTime());
       artifact.setLastModified(stageReleaseInfo.getEffectiveTime());
