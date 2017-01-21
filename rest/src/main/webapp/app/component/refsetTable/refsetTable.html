@@ -381,12 +381,10 @@
               <i ng-show="selected.refset.type == 'INTENSIONAL'"
                 ng-click="convertRefset(selected.refset); $event.stopPropagation()"
                 title="Convert to extensional" class="noul material-icons md-18">exit_to_app</i>
-              <button ng-show="selected.refset.localSet"
+              <i ng-show="selected.refset.localSet"
                 ng-click="openEditRefsetModal(selected.refset, true); $event.stopPropagation()"
                 title="Convert Local Set to Refset"
-                class="noul btn btn-xs btn-primary">
-                R
-                </i>
+                class="noul material-icons md-18">exit_to_app</i>
             </td>
           </tr>
 

@@ -2688,8 +2688,9 @@ tsApp
                     refset : function() {
                       if (localToRefsetConvertFlag) {
                         // Copy and turn off the local set flag, when saved, this will convert the refset
-                        var retval = angulary.copy(lrefset);
+                        var retval = angular.copy(lrefset);
                         retval.localSet = false;
+                        return retval;
                       } else {
                         return lrefset;
                       }
