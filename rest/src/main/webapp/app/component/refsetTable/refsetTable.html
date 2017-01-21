@@ -5,7 +5,8 @@
   <div class="col-md-6 col-xs-12">
 
     <div>
-      <span ng-show="value == 'AVAILABLE'" style="float: right; margin-left: 3px;">
+      <span ng-show="value == 'AVAILABLE'"
+        style="float: right; margin-left: 3px;">
         <button ng-click="openAddRefsetModal(true); $event.stopPropagation()"
           title="Add local set" class="btn btn-xs btn-primary">Add
           Local Set</button>
@@ -53,7 +54,7 @@
           title="Showing only most recent, click to toggle">All</span>
       </button>
 
-      
+
 
     </div>
 
@@ -239,7 +240,7 @@
               ng-click="removeRefset(refset); $event.stopPropagation()"
               title="Remove" class="noul material-icons md-18">delete</i>
             <i ng-click="unassign(refset, user.userName);" title="Unassign"
-              class="noul material-icons md-18">assignment_return</i>                     
+              class="noul material-icons md-18">assignment_return</i>
             <i ng-show="isAllowed('FEEDBACK', refset)"
               ng-click="openAssignRefsetModal(refset,'FEEDBACK'); $event.stopPropagation()"
               title="Feedback" class="noul material-icons md-18">assignment_returned</i>
@@ -300,7 +301,7 @@
             <i ng-show="isAllowed('ASSIGN', refset)"
               ng-click="openAssignRefsetModal(refset,'ASSIGN'); $event.stopPropagation()"
               title="Assign" class="noul material-icons md-18">assignment_ind</i>
-			<i ng-show="isAllowed('FEEDBACK', refset)"
+            <i ng-show="isAllowed('FEEDBACK', refset)"
               ng-click="openAssignRefsetModal(refset,'FEEDBACK'); $event.stopPropagation()"
               title="Feedback" class="noul material-icons md-18">assignment_returned</i>
             <!-- only if READY_FOR_PUBLICATION -->
@@ -376,9 +377,16 @@
                 ng-show="userProjectsInfo.anyRole && selected.refset.type != 'EXTERNAL'"
                 ng-click="openCloneRefsetModal(selected.refset); $event.stopPropagation()"
                 title="Clone" class="noul material-icons md-18">content_copy</i>
+              <!-- Convert refset -->
               <i ng-show="selected.refset.type == 'INTENSIONAL'"
                 ng-click="convertRefset(selected.refset); $event.stopPropagation()"
                 title="Convert to extensional" class="noul material-icons md-18">exit_to_app</i>
+              <button ng-show="selected.refset.localSet"
+                ng-click="openEditRefsetModal(selected.refset, true); $event.stopPropagation()"
+                title="Convert Local Set to Refset"
+                class="noul btn btn-xs btn-primary">
+                R
+                </i>
             </td>
           </tr>
 
