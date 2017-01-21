@@ -58,17 +58,14 @@ public class ExportTranslationRf2Handler implements ExportTranslationHandler {
   @Override
   public InputStream exportConcepts(Translation translation,
     List<Concept> concepts) throws Exception {
-    Logger.getLogger(getClass()).info(
-        "Export translation concepts - " + translation.getTerminologyId()
-            + ", " + translation.getName());
+    Logger.getLogger(getClass()).info("Export translation concepts - "
+        + translation.getTerminologyId() + ", " + translation.getName());
 
     // Use info from "translation" object to get file name right.
-    String languageRefsetMemberFileName =
-        "der2_cRefset_LanguageSnapshot-" + translation.getLanguage() + "_"
-            + translation.getVersion() + ".txt";
-    String descriptionFileName =
-        "sct2_Description_Snapshot-" + translation.getLanguage() + "_"
-            + translation.getVersion() + ".txt";
+    String languageRefsetMemberFileName = "der2_cRefset_LanguageSnapshot-"
+        + translation.getLanguage() + "_" + translation.getVersion() + ".txt";
+    String descriptionFileName = "sct2_Description_Snapshot-"
+        + translation.getLanguage() + "_" + translation.getVersion() + ".txt";
 
     // TODO: rewire this to just extract all descriptions, then all langauges
     // and call the exportDelta with those. then logic is the same
@@ -105,10 +102,9 @@ public class ExportTranslationRf2Handler implements ExportTranslationHandler {
       }
       for (final Description description : concept.getDescriptions()) {
         Logger.getLogger(getClass())
-            .debug(
-                "  description = " + description.getTerminologyId() + ", "
-                    + description.getTerm() + ", "
-                    + description.getEffectiveTime());
+            .debug("  description = " + description.getTerminologyId() + ", "
+                + description.getTerm() + ", "
+                + description.getEffectiveTime());
 
         descSb.append(description.getTerminologyId()).append("\t");
         if (description.getEffectiveTime() != null) {
@@ -132,8 +128,9 @@ public class ExportTranslationRf2Handler implements ExportTranslationHandler {
           Logger.getLogger(getClass()).debug("    member = " + member);
           langSb.append(member.getTerminologyId()).append("\t");
           if (member.getEffectiveTime() != null) {
-            langSb.append(
-                ConfigUtility.DATE_FORMAT.format(member.getEffectiveTime()))
+            langSb
+                .append(
+                    ConfigUtility.DATE_FORMAT.format(member.getEffectiveTime()))
                 .append("\t");
           } else {
             langSb.append("\t");
@@ -179,17 +176,14 @@ public class ExportTranslationRf2Handler implements ExportTranslationHandler {
   public InputStream exportDelta(Translation translation,
     List<Description> descriptions, List<LanguageRefsetMember> languages)
     throws Exception {
-    Logger.getLogger(getClass()).info(
-        "Export translation contents - " + translation.getTerminologyId()
-            + ", " + translation.getName());
+    Logger.getLogger(getClass()).info("Export translation contents - "
+        + translation.getTerminologyId() + ", " + translation.getName());
 
     // Use info from "translation" object to get file name right.
-    String languageRefsetMemberFileName =
-        "der2_cRefset_LanguageDelta-" + translation.getLanguage() + "_"
-            + translation.getVersion() + ".txt";
-    String descriptionFileName =
-        "sct2_Description_Delta-" + translation.getLanguage() + "_"
-            + translation.getVersion() + ".txt";
+    String languageRefsetMemberFileName = "der2_cRefset_LanguageDelta-"
+        + translation.getLanguage() + "_" + translation.getVersion() + ".txt";
+    String descriptionFileName = "sct2_Description_Delta-"
+        + translation.getLanguage() + "_" + translation.getVersion() + ".txt";
 
     // Write descriptions and language refset entries
     // in SNOMED CT Structure to a .zip file
@@ -217,8 +211,8 @@ public class ExportTranslationRf2Handler implements ExportTranslationHandler {
     langSb.append("\r\n");
 
     for (Description description : descriptions) {
-      Logger.getLogger(getClass()).info(
-          "  description = " + description.getTerminologyId() + ", "
+      Logger.getLogger(getClass())
+          .info("  description = " + description.getTerminologyId() + ", "
               + description.getTerm() + ", " + description.getEffectiveTime());
 
       descSb.append(description.getTerminologyId()).append("\t");
@@ -243,8 +237,8 @@ public class ExportTranslationRf2Handler implements ExportTranslationHandler {
       Logger.getLogger(getClass()).info("    member = " + member);
       langSb.append(member.getTerminologyId()).append("\t");
       if (member.getEffectiveTime() != null) {
-        langSb.append(
-            ConfigUtility.DATE_FORMAT.format(member.getEffectiveTime()))
+        langSb
+            .append(ConfigUtility.DATE_FORMAT.format(member.getEffectiveTime()))
             .append("\t");
       } else {
         langSb.append("\t");
@@ -297,19 +291,21 @@ public class ExportTranslationRf2Handler implements ExportTranslationHandler {
   /**
    * Returns the beta file name.
    *
-   * @param namespace the namespace
+   * @param translation the translation
    * @param type the type
    * @param version the version
    * @return the beta file name
    */
   @Override
-  public String getBetaFileName(Translation translation, String type, String version) {
+  public String getBetaFileName(Translation translation, String type,
+    String version) {
     String namespace = translation.getProject().getNamespace();
-    return "xder2_translation_"  + ConfigUtility.toCamelCase(translation.getName()) + type + "_"
+    return "xder2_translation_"
+        + ConfigUtility.toCamelCase(translation.getName()) + type + "_"
         + (namespace == null || namespace.isEmpty() ? "INT" : namespace) + "_"
-        + version + "_" + ConfigUtility.DATE_FORMAT5.format(new Date()) + getFileTypeFilter();
+        + version + "_" + ConfigUtility.DATE_FORMAT5.format(new Date())
+        + getFileTypeFilter();
 
-    
   }
 
 }

@@ -53,7 +53,6 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.text.WordUtils;
 import org.apache.commons.lang3.time.FastDateFormat;
 import org.apache.log4j.Logger;
@@ -66,7 +65,6 @@ import com.fasterxml.jackson.databind.AnnotationIntrospector;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 
-import com.google.common.base.CaseFormat;
 /**
  * Loads and serves configuration.
  */
@@ -853,16 +851,21 @@ public class ConfigUtility {
     return background;
   }
 
+  /**
+   * To camel case.
+   *
+   * @param text the text
+   * @return the string
+   */
   public static String toCamelCase(String text) {
     // Lower cases the string
     String txt = text.toLowerCase()
-    // Replaces any - or _ characters with a space
-    .replaceAll("-", " ")
-    .replaceAll("_", " ")
-    // Removes any non alphanumeric characters
-    .replaceAll("[^A-Za-z0-9 ]", "")
-    // remove duplicate spaces
-    .replaceAll("\\s+", " ");
+        // Replaces any - or _ characters with a space
+        .replaceAll("-", " ").replaceAll("_", " ")
+        // Removes any non alphanumeric characters
+        .replaceAll("[^A-Za-z0-9 ]", "")
+        // remove duplicate spaces
+        .replaceAll("\\s+", " ");
     // Uppercases the first character in each group immediately following
     // a space
     txt = WordUtils.capitalize(txt);
@@ -870,6 +873,6 @@ public class ConfigUtility {
     txt = txt.substring(0, 1).toLowerCase() + txt.substring(1);
     // Removes spaces
     return txt.replaceAll(" ", "");
-    
+
   }
 }
