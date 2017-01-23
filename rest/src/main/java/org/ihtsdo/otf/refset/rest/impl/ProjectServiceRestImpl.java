@@ -672,6 +672,42 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
 
   /* see superclass */
   @Override
+  @GET
+  @Path("/terminology/global")
+  @ApiOperation(value = "Get all terminology editions", notes = "Gets all known terminology editions", response = TerminologyListJpa.class)
+  public TerminologyList getAllTerminologyEditions(
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass())
+        .info("RESTful POST call (Project): /terminology/global");
+
+    final ProjectService projectService = new ProjectServiceJpa();
+    try {
+      authorizeApp(securityService, authToken, "get all terminology editions",
+          UserRole.VIEWER);
+      final TerminologyList list = new TerminologyListJpa();
+      for (Project project : projectService.getProjects().getObjects()) {
+        final List<Terminology> editions =
+          projectService.getTerminologyHandler(project, getHeaders(headers))
+              .getTerminologyEditions();
+        for (Terminology t : editions) {
+          list.addObject(t);
+        }
+      }
+      list.setTotalCount(list.getCount());
+      return list;
+    } catch (Exception e) {
+      handleException(e, "trying to get all terminologies");
+    } finally {
+      projectService.close();
+      securityService.close();
+    }
+    return null;
+  }
+
+  
+  /* see superclass */
+  @Override
   @POST
   @Path("/terminology/{terminology}/all")
   @ApiOperation(value = "Get all terminology versions", notes = "Gets versions for the specified terminology edition", response = TerminologyListJpa.class)

@@ -538,6 +538,8 @@ tsApp
               $scope.getTerminologyName = function(terminology) {
                 if ($scope.metadata && $scope.metadata.terminologyNames) {
                   return $scope.metadata.terminologyNames[terminology];
+                } else {
+                  return terminology;
                 }
               };
 
@@ -3219,7 +3221,11 @@ tsApp
 
                 // Return the name for a terminology
                 $scope.getTerminologyName = function(terminology) {
-                  return $scope.metadata.terminologyNames[terminology];
+                  if ($scope.metadata && $scope.metadata.terminologyNames) {
+                    return $scope.metadata.terminologyNames[terminology];
+                  } else {
+                    return terminology;
+                  }
                 };
 
                 // Handle terminology selected
