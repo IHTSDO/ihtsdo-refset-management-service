@@ -29,9 +29,11 @@ import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
+import org.ihtsdo.otf.refset.helpers.TerminologyList;
 import org.ihtsdo.otf.refset.jpa.TerminologyJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.TerminologyListJpa;
 import org.ihtsdo.otf.refset.jpa.services.RootServiceJpa;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.Description;
@@ -58,6 +60,8 @@ public class BrowserTerminologyHandler extends AbstractTerminologyHandler {
 
   /** The terminology version language map. */
   private static Map<String, List<String>> tvLanguageMap = new HashMap<>();
+
+  private static List<Terminology> terminologyList = new ArrayList<>();
 
   /** The accept. */
   private final String accept = "application/json";
@@ -131,6 +135,9 @@ public class BrowserTerminologyHandler extends AbstractTerminologyHandler {
   /* see superclass */
   @Override
   public List<Terminology> getTerminologyEditions() throws Exception {
+    if (!terminologyList.isEmpty()) {
+      return terminologyList;
+    }
     final Set<Terminology> set = new HashSet<>();
     // Make a webservice call
     final Client client = ClientBuilder.newClient();
@@ -166,6 +173,7 @@ public class BrowserTerminologyHandler extends AbstractTerminologyHandler {
         return o1.getTerminology().compareTo(o2.getTerminology());
       }
     });
+    terminologyList.addAll(editions);
     return editions;
   }
 
@@ -887,7 +895,7 @@ public class BrowserTerminologyHandler extends AbstractTerminologyHandler {
             + "&searchMode=partialMatching&lang="
             + getLanguages(terminology, version).get(0) + statusFilter + "&"
             + "skipTo=" + localPfs.getStartIndex() + "&returnLimit="
-            + (localPfs.getMaxResults() * 3) + "&normalize=true";
+            + (localPfs.getMaxResults() * 3) + "&normalize=false";
 
     Logger.getLogger(getClass()).debug("  Find concepts - " + targetUrl);
     final WebTarget target = client.target(targetUrl);

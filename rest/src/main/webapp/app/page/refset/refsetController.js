@@ -198,6 +198,7 @@ tsApp
               $scope.metadata.terminologyNames[terminology.terminology] = terminology.name
               $scope.getTerminologyVersions(project, terminology.terminology);
             }
+            console.debug('metadata.terminologyNames ', $scope.metadata.terminologyNames); 
           });
         };
         $scope.getTerminologyVersions = function(project, terminology) {

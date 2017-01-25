@@ -100,6 +100,23 @@ tsApp.controller('DirectoryCtrl',
         });
       };
 
+      // Lookup terminologies, names, and versions
+      $scope.getTerminologyMetadata = function(project) {
+        projectService.getAllTerminologyEditions(project).then(
+        // Success
+        function(data) {
+          $scope.metadata.terminologies = data.terminologies;
+          // Look up all versions
+          $scope.metadata.terminologyNames = {};
+          for (var i = 0; i < data.terminologies.length; i++) {
+            var terminology = data.terminologies[i];
+            $scope.metadata.terminologyNames[terminology.terminology] = terminology.name
+          }
+          console.debug('metadata.terminologyNames ', $scope.metadata.terminologyNames); 
+        });
+      };
+
+      
       // Set the current accordion
       $scope.setAccordion = function(data) {
         utilService.clearError();
@@ -168,6 +185,7 @@ tsApp.controller('DirectoryCtrl',
       $scope.getRefsetTypes();
       $scope.getProjects();
       $scope.getWorkflowPaths();
+      $scope.getTerminologyMetadata();
       $scope.getIOHandlers();
       // Handle users with user preferences
       if ($scope.user.userPreferences) {
