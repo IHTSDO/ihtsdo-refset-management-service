@@ -1044,7 +1044,6 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
   @ApiOperation(value = "Export diff report", notes = "Exports the report during migration of a refset", response = InputStream.class)
   public InputStream exportDiffReport(
     @ApiParam(value = "Report token, (UUID format)", required = true) @QueryParam("reportToken") String reportToken,
-    @ApiParam(value = "Refset id, e.g. 5", required = true) @QueryParam("refsetId") Long refsetId,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
@@ -1059,7 +1058,6 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
           UserRole.VIEWER);
 
       // Load refset
-      final Refset refset = refsetService.getRefset(refsetId);
       final MemberDiffReport report =
           this.getDiffReport(reportToken, authToken);
       if (report == null) {
@@ -1077,7 +1075,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       }
       for (ConceptRefsetMember member : report.getNewRegularMembers()) {
         Logger.getLogger(getClass()).debug("  member = " + member);
-        sb = appendDiffReportMember(sb, member, refset);
+        sb = appendDiffReportMember(sb, member);
       }
 
       // Old regular members
@@ -1089,10 +1087,10 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       }
       for (ConceptRefsetMember member : report.getOldRegularMembers()) {
         Logger.getLogger(getClass()).debug("  member = " + member);
-        sb = appendDiffReportMember(sb, member, refset);
+        sb = appendDiffReportMember(sb, member);
       }
 
-      if (refset.getType() == Type.INTENSIONAL) {
+      if (report.getNewRefset().getType() == Type.INTENSIONAL) {
         // Valid inclusions
         sb.append("\r\n").append("Valid Inclusions").append("\r\n");
         if (report.getValidInclusions().size() > 0) {
@@ -1102,7 +1100,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         }
         for (ConceptRefsetMember member : report.getValidInclusions()) {
           Logger.getLogger(getClass()).debug("  member = " + member);
-          sb = appendDiffReportMember(sb, member, refset);
+          sb = appendDiffReportMember(sb, member);
         }
 
         // Valid exclusions
@@ -1114,7 +1112,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         }
         for (ConceptRefsetMember member : report.getValidExclusions()) {
           Logger.getLogger(getClass()).debug("  member = " + member);
-          sb = appendDiffReportMember(sb, member, refset);
+          sb = appendDiffReportMember(sb, member);
         }
 
         // Staged inclusions
@@ -1126,7 +1124,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         }
         for (ConceptRefsetMember member : report.getStagedInclusions()) {
           Logger.getLogger(getClass()).debug("  member = " + member);
-          sb = appendDiffReportMember(sb, member, refset);
+          sb = appendDiffReportMember(sb, member);
         }
 
         // Staged exclusions
@@ -1137,7 +1135,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
           sb = sb.append("n/a").append("\r\n");
         }
         for (ConceptRefsetMember member : report.getStagedExclusions()) {
-          sb = appendDiffReportMember(sb, member, refset);
+          sb = appendDiffReportMember(sb, member);
         }
 
         // Invalid inclusions
@@ -1149,7 +1147,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         }
         for (ConceptRefsetMember member : report.getInvalidInclusions()) {
           Logger.getLogger(getClass()).debug("  member = " + member);
-          sb = appendDiffReportMember(sb, member, refset);
+          sb = appendDiffReportMember(sb, member);
         }
 
         // Invalid exclusions
@@ -1160,7 +1158,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
           sb = sb.append("n/a").append("\r\n");
         }
         for (ConceptRefsetMember member : report.getInvalidExclusions()) {
-          sb = appendDiffReportMember(sb, member, refset);
+          sb = appendDiffReportMember(sb, member);
         }
       }
 
@@ -1169,7 +1167,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       sb = appendDiffReportHeader(sb);
       for (ConceptRefsetMember member : membersInCommonMap.get(reportToken)) {
         Logger.getLogger(getClass()).debug("  member = " + member);
-        sb = appendDiffReportMember(sb, member, refset);
+        sb = appendDiffReportMember(sb, member);
       }
 
       return new ByteArrayInputStream(sb.toString().getBytes("UTF-8"));
@@ -1207,11 +1205,10 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
    *
    * @param sb the sb
    * @param member the member
-   * @param refset the refset
    * @return the string builder
    */
   private StringBuilder appendDiffReportMember(StringBuilder sb,
-    ConceptRefsetMember member, Refset refset) {
+    ConceptRefsetMember member) {
     Logger.getLogger(getClass()).debug("  member = " + member);
 
     sb.append(member.getTerminologyId()).append("\t");
@@ -1222,7 +1219,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       sb.append("\t");
     }
     sb.append(member.isActive() ? 1 : 0).append("\t");
-    sb.append(refset.getModuleId()).append("\t");
+    sb.append(member.getRefset().getModuleId()).append("\t");
     sb.append(member.getRefset().getTerminologyId()).append("\t");
     sb.append(member.getConceptId());
     sb.append("\r\n");

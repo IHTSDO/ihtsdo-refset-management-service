@@ -2689,7 +2689,8 @@ tsApp
                   resolve : {
                     refset : function() {
                       if (localToRefsetConvertFlag) {
-                        // Copy and turn off the local set flag, when saved, this will convert the refset
+                        // Copy and turn off the local set flag, when saved,
+                        // this will convert the refset
                         var retval = angular.copy(lrefset);
                         retval.localSet = false;
                         return retval;
@@ -3276,7 +3277,7 @@ tsApp
                 };
 
                 $scope.exportDiffReport = function() {
-                  refsetService.exportDiffReport($scope.reportToken, $scope.refset);
+                  refsetService.exportDiffReport($scope.reportToken);
                 }
 
                 $scope.testTerminologyVersion = function() {
