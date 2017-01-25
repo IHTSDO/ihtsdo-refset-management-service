@@ -903,11 +903,11 @@ tsApp.service('refsetService', [
       });
     };
     
-    this.exportDiffReport = function(reportToken, refset) {
+    this.exportDiffReport = function(reportToken) {
       console.debug('exportDiffReport');
       gpService.increment();
       $http.get(
-        refsetUrl + 'export/report?reportToken=' + reportToken + '&refsetId=' + refset.id).then(
+        refsetUrl + 'export/report?reportToken=' + reportToken).then(
       // Success
       function(response) {
         var blob = new Blob([ response.data ], {

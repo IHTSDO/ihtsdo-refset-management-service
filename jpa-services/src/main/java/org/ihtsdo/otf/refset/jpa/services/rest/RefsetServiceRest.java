@@ -23,7 +23,6 @@ import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
 
-// TODO: Auto-generated Javadoc
 /**
  * Represents a refsets available via a REST service.
  */
@@ -222,7 +221,8 @@ public interface RefsetServiceRest {
    * @throws Exception the exception
    */
   public ConceptRefsetMemberList findRefsetMembersForQuery(Long refsetId,
-    String query, Boolean translated, PfsParameterJpa pfs, String authToken) throws Exception;
+    String query, Boolean translated, PfsParameterJpa pfs, String authToken)
+    throws Exception;
 
   /**
    * Adds the refset inclusion.
@@ -639,18 +639,16 @@ public interface RefsetServiceRest {
   public String assignRefsetTerminologyId(Long projectId, RefsetJpa refset,
     String authToken) throws Exception;
 
-
   /**
    * Export diff report.
    *
    * @param reportToken the report token
-   * @param refsetId the refset id
    * @param authToken the auth token
    * @return the input stream
    * @throws Exception the exception
    */
-  public InputStream exportDiffReport(String reportToken, Long refsetId, String authToken)
-		throws Exception;
+  public InputStream exportDiffReport(String reportToken, String authToken)
+    throws Exception;
 
   /**
    * Convert refset.
@@ -661,7 +659,8 @@ public interface RefsetServiceRest {
    * @return the refset
    * @throws Exception the exception
    */
-  public Refset convertRefset(Long refsetId, String refsetType, String authToken) throws Exception;
+  public Refset convertRefset(Long refsetId, String refsetType,
+    String authToken) throws Exception;
 
   /**
    * Checks if is terminology version valid.

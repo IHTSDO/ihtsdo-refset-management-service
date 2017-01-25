@@ -169,13 +169,13 @@ public class DefaultSpellingCorrectionHandler
       throw new LocalException(
           "Set translation must be called prior to calling suggest spelling");
     }
-    // DONT: Assume terms of length 1 or 2 always exist
-    // if (!checker.exist(term) && term.length() > 2) {
-    if (!checker.exist(term)) {
-      String[] results = checker.suggestSimilar(term, amt);
+    if (!checker.exist(term) && term.length() > 2) {
+      if (!checker.exist(term)) {
+        String[] results = checker.suggestSimilar(term, amt);
 
-      // Handle the case of no suggestions, determine whether it exists
-      return convertResults(results);
+        // Handle the case of no suggestions, determine whether it exists
+        return convertResults(results);
+      }
     }
 
     return new StringList();

@@ -842,9 +842,9 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
       }
 
       // Authorize the call
-      final String userName = authorizeProject(translationService, translation.getProject().getId(),
-          securityService, authToken, "import translation concepts",
-          UserRole.AUTHOR);
+      final String userName = authorizeProject(translationService,
+          translation.getProject().getId(), securityService, authToken,
+          "import translation concepts", UserRole.AUTHOR);
 
       // Check staging flag
       if (translation.getStagingType() != Translation.StagingType.IMPORT) {
@@ -862,7 +862,6 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
       } else {
         return result;
       }
-      
 
       addLogEntry(translationService, userName, "RESUME IMPORT translation",
           translation.getProject().getId(), translation.getId(),
@@ -1272,7 +1271,6 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
       translation.setStagingType(null);
       translation.setLastModifiedBy(userName);
       translationService.updateTranslation(translation);
-      
 
       addLogEntry(translationService, userName, "CANCEL IMPORT translation",
           translation.getProject().getId(), translation.getId(),
@@ -2682,6 +2680,11 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
       final HashMap<String, StringList> resultHashMap = new HashMap<>();
       // Iterate through terms
       for (final String lookupTerm : lookupTerms.getObjects()) {
+
+        // If the lookupTerm is <= 2 chars, skip
+        if (lookupTerm.length() <= 2) {
+          continue;
+        }
 
         // Do not include this entry if the word exists
         if (handler.exists(lookupTerm)) {
