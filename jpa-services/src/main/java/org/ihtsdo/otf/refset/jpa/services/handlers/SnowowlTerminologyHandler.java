@@ -164,6 +164,7 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
   @Override
   public List<Terminology> getTerminologyEditions() throws Exception {
     List<Terminology> result = new ArrayList<>();
+    // Cache this if ever not hardcoded.
     Terminology t = new TerminologyJpa();
     t.setTerminology("SNOMEDCT");
     t.setName("SNOMEDCT");
