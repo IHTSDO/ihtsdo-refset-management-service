@@ -341,4 +341,13 @@ public interface ProjectServiceRest {
    */
   public String translate(Long projectId, String text, String language,
     String authToken) throws Exception;
+
+  /**
+   * Gets the all terminology editions.
+   *
+   * @param authToken the auth token
+   * @return the all terminology editions
+   * @throws Exception the exception
+   */
+  public TerminologyList getAllTerminologyEditions(String authToken) throws Exception;
 }

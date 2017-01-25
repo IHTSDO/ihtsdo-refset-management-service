@@ -401,6 +401,30 @@ public class ProjectClientRest extends RootClientRest
 
   /* see superclass */
   @Override
+  public TerminologyList getAllTerminologyEditions(
+    String authToken) throws Exception {
+    Logger.getLogger(getClass()).debug("Project Client - get all terminologies");
+
+    Client client = ClientBuilder.newClient();
+    WebTarget target = client
+        .target(config.getProperty("base.url") + "/project/terminology/global");
+    Response response = target.request(MediaType.APPLICATION_XML)
+        .header("Authorization", authToken).get();
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+
+    // converting to object
+    return (TerminologyListJpa) ConfigUtility.getGraphForString(resultString,
+        TerminologyListJpa.class);
+
+  }
+  /* see superclass */
+  @Override
   public TerminologyList getTerminologyVersions(ProjectJpa project,
     String terminology, String authToken) throws Exception {
     Logger.getLogger(getClass()).debug("Project Client - get terminologies");
