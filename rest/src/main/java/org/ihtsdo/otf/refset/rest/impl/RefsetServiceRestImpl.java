@@ -2247,6 +2247,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
 
       // creates a "diff report"
       final MemberDiffReport diffReport = new MemberDiffReportJpa();
+      diffReport.setOldRefset(refset1);
+      diffReport.setNewRefset(refset2);
       final List<ConceptRefsetMember> oldNotNew = new ArrayList<>();
       final List<ConceptRefsetMember> newNotOld = new ArrayList<>();
 
