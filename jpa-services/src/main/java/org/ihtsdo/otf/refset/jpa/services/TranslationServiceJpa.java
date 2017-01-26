@@ -34,6 +34,7 @@ import org.ihtsdo.otf.refset.helpers.IoHandlerInfoList;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
 import org.ihtsdo.otf.refset.helpers.TranslationList;
+import org.ihtsdo.otf.refset.jpa.ConceptNoteJpa;
 import org.ihtsdo.otf.refset.jpa.IoHandlerInfoJpa;
 import org.ihtsdo.otf.refset.jpa.MemoryEntryJpa;
 import org.ihtsdo.otf.refset.jpa.PhraseMemoryJpa;
@@ -576,7 +577,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa
     }
     // Remove notes
     for (final Note note : concept.getNotes()) {
-      removeNote(note.getId(), TranslationNoteJpa.class);
+      removeNote(note.getId(), ConceptNoteJpa.class);
     }
 
     // Remove the component

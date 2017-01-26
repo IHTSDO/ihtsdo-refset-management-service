@@ -931,6 +931,27 @@ tsApp
                 return workflowService.refsetGetRole(action, $scope.projects.role,
                   refset.workflowStatus, $scope.metadata.workflowConfig);
               }
+              
+              $scope.showDelta = function(refset) {
+                releaseService.findCurrentRefsetReleaseInfo(refset.id).then(
+                  function(data) {
+                    // if no previous release,
+                    if (!data) { 
+                      window.alert("No release for " + refset.name); 
+                      return; 
+                    }
+                  // get the release refset
+                  refsetService.compareRefsets(refset.id, data.refsetId).then(
+                    function(data){ 
+                      var reportToken = data; 
+                      refsetService.exportDiffReport('diff', reportToken, refset).then(
+                        function(data) {
+                        // consider delaying next statement if it doesn't work 
+                        refsetService.releaseReportToken(reportToken);  });
+                    });
+                  }
+                );
+              }
 
               //
               // MODALS
@@ -3277,7 +3298,7 @@ tsApp
                 };
 
                 $scope.exportDiffReport = function() {
-                  refsetService.exportDiffReport($scope.reportToken);
+                  refsetService.exportDiffReport('migration', $scope.reportToken, $scope.refset);
                 }
 
                 $scope.testTerminologyVersion = function() {

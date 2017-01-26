@@ -903,8 +903,9 @@ tsApp.service('refsetService', [
       });
     };
     
-    this.exportDiffReport = function(reportToken) {
+    this.exportDiffReport = function(action, reportToken, refset) {
       console.debug('exportDiffReport');
+      var deferred = $q.defer();
       gpService.increment();
       $http.get(
         refsetUrl + 'export/report?reportToken=' + reportToken).then(
@@ -919,18 +920,20 @@ tsApp.service('refsetService', [
         var a = document.createElement('a');
         a.href = fileURL;
         a.target = '_blank';
-        a.download = 'migration_' + utilService.toCamelCase(refset.name) + refset.terminologyId +
+        a.download = action + '_' + utilService.toCamelCase(refset.name) + refset.terminologyId +
         '_' + utilService.yyyymmdd(new Date()) + '.xls';
         document.body.appendChild(a);
         gpService.decrement();
         a.click();
-
+        deferred.resolve(response.data);
       },
       // Error
       function(response) {
         utilService.handleError(response);
         gpService.decrement();
+        deferred.reject(response.data);
       });
+      return deferred.promise;
     };
 
     // Begin import members - if validation is result, OK to proceed.

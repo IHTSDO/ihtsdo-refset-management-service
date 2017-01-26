@@ -77,6 +77,28 @@ tsApp.service('releaseService', [
       });
       return deferred.promise;
     };
+    
+
+    this.findCurrentRefsetReleaseInfo = function(refsetId) {
+      console.debug('findCurrentRefsetReleaseInfo');
+      var deferred = $q.defer();
+
+      gpService.increment();
+      $http.get(releaseUrl + 'refset/info?refsetId=' + refsetId).then(
+      // success
+      function(response) {
+        console.debug('  refset = ', response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    };
 
     // Beta refset release
     this.betaRefsetRelease = function(refsetId, ioHandlerId) {

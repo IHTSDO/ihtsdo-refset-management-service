@@ -367,24 +367,28 @@
             </td>
             <td class="nobreak">
               <i ng-show="selected.refset.feedbackEmail"
-                ng-click="openFeedbackModal(selected.refset); $event.stopPropagation()"
+                ng-click="openFeedbackModal(selected.refset);"
                 title="Submit feedback" class="noul material-icons md-18">speaker_notes</i>
               <i ng-show="!selected.refset.feedbackEmail"
-                ng-click="openFeedbackModal(selected.refset); $event.stopPropagation()"
+                ng-click="openFeedbackModal(selected.refset);"
                 title="Feedback email not configured"
                 class="md-grey material-icons md-18">speaker_notes</i>
               <i
                 ng-show="userProjectsInfo.anyRole && selected.refset.type != 'EXTERNAL'"
-                ng-click="openCloneRefsetModal(selected.refset); $event.stopPropagation()"
+                ng-click="openCloneRefsetModal(selected.refset);"
                 title="Clone" class="noul material-icons md-18">content_copy</i>
               <!-- Convert refset -->
               <i ng-show="selected.refset.type == 'INTENSIONAL'"
-                ng-click="convertRefset(selected.refset); $event.stopPropagation()"
+                ng-click="convertRefset(selected.refset);"
                 title="Convert to extensional" class="noul material-icons md-18">exit_to_app</i>
               <i ng-show="selected.refset.localSet"
-                ng-click="openEditRefsetModal(selected.refset, true); $event.stopPropagation()"
+                ng-click="openEditRefsetModal(selected.refset, true);"
                 title="Convert Local Set to Refset"
                 class="noul material-icons md-18">exit_to_app</i>
+              <i ng-show="selected.refset.workflowStatus != 'BETA' && selected.refset.workflowStatus != 'PUBLISHED'"
+                ng-click="showDelta(selected.refset, true); "
+                title="Show delta"
+                class="noul material-icons md-18">change_history</i>
             </td>
           </tr>
 
