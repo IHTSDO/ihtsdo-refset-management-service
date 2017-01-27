@@ -936,7 +936,7 @@ tsApp
                 releaseService.findCurrentRefsetReleaseInfo(refset.id).then(
                   function(data) {
                     // if no previous release,
-                    if (!data) { 
+                    if (!data.refsetId || data.refsetId == 0) { 
                       window.alert("No release for " + refset.name); 
                       return; 
                     }
