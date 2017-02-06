@@ -724,7 +724,7 @@ tsApp
               + conceptId + '&terminology=' + terminology + '&version=' + version).then(
           // success
           function(response) {
-            console.debug('  project = ', response.data);
+            console.debug('  replacement concepts = ', response.data);
             gpService.decrement();
             deferred.resolve(response.data);
           },
