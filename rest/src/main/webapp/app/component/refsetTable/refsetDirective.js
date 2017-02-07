@@ -2739,6 +2739,9 @@ tsApp
                 function(data) {
                   // handle workflow advancement
                   $scope.handleWorkflow(data);
+                  if (data == 'cancel') {
+                    $scope.getRefsets();
+                  }
                 });
               };
 
@@ -2876,7 +2879,7 @@ tsApp
 
                 // Dismiss modal
                 $scope.cancel = function() {
-                  $uibModalInstance.dismiss('cancel');
+                  $uibModalInstance.close('cancel');
                 };
 
               };

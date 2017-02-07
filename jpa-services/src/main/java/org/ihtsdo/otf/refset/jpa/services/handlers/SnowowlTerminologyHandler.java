@@ -626,19 +626,21 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
         } else if (description.getTypeId().equals("SYNONYM")) {
           description.setTypeId("900000000000013009");
         }
-        for (final JsonNode language : desc.findValues("acceptabilityMap")) {
-          final LanguageRefsetMember member = new LanguageRefsetMemberJpa();
-          member.setActive(true);
-          member.setDescriptionId(terminologyId);
-          String key = language.fieldNames().next();
-          member.setRefsetId(key);
-          member.setAcceptabilityId(language.get(key).asText());
-          if (member.getAcceptabilityId().equals("PREFERRED")) {
-            member.setAcceptabilityId("900000000000548007");
-          } else if (member.getAcceptabilityId().equals("ACCEPTABLE")) {
-            member.setAcceptabilityId("900000000000549004");
+        if (description.isActive()) {
+          for (final JsonNode language : desc.findValues("acceptabilityMap")) {
+            final LanguageRefsetMember member = new LanguageRefsetMemberJpa();
+            member.setActive(true);
+            member.setDescriptionId(terminologyId);
+            String key = language.fieldNames().next();
+            member.setRefsetId(key);
+            member.setAcceptabilityId(language.get(key).asText());
+            if (member.getAcceptabilityId().equals("PREFERRED")) {
+              member.setAcceptabilityId("900000000000548007");
+            } else if (member.getAcceptabilityId().equals("ACCEPTABLE")) {
+              member.setAcceptabilityId("900000000000549004");
+            }
+            description.getLanguageRefsetMembers().add(member);
           }
-          description.getLanguageRefsetMembers().add(member);
         }
 
         concept.getDescriptions().add(description);
