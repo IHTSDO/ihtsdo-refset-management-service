@@ -604,10 +604,6 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
 
         description.setActive(desc.get("active").asText().equals("true"));
 
-        // Skip inactive descriptions
-        if (!description.isActive()) {
-          continue;
-        }
         description
             .setCaseSignificanceId(desc.get("caseSignificance").asText());
 
