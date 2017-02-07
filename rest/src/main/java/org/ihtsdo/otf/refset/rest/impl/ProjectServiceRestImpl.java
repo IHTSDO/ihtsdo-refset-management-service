@@ -1140,7 +1140,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
   @Override
   public String getLog(
     @ApiParam(value = "Project id, e.g. 5", required = true) @QueryParam("projectId") Long projectId,
-    @ApiParam(value = "Object id, e.g. 5", required = true) @QueryParam("objectId") Long objectId,
+    @ApiParam(value = "Object id, e.g. 5", required = false) @QueryParam("objectId") Long objectId,
     @ApiParam(value = "Lines, e.g. 5", required = false) @QueryParam("lines") int lines,
     @ApiParam(value = "Query, e.g. UPDATE", required = false) @QueryParam("query") String query,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
@@ -1162,8 +1162,12 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
         pfs.setQueryRestriction(query);
       }
 
-      final List<LogEntry> entries =
-          projectService.findLogEntriesForQuery("objectId:" + objectId, pfs);
+      List<LogEntry> entries = null;
+      if (objectId != null) {
+        entries =  projectService.findLogEntriesForQuery("objectId:" + objectId, pfs);
+      } else {
+        entries =  projectService.findLogEntriesForQuery("projectId:" + projectId,  pfs);
+      }
 
       StringBuilder log = new StringBuilder();
       for (int i = entries.size() - 1; i >= 0; i--) {
