@@ -29,11 +29,9 @@ import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
-import org.ihtsdo.otf.refset.helpers.TerminologyList;
 import org.ihtsdo.otf.refset.jpa.TerminologyJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
-import org.ihtsdo.otf.refset.jpa.helpers.TerminologyListJpa;
 import org.ihtsdo.otf.refset.jpa.services.RootServiceJpa;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.Description;
@@ -61,6 +59,7 @@ public class BrowserTerminologyHandler extends AbstractTerminologyHandler {
   /** The terminology version language map. */
   private static Map<String, List<String>> tvLanguageMap = new HashMap<>();
 
+  /** The terminology list. */
   private static List<Terminology> terminologyList = new ArrayList<>();
 
   /** The accept. */
