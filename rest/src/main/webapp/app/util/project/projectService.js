@@ -659,7 +659,7 @@ tsApp
           gpService.increment();
 
           $http.get(
-            projectUrl + 'log?projectId=' + projectId + '&objectId=' + objectId + '&lines=1000'
+            projectUrl + 'log?projectId=' + projectId + (objectId ? '&objectId=' + objectId : '') + '&lines=1000'
               + (filter != '' ? '&query=' + filter : ''), {
               transformResponse : [ function(data) {
                 // Data response is plain text at this point

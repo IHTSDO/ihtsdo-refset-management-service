@@ -71,7 +71,9 @@
             <td>{{project.namespace}}</td>
 
             <td class="nobreak">
-
+			  <i ng-click="openLogModal(project)" title="Retrieve log"
+                  class="noul material-icons md-18">event_note</i>
+                
               <i
                 ng-click="openEditProjectModal(project); $event.stopPropagation()"
                 title="Edit" class="noul material-icons md-18">edit</i>

@@ -1079,6 +1079,61 @@ tsApp
           };
 
         };
+        
+        // Log modal
+        $scope.openLogModal = function(project) {
+          console.debug('openLogModal ');
+
+          var modalInstance = $uibModal.open({
+            templateUrl : 'app/component/refsetTable/log.html',
+            controller : LogModalCtrl,
+            backdrop : 'static',
+            size : 'lg',
+            resolve : {
+              refset : function() {
+                return null;
+              },
+              project : function() {
+                return project;
+              }
+            }
+          });
+
+          // NO need for result function - no action on close
+          // modalInstance.result.then(function(data) {});
+        };
+
+        // Log controller
+        var LogModalCtrl = function($scope, $uibModalInstance, refset, project) {
+          console.debug('Entered log modal control', refset, project);
+
+          $scope.filter = '';
+          $scope.errors = [];
+          $scope.warnings = [];
+
+          // Get log to display
+          $scope.getLog = function() {
+            projectService.getLog(project.id, null, $scope.filter).then(
+            // Success
+            function(data) {
+              $scope.log = data;
+            },
+            // Error
+            function(data) {
+              handleError($scope.errors, data);
+            });
+
+          };
+
+          // Dismiss modal
+          $scope.close = function() {
+            // nothing changed, don't pass a refset
+            $uibModalInstance.close();
+          };
+
+          // initialize
+          $scope.getLog();
+        };
 
         // Configure the tab
         $scope.configureTab = function() {
