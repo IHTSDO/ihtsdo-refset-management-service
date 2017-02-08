@@ -993,13 +993,13 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     final String queryStr = "select a from RefsetJpa a where "
         + " a.project.id = :projectId " + "and a.provisional = false "
         + "and a not in (select refset from TrackingRecordJpa where refset is not null) "
-        + "and workflowStatus not in ('BETA','PUBLISHED')";
+        + "and workflowStatus not in ('BETA','PUBLISHED','READY_FOR_PUBLICATION')";
 
     final Query ctQuery =
         ((RootServiceJpa) service).getEntityManager().createQuery(
             "select count(*) from RefsetJpa a where a.project.id = :projectId and a.provisional = false "
                 + "and a not in (select refset from TrackingRecordJpa where refset is not null) "
-                + "and workflowStatus not in ('BETA','PUBLISHED')");
+                + "and workflowStatus not in ('BETA','PUBLISHED','READY_FOR_PUBLICATION')");
 
     ctQuery.setParameter("projectId", projectId);
 
