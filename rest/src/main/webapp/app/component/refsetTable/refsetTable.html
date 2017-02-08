@@ -212,7 +212,7 @@
           <td class="nobreak" ng-show="value == 'AVAILABLE'">
             <i ng-click="openEditRefsetModal(refset); $event.stopPropagation()"
               title="Edit" class="noul material-icons md-18">edit</i>
-            <i title="Remove" ng-show="!refset.staged"
+            <i title="Remove" ng-show="!refset.staged && projects.role == 'ADMIN'"
               confirm="Are you sure you want to remove the refset ({{refset.name}})?"
               ng-click="removeRefset(refset); $event.stopPropagation()"
               class="noul material-icons md-18">delete</i>
