@@ -687,10 +687,6 @@ public class BrowserTerminologyHandler extends AbstractTerminologyHandler {
 
         description.setActive(desc.get("active").asText().equals("true"));
 
-        // Skip inactive descriptions
-        if (!description.isActive()) {
-          continue;
-        }
         description
             .setCaseSignificanceId(desc.get("ics").get("conceptId").asText());
 
@@ -708,15 +704,17 @@ public class BrowserTerminologyHandler extends AbstractTerminologyHandler {
 
         description.setTypeId(desc.get("type").get("conceptId").asText());
 
-        for (final JsonNode language : desc.get("langMemberships")) {
-          final LanguageRefsetMember member = new LanguageRefsetMemberJpa();
-          member.setActive(true);
-          member.setDescriptionId(terminologyId);
-          String key = language.fieldNames().next();
-          member.setRefsetId(key);
-          member.setAcceptabilityId(
-              language.get("acceptability").get("conceptId").asText());
-          description.getLanguageRefsetMembers().add(member);
+        if (description.isActive()) {
+          for (final JsonNode language : desc.get("langMemberships")) {
+            final LanguageRefsetMember member = new LanguageRefsetMemberJpa();
+            member.setActive(true);
+            member.setDescriptionId(terminologyId);
+            String key = language.fieldNames().next();
+            member.setRefsetId(key);
+            member.setAcceptabilityId(
+                language.get("acceptability").get("conceptId").asText());
+            description.getLanguageRefsetMembers().add(member);
+          }
         }
 
         concept.getDescriptions().add(description);

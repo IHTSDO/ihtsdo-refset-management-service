@@ -187,7 +187,7 @@ tsApp.directive('conceptInfo', [
           $scope.getDescriptionType = function(description) {
             for (var i = 0; i < $scope.data.descriptionTypes.length; i++) {
               var type = $scope.data.descriptionTypes[i];
-              if (description.typeId == type.typeId && description.languages
+              if (description.typeId == type.typeId && description.languages && description.languages[0]
                 && description.languages[0].acceptabilityId == type.acceptabilityId) {
                 return type.name;
               }
