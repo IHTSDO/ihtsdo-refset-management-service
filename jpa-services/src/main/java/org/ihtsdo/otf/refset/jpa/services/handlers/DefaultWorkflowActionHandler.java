@@ -993,13 +993,13 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     final String queryStr = "select a from RefsetJpa a where "
         + " a.project.id = :projectId " + "and a.provisional = false "
         + "and a not in (select refset from TrackingRecordJpa where refset is not null) "
-        + "and workflowStatus not in ('BETA','PUBLISHED')";
+        + "and workflowStatus not in ('BETA','PUBLISHED','READY_FOR_PUBLICATION')";
 
     final Query ctQuery =
         ((RootServiceJpa) service).getEntityManager().createQuery(
             "select count(*) from RefsetJpa a where a.project.id = :projectId and a.provisional = false "
                 + "and a not in (select refset from TrackingRecordJpa where refset is not null) "
-                + "and workflowStatus not in ('BETA','PUBLISHED')");
+                + "and workflowStatus not in ('BETA','PUBLISHED','READY_FOR_PUBLICATION')");
 
     ctQuery.setParameter("projectId", projectId);
 
@@ -1154,7 +1154,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
 
     // Refset Author Options
     refsetAllowedMap.put("ASSIGN" + "AUTHOR" + "NEW", true);
-    refsetAllowedMap.put("ASSIGN" + "AUTHOR" + "READY_FOR_PUBLICATION", true);
+    // refsetAllowedMap.put("ASSIGN" + "AUTHOR" + "READY_FOR_PUBLICATION", true);
     // refsetAllowedMap.put("UNASSIGN" + "AUTHOR" + "NEW", true);
     refsetAllowedMap.put("UNASSIGN" + "AUTHOR" + "EDITING_IN_PROGRESS", true);
     refsetAllowedMap.put("UNASSIGN" + "AUTHOR" + "EDITING_DONE", true);
@@ -1231,8 +1231,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
 
     // Translation Author Options
     translationAllowedMap.put("ASSIGN" + "AUTHOR" + "NEW", true);
-    translationAllowedMap.put("ASSIGN" + "AUTHOR" + "READY_FOR_PUBLICATION",
-        true);
+    //translationAllowedMap.put("ASSIGN" + "AUTHOR" + "READY_FOR_PUBLICATION", true);
     translationAllowedMap.put("UNASSIGN" + "AUTHOR" + "NEW", true);
     translationAllowedMap.put("UNASSIGN" + "AUTHOR" + "EDITING_IN_PROGRESS",
         true);

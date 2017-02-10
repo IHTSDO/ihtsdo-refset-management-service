@@ -761,8 +761,8 @@ public class SnomedWorkflowActionHandler extends DefaultWorkflowActionHandler {
 
     // Translation Author Options
     translationAllowedMap.put("ASSIGN" + "AUTHOR" + "NEW", true);
-    translationAllowedMap.put("ASSIGN" + "AUTHOR" + "READY_FOR_PUBLICATION",
-        true);
+    /*translationAllowedMap.put("ASSIGN" + "AUTHOR" + "READY_FOR_PUBLICATION",
+        true);*/
     translationAllowedMap.put("UNASSIGN" + "AUTHOR" + "NEW", true);
     translationAllowedMap.put("UNASSIGN" + "AUTHOR" + "EDITING_IN_PROGRESS",
         true);

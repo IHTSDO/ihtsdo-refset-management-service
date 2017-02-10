@@ -1258,6 +1258,9 @@ tsApp
                 // Success
                 function(data) {
                   translationService.fireTranslationChanged(data);
+                  if (data == 'cancel') {
+                    $scope.getTranslations();
+                  }
                 });
               };
 
@@ -1336,7 +1339,7 @@ tsApp
 
                 // Dismiss modal
                 $scope.cancel = function() {
-                  $uibModalInstance.dismiss('cancel');
+                  $uibModalInstance.close('cancel');
                 };
 
               };
