@@ -1132,7 +1132,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
     query.append("terminologyId:" + concept.getTerminologyId());
     // Add in the translation
     query.append(" AND (");
-    query.append("translationTerminologyId:" + translation.getTerminologyId());
+    query.append("translationId:" + translation.getId());
     if (prefs != null && prefs.getLanguageDescriptionTypes() != null) {
       for (LanguageDescriptionType type : prefs.getLanguageDescriptionTypes()) {
         if (!langRefsetIds.contains(type.getRefsetId())) {

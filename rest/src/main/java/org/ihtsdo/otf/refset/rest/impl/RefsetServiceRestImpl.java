@@ -509,35 +509,19 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       final List<ConceptRefsetMember> previousMembers =
           previousRefset.getMembers();
 
-      // if project has changed, update project on all of the refset's
-      // translations
-      if (previousProject.getId() != refset.getProject().getId()) {
-        final TranslationList projectTranslations =
-            translationService.findTranslationsForQuery(
-                "projectId:" + previousProject.getId(), new PfsParameterJpa());
-        for (Translation translation : projectTranslations.getObjects()) {
-          translation.setProject(refset.getProject());
-          translation.setTerminologyId(refset.getTerminologyId());
-          translation.setTerminology(refset.getTerminology());
-          translation.setVersion(refset.getVersion());
-          translation.setLastModifiedBy(userName);
-          translationService.updateTranslation(translation);
-        }
-      }
 
       // Update all translations to set various inherited fields
-      final TranslationList projectTranslations =
-          translationService.findTranslationsForQuery(
-              "projectId:" + previousProject.getId(), new PfsParameterJpa());
+      final TranslationList projectTranslations = translationService
+          .findTranslationsForQuery("projectId:" + previousProject.getId()
+				    + " AND refsetId:" + refset.getId(), new PfsParameterJpa());
       for (Translation translation : projectTranslations.getObjects()) {
-        translation.setModuleId(refset.getModuleId());
-        translation.setTerminologyId(refset.getTerminologyId());
-        translation.setTerminology(refset.getTerminology());
-        translation.setVersion(refset.getVersion());
-        translation.setLastModifiedBy(userName);
-        translationService.updateTranslation(translation);
+	  translation.setModuleId(refset.getModuleId());
+	  translation.setTerminologyId(refset.getTerminologyId());
+	  translation.setTerminology(refset.getTerminology());
+	  translation.setVersion(refset.getVersion());
+	  translation.setLastModifiedBy(userName);
+	  translationService.updateTranslation(translation);
       }
-
       // Update refset
       refset.setLastModifiedBy(userName);
       // allow ID to be changed
