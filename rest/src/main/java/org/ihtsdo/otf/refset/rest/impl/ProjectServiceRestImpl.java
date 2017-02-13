@@ -688,8 +688,8 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
       final TerminologyList list = new TerminologyListJpa();
       for (Project project : projectService.getProjects().getObjects()) {
         final List<Terminology> editions =
-          projectService.getTerminologyHandler(project, getHeaders(headers))
-              .getTerminologyEditions();
+            projectService.getTerminologyHandler(project, getHeaders(headers))
+                .getTerminologyEditions();
         for (Terminology t : editions) {
           list.addObject(t);
         }
@@ -705,7 +705,6 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     return null;
   }
 
-  
   /* see superclass */
   @Override
   @POST
@@ -864,8 +863,9 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
 
     final ProjectService projectService = new ProjectServiceJpa();
     try {
-      authorizeProject(projectService, projectId, securityService, authToken,
-          "findconcepts", UserRole.AUTHOR);
+      // No authentication necessary - e.g. support directory
+      // authorizeProject(projectService, projectId, securityService, authToken,
+      // "findconcepts", UserRole.AUTHOR);
 
       final Project project = projectService.getProject(projectId);
       if (project == null) {
@@ -906,10 +906,16 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
             + terminologyId + ", " + terminology + ", " + version + ", "
             + translationId);
 
-    final TranslationService translationService = new TranslationServiceJpa(getHeaders(headers));
+    final TranslationService translationService =
+        new TranslationServiceJpa(getHeaders(headers));
     try {
-      final String userName = authorizeProject(translationService, projectId,
-          securityService, authToken, "get full concept", UserRole.AUTHOR);
+      // No authentication needed
+      // final String userName = authorizeProject(translationService, projectId,
+      // securityService, authToken, "get full concept", UserRole.AUTHOR);
+      String userName = null;
+      if (authToken != null) {
+        userName = securityService.getUsernameForToken(authToken);
+      }
 
       final Project project = translationService.getProject(projectId);
       if (project == null) {
@@ -933,15 +939,16 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
       if (translationId != null) {
 
         // Get other language refset ids
-        final UserPreferences prefs =
-            securityService.getUser(userName).getUserPreferences();
+        UserPreferences prefs = null;
+        if (userName != null) {
+          prefs = securityService.getUser(userName).getUserPreferences();
+        }
 
         // Get the translation
         final Translation translation =
             translationService.getTranslation(translationId);
 
-        addDescriptionsHelper(userName, translationService, translation,
-            concept, prefs);
+        addDescriptionsHelper(translationService, translation, concept, prefs);
       }
 
       return concept;
@@ -974,10 +981,16 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
             + terminologyId + ", " + terminology + ", " + version + ", "
             + translationId);
 
-    final TranslationService translationService = new TranslationServiceJpa(getHeaders(headers));
+    final TranslationService translationService =
+        new TranslationServiceJpa(getHeaders(headers));
     try {
-      final String userName = authorizeProject(translationService, projectId,
-          securityService, authToken, "get concept parents", UserRole.AUTHOR);
+      // No authentication needed
+      // final String userName = authorizeProject(translationService, projectId,
+      // securityService, authToken, "get concept parents", UserRole.AUTHOR);
+      String userName = null;
+      if (authToken != null) {
+        userName = securityService.getUsernameForToken(authToken);
+      }
 
       final Project project = translationService.getProject(projectId);
       if (project == null) {
@@ -991,17 +1004,18 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
       // If translationId is set, include descriptions from the translation
       if (translationId != null) {
         // Get other language refset ids
-        final UserPreferences prefs =
-            securityService.getUser(userName).getUserPreferences();
-
+        UserPreferences prefs = null;
+        if (userName != null) {
+          prefs = securityService.getUser(userName).getUserPreferences();
+        }
         // Get the translation
         final Translation translation =
             translationService.getTranslation(translationId);
 
         // Add descriptions and compute pref name
         for (Concept concept : concepts.getObjects()) {
-          addDescriptionsHelper(userName, translationService, translation,
-              concept, prefs);
+          addDescriptionsHelper(translationService, translation, concept,
+              prefs);
 
           // do not send descriptions across the wire
           concept.setDescriptions(new ArrayList<Description>());
@@ -1052,12 +1066,18 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
             + terminologyId + ", " + terminology + ", " + version + ", "
             + translationId);
 
-    final TranslationService translationService = new TranslationServiceJpa(getHeaders(headers));
+    final TranslationService translationService =
+        new TranslationServiceJpa(getHeaders(headers));
 
     try {
-      final String userName = authorizeProject(translationService, projectId,
-          securityService, authToken, "get concept children", UserRole.AUTHOR);
-
+      // No authentication needed
+      // final String userName = authorizeProject(translationService, projectId,
+      // securityService, authToken, "get concept children", UserRole.AUTHOR);
+      String userName = null;
+      if (authToken != null) {
+        userName = securityService.getUsernameForToken(authToken);
+      }
+      
       final Project project = translationService.getProject(projectId);
       if (project == null) {
         throw new LocalException("Invalid project id: " + projectId);
@@ -1070,16 +1090,17 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
       // If translationId is set, include descriptions from the translation
       if (translationId != null) {
         // Get other language refset ids
-        final UserPreferences prefs =
-            securityService.getUser(userName).getUserPreferences();
-
+        UserPreferences prefs = null;
+        if (userName != null) {
+          prefs = securityService.getUser(userName).getUserPreferences();
+        }
         // Get the translation
         final Translation translation =
             translationService.getTranslation(translationId);
         for (Concept concept : concepts.getObjects()) {
 
-          addDescriptionsHelper(userName, translationService, translation,
-              concept, prefs);
+          addDescriptionsHelper(translationService, translation, concept,
+              prefs);
           // do not send descriptions across the wire
           concept.setDescriptions(new ArrayList<Description>());
         }
@@ -1110,7 +1131,8 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
         .info("RESTful POST call (Project): /descriptiontypes - " + terminology
             + ", " + version);
 
-    final TranslationService translationService = new TranslationServiceJpa(getHeaders(headers));
+    final TranslationService translationService =
+        new TranslationServiceJpa(getHeaders(headers));
     try {
       authorizeApp(securityService, authToken, "get standard description types",
           UserRole.VIEWER);
@@ -1164,9 +1186,11 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
 
       List<LogEntry> entries = null;
       if (objectId != null) {
-        entries =  projectService.findLogEntriesForQuery("objectId:" + objectId, pfs);
+        entries =
+            projectService.findLogEntriesForQuery("objectId:" + objectId, pfs);
       } else {
-        entries =  projectService.findLogEntriesForQuery("projectId:" + projectId,  pfs);
+        entries = projectService
+            .findLogEntriesForQuery("projectId:" + projectId, pfs);
       }
 
       StringBuilder log = new StringBuilder();
@@ -1197,13 +1221,14 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     @ApiParam(value = "Language, e.g. sv", required = false) @QueryParam("language") String language,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    Logger.getLogger(getClass()).info("RESTful POST call (Project): /translate/"
-        + text + ", " + language);
+    Logger.getLogger(getClass()).info(
+        "RESTful POST call (Project): /translate/" + text + ", " + language);
 
-    final TranslationService translationService = new TranslationServiceJpa(getHeaders(headers));
+    final TranslationService translationService =
+        new TranslationServiceJpa(getHeaders(headers));
     try {
-      authorizeProject(translationService, projectId,
-          securityService, authToken, "get full concept", UserRole.AUTHOR);
+      authorizeProject(translationService, projectId, securityService,
+          authToken, "get full concept", UserRole.AUTHOR);
 
       final Project project = translationService.getProject(projectId);
       if (project == null) {
@@ -1216,12 +1241,10 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
             .getTerminologyHandler(project, getHeaders(headers))
             .translate(text, language);
       } catch (Exception e) {
-        Logger.getLogger(getClass()).info(
-            "No results in call to Terminology Handler with text: "
-                + text + ", language: " + language
-                + " and project: " + projectId);
+        Logger.getLogger(getClass())
+            .info("No results in call to Terminology Handler with text: " + text
+                + ", language: " + language + " and project: " + projectId);
       }
-
 
       return translation;
     } catch (Exception e) {
@@ -1233,6 +1256,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     }
 
   }
+
   /**
    * Get the replacement concepts.
    *
@@ -1324,16 +1348,15 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
   /**
    * Adds the descriptions helper.
    *
-   * @param userName the user name
    * @param translationService the translation service
    * @param translation the translation
    * @param concept the concept
    * @param prefs the prefs
    * @throws Exception the exception
    */
-  private void addDescriptionsHelper(String userName,
-    TranslationService translationService, Translation translation,
-    Concept concept, UserPreferences prefs) throws Exception {
+  private void addDescriptionsHelper(TranslationService translationService,
+    Translation translation, Concept concept, UserPreferences prefs)
+    throws Exception {
 
     // translation is always not null - this is only called for viewing
     // translations
