@@ -65,7 +65,7 @@
     <span ng-show="translations.totalCount == 0" style="display: block;"
       class="alert alert-warning">No translations.</span>
     <table ng-show="translations.totalCount > 0" class="table">
-      <thead>
+      <thead class="table-select-row">
         <tr>
           <th class="col-md-2 col-xs-2"><span
               ng-click="setSortField('translation','terminologyId')">
@@ -141,7 +141,7 @@
           </th>
         </tr>
       </thead>
-      <tbody>
+      <tbody class="table-select-row">
         <tr ng-repeat="translation in translations"
           ng-class="{selected: translation.id == selected.translation.id}"
           ng-click="selectTranslation(translation);" class="table-select-row">
@@ -887,7 +887,7 @@
 
         </span>
         <table ng-show="selected.translation" class="table">
-          <thead>
+          <thead class="table-select-row">
             <tr>
               <th class="col-md-3 col-xs-3"
                 ng-click="setSortField('concept','terminologyId', selected.translation)">Concept
@@ -914,7 +914,7 @@
                   title="Assign batch" class="noul material-icons md-18">assignment_ind</i></th>
             </tr>
           </thead>
-          <tbody>
+          <tbody class="table-select-row">
             <tr ng-repeat="concept in selected.translation.concepts"
               ng-class="{selected: concept.id == selected.concept.id}"
               ng-click="selectConcept(concept);">

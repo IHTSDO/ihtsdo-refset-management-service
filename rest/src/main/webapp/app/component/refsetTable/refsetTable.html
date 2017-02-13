@@ -141,7 +141,7 @@
 
         </tr>
       </thead>
-      <tbody>
+      <tbody class="table-select-row">
         <tr ng-repeat="refset in refsets" ng-click="selectRefset(refset);"
           ng-class="{selected: refset.id == selected.refset.id}">
           <td style="word-break: break-word;">{{refset.terminologyId}}</td>
@@ -212,7 +212,8 @@
           <td class="nobreak" ng-show="value == 'AVAILABLE'">
             <i ng-click="openEditRefsetModal(refset); $event.stopPropagation()"
               title="Edit" class="noul material-icons md-18">edit</i>
-            <i title="Remove" ng-show="!refset.staged && projects.role == 'ADMIN'"
+            <i title="Remove"
+              ng-show="!refset.staged && projects.role == 'ADMIN'"
               confirm="Are you sure you want to remove the refset ({{refset.name}})?"
               ng-click="removeRefset(refset); $event.stopPropagation()"
               class="noul material-icons md-18">delete</i>
@@ -375,8 +376,8 @@
                 class="md-grey material-icons md-18">speaker_notes</i>
               <i
                 ng-show="userProjectsInfo.anyRole && selected.refset.type != 'EXTERNAL'"
-                ng-click="openCloneRefsetModal(selected.refset);"
-                title="Clone" class="noul material-icons md-18">content_copy</i>
+                ng-click="openCloneRefsetModal(selected.refset);" title="Clone"
+                class="noul material-icons md-18">content_copy</i>
               <!-- Convert refset -->
               <i ng-show="selected.refset.type == 'INTENSIONAL'"
                 ng-click="convertRefset(selected.refset);"
@@ -385,9 +386,9 @@
                 ng-click="openEditRefsetModal(selected.refset, true);"
                 title="Convert Local Set to Refset"
                 class="noul material-icons md-18">exit_to_app</i>
-              <i ng-show="selected.refset.workflowStatus != 'BETA' && selected.refset.workflowStatus != 'PUBLISHED'"
-                ng-click="showDelta(selected.refset, true); "
-                title="Show delta"
+              <i
+                ng-show="selected.refset.workflowStatus != 'BETA' && selected.refset.workflowStatus != 'PUBLISHED'"
+                ng-click="showDelta(selected.refset, true); " title="Show delta"
                 class="noul material-icons md-18">change_history</i>
             </td>
           </tr>
@@ -672,8 +673,10 @@
             title="Remove all members" class="noul material-icons md-18">delete</i>
 
           <!-- Lookup names -->
-          <i ng-click="startLookup(selected.refset); $event.stopPropagation()"
-            ng-show="(requiresNameLookup && !selected.refset.lookupInProgress) || projects.role == 'ADMIN'"
+          <i
+            confirm="Are you sure you want to initiate name/active lookup (long-running for large refsets)?"
+            ng-click="startLookup(selected.refset); $event.stopPropagation()"
+            ng-show="(requiresNameLookup && !selected.refset.lookupInProgress)"
             title="Restart name lookup" class="noul material-icons md-18">play_arrow</i>
         </span>
       </h4>
@@ -751,7 +754,7 @@
               <th ng-show="value == 'ASSIGNED'">Actions</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody class="table-select-row">
             <tr ng-repeat="member in selected.refset.members"
               ng-click="selectMember(member);"
               ng-class="{selected : member.id == selected.member.id}">
