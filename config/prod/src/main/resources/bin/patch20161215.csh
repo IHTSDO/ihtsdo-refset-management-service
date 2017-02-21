@@ -28,18 +28,18 @@ echo ""
 # 1. Updatedb
 echo "  Update the database ... `/bin/date`"
 cd $REFSET_HOME/code/admin
-mvn install -PUpdatedb -Drefset.config=$REFSET_HOME/config/config.properties
+mvn install -PUpdatedb -Drefset.config=$REFSET_HOME/config/config-load.properties
 
 # 2. Patch mojo
 echo "  Run the patch ... `/bin/date`"
 cd $REFSET_HOME/code/admin
-mvn install -PPatch -Drefset.config=$REFSET_HOME/config/config.properties -Dstart=20161215 -Dend=20161215
+mvn install -PPatch -Drefset.config=$REFSET_HOME/config/config-load.properties -Dstart=20161215 -Dend=20161215
 
 # 3. Reindex
 #
 echo "  Reindex ... `/bin/date`"
 cd $REFSET_HOME/code/admin
-mvn install -PReindex -Drefset.config=$REFSET_HOME/config/config.properties
+mvn install -PReindex -Drefset.config=$REFSET_HOME/config/config-load.properties
 
 
 echo "--------------------------------------------------------"
