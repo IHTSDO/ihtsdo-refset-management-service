@@ -77,6 +77,7 @@ mvn -Dconfig.artifactId=refset-config-prod clean install
 
 cd ~/refset
 unzip ~/refset/code/config/prod/target/refset*.zip -d config
+mv config/bin .
 
 # edit ~/refset/config/config.properties
 #  *  javax.persistence.jdbc.url=jdbc:mysql://127.0.0.1:3306/refset?useUnicode=true&characterEncoding=UTF-8&rewriteBatchedStatements=true&useLocalSessionState=true
@@ -88,11 +89,8 @@ unzip ~/refset/code/config/prod/target/refset*.zip -d config
 
 PATCH INSTRUCTIONS
 
-cd ~/refset/code/admin
-mvn install -PUpdatedb -Drefset.config/home/ihtsdo/refset/config/config-load.properties >&! mvn.log
-set patchStart=20161201
-set patchEnd=20161215
-mvn install -PPatch -Drefset.config/home/ihtsdo/refset/config/config-load.properties -Dstart=$patchStart -Dend=$patchEnd >&! mvn.log &
+See config/prod/src/main/resources/bin patch*csh scripts
+Install in ~/refset/bin directory and run from there (this way they can find config file)
 
 REDEPLOY INSTRUCTIONS
 
