@@ -176,4 +176,9 @@ public interface RootService {
   public <T> List<T> applyPfsToList(List<T> list, Class<T> clazz,
     int[] totalCt, PfsParameter pfs) throws Exception;
 
+  <T> List<?> getQueryResults(String query, Class<?> fieldNamesKey, Class<T> clazz,
+    PfsParameter pfs, int[] totalCt) throws Exception;
+
+
+
 }
