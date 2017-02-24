@@ -99,7 +99,7 @@ public class PatchDataMojo extends AbstractMojo {
 
       }
 
-      // Patch 1000001
+      // Patch 20170110
       // Set project handler key/url for all projects
       if ("20170110".compareTo(start) >= 0 && "20170110".compareTo(end) <= 0) {
         getLog().info(
