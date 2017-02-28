@@ -3,17 +3,22 @@
  */
 package org.ihtsdo.otf.refset.jpa.services.validation;
 
+import java.util.List;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
+import org.apache.lucene.queryparser.classic.ParseException;
+import org.apache.lucene.queryparser.classic.QueryParserBase;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.ValidationResult;
+import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.jpa.ValidationResultJpa;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.rf2.Description;
 import org.ihtsdo.otf.refset.rf2.DescriptionType;
+import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.refset.services.RefsetService;
 import org.ihtsdo.otf.refset.services.TranslationService;
 
@@ -142,7 +147,35 @@ public class DefaultValidationCheck extends AbstractValidationCheck {
           && !desc.getTerm().matches(".* \\(.*\\)")) {
         result.addWarning("FSN description without semantic tag");
       }
-
+      
+      if (desc.getTypeId().equals("900000000000003001")) {
+        String escapedDescriptionName = QueryParserBase.escape(desc.getTerm());
+        String query = "descriptions.termSort:\"" + escapedDescriptionName + "\"" +
+            " AND NOT terminologyId:" + concept.getTerminologyId();
+        try {
+          
+          ConceptList list =  service.findConceptsForTranslation(
+              translation.getId(), query, null);
+          
+          if(list.getTotalCount() > 0) {
+            result.addWarning("Duplicate FSN descriptions in different concepts: " + list.getObjects().get(0).getTerminologyId() + " " + list.getObjects().get(0).getName());
+          }
+          
+        } catch (ParseException e) {
+          result.addWarning("FSN description without semantic tag");
+        }
+      }
+      
+      // no two descriptions in the same translation concept should exist
+      int ct = 0;
+      for (Description otherDesc : concept.getDescriptions()) {
+        if (otherDesc.getTerm().equals(desc.getTerm())) {
+          ct++;
+        }
+      }
+      if (ct > 1) {
+        result.addWarning("Duplicate descriptions in the same translation concept cannot exist: " + desc.getTerm());
+      }
     }
     return result;
   }
