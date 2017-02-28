@@ -75,7 +75,7 @@ public class DefaultValidationCheck extends AbstractValidationCheck {
         && refset.getMembers().size() > 0) {
       result.addError("Only external refsets should have members");
     }
-    
+
     return result;
   }
 
@@ -117,18 +117,32 @@ public class DefaultValidationCheck extends AbstractValidationCheck {
       }
 
       // Validate descriptionType length
+      int pnCt = 0;
       for (DescriptionType type : translation.getDescriptionTypes()) {
         if (type.getTypeId().equals(desc.getTypeId())
             && desc.getTerm().length() > type.getDescriptionLength()) {
           result.addError("Description exceeds length limit for its type ("
               + type.getName() + ", " + type.getDescriptionLength());
         }
-      }
 
+        // count Preferred Synonyms
+        if (desc.getTypeId().equals("900000000000013009")
+            && desc.getLanguageRefsetMembers().size() > 0
+            && desc.getLanguageRefsetMembers().get(0).getAcceptabilityId()
+                .equals("900000000000548007")) {
+          pnCt++;
+        }
+
+      }
+      // Warn if >1 PN
+      if (pnCt > 1) {
+        result.addWarning("Multiple PN descriptions");
+      }
       if (desc.getTypeId().equals("900000000000003001")
           && !desc.getTerm().matches(".* \\(.*\\)")) {
         result.addWarning("FSN description without semantic tag");
       }
+
     }
     return result;
   }
@@ -145,9 +159,8 @@ public class DefaultValidationCheck extends AbstractValidationCheck {
     }
 
     // The language should be a 2 letter code matching a language
-    if (translation.getLanguage() != null
-        && !translation.getLanguage().toLowerCase()
-            .equals(translation.getLanguage())) {
+    if (translation.getLanguage() != null && !translation.getLanguage()
+        .toLowerCase().equals(translation.getLanguage())) {
       result.addError("Translation language must be lowercase");
     }
 
