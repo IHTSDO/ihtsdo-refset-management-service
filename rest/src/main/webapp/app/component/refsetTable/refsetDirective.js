@@ -138,8 +138,7 @@ tsApp
 
               // ..
               $scope.getMemberTypes = function() {
-                if ($scope.selected.refset.translations
-                  && $scope.selected.refset.translations.length > 0) {
+                if ($scope.selected.refset && $scope.selected.refset.translated) {
                   return memberTypes;
                 } else {
                   return memberTypes2;
