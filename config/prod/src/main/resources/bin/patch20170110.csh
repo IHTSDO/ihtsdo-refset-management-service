@@ -42,6 +42,7 @@ mvn install -PPatch -Drefset.config=$REFSET_HOME/config/config-load.properties -
 
 # 4. Reindex
 echo "  Reindex ... `/bin/date`"
+/bin/rm -rf /var/lib/tomcat7/indexes/refset/*
 cd $REFSET_HOME/code/admin
 mvn install -PReindex -Drefset.config=$REFSET_HOME/config/config-load.properties
 

@@ -514,7 +514,8 @@
               <i ng-show="value == 'ASSIGNED' && projects.role != 'ADMIN'"
                 confirm="Remove redundant definition clauses, and invalid inclusions/exclusions."
                 ng-click="optimizeDefinition(selected.refset);$event.stopPropagation()"
-                title="Optimize definition" class="noul material-icons md-18">compare_arrows</i>
+                title="Optimize and recompute definition"
+                class="noul material-icons md-18">compare_arrows</i>
 
               <!-- Export -->
               <i
@@ -747,7 +748,7 @@
               <th class="col-md-2 col-xs-2"><select
                 title="Filter by member type" style="width: 80px;"
                 ng-model="paging['member'].typeFilter"
-                ng-options="item for item in memberTypes"
+                ng-options="item for item in getMemberTypes()"
                 ng-change="getMembers(selected.refset)">
                   <option value="">All</option>
               </select></th>
