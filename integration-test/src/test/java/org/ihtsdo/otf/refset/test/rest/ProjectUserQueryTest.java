@@ -6,6 +6,7 @@
  */
 package org.ihtsdo.otf.refset.test.rest;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -59,10 +60,10 @@ public class ProjectUserQueryTest extends ProjectTestSupport {
    * @throws Exception the exception
    */
   @SuppressWarnings("static-method")
-  private ProjectJpa makeProject(String name, String namespace, String authToken)
-    throws Exception {
+  private ProjectJpa makeProject(String name, String namespace,
+    String authToken) throws Exception {
     ProjectJpa project = new ProjectJpa();
-    project.setName(name);
+    project.setName(name + new Date());
     project.setDescription("Description of project " + name);
     project.setLastModified(new Date());
     project.setTerminology("en-edition");
@@ -74,7 +75,9 @@ public class ProjectUserQueryTest extends ProjectTestSupport {
     project.setLastModifiedBy("Author1");
     project.setOrganization("IHTSDO");
     project.addValidationCheck("DEFAULT");
-
+    project.setWorkflowPath("DEFAULT");
+    project.setTerminologyHandlerKey("BROWSER");
+    project.setTerminologyHandlerUrl("https://sct-rest.ihtsdotools.org/api");
     project = (ProjectJpa) projectService.addProject(project, adminAuthToken);
 
     return project;
@@ -115,30 +118,26 @@ public class ProjectUserQueryTest extends ProjectTestSupport {
     ProjectJpa project =
         makeProject("Find Users Project", "1000001", adminAuthToken);
 
-    projectService.assignUserToProject(project.getId(),
-        reviewer1.getUserName(), UserRole.REVIEWER.toString(), adminAuthToken);
+    projectService.assignUserToProject(project.getId(), reviewer1.getUserName(),
+        UserRole.REVIEWER.toString(), adminAuthToken);
     projectService.assignUserToProject(project.getId(), author1.getUserName(),
         UserRole.AUTHOR.toString(), adminAuthToken);
 
     // verify able to retrieve expected concept
-    UserList users =
-        projectService.findAssignedUsersForProject(project.getId(),
-            "projectAnyRole:" + project.getId(), null, adminAuthToken);
+    UserList users = projectService.findAssignedUsersForProject(project.getId(),
+        "projectAnyRole:" + project.getId(), null, adminAuthToken);
     assertTrue(users.getCount() == 2);
-    users =
-        projectService.findAssignedUsersForProject(project.getId(),
-            "applicationRole:ADMIN", null, adminAuthToken);
+    users = projectService.findAssignedUsersForProject(project.getId(),
+        "applicationRole:ADMIN", null, adminAuthToken);
     assertTrue(users.getCount() == 0);
 
     // verify able to retrieve expected concept
-    users =
-        projectService.findUnassignedUsersForProject(project.getId(),
-            "projectAnyRole:" + project.getId(), null, adminAuthToken);
-    assertTrue(users.getCount() == 0);
-    users =
-        projectService.findUnassignedUsersForProject(project.getId(),
-            "applicationRole:ADMIN", null, adminAuthToken);
-    assertTrue(users.getCount() == 1);
+    users = projectService.findUnassignedUsersForProject(project.getId(),
+        "projectAnyRole:" + project.getId(), null, adminAuthToken);
+    assertEquals(0,users.getCount());
+    users = projectService.findUnassignedUsersForProject(project.getId(),
+        "applicationRole:ADMIN", null, adminAuthToken);
+    assertEquals(1,users.getCount());
 
     // Clean Up
     projectService.unassignUserFromProject(project.getId(),

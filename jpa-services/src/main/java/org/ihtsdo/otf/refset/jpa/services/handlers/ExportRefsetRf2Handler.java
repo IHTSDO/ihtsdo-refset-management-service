@@ -5,6 +5,7 @@ package org.ihtsdo.otf.refset.jpa.services.handlers;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.util.Date;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Properties;
@@ -41,16 +42,19 @@ public class ExportRefsetRf2Handler implements ExportRefsetHandler {
   /* see superclass */
   @Override
   public String getFileName(String betaFileName) {
-    // Strip off the "x"
-    return betaFileName.substring(1);
+    // Strip off the "x" and remove the build date
+    String fileExt = betaFileName.substring(betaFileName.lastIndexOf('.'));
+    String fileName = betaFileName.substring(1, betaFileName.lastIndexOf('_'));
+    return fileName + fileExt;
   }
 
   @Override
-  public String getBetaFileName(String namespace, String type, String version) {
+  public String getBetaFileName(Refset refset, String type, String version) {
+    String namespace = refset.getProject().getNamespace();
     // Use "INT" for the namespace if null
-    return "xder2_Refset_Simple" + type + "_"
+    return "xder2_Refset_" + ConfigUtility.toCamelCase(refset.getName()) + type + "_"
         + (namespace == null || namespace.isEmpty() ? "INT" : namespace) + "_"
-        + version + getFileTypeFilter();
+        + version + "_" + ConfigUtility.DATE_FORMAT5.format(new Date()) + getFileTypeFilter();
   }
 
   /* see superclass */
@@ -69,9 +73,8 @@ public class ExportRefsetRf2Handler implements ExportRefsetHandler {
   @Override
   public InputStream exportMembers(Refset refset,
     List<ConceptRefsetMember> members) throws Exception {
-    Logger.getLogger(getClass()).info(
-        "Export refset members with names - " + refset.getTerminologyId()
-            + ", " + refset.getName());
+    Logger.getLogger(getClass()).info("Export refset members with names - "
+        + refset.getTerminologyId() + ", " + refset.getName());
 
     // Write a header
     // Obtain members for refset,
@@ -91,8 +94,8 @@ public class ExportRefsetRf2Handler implements ExportRefsetHandler {
       Logger.getLogger(getClass()).debug("  member = " + member);
 
       // Skip exclusions
-      if (EnumSet.of(Refset.MemberType.EXCLUSION).contains(
-          member.getMemberType())) {
+      if (EnumSet.of(Refset.MemberType.EXCLUSION)
+          .contains(member.getMemberType())) {
         continue;
       }
       sb.append(member.getTerminologyId()).append("\t");
@@ -117,8 +120,8 @@ public class ExportRefsetRf2Handler implements ExportRefsetHandler {
   public InputStream exportDefinition(Refset refset,
     List<ConceptRefsetMember> inclusions, List<ConceptRefsetMember> exclusions)
     throws Exception {
-    Logger.getLogger(getClass()).info(
-        "Export refset definition - " + refset.getTerminologyId() + ", "
+    Logger.getLogger(getClass())
+        .info("Export refset definition - " + refset.getTerminologyId() + ", "
             + refset.getName() + ", " + refset.getDefinitionClauses());
 
     // Write RF2 refset definition pattern to an input stream

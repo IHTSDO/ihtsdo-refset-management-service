@@ -1,6 +1,8 @@
 <div class="modal-header">
-  <h4>Add Refset Member</h4>
-
+  <h4 style="display: inline">Add Refset Member</h4>
+  <span style="float: right">
+    <i class="noul glyphicon glyphicon-remove" ng-click="cancel()"></i>
+  </span>
 </div>
 
 <div class="modal-body">
@@ -54,31 +56,36 @@
               <td>
                 {{concept.name}}
                 <button class="btn btn-xs inactive"
-                  style="transform: scale(.6, .6); margin-bottom: 4px; padding-left: 4px;"
+                  style="transform: scale(.8, .8); margin-bottom: 4px; padding-left: 4px;"
                   ng-show="!concept.active" uib-tooltip="Inactive">I</button>
                 <span ng-show="concept.descriptions.length>0">
                   <span ng-repeat="desc in concept.descriptions"
                     style="margin-left: 10px">
                     <br>{{desc.term}} {{desc.terminologyId}}
+                    <button class="btn btn-xs inactive"
+                      style="transform: scale(.8, .8); margin-bottom: 4px; padding-left: 4px;"
+                      ng-show="!desc.active" uib-tooltip="Inactive">I</button>
                   </span>
                 </span>
               </td>
               <td>
-                <i ng-click="addMember(concept); $event.stopPropagation();"
+                <button
+                  style="transform: scale(.8, .8); margin-bottom: 4px; padding-left: 4px;"
+                  ng-click="addMember(concept); $event.stopPropagation();"
                   ng-show="data.memberTypes[concept.terminologyId].memberType != 'MEMBER' &&
                     data.memberTypes[concept.terminologyId].memberType != 'EXCLUSION' &&
                     data.memberTypes[concept.terminologyId].memberType != 'INCLUSION'"
-                  title="Add member to refset" class="noul material-icons md-12">add</i>
+                  title="Add member to refset" class="btn btn-xs btn-primary">Add</button>
                 <button class="btn btn-xs btn-primary"
-                  style="transform: scale(.6, .6); margin-bottom: 4px; padding-left: 4px;"
+                  style="transform: scale(.8, .8); margin-bottom: 4px; padding-left: 4px;"
                   ng-show="data.memberTypes[concept.terminologyId].memberType == 'MEMBER'"
                   uib-tooltip="Member">M</button>
                 <button class="btn btn-xs btn-danger"
-                  style="transform: scale(.6, .6); margin-bottom: 4px; padding-left: 4px;"
+                  style="transform: scale(.8, .8); margin-bottom: 4px; padding-left: 4px;"
                   ng-show="data.memberTypes[concept.terminologyId].memberType == 'EXCLUSION'"
                   uib-tooltip="Exclusion">X</button>
                 <button class="btn btn-xs btn-success"
-                  style="transform: scale(.6, .6); margin-bottom: 4px; padding-left: 4px;"
+                  style="transform: scale(.8, .8); margin-bottom: 4px; padding-left: 4px;"
                   ng-show="data.memberTypes[concept.terminologyId].memberType == 'INCLUSION'"
                   uib-tooltip="Inclusion">I</button>
               </td>
@@ -107,7 +114,7 @@
         {{errors[0]}}
         <div style="display: inline; float: right;">
           <i ng-show="errors[1]"
-            title="{{error.expand ? 'Show' : 'Hide'}} long eror"
+            title="{{error.expand ? 'Show' : 'Hide'}} long error"
             class="noul material-icons md-18"
             ng-click="error.expand = !error.expand;">attach_file</i>
         </div>
@@ -131,5 +138,5 @@
 </div>
 
 <div class="modal-footer">
-  <button class="btn btn-warning" ng-click="cancel()">Close</button>
+  <button class="btn btn-xs btn-warning" ng-click="cancel()">Close</button>
 </div>

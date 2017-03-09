@@ -21,11 +21,30 @@ tsApp
         this.tinymceOptions = {
           menubar : false,
           statusbar : false,
-          plugins : 'autolink autoresize link image charmap searchreplace lists paste',
+          plugins : 'autolink link image charmap searchreplace lists paste',
           toolbar : 'undo redo | styleselect lists | bold italic underline strikethrough | charmap link image',
           forced_root_block : ''
         };
 
+        // Get page sizes
+        this.getPageSizes = function() {
+          return [ {
+            name : 10,
+            value : 10
+          }, {
+            name : 20,
+            value : 30
+          }, {
+            name : 40,
+            value : 50
+          }, {
+            name : 100,
+            value : 100
+          }, {
+            name : 'All',
+            value : 100000
+          } ];
+        }
         // Prep query
         this.prepQuery = function(query, wildcardFlag) {
           if (!query) {
@@ -35,7 +54,7 @@ tsApp
           // Add a * to the filter if set and doesn't contain a ':' indicating
           // filter search
           if (!wildcardFlag && query.indexOf("(") == -1 && query.indexOf(":") == -1
-            && query.indexOf("\"") == -1) {
+            && query.indexOf("=") == -1 && query.indexOf("\"") == -1) {
             var query2 = query.concat('*');
             return encodeURIComponent(query2);
           }
@@ -50,13 +69,50 @@ tsApp
 
           // Add a * to the filter if set and doesn't contain a :
           if (pfs.queryRestriction && pfs.queryRestriction.indexOf(":") == -1
-            && pfs.queryRestriction.indexOf("\"") == -1) {
+            && pfs.queryRestriction.indexOf("=") == -1 && pfs.queryRestriction.indexOf("\"") == -1) {
             var pfs2 = angular.copy(pfs);
             pfs2.queryRestriction += "*";
             return pfs2;
           }
           return pfs;
         };
+
+        this.toText = function(camelCase, captializefirst) {
+          if (capitalizeFirst) {
+            var str = camelCase.replace(/([A-Z]+)/g, " $1").replace(/([A-Z][a-z])/g, " $1");
+            return str[0].toUpperCase() + str.slice(1)
+          } else {
+            return camelCase.replace(/([A-Z]+)/g, " $1").replace(/([A-Z][a-z])/g, " $1")
+          }
+        }
+
+        this.toCamelCase = function(text) {
+          // Lower cases the string
+          return text.toLowerCase()
+          // Replaces any - or _ characters with a space
+          .replace(/[-_]+/g, ' ')
+          // Removes any non alphanumeric characters
+          .replace(/[^\w\s]/g, '')
+          // remove duplicate spaces
+          .replace(/\s{2,}/g, ' ')
+          // Uppercases the first character in each group immediately following
+          // a space
+          // (delimited by spaces)
+          .replace(/ (.)/g, function($1) {
+            return $1.toUpperCase();
+          })
+          // Removes spaces
+          .replace(/ /g, '');
+        }
+
+        this.yyyymmdd = function(dateIn) {
+          var yyyy = dateIn.getFullYear();
+          // getMonth() is zero-based
+          var mm = dateIn.getMonth() + 1;
+          var dd = dateIn.getDate();
+          // Leading zeros for mm and dd
+          return String(10000 * yyyy + 100 * mm + dd);
+        }
 
         // Sets the error
         this.setError = function(message) {
@@ -120,6 +176,22 @@ tsApp
             this.clearError();
           }
         };
+
+        // Compose a URL properly for opening new window
+        this.composeUrl = function(extension) {
+          var currentUrl = $location.absUrl();
+          var baseUrl = currentUrl.substring(0, currentUrl.indexOf('#') + 1);
+          var newUrl = baseUrl + extension;
+          return newUrl;
+        }
+
+        // Return the time for a YYYYMMDD string
+        function parseYYYYMMDD(str) {
+          if (!/^(\d){8}$/.test(str))
+            return 0;
+          var y = str.substr(0, 4), m = str.substr(4, 2) - 1, d = str.substr(6, 2);
+          return new Date(y, m, d).getTime();
+        }
 
         // Convert date to a string
         var workDate = new Date();
@@ -369,55 +441,76 @@ tsApp
       } ]);
 
 // Glass pane service
-tsApp.service('gpService', function() {
+tsApp.service('gpService', [ '$timeout', function($timeout) {
   console.debug('configure gpService');
   // declare the glass pane counter
-  this.glassPane = {
+  var glassPane = {
     counter : 0,
-    messages : []
+    messages : [],
+    enabled : true,
+    timeout : false
   };
 
+  this.getGlassPane = function() {
+    return glassPane;
+  }
+
   this.isGlassPaneSet = function() {
-    return this.glassPane.counter;
+    return glassPane.enabled;
   };
 
   this.isGlassPaneNegative = function() {
-    return this.glassPane.counter < 0;
+    return glassPane.counter < 0;
   };
 
   // Increments glass pane counter
   this.increment = function(message) {
     if (message) {
-      this.glassPane.messages.push(message);
+      glassPane.messages.push(message);
     }
-    this.glassPane.counter++;
+    glassPane.counter++;
+    if (!glassPane.timeout) {
+      $timeout(function() {
+        if (glassPane.counter > 0) {
+          glassPane.enabled = true;
+        }
+        glassPane.timeout = false;
+      }, 100);
+    }
   };
 
   // Decrements glass pane counter
   this.decrement = function(message) {
     if (message) {
-      var index = this.glassPane.messages.indexOf(message); // <-- Not supported
-      // in <IE9
+      var index = glassPane.messages.indexOf(message);
       if (index !== -1) {
-        this.glassPane.messages.splice(index, 1);
+        glassPane.messages.splice(index, 1);
       }
     }
-    this.glassPane.counter--;
+    glassPane.counter--;
+    if (glassPane.counter == 0) {
+      $timeout(function() {
+        if (glassPane.counter == 0) {
+          glassPane.enabled = false;
+        }
+      }, 100);
+    }
   };
 
-});
+} ]);
 
 // Security service
 tsApp.service('securityService', [
   '$http',
   '$location',
   '$q',
-  '$cookieStore',
+  '$cookies',
   'utilService',
-  'gpService', 'appConfig',
-  function($http, $location, $q, $cookieStore, utilService, gpService, appConfig) {
+  'gpService',
+  'appConfig',
+  function($http, $location, $q, $cookies, utilService, gpService, appConfig) {
     console.debug('configure securityService');
-    
+
     // Declare the user
     var user = {
       userName : null,
@@ -439,10 +532,9 @@ tsApp.service('securityService', [
 
       // Determine if page has been reloaded
       if (!$http.defaults.headers.common.Authorization) {
-        console.debug('no header');
         // Retrieve cookie
-        if ($cookieStore.get('user')) {
-          var cookieUser = JSON.parse($cookieStore.get('user'));
+        if ($cookies.get('user')) {
+          var cookieUser = JSON.parse($cookies.get('user'));
           // If there is a user cookie, load it
           if (cookieUser) {
             this.setUser(cookieUser);
@@ -468,7 +560,7 @@ tsApp.service('securityService', [
       user.userPreferences = data.userPreferences;
 
       // Whenver set user is called, we should save a cookie
-      $cookieStore.put('user', JSON.stringify(user));
+      $cookies.put('user', JSON.stringify(user));
 
     };
 
@@ -481,7 +573,7 @@ tsApp.service('securityService', [
       user.userPreferences = {};
 
       // Whenever set user is called, we should save a cookie
-      $cookieStore.put('user', JSON.stringify(user));
+      $cookies.put('user', JSON.stringify(user));
 
     };
 
@@ -493,7 +585,7 @@ tsApp.service('securityService', [
       user.password = null;
       user.applicationRole = null;
       user.userPreferences = null;
-      $cookieStore.remove('user');
+      $cookies.remove('user');
     };
 
     var httpClearUser = this.clearUser;
@@ -717,7 +809,7 @@ tsApp.service('securityService', [
       }
 
       // Whenever we update user preferences, we need to update the cookie
-      $cookieStore.put('user', JSON.stringify(user));
+      $cookies.put('user', JSON.stringify(user));
 
       var deferred = $q.defer();
 

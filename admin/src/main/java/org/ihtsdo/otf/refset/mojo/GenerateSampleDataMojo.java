@@ -69,7 +69,7 @@ import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
  * See admin/pom.xml for sample usage
  * 
  */
-@Mojo( name = "sample-data", defaultPhase = LifecyclePhase.PACKAGE)
+@Mojo(name = "sample-data", defaultPhase = LifecyclePhase.PACKAGE)
 public class GenerateSampleDataMojo extends AbstractMojo {
 
   /** The refset counter. */
@@ -132,9 +132,8 @@ public class GenerateSampleDataMojo extends AbstractMojo {
       service.close();
 
       // The assign names property
-      assignNames =
-          Boolean.valueOf(properties
-              .getProperty("terminology.handler.DEFAULT.assignNames"));
+      assignNames = Boolean.valueOf(
+          properties.getProperty("terminology.handler.DEFAULT.assignNames"));
 
       // Handle reindexing database if mode is set
       if (mode != null && mode.equals("create")) {
@@ -143,8 +142,8 @@ public class GenerateSampleDataMojo extends AbstractMojo {
       }
 
       boolean serverRunning = ConfigUtility.isServerActive();
-      getLog().info(
-          "Server status detected:  " + (!serverRunning ? "DOWN" : "UP"));
+      getLog()
+          .info("Server status detected:  " + (!serverRunning ? "DOWN" : "UP"));
       if (serverRunning) {
         throw new Exception("Server must not be running to generate data");
       }
@@ -259,20 +258,36 @@ public class GenerateSampleDataMojo extends AbstractMojo {
       // Create projects
       //
       Logger.getLogger(getClass()).info("Add new projects");
-      ProjectJpa project1 = makeProject("Project 1", "1000001", admin);
-      ProjectJpa project2 = makeProject("Project 2", "1000036", admin);
-      ProjectJpa project3 = makeProject("Project 3", "1000124", admin);
-      ProjectJpa project4 = makeProject("Project 4", null, admin);
+      ProjectJpa project1 = makeProject("Project 1", "1000001", admin,
+          "BROWSER", "https://sct-rest.ihtsdotools.org/api");
+      ProjectJpa project2 = makeProject("Project 2", "1000036", admin,
+          "BROWSER", "https://sct-rest.ihtsdotools.org/api");
+      ProjectJpa project3 = makeProject("Project 3", "1000124", admin,
+          "BROWSER", "https://sct-rest.ihtsdotools.org/api");
+      ProjectJpa project4 = makeProject("Project 4", null, admin, "BROWSER",
+          "https://sct-rest.ihtsdotools.org/api");
 
       // Make additional projects to trigger paging
-      ProjectJpa project5 = makeProject("Project 5", null, admin);
-      ProjectJpa project6 = makeProject("Project 6", null, admin);
-      makeProject("Project 7", null, admin);
-      makeProject("Project 8", null, admin);
-      makeProject("Project 9", null, admin);
-      makeProject("Project 10", null, admin);
-      makeProject("Project 11", null, admin);
-      makeProject("Project 12", null, admin);
+      ProjectJpa project5 = makeProject("Project 5", null, admin, "BROWSER",
+          "https://sct-rest.ihtsdotools.org/api");
+      ProjectJpa project6 = makeProject("Project 6", null, admin, "BROWSER",
+          "https://sct-rest.ihtsdotools.org/api");
+      makeProject("Project 7", null, admin, "BROWSER",
+          "https://sct-rest.ihtsdotools.org/api");
+      makeProject("Project 8", null, admin, "BROWSER",
+          "https://sct-rest.ihtsdotools.org/api");
+      makeProject("Project 9", null, admin, "BROWSER",
+          "https://sct-rest.ihtsdotools.org/api");
+      makeProject("Project 10", null, admin, "BROWSER",
+          "https://sct-rest.ihtsdotools.org/api");
+      makeProject("Project 11", null, admin, "BROWSER",
+          "https://sct-rest.ihtsdotools.org/api");
+      makeProject("Project 12", null, admin, "BROWSER",
+          "https://sct-rest.ihtsdotools.org/api");
+      ProjectJpa project13 = makeProject("Project 13", null, admin, "SNOWOWL",
+          "http://local.ihtsdotools.org:8081/snowowl");
+      ProjectJpa project14 = makeProject("Project 14", null, admin, "SNOWOWL",
+          "http://local.ihtsdotools.org:8081/snowowl-se");
 
       //
       // Assign project roles
@@ -302,9 +317,8 @@ public class GenerateSampleDataMojo extends AbstractMojo {
           refsetreviewer1.getUserName(), UserRole.REVIEWER.toString(),
           admin.getAuthToken());
       project = new ProjectServiceRestImpl();
-      project.assignUserToProject(project1.getId(),
-          refsetauthor1.getUserName(), UserRole.AUTHOR.toString(),
-          admin.getAuthToken());
+      project.assignUserToProject(project1.getId(), refsetauthor1.getUserName(),
+          UserRole.AUTHOR.toString(), admin.getAuthToken());
 
       // Project 2
       project = new ProjectServiceRestImpl();
@@ -407,45 +421,37 @@ public class GenerateSampleDataMojo extends AbstractMojo {
       Logger.getLogger(getClass()).info("Create refsets");
       reviewer1 = (UserJpa) security.authenticate("reviewer1", "reviewer1");
 
-      RefsetJpa refset1 =
-          makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project1,
-              "11111912342013", "1000124", reviewer1, true);
+      RefsetJpa refset1 = makeRefset("refset1", null, Refset.Type.EXTENSIONAL,
+          project1, "11111912342013", "1000124", reviewer1, true);
 
       // Create two refsets in project 2 (intensional and external)
       reviewer2 = (UserJpa) security.authenticate("reviewer2", "reviewer2");
-      RefsetJpa refset2 =
-          makeRefset("refset2", null, Refset.Type.INTENSIONAL, project2,
-              "222222912342013", "1000124", reviewer2, true);
-      RefsetJpa refset3 =
-          makeRefset("refset3", null, Refset.Type.EXTERNAL, project2,
-              "33333912342013", "1000124", reviewer2, true);
+      RefsetJpa refset2 = makeRefset("refset2", null, Refset.Type.INTENSIONAL,
+          project2, "222222912342013", "1000124", reviewer2, true);
+      RefsetJpa refset3 = makeRefset("refset3", null, Refset.Type.EXTERNAL,
+          project2, "33333912342013", "1000124", reviewer2, true);
 
       // Create a refset (extensional) and a translation refset in project 3
       // (extensional)
       reviewer3 = (UserJpa) security.authenticate("reviewer3", "reviewer3");
-      RefsetJpa refset4 =
-          makeRefset("refset4", null, Refset.Type.EXTENSIONAL, project3,
-              "44444912342013", "1000124", reviewer3, true);
+      RefsetJpa refset4 = makeRefset("refset4", null, Refset.Type.EXTENSIONAL,
+          project3, "44444912342013", "1000124", reviewer3, true);
 
-      RefsetJpa refset5 =
-          makeRefset("refset5", null, Refset.Type.EXTENSIONAL, project3,
-              "55555912342013", "1000124", reviewer3, true);
+      RefsetJpa refset5 = makeRefset("refset5", null, Refset.Type.EXTENSIONAL,
+          project3, "55555912342013", "1000124", reviewer3, true);
       refset5.setForTranslation(true);
       new RefsetServiceRestImpl().updateRefset(refset5,
           reviewer3.getAuthToken());
 
       // Create two translations in refset 5
-      TranslationJpa translation1 =
-          makeTranslation("translation1", refset5, refset5.getProject(),
-              reviewer3);
+      TranslationJpa translation1 = makeTranslation("translation1", refset5,
+          refset5.getProject(), reviewer3);
 
       // Create refsets 6-12 on project 5
-      Refset refset6 =
-          makeRefset("refset6", null, Refset.Type.EXTERNAL, project5,
-              "666666912342013", "1000124", admin, true);
-      TranslationJpa translation2 =
-          makeTranslation("translation2", refset6, refset5.getProject(),
-              reviewer3);
+      Refset refset6 = makeRefset("refset6", null, Refset.Type.EXTERNAL,
+          project5, "666666912342013", "1000124", admin, true);
+      TranslationJpa translation2 = makeTranslation("translation2", refset6,
+          refset5.getProject(), reviewer3);
       makeRefset("refset7", null, Refset.Type.EXTERNAL, project5,
           "777777912342013", "1000124", admin, true);
       makeRefset("refset8", null, Refset.Type.EXTERNAL, project5,
@@ -460,66 +466,68 @@ public class GenerateSampleDataMojo extends AbstractMojo {
           "12121212342013", "1000124", admin, true);
 
       // Create refsets 20-32 on project 6, as BETA
-      RefsetJpa refset =
-          makeRefset("refset20", null, Refset.Type.EXTERNAL, project6,
-              "206666612342013", "1000124", admin, true);
+      RefsetJpa refset = makeRefset("refset20", null, Refset.Type.EXTERNAL,
+          project6, "206666612342013", "1000124", admin, true);
       refset.setWorkflowStatus(WorkflowStatus.BETA);
       new RefsetServiceRestImpl().updateRefset(refset, admin.getAuthToken());
-      refset =
-          makeRefset("refset21", null, Refset.Type.EXTERNAL, project6,
-              "216666612342013", "1000124", admin, true);
+      refset = makeRefset("refset21", null, Refset.Type.EXTERNAL, project6,
+          "216666612342013", "1000124", admin, true);
       refset.setWorkflowStatus(WorkflowStatus.BETA);
       new RefsetServiceRestImpl().updateRefset(refset, admin.getAuthToken());
-      refset =
-          makeRefset("refset22", null, Refset.Type.EXTERNAL, project6,
-              "226666612342013", "1000124", admin, true);
+      refset = makeRefset("refset22", null, Refset.Type.EXTERNAL, project6,
+          "226666612342013", "1000124", admin, true);
       refset.setWorkflowStatus(WorkflowStatus.BETA);
       new RefsetServiceRestImpl().updateRefset(refset, admin.getAuthToken());
-      refset =
-          makeRefset("refset23", null, Refset.Type.EXTERNAL, project6,
-              "236666612342013", "1000124", admin, true);
+      refset = makeRefset("refset23", null, Refset.Type.EXTERNAL, project6,
+          "236666612342013", "1000124", admin, true);
       refset.setWorkflowStatus(WorkflowStatus.BETA);
       new RefsetServiceRestImpl().updateRefset(refset, admin.getAuthToken());
-      refset =
-          makeRefset("refset24", null, Refset.Type.EXTERNAL, project6,
-              "246666612342013", "1000124", admin, true);
+      refset = makeRefset("refset24", null, Refset.Type.EXTERNAL, project6,
+          "246666612342013", "1000124", admin, true);
       refset.setWorkflowStatus(WorkflowStatus.BETA);
       new RefsetServiceRestImpl().updateRefset(refset, admin.getAuthToken());
-      refset =
-          makeRefset("refset25", null, Refset.Type.EXTERNAL, project6,
-              "256666612342013", "1000124", admin, true);
+      refset = makeRefset("refset25", null, Refset.Type.EXTERNAL, project6,
+          "256666612342013", "1000124", admin, true);
       refset.setWorkflowStatus(WorkflowStatus.BETA);
       new RefsetServiceRestImpl().updateRefset(refset, admin.getAuthToken());
-      refset =
-          makeRefset("refset26", null, Refset.Type.EXTERNAL, project6,
-              "266666612342013", "1000124", admin, true);
+      refset = makeRefset("refset26", null, Refset.Type.EXTERNAL, project6,
+          "266666612342013", "1000124", admin, true);
       refset.setWorkflowStatus(WorkflowStatus.BETA);
       new RefsetServiceRestImpl().updateRefset(refset, admin.getAuthToken());
-      refset =
-          makeRefset("refset27", null, Refset.Type.EXTERNAL, project6,
-              "276666612342013", "1000124", admin, true);
+      refset = makeRefset("refset27", null, Refset.Type.EXTERNAL, project6,
+          "276666612342013", "1000124", admin, true);
       refset.setWorkflowStatus(WorkflowStatus.BETA);
       new RefsetServiceRestImpl().updateRefset(refset, admin.getAuthToken());
-      refset =
-          makeRefset("refset28", null, Refset.Type.EXTERNAL, project6,
-              "286666612342013", "1000124", admin, true);
+      refset = makeRefset("refset28", null, Refset.Type.EXTERNAL, project6,
+          "286666612342013", "1000124", admin, true);
       refset.setWorkflowStatus(WorkflowStatus.BETA);
       new RefsetServiceRestImpl().updateRefset(refset, admin.getAuthToken());
-      refset =
-          makeRefset("refset29", null, Refset.Type.EXTERNAL, project6,
-              "296666612342013", "1000124", admin, true);
+      refset = makeRefset("refset29", null, Refset.Type.EXTERNAL, project6,
+          "296666612342013", "1000124", admin, true);
       refset.setWorkflowStatus(WorkflowStatus.BETA);
       new RefsetServiceRestImpl().updateRefset(refset, admin.getAuthToken());
-      refset =
-          makeRefset("refset30", null, Refset.Type.EXTERNAL, project6,
-              "306666612342013", "1000124", admin, true);
+      refset = makeRefset("refset30", null, Refset.Type.EXTERNAL, project6,
+          "306666612342013", "1000124", admin, true);
       refset.setWorkflowStatus(WorkflowStatus.BETA);
       new RefsetServiceRestImpl().updateRefset(refset, admin.getAuthToken());
-      refset =
-          makeRefset("refset31", null, Refset.Type.EXTERNAL, project6,
-              "316666612342013", "1000124", admin, true);
+      refset = makeRefset("refset31", null, Refset.Type.EXTERNAL, project6,
+          "316666612342013", "1000124", admin, true);
       refset.setWorkflowStatus(WorkflowStatus.BETA);
       new RefsetServiceRestImpl().updateRefset(refset, admin.getAuthToken());
+
+      // Add users to Snowowl projects 13 & 14
+      project = new ProjectServiceRestImpl();
+      project.assignUserToProject(project13.getId(), admin1.getUserName(),
+          UserRole.ADMIN.toString(), admin.getAuthToken());
+      project = new ProjectServiceRestImpl();
+      project.assignUserToProject(project13.getId(), refsetadmin1.getUserName(),
+          UserRole.ADMIN.toString(), admin.getAuthToken());
+      project = new ProjectServiceRestImpl();
+      project.assignUserToProject(project14.getId(), admin1.getUserName(),
+          UserRole.ADMIN.toString(), admin.getAuthToken());
+      project = new ProjectServiceRestImpl();
+      project.assignUserToProject(project14.getId(), refsetadmin1.getUserName(),
+          UserRole.ADMIN.toString(), admin.getAuthToken());
 
       // take a refset entirely through the release cycle, including release
       // artifacts
@@ -527,25 +535,17 @@ public class GenerateSampleDataMojo extends AbstractMojo {
       // refset1 release info
       ReleaseInfo refsetReleaseInfo =
           makeReleaseInfo("Refset1 release info", refset1);
-      makeReleaseArtifact(
-          "releaseArtifact1.txt",
-          refsetReleaseInfo,
+      makeReleaseArtifact("releaseArtifact1.txt", refsetReleaseInfo,
           "../config/src/main/resources/data/refset/der2_Refset_SimpleSnapshot_INT_20140731.txt");
-      makeReleaseArtifact(
-          "releaseArtifact2.txt",
-          refsetReleaseInfo,
+      makeReleaseArtifact("releaseArtifact2.txt", refsetReleaseInfo,
           "../config/src/main/resources/data/refset/der2_Refset_DefinitionSnapshot_INT_20140731.txt");
 
       // translation1 release info
       ReleaseInfo translationReleaseInfo =
           makeReleaseInfo("Translation1 release info", translation1);
-      makeReleaseArtifact(
-          "releaseArtifact1.txt",
-          translationReleaseInfo,
+      makeReleaseArtifact("releaseArtifact1.txt", translationReleaseInfo,
           "../config/src/main/resources/data/refset/der2_Refset_SimpleSnapshot_INT_20140731.txt");
-      makeReleaseArtifact(
-          "releaseArtifact2.txt",
-          translationReleaseInfo,
+      makeReleaseArtifact("releaseArtifact2.txt", translationReleaseInfo,
           "../config/src/main/resources/data/refset/der2_Refset_DefinitionSnapshot_INT_20140731.txt");
 
       //
@@ -573,21 +573,18 @@ public class GenerateSampleDataMojo extends AbstractMojo {
       author1 = (UserJpa) security.authenticate("author1", "author1");
 
       // test 1
-      RefsetJpa test1 =
-          makeRefset("test1", "<<387293003 | Anthralin (substance)|",
-              Refset.Type.INTENSIONAL, project1, "111111", "1000124", author1,
-              false);
+      RefsetJpa test1 = makeRefset("test1",
+          "<<387293003 | Anthralin (substance)|", Refset.Type.INTENSIONAL,
+          project1, "111111", "1000124", author1, false);
       new WorkflowServiceRestImpl().performWorkflowAction(project1.getId(),
           test1.getId(), "author1", "AUTHOR", "ASSIGN", author1.getAuthToken());
 
       // test 2
-      RefsetJpa test2 =
-          makeRefset("test2", null, Refset.Type.EXTENSIONAL, project1,
-              "222222", "1000124", author1, false);
-      ConceptRefsetMemberJpa test2member1 =
-          makeRefsetMember(test2, "62621002", "Bednar tumor",
-              Refset.MemberType.MEMBER, "en-edition", "20150131",
-              "731000124108", "62621002", author1.getName(), author1);
+      RefsetJpa test2 = makeRefset("test2", null, Refset.Type.EXTENSIONAL,
+          project1, "222222", "1000124", author1, false);
+      ConceptRefsetMemberJpa test2member1 = makeRefsetMember(test2, "62621002",
+          "Bednar tumor", Refset.MemberType.MEMBER, "en-edition", "20150131",
+          "731000124108", "62621002", author1.getName(), author1);
       new WorkflowServiceRestImpl().performWorkflowAction(project1.getId(),
           test2.getId(), "author1", "AUTHOR", "ASSIGN", author1.getAuthToken());
 
@@ -596,8 +593,8 @@ public class GenerateSampleDataMojo extends AbstractMojo {
           makeRefset("test3", "<<406473004 |  Contact allergen (substance)|",
               Refset.Type.INTENSIONAL, project1, "333333", "1000124", author1,
               false);
-      new RefsetServiceRestImpl().addRefsetExclusion(test3.getId(),
-          "427811002", false, author1.getAuthToken());
+      new RefsetServiceRestImpl().addRefsetExclusion(test3.getId(), "427811002",
+          false, author1.getAuthToken());
       ConceptRefsetMemberJpa inclusion = new ConceptRefsetMemberJpa();
       inclusion.setConceptId("133928008");
       inclusion.setRefsetId(test3.getId());
@@ -609,12 +606,10 @@ public class GenerateSampleDataMojo extends AbstractMojo {
       // test 4
       RefsetJpa test1Copy = new RefsetJpa(test1);
       test1Copy.setTerminologyId("444444");
-      test1Copy =
-          (RefsetJpa) new RefsetServiceRestImpl().cloneRefset(project1.getId(),
-              test1Copy, author1.getAuthToken());
-      Refset test4 =
-          new RefsetServiceRestImpl().getRefset(test1Copy.getId(),
-              author1.getAuthToken());
+      test1Copy = (RefsetJpa) new RefsetServiceRestImpl()
+          .cloneRefset(project1.getId(), test1Copy, author1.getAuthToken());
+      Refset test4 = new RefsetServiceRestImpl().getRefset(test1Copy.getId(),
+          author1.getAuthToken());
       test4.setName("test4");
       new RefsetServiceRestImpl().updateRefset((RefsetJpa) test4,
           author1.getAuthToken());
@@ -622,12 +617,10 @@ public class GenerateSampleDataMojo extends AbstractMojo {
       // test 5
       RefsetJpa test2Copy = new RefsetJpa(test2);
       test2Copy.setTerminologyId("555555");
-      test2Copy =
-          (RefsetJpa) new RefsetServiceRestImpl().cloneRefset(project1.getId(),
-              test2Copy, author1.getAuthToken());
-      Refset test5 =
-          new RefsetServiceRestImpl().getRefset(test2Copy.getId(),
-              author1.getAuthToken());
+      test2Copy = (RefsetJpa) new RefsetServiceRestImpl()
+          .cloneRefset(project1.getId(), test2Copy, author1.getAuthToken());
+      Refset test5 = new RefsetServiceRestImpl().getRefset(test2Copy.getId(),
+          author1.getAuthToken());
       test5.setName("test5");
       new RefsetServiceRestImpl().updateRefset((RefsetJpa) test5,
           author1.getAuthToken());
@@ -635,12 +628,10 @@ public class GenerateSampleDataMojo extends AbstractMojo {
       // test 6
       RefsetJpa test3Copy = new RefsetJpa(test3);
       test3Copy.setTerminologyId("666666");
-      test3Copy =
-          (RefsetJpa) new RefsetServiceRestImpl().cloneRefset(project1.getId(),
-              test3Copy, author1.getAuthToken());
-      Refset test6 =
-          new RefsetServiceRestImpl().getRefset(test3Copy.getId(),
-              author1.getAuthToken());
+      test3Copy = (RefsetJpa) new RefsetServiceRestImpl()
+          .cloneRefset(project1.getId(), test3Copy, author1.getAuthToken());
+      Refset test6 = new RefsetServiceRestImpl().getRefset(test3Copy.getId(),
+          author1.getAuthToken());
       test6.setName("test6");
       new RefsetServiceRestImpl().updateRefset((RefsetJpa) test6,
           author1.getAuthToken());
@@ -648,12 +639,10 @@ public class GenerateSampleDataMojo extends AbstractMojo {
       // test 7
       RefsetJpa test4Copy = new RefsetJpa(test4);
       test4Copy.setTerminologyId("777777");
-      test4Copy =
-          (RefsetJpa) new RefsetServiceRestImpl().cloneRefset(project1.getId(),
-              test4Copy, author1.getAuthToken());
-      Refset test7 =
-          new RefsetServiceRestImpl().getRefset(test4Copy.getId(),
-              author1.getAuthToken());
+      test4Copy = (RefsetJpa) new RefsetServiceRestImpl()
+          .cloneRefset(project1.getId(), test4Copy, author1.getAuthToken());
+      Refset test7 = new RefsetServiceRestImpl().getRefset(test4Copy.getId(),
+          author1.getAuthToken());
       test7.setName("test7");
       new RefsetServiceRestImpl().updateRefset((RefsetJpa) test7,
           author1.getAuthToken());
@@ -669,12 +658,10 @@ public class GenerateSampleDataMojo extends AbstractMojo {
 
       // test 8
       test2Copy.setTerminologyId("888888");
-      test2Copy =
-          (RefsetJpa) new RefsetServiceRestImpl().cloneRefset(project1.getId(),
-              test2Copy, author1.getAuthToken());
-      Refset test8 =
-          new RefsetServiceRestImpl().getRefset(test2Copy.getId(),
-              author1.getAuthToken());
+      test2Copy = (RefsetJpa) new RefsetServiceRestImpl()
+          .cloneRefset(project1.getId(), test2Copy, author1.getAuthToken());
+      Refset test8 = new RefsetServiceRestImpl().getRefset(test2Copy.getId(),
+          author1.getAuthToken());
       test8.setName("test8");
       new RefsetServiceRestImpl().updateRefset((RefsetJpa) test8,
           author1.getAuthToken());
@@ -690,12 +677,10 @@ public class GenerateSampleDataMojo extends AbstractMojo {
 
       // test 9
       test3Copy.setTerminologyId("999999");
-      test3Copy =
-          (RefsetJpa) new RefsetServiceRestImpl().cloneRefset(project1.getId(),
-              test3Copy, author1.getAuthToken());
-      Refset test9 =
-          new RefsetServiceRestImpl().getRefset(test3Copy.getId(),
-              author1.getAuthToken());
+      test3Copy = (RefsetJpa) new RefsetServiceRestImpl()
+          .cloneRefset(project1.getId(), test3Copy, author1.getAuthToken());
+      Refset test9 = new RefsetServiceRestImpl().getRefset(test3Copy.getId(),
+          author1.getAuthToken());
       test9.setName("test9");
       new RefsetServiceRestImpl().updateRefset((RefsetJpa) test9,
           author1.getAuthToken());
@@ -715,7 +700,7 @@ public class GenerateSampleDataMojo extends AbstractMojo {
           test9.getId(), "reviewer1", "REVIEWER", "FINISH",
           reviewer1.getAuthToken());
       new WorkflowServiceRestImpl().performWorkflowAction(project1.getId(),
-          test9.getId(), "reviewer1", "REVIEWER", "FINISH",
+          test9.getId(), "reviewer1", "REVIEWER", "PREPARE_FOR_PUBLICATION",
           reviewer1.getAuthToken());
 
       new ReleaseServiceRestImpl().beginRefsetRelease(test9.getId(),
@@ -743,72 +728,64 @@ public class GenerateSampleDataMojo extends AbstractMojo {
 
       // test 10
       test2Copy.setTerminologyId("101010101010");
-      test2Copy =
-          (RefsetJpa) new RefsetServiceRestImpl().cloneRefset(project1.getId(),
-              test2Copy, author1.getAuthToken());
-      Refset test10 =
-          new RefsetServiceRestImpl().getRefset(test2Copy.getId(),
-              author1.getAuthToken());
+      test2Copy = (RefsetJpa) new RefsetServiceRestImpl()
+          .cloneRefset(project1.getId(), test2Copy, author1.getAuthToken());
+      Refset test10 = new RefsetServiceRestImpl().getRefset(test2Copy.getId(),
+          author1.getAuthToken());
       test10.setName("test10");
       new RefsetServiceRestImpl().updateRefset((RefsetJpa) test10,
           author1.getAuthToken());
-      new WorkflowServiceRestImpl()
-          .performWorkflowAction(project1.getId(), test10.getId(), "author1",
-              "AUTHOR", "ASSIGN", author1.getAuthToken());
+      new WorkflowServiceRestImpl().performWorkflowAction(project1.getId(),
+          test10.getId(), "author1", "AUTHOR", "ASSIGN",
+          author1.getAuthToken());
       new WorkflowServiceRestImpl().performWorkflowAction(project1.getId(),
           test10.getId(), "author1", "AUTHOR", "SAVE", author1.getAuthToken());
-      new WorkflowServiceRestImpl()
-          .performWorkflowAction(project1.getId(), test10.getId(), "author1",
-              "AUTHOR", "FINISH", author1.getAuthToken());
+      new WorkflowServiceRestImpl().performWorkflowAction(project1.getId(),
+          test10.getId(), "author1", "AUTHOR", "FINISH",
+          author1.getAuthToken());
       new WorkflowServiceRestImpl().performWorkflowAction(project1.getId(),
           test10.getId(), "reviewer1", "REVIEWER", "ASSIGN",
           author1.getAuthToken());
       new WorkflowServiceRestImpl().performWorkflowAction(project1.getId(),
           test10.getId(), "reviewer1", "REVIEWER", "UNASSIGN",
           reviewer1.getAuthToken());
-      new WorkflowServiceRestImpl().performWorkflowAction(project1.getId(),
-          test10.getId(), "author1", "AUTHOR", "REASSIGN",
-          reviewer1.getAuthToken());
+      
 
       // test 11
-      RefsetJpa test11 =
-          makeRefset("test11",
-              "<<129456006 | Specific enzyme deficiency (disorder) |",
-              Refset.Type.INTENSIONAL, project1, "111111111111", "1000124",
-              author1, false);
+      RefsetJpa test11 = makeRefset("test11",
+          "<<129456006 | Specific enzyme deficiency (disorder) |",
+          Refset.Type.INTENSIONAL, project1, "111111111111", "1000124", author1,
+          false);
       // add invalid exclusion for migration
       new RefsetServiceRestImpl().addRefsetExclusion(test11.getId(),
           "124627000", false, author1.getAuthToken());
       // add valid exclusion for migration
-      new RefsetServiceRestImpl().addRefsetExclusion(test11.getId(),
-          "10406007", false, author1.getAuthToken());
+      new RefsetServiceRestImpl().addRefsetExclusion(test11.getId(), "10406007",
+          false, author1.getAuthToken());
       // add valid inclusion for migration
       inclusion = new ConceptRefsetMemberJpa();
       inclusion.setConceptId("115377001");
       inclusion.setRefsetId(test11.getId());
       new RefsetServiceRestImpl().addRefsetInclusion(inclusion, false,
           author1.getAuthToken());
-      new WorkflowServiceRestImpl()
-          .performWorkflowAction(project1.getId(), test11.getId(), "author1",
-              "AUTHOR", "ASSIGN", author1.getAuthToken());
+      new WorkflowServiceRestImpl().performWorkflowAction(project1.getId(),
+          test11.getId(), "author1", "AUTHOR", "ASSIGN",
+          author1.getAuthToken());
 
       // test 12
-      RefsetJpa test12 =
-          makeRefset("test12", null, Refset.Type.EXTENSIONAL, project1,
-              "121212121212", "1000124", author1, false);
-      ConceptRefsetMemberJpa test12member1 =
-          makeRefsetMember(test12, "129456006",
-              "Specific enzyme deficiency (disorder)",
-              Refset.MemberType.MEMBER, "en-edition", "20150131",
-              "731000124108", "129456006", author1.getName(), author1);
-      ConceptRefsetMemberJpa test12member2 =
-          makeRefsetMember(test12, "124627000",
-              "Deficiency of O-acetylserine (thiol)-lyase (disorder) ",
-              Refset.MemberType.MEMBER, "en-edition", "20150131",
-              "731000124108", "124627000", author1.getName(), author1);
-      new WorkflowServiceRestImpl()
-          .performWorkflowAction(project1.getId(), test12.getId(), "author1",
-              "AUTHOR", "ASSIGN", author1.getAuthToken());
+      RefsetJpa test12 = makeRefset("test12", null, Refset.Type.EXTENSIONAL,
+          project1, "121212121212", "1000124", author1, false);
+      ConceptRefsetMemberJpa test12member1 = makeRefsetMember(test12,
+          "129456006", "Specific enzyme deficiency (disorder)",
+          Refset.MemberType.MEMBER, "en-edition", "20150131", "731000124108",
+          "129456006", author1.getName(), author1);
+      ConceptRefsetMemberJpa test12member2 = makeRefsetMember(test12,
+          "124627000", "Deficiency of O-acetylserine (thiol)-lyase (disorder) ",
+          Refset.MemberType.MEMBER, "en-edition", "20150131", "731000124108",
+          "124627000", author1.getName(), author1);
+      new WorkflowServiceRestImpl().performWorkflowAction(project1.getId(),
+          test12.getId(), "author1", "AUTHOR", "ASSIGN",
+          author1.getAuthToken());
 
       if (assignNames) {
         // Ensure that all lookupMemberNames routines completed
@@ -818,9 +795,8 @@ public class GenerateSampleDataMojo extends AbstractMojo {
           completed = true;
 
           for (Long refsetId : createdRefsets) {
-            Refset r =
-                new RefsetServiceRestImpl().getRefset(refsetId,
-                    admin.getAuthToken());
+            Refset r = new RefsetServiceRestImpl().getRefset(refsetId,
+                admin.getAuthToken());
 
             if (r.isLookupInProgress()) {
               // lookupMemberNames still running on refset
@@ -838,9 +814,8 @@ public class GenerateSampleDataMojo extends AbstractMojo {
           completed = true;
 
           for (Long translationId : createdTranslations) {
-            Translation t =
-                new TranslationServiceRestImpl().getTranslation(translationId,
-                    admin.getAuthToken());
+            Translation t = new TranslationServiceRestImpl()
+                .getTranslation(translationId, admin.getAuthToken());
 
             if (t.isLookupInProgress()) {
               // lookupConceptNames still running on translation
@@ -882,12 +857,14 @@ public class GenerateSampleDataMojo extends AbstractMojo {
    * @param name the name
    * @param namespace the namespace
    * @param auth the auth
+   * @param handlerKey the handler key
+   * @param handlerUrl the handler url
    * @return the project jpa
    * @throws Exception the exception
    */
   @SuppressWarnings("static-method")
-  private ProjectJpa makeProject(String name, String namespace, User auth)
-    throws Exception {
+  private ProjectJpa makeProject(String name, String namespace, User auth,
+    String handlerKey, String handlerUrl) throws Exception {
     final ProjectJpa project = new ProjectJpa();
     project.setName(name);
     project.setDescription("Description of project " + name);
@@ -900,9 +877,11 @@ public class GenerateSampleDataMojo extends AbstractMojo {
     project.setNamespace(namespace);
     project.setOrganization("IHTSDO");
     project.addValidationCheck("DEFAULT");
-    ProjectJpa newProject =
-        (ProjectJpa) new ProjectServiceRestImpl().addProject(project,
-            auth.getAuthToken());
+    project.setTerminologyHandlerKey(handlerKey);
+    project.setTerminologyHandlerUrl(handlerUrl);
+    project.setWorkflowPath("DEFAULT");
+    ProjectJpa newProject = (ProjectJpa) new ProjectServiceRestImpl()
+        .addProject(project, auth.getAuthToken());
     newProject.setUserRoleMap(new HashMap<User, UserRole>());
     return newProject;
   }
@@ -1025,9 +1004,9 @@ public class GenerateSampleDataMojo extends AbstractMojo {
    * @return the refset jpa
    * @throws Exception the exception
    */
-  private RefsetJpa makeRefset(String name, String definition,
-    Refset.Type type, Project project, String refsetId, String namespace,
-    User auth, boolean importMembers) throws Exception {
+  private RefsetJpa makeRefset(String name, String definition, Refset.Type type,
+    Project project, String refsetId, String namespace, User auth,
+    boolean importMembers) throws Exception {
     ++refsetCt;
     final RefsetJpa refset = new RefsetJpa();
     refset.setActive(true);
@@ -1062,7 +1041,7 @@ public class GenerateSampleDataMojo extends AbstractMojo {
     refset.setTerminologyId(refsetId);
     // This is an opportunity to use "branch"
     refset.setVersion("20150131");
-    refset.setWorkflowPath("DEFAULT");
+    refset.setLocalSet(false);
     if (importMembers) {
       refset.setWorkflowStatus(WorkflowStatus.PUBLISHED);
       refset.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse("20150131"));
@@ -1095,26 +1074,21 @@ public class GenerateSampleDataMojo extends AbstractMojo {
     if (importMembers) {
       if (type == Refset.Type.EXTENSIONAL) {
         // Import members (from file)
-        ValidationResult vr =
-            refsetService.beginImportMembers(refset.getId(), "DEFAULT",
-                auth.getAuthToken());
+        ValidationResult vr = refsetService.beginImportMembers(refset.getId(),
+            "DEFAULT", auth.getAuthToken());
         if (!vr.isValid()) {
           throw new Exception("import staging is invalid - " + vr);
         }
         refsetService = new RefsetServiceRestImpl();
-        InputStream in =
-            new FileInputStream(
-                new File(
-                    "../config/src/main/resources/data/refset/der2_Refset_SimpleSnapshot_INT_20140731.txt"));
+        InputStream in = new FileInputStream(new File(
+            "../config/src/main/resources/data/refset/der2_Refset_SimpleSnapshot_INT_20140731.txt"));
         refsetService.finishImportMembers(null, in, refset.getId(), "DEFAULT",
             auth.getAuthToken());
         in.close();
       } else if (type == Refset.Type.INTENSIONAL) {
         // Import definition (from file)
-        InputStream in =
-            new FileInputStream(
-                new File(
-                    "../config/src/main/resources/data/refset/der2_Refset_DefinitionSnapshot_INT_20140731.txt"));
+        InputStream in = new FileInputStream(new File(
+            "../config/src/main/resources/data/refset/der2_Refset_DefinitionSnapshot_INT_20140731.txt"));
         refsetService.importDefinition(null, in, refset.getId(), "DEFAULT",
             auth.getAuthToken());
         in.close();
@@ -1153,8 +1127,8 @@ public class GenerateSampleDataMojo extends AbstractMojo {
     ++translationCt;
     final TranslationJpa translation = new TranslationJpa();
     translation.setName(name);
-    translation.setDescription("Description of translation "
-        + translation.getName());
+    translation
+        .setDescription("Description of translation " + translation.getName());
     translation.setActive(true);
     translation.setEffectiveTime(null);
     translation.setLastModified(new Date());
@@ -1168,7 +1142,6 @@ public class GenerateSampleDataMojo extends AbstractMojo {
     translation.setTerminology(refset.getTerminology());
     translation.setVersion(refset.getVersion());
     translation.setTerminologyId(refset.getTerminologyId());
-    translation.setWorkflowPath("DEFAULT");
     translation.setWorkflowStatus(WorkflowStatus.PUBLISHED);
     translation.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse("20150131"));
 
@@ -1177,9 +1150,8 @@ public class GenerateSampleDataMojo extends AbstractMojo {
     ValidationServiceRest validation = new ValidationServiceRestImpl();
 
     // Validate translation
-    ValidationResult result =
-        validation.validateTranslation(translation, project.getId(),
-            auth.getAuthToken());
+    ValidationResult result = validation.validateTranslation(translation,
+        project.getId(), auth.getAuthToken());
     if (!result.isValid()) {
       Logger.getLogger(getClass()).error(result.toString());
       throw new Exception("translation does not pass validation.");
@@ -1190,30 +1162,26 @@ public class GenerateSampleDataMojo extends AbstractMojo {
     // Import members (from file) - switch file based on counter
     translationService = new TranslationServiceRestImpl();
     if (translationCt % 2 == 0) {
-      ValidationResult vr =
-          translationService.beginImportConcepts(translation.getId(),
-              "DEFAULT", auth.getAuthToken());
+      ValidationResult vr = translationService.beginImportConcepts(
+          translation.getId(), "DEFAULT", auth.getAuthToken());
       if (!vr.isValid()) {
         throw new Exception("translation staging is not valid - " + vr);
       }
       translationService = new TranslationServiceRestImpl();
-      InputStream in =
-          new FileInputStream(new File(
-              "../config/src/main/resources/data/translation2/translation.zip"));
+      InputStream in = new FileInputStream(new File(
+          "../config/src/main/resources/data/translation2/translation.zip"));
       translationService.finishImportConcepts(null, in, translation.getId(),
           "DEFAULT", auth.getAuthToken());
       in.close();
     } else {
-      ValidationResult vr =
-          translationService.beginImportConcepts(translation.getId(),
-              "DEFAULT", auth.getAuthToken());
+      ValidationResult vr = translationService.beginImportConcepts(
+          translation.getId(), "DEFAULT", auth.getAuthToken());
       if (!vr.isValid()) {
         throw new Exception("translation staging is not valid - " + vr);
       }
       translationService = new TranslationServiceRestImpl();
-      InputStream in =
-          new FileInputStream(new File(
-              "../config/src/main/resources/data/translation2/translation.zip"));
+      InputStream in = new FileInputStream(new File(
+          "../config/src/main/resources/data/translation2/translation.zip"));
       translationService.finishImportConcepts(null, in, translation.getId(),
           "DEFAULT", auth.getAuthToken());
       in.close();
@@ -1223,7 +1191,7 @@ public class GenerateSampleDataMojo extends AbstractMojo {
       createdTranslations.add(translation.getId());
     }
 
-    return (TranslationJpa) new TranslationServiceRestImpl().getTranslation(
-        translation.getId(), auth.getAuthToken());
+    return (TranslationJpa) new TranslationServiceRestImpl()
+        .getTranslation(translation.getId(), auth.getAuthToken());
   }
 }

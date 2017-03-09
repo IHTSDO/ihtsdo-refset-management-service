@@ -1,5 +1,8 @@
 <div class="modal-header">
-  <h4>{{action}} Project</h4>
+  <h4 style="display: inline">{{action}} Project</h4>
+  <span style="float: right">
+    <i class="noul glyphicon glyphicon-remove" ng-click="cancel()"> </i>
+  </span>
 </div>
 
 <div class="modal-body">
@@ -30,11 +33,48 @@
       </tr>
       <tr>
         <td>
+          <b>Terminology Handler</b>
+        </td>
+        <td ng-if="action=='Add'">
+          <select ng-model="handler" ng-change="selectHandler(handler)"
+            ng-options="item.key for item in terminologyHandlers"></select>
+          &nbsp;
+          <i
+            uib-tooltip="Choose the handler and URL before picking terminology and module."
+            class="noul material-icons md-18">info</i>
+        </td>
+        <td ng-if="action=='Edit'">{{project.terminologyHandlerKey}}</td>
+      </tr>
+      <tr>
+        <td>
+          <b>Handler URL</b>
+        </td>
+        <td ng-if="action=='Add'">
+          <input type="text" ng-model="project.terminologyHandlerUrl" size="40"
+            ng-change="urlChanged()" />
+          <span ng-disabled="!project.terminologyHandlerUrl"
+            title="Test handler URL" ng-click="testHandlerUrl()"
+            class="btn btn-xs btn-primary">Test</span>
+        </td>
+        <td ng-if="action=='Edit'">{{project.terminologyHandlerUrl}}</td>
+      </tr>
+      <tr>
+        <td>
+          <b>Terminology</b>
+        </td>
+        <td>
+          <select ng-disabled="!urlTestSuccess" ng-model="project.terminology"
+            ng-change="selectTerminology()"
+            ng-options="item.terminology as item.name for item in terminologies"></select>
+        </td>
+      </tr>
+      <tr>
+        <td>
           <b>Namespace</b>
         </td>
         <td>
-          <input ng-model="project.namespace" size="25"
-            placeholder="e.g. 1000124" />
+          <input ng-disabled="!urlTestSuccess" ng-model="project.namespace"
+            size="25" placeholder="e.g. 1000124" />
         </td>
       </tr>
       <tr>
@@ -42,8 +82,9 @@
           <b>Module Id</b>
         </td>
         <td>
-          <input style="width: 252px" ng-model="project.moduleId"
-            list="moduleList" placeholder="e.g. 900000000000207008" />
+          <input ng-disabled="!urlTestSuccess" style="width: 252px"
+            ng-model="project.moduleId" list="moduleList"
+            placeholder="e.g. 900000000000207008" />
           <datalist id="moduleList">
             <option ng-repeat="module in modules | orderBy:'terminologyId'"
               value="{{module.terminologyId}}">{{module.name}}</option>
@@ -74,11 +115,13 @@
       </tr>
       <tr>
         <td>
-          <b>Terminology</b>
+          <b>Workflow path</b>
         </td>
         <td>
-          <select ng-model="project.terminology"
-            ng-options="item.terminology as item.name for item in metadata.terminologies"></select>
+          <span ng-show="metadata.workflowPaths.length == 1">{{project.workflowPath}}</span>
+          <select ng-show="metadata.workflowPaths.length > 1"
+            ng-model="project.workflowPath"
+            ng-options="item for item in metadata.workflowPaths"></select>
         </td>
       </tr>
       <tr>
@@ -92,6 +135,25 @@
       </tr>
     </table>
   </div>
+  <div class="row">
+    <div ng-show="errors.length > 0" class="col-md-12 col-xs-12">
+      <table class="table">
+        <tr>
+          <td>
+            <div class="alert alert-danger alert-error"
+              ng-repeat="error in errors">
+              {{error}}
+              <!-- DO NOT SUPPORT clearing error <div
+              style="cursor: pointer; display: inline; float: right; width: 3%;">
+              <i class="noul material-icons md-18" ng-click="clearError()">delete</i>
+            </div> -->
+            </div>
+          </td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
   <div class="row">
     <div class="col-md-6 col-xs-12">
       <table class="table">
@@ -134,29 +196,14 @@
       </table>
     </div>
   </div>
-  <div ng-show="errors.length > 0" class="row">
-    <table class="table">
-      <tr>
-        <td>
-          <div class="alert alert-danger alert-error"
-            ng-repeat="error in errors">
-            {{error}}
-            <!-- DO NOT SUPPORT clearing error <div
-              style="cursor: pointer; display: inline; float: right; width: 3%;">
-              <i class="noul material-icons md-18" ng-click="clearError()">delete</i>
-            </div> -->
-          </div>
-        </td>
-      </tr>
-    </table>
-  </div>
+
 </div>
 
 
 <div class="modal-footer">
-  <button ng-show="action == 'Add'" class="btn btn-primary"
+  <button ng-show="action == 'Add'" class="btn btn-xs btn-primary"
     ng-click="submitProject(project);">Add</button>
-  <button ng-show="action == 'Edit'" class="btn btn-primary"
+  <button ng-show="action == 'Edit'" class="btn btn-xs btn-primary"
     ng-click="submitProject(project);">Save</button>
-  <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
+  <button class="btn btn-xs btn-warning" ng-click="cancel()">Cancel</button>
 </div>

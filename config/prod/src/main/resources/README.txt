@@ -77,6 +77,7 @@ mvn -Dconfig.artifactId=refset-config-prod clean install
 
 cd ~/refset
 unzip ~/refset/code/config/prod/target/refset*.zip -d config
+mv config/bin .
 
 # edit ~/refset/config/config.properties
 #  *  javax.persistence.jdbc.url=jdbc:mysql://127.0.0.1:3306/refset?useUnicode=true&characterEncoding=UTF-8&rewriteBatchedStatements=true&useLocalSessionState=true
@@ -86,6 +87,10 @@ unzip ~/refset/code/config/prod/target/refset*.zip -d config
 #  *  identifier.assignment.handler.DEFAULT.userName=refset-prod
 #  *  identifier.assignment.handler.DEFAULT.password=********
 
+PATCH INSTRUCTIONS
+
+See config/prod/src/main/resources/bin patch*csh scripts
+Install in ~/refset/bin directory and run from there (this way they can find config file)
 
 REDEPLOY INSTRUCTIONS
 

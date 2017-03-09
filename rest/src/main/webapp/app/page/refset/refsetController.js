@@ -44,11 +44,11 @@ tsApp
         // Metadata for refsets, projects, etc.
         $scope.metadata = {
           refsetTypes : [],
-          terminologies : [],
-          versions : {},
           importHandlers : [],
           exportHandlers : [],
           workflowPaths : [],
+          terminologies : [],
+          versions : {},
           terminologyNames : {}
         };
 
@@ -101,52 +101,113 @@ tsApp
           if (!$scope.project) {
             return;
           }
+
+
+          // Lookup terminology info for this project
+          $scope.getTerminologyMetadata(project);
+
           // Only save lastProjectRole if lastProject is the same
           if ($scope.user.userPreferences.lastProjectId != $scope.project.id) {
             $scope.user.userPreferences.lastProjectRole = null;
+            $scope.user.userPreferences.lastRefsetId = null;
+            $scope.user.userPreferences.lastTranslationId = null;
           }
           $scope.user.userPreferences.lastProjectId = $scope.project.id;
-          // Empty PFS
-          var pfs = {};
-          // Find role
-          projectService
-            .findAssignedUsersForProject($scope.project.id, '', pfs)
-            .then(
-              // Success
-              function(data) {
-                $scope.projects.assignedUsers = data.users;
-                for (var i = 0; i < $scope.projects.assignedUsers.length; i++) {
-                  if ($scope.projects.assignedUsers[i].userName == $scope.user.userName) {
-                    $scope.projects.role = $scope.projects.assignedUsers[i].projectRoleMap[$scope.project.id];
-                    if ($scope.projects.role == 'ADMIN') {
-                      $scope.roleOptions = [ 'ADMIN', 'REVIEWER', 'AUTHOR' ];
-                    } else if ($scope.projects.role == 'REVIEWER') {
-                      $scope.roleOptions = [ 'REVIEWER', 'AUTHOR' ];
-                    } else if ($scope.projects.role == 'AUTHOR') {
-                      $scope.roleOptions = [ 'AUTHOR' ];
+          
+          // Lookup workflow config for this project
+          workflowService.getWorkflowConfig($scope.project.id)
+          .then(
+            // Success
+            function(data) {
+              $scope.metadata.workflowConfig = data;
+
+              // Empty PFS
+              var pfs = {};
+              // Find role
+              projectService
+              .findAssignedUsersForProject($scope.project.id, '', pfs)
+              .then(
+                // Success
+                function(data) {
+                  $scope.projects.assignedUsers = data.users;
+                  for (var i = 0; i < $scope.projects.assignedUsers.length; i++) {
+                    if ($scope.projects.assignedUsers[i].userName == $scope.user.userName) {
+                      $scope.projects.role = $scope.projects.assignedUsers[i].projectRoleMap[$scope.project.id];
+                      var availableRoles = $scope.metadata.workflowConfig.refsetAvailableRoles.strings;
+                      
+                      // determine role options for each project given the user's project role
+                      // make all roles equal or lower to user's project role available
+                      $scope.roleOptions = [];
+                      for (var j=0; j<availableRoles.length; j++) {
+                        if ($scope.projects.role == availableRoles[j]) {
+                          $scope.roleOptions.unshift(availableRoles[j]);
+                          break;
+                        } else {
+                          $scope.roleOptions.unshift(availableRoles[j]);
+                        }
+                      }
+                     
+                      // Force the initial choice to be "AUTHOR" instead of
+                      // "ADMIN"
+                      if ($scope.projects.role == 'ADMIN'
+                        && !$scope.user.userPreferences.lastProjectRole) {
+                        $scope.projects.role = 'AUTHOR';
+                      }
+                      if ($scope.user.userPreferences.lastProjectRole) {
+                        $scope.projects.role = $scope.user.userPreferences.lastProjectRole;
+                      }
+                      
+                      // ensure that user's role is allowed on refset tab - if not, assign user to be AUTHOR
+                      var found = false;
+                      for (var j=0; j<availableRoles.length; j++) {
+                        if ($scope.projects.role == availableRoles[j]) {
+                          found = true;
+                          break;
+                        }
+                      }
+                      if (!found) {
+                        $scope.projects.role = 'AUTHOR';
+                      }
+                      break;
                     }
-                    // Force the initial choice to be "AUTHOR" instead of
-                    // "ADMIN"
-                    if ($scope.projects.role == 'ADMIN'
-                      && !$scope.user.userPreferences.lastProjectRole) {
-                      $scope.projects.role = 'AUTHOR';
-                    }
-                    if ($scope.user.userPreferences.lastProjectRole) {
-                      $scope.projects.role = $scope.user.userPreferences.lastProjectRole;
-                    }
-                    break;
                   }
-                }
-                $scope.user.userPreferences.lastProjectRole = $scope.projects.role;
-                securityService.updateUserPreferences($scope.user.userPreferences);
-                projectService.fireProjectChanged($scope.project);
-              });
+                  $scope.setRole($scope.projects.role);
+                });
+              
+            });
+                             
         };
 
         $scope.setRole = function() {
-          $scope.user.userPreferences.lastProjectRole = $scope.projects.role;
-          securityService.updateUserPreferences($scope.user.userPreferences);
+          if ($scope.user.userPreferences.lastProjectRole != $scope.projects.role) {
+            $scope.user.userPreferences.lastProjectRole = $scope.projects.role;
+            securityService.updateUserPreferences($scope.user.userPreferences);
+          }
           projectService.fireProjectChanged($scope.project);
+        };
+
+        // Lookup terminologies, names, and versions
+        $scope.getTerminologyMetadata = function(project) {
+          projectService.getTerminologyEditions(project).then(
+          // Success
+          function(data) {
+            $scope.metadata.terminologies = data.terminologies;
+            // Look up all versions
+            for (var i = 0; i < data.terminologies.length; i++) {
+              var terminology = data.terminologies[i];
+              $scope.metadata.terminologyNames[terminology.terminology] = terminology.name
+              $scope.getTerminologyVersions(project, terminology.terminology);
+            }
+            console.debug('metadata.terminologyNames ', $scope.metadata.terminologyNames); 
+          });
+        };
+        $scope.getTerminologyVersions = function(project, terminology) {
+          projectService.getTerminologyVersions(project, terminology).then(function(data) {
+            $scope.metadata.versions[terminology] = [];
+            for (var i = 0; i < data.terminologies.length; i++) {
+              $scope.metadata.versions[terminology].push(data.terminologies[i].version);
+            }
+          });
         };
 
         // Determine whether the user is a project admin
@@ -158,33 +219,6 @@ tsApp
         $scope.getRefsetTypes = function() {
           refsetService.getRefsetTypes().then(function(data) {
             $scope.metadata.refsetTypes = data.strings;
-          });
-        };
-
-        // Get $scope.metadata.terminologies, also loads
-        // versions for the first edition in the list
-        $scope.getTerminologyEditions = function() {
-          projectService
-            .getTerminologyEditions()
-            .then(
-              function(data) {
-                $scope.metadata.terminologies = data.terminologies;
-                // Look up all versions
-                for (var i = 0; i < data.terminologies.length; i++) {
-                  $scope.metadata.terminologyNames[data.terminologies[i].terminology] = data.terminologies[i].name;
-                  $scope.getTerminologyVersions(data.terminologies[i].terminology);
-                }
-              });
-
-        };
-
-        // Get $scope.metadata.versions
-        $scope.getTerminologyVersions = function(terminology) {
-          projectService.getTerminologyVersions(terminology).then(function(data) {
-            $scope.metadata.versions[terminology] = [];
-            for (var i = 0; i < data.terminologies.length; i++) {
-              $scope.metadata.versions[terminology].push(data.terminologies[i].version);
-            }
           });
         };
 
@@ -208,8 +242,10 @@ tsApp
         // Set the current accordion
         $scope.setAccordion = function(data) {
           utilService.clearError();
-          if ($scope.user.userPreferences) {
+          if ($scope.user.userPreferences
+            && $scope.user.userPreferences.lastRefsetAccordion != data) {
             $scope.user.userPreferences.lastRefsetAccordion = data;
+            $scope.user.userPreferences.lastRefsetId = null;
             securityService.updateUserPreferences($scope.user.userPreferences);
           }
         };
@@ -220,14 +256,14 @@ tsApp
           if ($scope.user.userPreferences.lastRefsetAccordion) {
             $scope.accordionState[$scope.user.userPreferences.lastRefsetAccordion] = true;
           } else {
-            // default is published if nothing set
+            // default is available if nothing set
             $scope.accordionState['AVAILABLE'] = true;
+            $scope.user.userPreferences.lastRefsetAccordion = 'AVAILABLE';
           }
           securityService.updateUserPreferences($scope.user.userPreferences);
         };
 
         // Initialize some metadata first time
-        $scope.getTerminologyEditions();
         $scope.getProjects();
         $scope.getRefsetTypes();
         $scope.getIOHandlers();

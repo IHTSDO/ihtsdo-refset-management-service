@@ -1,12 +1,17 @@
 <div class="modal-header">
-  <h4>{{operation}} {{type}}</h4>
+  <h4 style="display: inline">{{operation}} {{type}}</h4>
+  <span style="float: right">
+    <i ng-show="importStarted && !importFinished && comments.length == 0"
+      class="noul glyphicon glyphicon-remove" ng-click="cancel()"> </i>
+    <i ng-show="importFinished || !importStarted"
+      class="noul glyphicon glyphicon-remove" ng-click="close()"> </i>
+  </span>
 </div>
 
 <div class="modal-body">
   <div>
     <!-- Refset info -->
-    <div refset-info refset="refset" form="long"></div>
-
+    <div refset-info refset="refset" form="long" metadata="metadata"></div>
     <table class="table">
       <tr>
         <td class="col-md-4 col-xs-4">
@@ -59,7 +64,7 @@
             {{errors[0]}}
             <div style="display: inline; float: right;">
               <i ng-show="errors[1]"
-                title="{{error.expand ? 'Show' : 'Hide'}} long eror"
+                title="{{error.expand ? 'Show' : 'Hide'}} long error"
                 class="noul material-icons md-18"
                 ng-click="error.expand = !error.expand;">attach_file</i>
             </div>
@@ -74,14 +79,17 @@
 </div>
 
 <div class="modal-footer">
-  <button class="btn btn-primary" ng-show="operation == 'Export'"
+  <button class="btn btn-xs btn-primary" ng-show="operation == 'Export'"
     ng-click="export();">Export</button>
-  <button class="btn btn-primary" ng-disabled="!file"
+  <button class="btn btn-xs btn-primary" ng-disabled="!file"
     ng-show="operation == 'Import' && errors.length == 0  && comments.length == 0"
     ng-click="import(file);">Import</button>
-  <button class="btn btn-primary"
+  <button class="btn btn-xs btn-primary"
     ng-show="operation == 'Import' && errors.length > 0"
     ng-click="continueImport(file);">Continue With Import</button>
-  <button class="btn btn-warning" ng-show="importStarted && !importFinished && comments.length == 0" ng-click="cancel()">Cancel</button>
-  <button class="btn btn-warning" ng-show="importFinished || !importStarted" ng-click="close()">Close</button>
+  <button class="btn btn-xs btn-warning"
+    ng-show="importStarted && !importFinished && comments.length == 0"
+    ng-click="cancel()">Cancel</button>
+  <button class="btn btn-xs btn-warning" ng-show="importFinished || !importStarted"
+    ng-click="close()">Close</button>
 </div>

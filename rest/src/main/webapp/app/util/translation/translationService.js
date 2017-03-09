@@ -950,7 +950,8 @@ tsApp.service('translationService', [
         var a = document.createElement('a');
         a.href = fileURL;
         a.target = '_blank';
-        a.download = 'spelling.' + translation.terminologyId + '.txt';
+        a.download = 'spelling_' + utilService.toCamelCase(translation.name) + translation.terminologyId +
+        '_' + utilService.yyyymmdd(new Date()) + '.txt';
         document.body.appendChild(a);
         gpService.decrement();
         a.click();
@@ -1012,7 +1013,8 @@ tsApp.service('translationService', [
         var a = document.createElement('a');
         a.href = fileURL;
         a.target = '_blank';
-        a.download = 'phraseMemory.' + translation.terminologyId + '.txt';
+        a.download = 'phraseMemory_' + utilService.toCamelCase(translation.name) + translation.terminologyId +
+        '_' + utilService.yyyymmdd(new Date()) + '.txt';;
         document.body.appendChild(a);
         gpService.decrement();
         a.click();
@@ -1047,7 +1049,8 @@ tsApp.service('translationService', [
         var a = document.createElement('a');
         a.href = fileURL;
         a.target = '_blank';
-        a.download = 'concepts.' + translation.terminologyId + handler.fileTypeFilter;
+        a.download = 'concepts_' + utilService.toCamelCase(translation.name) + translation.terminologyId +
+        '_' + utilService.yyyymmdd(new Date()) + handler.fileTypeFilter;
         document.body.appendChild(a);
         gpService.decrement();
         a.click();
@@ -1212,13 +1215,13 @@ tsApp.service('translationService', [
     };
 
     // get the available language description types
-    this.getLanguageDescriptionTypes = function() {
-      console.debug('getLanguageDescriptionTypes');
+    this.getLanguageDescriptionTypes = function(projectId) {
+      console.debug('getLanguageDescriptionTypes', projectId);
       // Setup deferred
       var deferred = $q.defer();
 
       gpService.increment();
-      $http.get(translationUrl + 'langpref').then(
+      $http.get(translationUrl + 'langpref?projectId=' + projectId).then(
       // success
       function(response) {
         console.debug('  language desc types = ', response.data);

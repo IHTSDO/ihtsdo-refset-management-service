@@ -393,6 +393,7 @@ public class IndexUtility {
     QueryParser queryParser = new MultiFieldQueryParser(IndexUtility
         .getIndexedFieldNames(fieldNamesKey, true).toArray(new String[] {}),
         searchFactory.getAnalyzer(clazz));
+    queryParser.setLowercaseExpandedTerms(false);
     Logger.getLogger(IndexUtility.class).info("  query = " + pfsQuery);
     luceneQuery = queryParser.parse(pfsQuery.toString());
 

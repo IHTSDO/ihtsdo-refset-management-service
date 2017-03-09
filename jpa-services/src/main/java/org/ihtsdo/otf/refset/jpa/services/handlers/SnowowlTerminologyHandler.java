@@ -3,11 +3,11 @@
  */
 package org.ihtsdo.otf.refset.jpa.services.handlers;
 
+import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -31,106 +31,144 @@ import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.services.RootServiceJpa;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.Description;
-import org.ihtsdo.otf.refset.rf2.DescriptionType;
-import org.ihtsdo.otf.refset.rf2.LanguageDescriptionType;
 import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
 import org.ihtsdo.otf.refset.rf2.Relationship;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.DescriptionJpa;
-import org.ihtsdo.otf.refset.rf2.jpa.DescriptionTypeJpa;
-import org.ihtsdo.otf.refset.rf2.jpa.LanguageDescriptionTypeJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.LanguageRefsetMemberJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.RelationshipJpa;
 import org.ihtsdo.otf.refset.services.handlers.TerminologyHandler;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.net.InternetDomainName;
 
 /**
  * Default implementation of {@link TerminologyHandler}. Leverages the IHTSDO
  * terminology server to the extent possible for interacting with terminology
  * components. Uses local storage where not possible.
  * 
+ * Examples language: sv-SE-x-46011000052107 en-US en-GB
+ * 
+ * For composing as an "accept language" header,use:
+ * sv-SE-x-46011000052107;q=0.8,en-US;q=0.5 Can find language reference sets
+ * descendants of 900000000000506000
  */
-public class DefaultTerminologyHandler implements TerminologyHandler {
+public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
+
+  /** The terminology version language map. */
+  private static Map<String, String> tvLanguageMap = new HashMap<>();
+
+  /** The ids to ignore. */
+  private static List<String> idsToIgnore = new ArrayList<>();
+
+  static {
+    idsToIgnore.add("448879004");
+    idsToIgnore.add("722128001");
+    idsToIgnore.add("722130004");
+    idsToIgnore.add("722129009");
+    idsToIgnore.add("722131000");
+    idsToIgnore.add("900000000000507009");
+    idsToIgnore.add("900000000000509007");
+    idsToIgnore.add("900000000000508004");
+    idsToIgnore.add("608771002");
+
+  }
 
   /**
-   * Instantiates an empty {@link DefaultTerminologyHandler}.
+   * Instantiates an empty {@link SnowowlTerminologyHandler}.
    *
    * @throws Exception the exception
    */
-  public DefaultTerminologyHandler() throws Exception {
+  public SnowowlTerminologyHandler() throws Exception {
     super();
+
   }
 
   /** The accept. */
   private final String accept =
       "application/vnd.com.b2international.snowowl+json";
 
+  /** The domain. */
+  private String domain;
+
   /** The url. */
   private String url;
 
-  /** The branch. */
-  private String branch;
+  /** The default url. */
+  private String defaultUrl;
 
   /** The auth header. */
   private String authHeader;
 
-  /** The assign names. */
-  private boolean assignNames = false;
+  /** The headers. */
+  private Map<String, String> headers;
 
   /* see superclass */
   @Override
   public TerminologyHandler copy() throws Exception {
-    final DefaultTerminologyHandler handler = new DefaultTerminologyHandler();
-    handler.url = this.url;
-    handler.branch = this.branch;
+    final SnowowlTerminologyHandler handler = new SnowowlTerminologyHandler();
+    handler.defaultUrl = this.defaultUrl;
     handler.authHeader = this.authHeader;
-    handler.assignNames = this.assignNames;
+    handler.setApiKey(getApiKey());
     return handler;
   }
 
   /* see superclass */
   @Override
-  public void setProperties(Properties p) throws Exception {
-    if (p.containsKey("url")) {
-      url = p.getProperty("url");
+  public boolean test(String terminology, String version) throws Exception {
+    final String localVersion = version == null ? "MAIN" : version;
+    final Client client = ClientBuilder.newClient();
+    final WebTarget target = client.target(url + "/branches/" + localVersion);
+
+    final Response response =
+        target.request(accept).header("Authorization", authHeader)
+            .header("Cookie", getCookieHeader()).get();
+    final String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
     } else {
-      throw new Exception("Required property url not specified.");
+      throw new LocalException(
+          "Unexpected terminology server failure. Message = " + resultString);
     }
-    if (p.containsKey("branch")) {
-      branch = p.getProperty("branch");
+    return true;
+  }
+
+  /* see superclass */
+  @Override
+  public void setProperties(Properties p) throws Exception {
+    if (p.containsKey("defaultUrl")) {
+      defaultUrl = p.getProperty("defaultUrl");
     } else {
-      throw new Exception("Required property branch not specified.");
+      throw new LocalException("Required property defaultUrl not specified.");
     }
     if (p.containsKey("authHeader")) {
       authHeader = p.getProperty("authHeader");
     } else {
-      throw new Exception("Required property url not specified.");
+      // If no auth header, we know we'll be sending "auth tokens" as
+      // getCookieHeader()s
+      // with each call.
+    }
+    if (p.containsKey("apiKey")) {
+      setApiKey(p.getProperty("apiKey"));
     }
 
-    // Uses the "DEFAULT" assignNames property - this must exist so that it can
-    // be accessed externally
-    if (ConfigUtility.getConfigProperties().containsKey(
-        "terminology.handler.DEFAULT.assignNames")) {
-      assignNames =
-          Boolean.valueOf(ConfigUtility.getConfigProperties().getProperty(
-              "terminology.handler.DEFAULT.assignNames"));
-    }
   }
 
   /* see superclass */
   @Override
   public String getName() {
-    return "Default terminology handler";
+    return "Snowowl Terminology handler";
   }
 
   /* see superclass */
   @Override
   public List<Terminology> getTerminologyEditions() throws Exception {
     List<Terminology> result = new ArrayList<>();
+    // Cache this if ever not hardcoded.
     Terminology t = new TerminologyJpa();
     t.setTerminology("SNOMEDCT");
+    t.setName("SNOMEDCT");
     result.add(t);
     return result;
   }
@@ -140,50 +178,11 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
   public List<Terminology> getTerminologyVersions(String edition)
     throws Exception {
     final List<Terminology> list = new ArrayList<Terminology>();
-    if (edition.equals("SNOMEDCT")) {
-      // Make a webservice call to SnowOwl
-      final Client client = ClientBuilder.newClient();
-      final WebTarget target = client.target(url + "/branches");
-      final Response response =
-          target.request(accept).header("Authorization", authHeader)
-              .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6").get();
-      final String resultString = response.readEntity(String.class);
-      if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-        // n/a
-      } else {
-        throw new Exception("Unexpected terminology server failure. Message = "
-            + resultString);
-      }
-
-      /**
-       * <pre>
-       * "items": [
-       *     {
-       *       "name": "2013-01-31",
-       *       "baseTimestamp": 1443341090129,
-       *       "headTimestamp": 1443341090129,
-       *       "deleted": false,
-       *       "path": "MAIN/2013-01-31",
-       *       "state": "BEHIND"
-       *     }, ...
-       * }
-       * </pre>
-       */
-      final ObjectMapper mapper = new ObjectMapper();
-      final JsonNode doc = mapper.readTree(resultString);
-      if (doc.get("items") == null) {
-        return list;
-      }
-      for (final JsonNode item : doc.get("items")) {
-        final String version = item.get("name").asText();
-        if (version.matches("\\d\\d\\d\\d-\\d\\d-\\d\\d")) {
-          Terminology terminology = new TerminologyJpa();
-          terminology.setTerminology(edition);
-          terminology.setVersion(version);
-          list.add(terminology);
-        }
-      }
-    }
+    final Terminology main = new TerminologyJpa();
+    main.setTerminology(edition);
+    main.setVersion("MAIN");
+    main.setName(edition);
+    list.add(main);
     return list;
   }
 
@@ -196,13 +195,13 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
     // Make a webservice call to SnowOwl to get concept
     final Client client = ClientBuilder.newClient();
 
-    WebTarget target =
-        client.target(url + "/" + branch + "/" + version + "/concepts?escg="
-            + URLEncoder.encode(conceptId, "UTF-8").replaceAll(" ", "%20"));
+    WebTarget target = client.target(url + "/" + version + "/concepts?escg="
+        + URLEncoder.encode(conceptId, "UTF-8").replaceAll(" ", "%20"));
 
     Response response =
         target.request(accept).header("Authorization", authHeader)
-            .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6").get();
+            .header("Accept-Language", getAcceptLanguage(terminology, version))
+            .header("Cookie", getCookieHeader()).get();
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -213,8 +212,8 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
         return new ConceptListJpa();
       }
 
-      throw new Exception("Unexpected terminology server failure. Message = "
-          + resultString);
+      throw new LocalException(
+          "Unexpected terminology server failure. Message = " + resultString);
     }
 
     /**
@@ -273,9 +272,8 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
     // Look up concepts - set "definition status id" to the reason for
     // inactivation
     // probably need a better placeholder for this, but for now - good enough
-    ConceptList list =
-        this.getConcepts(new ArrayList<>(reasonMap.keySet()), terminology,
-            version);
+    ConceptList list = this.getConcepts(new ArrayList<>(reasonMap.keySet()),
+        terminology, version);
     for (final Concept concept : list.getObjects()) {
       concept.setDefinitionStatusId(reasonMap.get(concept.getTerminologyId()));
     }
@@ -286,9 +284,8 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
   @Override
   public ConceptList resolveExpression(String expr, String terminology,
     String version, PfsParameter pfs) throws Exception {
-    Logger.getLogger(getClass()).info(
-        "  resolve expression - " + terminology + ", " + version + ", " + expr
-            + ", " + pfs);
+    Logger.getLogger(getClass()).info("  resolve expression - " + terminology
+        + ", " + version + ", " + expr + ", " + pfs);
     // Make a webservice call to SnowOwl to get concept
     final Client client = ClientBuilder.newClient();
 
@@ -309,15 +306,15 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
     // and make a second call if needed
     final int initialMaxLimit = 200;
 
-    WebTarget target =
-        client.target(url + "/" + branch + "/" + version + "/concepts?escg="
-            + URLEncoder.encode(expr, "UTF-8").replaceAll(" ", "%20")
-            + "&limit=" + Math.min(initialMaxLimit, localPfs.getMaxResults())
-            + "&offset=" + localPfs.getStartIndex() + "&expand=pt()");
+    WebTarget target = client.target(url + "/" + version + "/concepts?escg="
+        + URLEncoder.encode(expr, "UTF-8").replaceAll(" ", "%20") + "&limit="
+        + Math.min(initialMaxLimit, localPfs.getMaxResults()) + "&offset="
+        + localPfs.getStartIndex() + "&expand=pt()");
 
     Response response =
         target.request(accept).header("Authorization", authHeader)
-            .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6").get();
+            .header("Accept-Language", getAcceptLanguage(terminology, version))
+            .header("Cookie", getCookieHeader()).get();
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -328,8 +325,8 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
         return new ConceptListJpa();
       }
 
-      throw new Exception("Unexpected terminology server failure. Message = "
-          + resultString);
+      throw new LocalException(
+          "Unexpected terminology server failure. Message = " + resultString);
     }
 
     /**
@@ -385,12 +382,12 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
 
       concept.setActive(conceptNode.get("active").asText().equals("true"));
       concept.setTerminologyId(conceptNode.get("id").asText());
-      concept.setLastModified(ConfigUtility.DATE_FORMAT.parse(conceptNode.get(
-          "effectiveTime").asText()));
+      concept.setLastModified(ConfigUtility.DATE_FORMAT
+          .parse(conceptNode.get("effectiveTime").asText()));
       concept.setLastModifiedBy(terminology);
       concept.setModuleId(conceptNode.get("moduleId").asText());
-      concept.setDefinitionStatusId(conceptNode.get("definitionStatus")
-          .asText());
+      concept
+          .setDefinitionStatusId(conceptNode.get("definitionStatus").asText());
 
       // pt.term is the name
       concept.setName(conceptNode.get("pt").get("term").asText());
@@ -403,20 +400,19 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
 
     // If the total is over the initial max limit and pfs max results is too.
     if (total > initialMaxLimit && localPfs.getMaxResults() > initialMaxLimit) {
-      target =
-          client.target(url + "/" + branch + "/" + version + "/concepts?escg="
-              + URLEncoder.encode(expr, "UTF-8") + "&limit="
-              + (total - initialMaxLimit) + "&offset="
-              + (initialMaxLimit + localPfs.getStartIndex()) + "&expand=pt()");
-      response =
-          target.request(accept).header("Authorization", authHeader)
-              .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6").get();
+      target = client.target(url + "/" + version + "/concepts?escg="
+          + URLEncoder.encode(expr, "UTF-8") + "&limit="
+          + (total - initialMaxLimit) + "&offset="
+          + (initialMaxLimit + localPfs.getStartIndex()) + "&expand=pt()");
+      response = target.request(accept).header("Authorization", authHeader)
+          .header("Accept-Language", getAcceptLanguage(terminology, version))
+          .header("Cookie", getCookieHeader()).get();
       resultString = response.readEntity(String.class);
       if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
         // n/a
       } else {
-        throw new Exception("Unexpected terminology server failure. Message = "
-            + resultString);
+        throw new LocalException(
+            "Unexpected terminology server failure. Message = " + resultString);
       }
       mapper = new ObjectMapper();
       doc = mapper.readTree(resultString);
@@ -430,12 +426,12 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
 
         concept.setActive(conceptNode.get("active").asText().equals("true"));
         concept.setTerminologyId(conceptNode.get("id").asText());
-        concept.setLastModified(ConfigUtility.DATE_FORMAT.parse(conceptNode
-            .get("effectiveTime").asText()));
+        concept.setLastModified(ConfigUtility.DATE_FORMAT
+            .parse(conceptNode.get("effectiveTime").asText()));
         concept.setLastModifiedBy(terminology);
         concept.setModuleId(conceptNode.get("moduleId").asText());
-        concept.setDefinitionStatusId(conceptNode.get("definitionStatus")
-            .asText());
+        concept.setDefinitionStatusId(
+            conceptNode.get("definitionStatus").asText());
         // pt.term is the name
         if (conceptNode.get("pt") != null) {
           concept.setName(conceptNode.get("pt").get("term").asText());
@@ -460,17 +456,18 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
     throws Exception {
     Logger.getLogger(getClass()).info(
         "  expression count - " + terminology + ", " + version + ", " + expr);
+
     // Make a webservice call to SnowOwl to get concept
     final Client client = ClientBuilder.newClient();
 
-    WebTarget target =
-        client.target(url + "/" + branch + "/" + version + "/concepts?escg="
-            + URLEncoder.encode(expr, "UTF-8").replaceAll(" ", "%20")
-            + "&limit=1&offset=0");
+    WebTarget target = client.target(url + "/" + version + "/concepts?escg="
+        + URLEncoder.encode(expr, "UTF-8").replaceAll(" ", "%20")
+        + "&limit=1&offset=0");
 
     Response response =
         target.request(accept).header("Authorization", authHeader)
-            .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6").get();
+            .header("Accept-Language", getAcceptLanguage(terminology, version))
+            .header("Cookie", getCookieHeader()).get();
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -481,8 +478,8 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
         return 0;
       }
 
-      throw new Exception("Unexpected terminology server failure. Message = "
-          + resultString);
+      throw new LocalException(
+          "Unexpected terminology server failure. Message = " + resultString);
     }
 
     ObjectMapper mapper = new ObjectMapper();
@@ -497,14 +494,17 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
   @Override
   public Concept getFullConcept(String terminologyId, String terminology,
     String version) throws Exception {
+    // TODO resolve this date conversion 20150131 -> 2015-01-31
+    // version = "MAIN/2015-01-31";
     // Make a webservice call to SnowOwl to get concept
     final Client client = ClientBuilder.newClient();
-    final WebTarget target =
-        client.target(url + "browser/" + branch + "/" + version + "/concepts/"
-            + terminologyId);
+    final WebTarget target = client
+        .target(url + "/browser/" + version + "/concepts/" + terminologyId);
     final Response response =
-        target.request("*/*").header("Authorization", authHeader)
-            .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6").get();
+        target.request("application/vnd.org.ihtsdo.browser+json")
+            .header("Authorization", authHeader)
+            .header("Accept-Language", getAcceptLanguage(terminology, version))
+            .header("Cookie", getCookieHeader()).get();
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -514,8 +514,8 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
       if (resultString.contains("loop did not match anything")) {
         return null;
       }
-      throw new Exception("Unexpected terminology server failure. Message = "
-          + resultString);
+      throw new LocalException(
+          "Unexpected terminology server failure. Message = " + resultString);
     }
 
     /**
@@ -588,8 +588,8 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
       concept.setId(1L);
     }
 
-    concept.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse(doc.get(
-        "effectiveTime").asText()));
+    concept.setEffectiveTime(
+        ConfigUtility.DATE_FORMAT.parse(doc.get("effectiveTime").asText()));
     concept.setLastModified(concept.getEffectiveTime());
     concept.setLastModifiedBy(terminology);
     concept.setModuleId(doc.get("moduleId").asText());
@@ -605,16 +605,12 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
 
         description.setActive(desc.get("active").asText().equals("true"));
 
-        // Skip inactive descriptions
-        if (!description.isActive()) {
-          continue;
-        }
         description
             .setCaseSignificanceId(desc.get("caseSignificance").asText());
 
         description.setConcept(concept);
-        description.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse(desc.get(
-            "effectiveTime").asText()));
+        description.setEffectiveTime(ConfigUtility.DATE_FORMAT
+            .parse(desc.get("effectiveTime").asText()));
         description.setLanguageCode(desc.get("lang").asText());
         description.setLastModified(description.getEffectiveTime());
         description.setLastModifiedBy(terminology);
@@ -631,19 +627,21 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
         } else if (description.getTypeId().equals("SYNONYM")) {
           description.setTypeId("900000000000013009");
         }
-        for (final JsonNode language : desc.findValues("acceptabilityMap")) {
-          final LanguageRefsetMember member = new LanguageRefsetMemberJpa();
-          member.setActive(true);
-          member.setDescriptionId(terminologyId);
-          String key = language.fieldNames().next();
-          member.setRefsetId(key);
-          member.setAcceptabilityId(language.get(key).asText());
-          if (member.getAcceptabilityId().equals("PREFERRED")) {
-            member.setAcceptabilityId("900000000000548007");
-          } else if (member.getAcceptabilityId().equals("ACCEPTABLE")) {
-            member.setAcceptabilityId("900000000000549004");
+        if (description.isActive()) {
+          for (final JsonNode language : desc.findValues("acceptabilityMap")) {
+            final LanguageRefsetMember member = new LanguageRefsetMemberJpa();
+            member.setActive(true);
+            member.setDescriptionId(terminologyId);
+            String key = language.fieldNames().next();
+            member.setRefsetId(key);
+            member.setAcceptabilityId(language.get(key).asText());
+            if (member.getAcceptabilityId().equals("PREFERRED")) {
+              member.setAcceptabilityId("900000000000548007");
+            } else if (member.getAcceptabilityId().equals("ACCEPTABLE")) {
+              member.setAcceptabilityId("900000000000549004");
+            }
+            description.getLanguageRefsetMembers().add(member);
           }
-          description.getLanguageRefsetMembers().add(member);
         }
 
         concept.getDescriptions().add(description);
@@ -666,10 +664,10 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
           continue;
         }
         rel.setModifierId(relNode.get("modifier").asText());
-        rel.setRelationshipGroup(Integer.valueOf(relNode.get("groupId")
-            .asText()));
-        rel.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse(relNode.get(
-            "effectiveTime").asText()));
+        rel.setRelationshipGroup(
+            Integer.valueOf(relNode.get("groupId").asText()));
+        rel.setEffectiveTime(ConfigUtility.DATE_FORMAT
+            .parse(relNode.get("effectiveTime").asText()));
         rel.setModuleId(relNode.get("moduleId").asText());
         rel.setTypeId(relNode.get("type").get("fsn").asText()
             .replaceFirst(" \\([a-zA-Z0-9 ]*\\)", ""));
@@ -686,8 +684,8 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
         rel.setTerminologyId(relNode.get("relationshipId").asText());
 
         final Concept destination = new ConceptJpa();
-        destination.setTerminologyId(relNode.get("target").get("conceptId")
-            .asText());
+        destination
+            .setTerminologyId(relNode.get("target").get("conceptId").asText());
         // Reuse as id if only digits, otherwise dummy id
         if (destination.getTerminologyId().matches("^\\d+$")) {
           destination.setId(Long.parseLong(destination.getTerminologyId()));
@@ -695,8 +693,8 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
           destination.setId(1L);
         }
         destination.setName(relNode.get("target").get("fsn").asText());
-        destination.setDefinitionStatusId(relNode.get("target")
-            .get("definitionStatus").asText());
+        destination.setDefinitionStatusId(
+            relNode.get("target").get("definitionStatus").asText());
         rel.setDestinationConcept(destination);
 
         concept.getRelationships().add(rel);
@@ -717,98 +715,9 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
     if (terminologyId.length() < 5) {
       return null;
     }
-    // Make a webservice call to SnowOwl
-    final Client client = ClientBuilder.newClient();
-    final WebTarget target =
-        client.target(url + "/" + branch + "/" + version + "/concepts?escg="
-            + terminologyId + "&expand=pt()");
-    final Response response =
-        target.request("*/*").header("Authorization", authHeader)
-            .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6").get();
-    final String resultString = response.readEntity(String.class);
-    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-      // n/a
-    } else {
-      // Here's the messy part about trying to parse the return error message
-      if (resultString.contains("loop did not match anything")) {
-        return null;
-      }
-
-      if (resultString
-          .contains("One or more supplied query parameters were invalid")) {
-        throw new LocalException("Badly formatted concept id.");
-      }
-
-      throw new Exception("Unexpected terminology server failure. Message = "
-          + resultString);
-    }
-
-    /**
-     * <pre>
-     * {
-     *   "items": [
-     *     {
-     *       "id": "61778004",
-     *       "released": true,
-     *       "active": true,
-     *       "effectiveTime": "20020131",
-     *       "moduleId": "900000000000207008",
-     *       "definitionStatus": "PRIMITIVE",
-     *       "subclassDefinitionStatus": "NON_DISJOINT_SUBCLASSES",
-     *       "pt": {
-     *         "id": "102669013",
-     *         "released": true,
-     *         "active": true,
-     *         "effectiveTime": "20020131",
-     *         "moduleId": "900000000000207008",
-     *         "conceptId": "61778004",
-     *         "typeId": "900000000000013009",
-     *         "term": "Tumoral calcinosis",
-     *         "languageCode": "en",
-     *         "caseSignificance": "INITIAL_CHARACTER_CASE_INSENSITIVE",
-     *         "acceptabilityMap": {
-     *           "900000000000509007": "PREFERRED"
-     *         }
-     *       }
-     *     }
-     *   ],
-     *   "offset": 0,
-     *   "limit": 5,
-     *   "total": 1
-     * }
-     * </pre>
-     */
-    final ObjectMapper mapper = new ObjectMapper();
-    final JsonNode doc = mapper.readTree(resultString);
-    if (doc.get("items") == null) {
-      return null;
-    }
-    Iterator<JsonNode> concepts = doc.get("items").elements();
-    if (!concepts.hasNext()) {
-      return null;
-    }
-    final JsonNode conceptNode = concepts.next();
-    if (concepts.hasNext()) {
-      throw new Exception("Multiple concepts found for same conceptId - "
-          + terminologyId);
-    }
-    final Concept concept = new ConceptJpa();
-    concept.setActive(conceptNode.get("active").asText().equals("true"));
-
-    concept.setTerminologyId(conceptNode.get("id").asText());
-    concept.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse(conceptNode.get(
-        "effectiveTime").asText()));
-    concept.setLastModified(concept.getEffectiveTime());
-    concept.setLastModifiedBy(terminology);
-    concept.setModuleId(conceptNode.get("moduleId").asText());
-    concept.setDefinitionStatusId(conceptNode.get("definitionStatus").asText());
-    concept.setName(conceptNode.get("pt").get("term").asText());
-
-    concept.setPublishable(true);
-    concept.setPublished(true);
-    Logger.getLogger(getClass()).debug("  concept = " + concept);
-
-    return concept;
+    ConceptList conceptList =
+        resolveExpression(terminologyId, terminology, version, null);
+    return conceptList.getObjects().get(0);
   }
 
   /* see superclass */
@@ -818,10 +727,14 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
 
     final StringBuilder query = new StringBuilder();
     for (final String terminologyId : terminologyIds) {
-      if (query.length() != 0) {
-        query.append(" UNION ");
+      // Only lookup stuff with actual digits
+      if (terminologyId.matches("[0-9]*")) {
+        if (query.length() != 0) {
+          // TODO will change to OR with ecl
+          query.append(" UNION ");
+        }
+        query.append(terminologyId);
       }
-      query.append(terminologyId);
     }
 
     return resolveExpression(query.toString(), terminology, version, null);
@@ -837,8 +750,9 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
   @Override
   public ConceptList findConceptsForQuery(String query, String terminology,
     String version, PfsParameter pfs) throws Exception {
+
     final ConceptList conceptList = new ConceptListJpa();
-    // Make a webservice call to SnowOwl
+    // Make a webservice call to browser api
     final Client client = ClientBuilder.newClient();
 
     PfsParameter localPfs = pfs;
@@ -863,94 +777,118 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
     }
 
     // Use "escg" if it's a concept id, otherwise search term
-    final WebTarget target =
-        useTerm ? client.target(url + "/" + branch + "/" + version
-            + "/concepts?term="
+    final WebTarget target = useTerm
+        ? client.target(url + "/browser/" + version + "/descriptions?query="
             + URLEncoder.encode(localQuery, "UTF-8").replaceAll(" ", "%20")
             + "&offset=" + localPfs.getStartIndex() + "&limit="
-            + localPfs.getMaxResults() + "&expand=pt()")
+            + (localPfs.getMaxResults() * 3) + "&expand=pt()")
 
         :
 
-        client.target(url + "/" + branch + "/" + version + "/concepts?escg="
+        client.target(url + "/" + version + "/concepts?escg="
             + URLEncoder.encode(localQuery, "UTF-8").replaceAll(" ", "%20")
             + "&offset=" + localPfs.getStartIndex() + "&limit="
             + localPfs.getMaxResults() + "&expand=pt()");
 
     final Response response =
-        target.request("*/*").header("Authorization", authHeader)
-            .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6").get();
+        target.request("application/vnd.org.ihtsdo.browser+json")
+            .header("Authorization", authHeader)
+            .header("Accept-Language", getAcceptLanguage(terminology, version))
+            .header("Cookie", getCookieHeader()).get();
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
     } else {
-      throw new Exception("Unexpected terminology server failure. Message = "
-          + resultString);
+      throw new LocalException(
+          "Unexpected terminology server failure. Message = " + resultString);
     }
 
-    /**
-     * <pre>
-     * {
-     *   "items": [
-     *     {
-     *       "id": "61778004",
-     *       "released": true,
-     *       "active": true,
-     *       "effectiveTime": "20020131",
-     *       "moduleId": "900000000000207008",
-     *       "definitionStatus": "PRIMITIVE",
-     *       "subclassDefinitionStatus": "NON_DISJOINT_SUBCLASSES",
-     *       "pt": {
-     *         "id": "102669013",
-     *         "released": true,
-     *         "active": true,
-     *         "effectiveTime": "20020131",
-     *         "moduleId": "900000000000207008",
-     *         "conceptId": "61778004",
-     *         "typeId": "900000000000013009",
-     *         "term": "Tumoral calcinosis",
-     *         "languageCode": "en",
-     *         "caseSignificance": "INITIAL_CHARACTER_CASE_INSENSITIVE",
-     *         "acceptabilityMap": {
-     *           "900000000000509007": "PREFERRED"
-     *         }
-     *       }
-     *     }, ...
-     *   ],
-     *   "offset": 0,
-     *   "limit": 5,
-     *   "total": 3871
-     * }
-     * </pre>
-     */
+    // Support grouping by concept
+    final Map<String, Concept> conceptMap = new HashMap<>();
+    int conceptCt = 0;
+
     final ObjectMapper mapper = new ObjectMapper();
+
     final JsonNode doc = mapper.readTree(resultString);
-    if (doc.get("items") == null) {
-      return conceptList;
+
+    if (useTerm) {
+      JsonNode entry = null;
+      int index = 0;
+      while ((entry = doc.get(index++)) != null) {
+        // Get concept id
+        final String conceptId = entry.get("concept").get("conceptId").asText();
+        JsonNode conceptNode = entry.get("concept");
+
+        final Description desc = new DescriptionJpa();
+        desc.setActive(conceptNode.get("active").asText().equals("true"));
+        desc.setTerm(entry.get("term").asText());
+        if (conceptMap.containsKey(conceptId)) {
+          final Concept concept = conceptMap.get(conceptId);
+          if (desc.isActive() || !localPfs.getActiveOnly()) {
+            concept.getDescriptions().add(desc);
+          }
+        }
+
+        else {
+          // Skip any new concepts past the limit
+          if (conceptCt++ < localPfs.getMaxResults()) {
+            final Concept concept = new ConceptJpa();
+            concept.setActive(entry.get("active").asText().equals("true"));
+            concept.setDefinitionStatusId(
+                conceptNode.get("definitionStatus").asText());
+            concept.setTerminologyId(conceptId);
+            concept.setModuleId(conceptNode.get("moduleId").asText());
+            concept.setName(conceptNode.get("fsn").asText());
+            concept.setPublishable(true);
+            concept.setPublished(true);
+
+            // Add the description
+            concept.getDescriptions().add(desc);
+
+            conceptList.addObject(concept);
+            conceptMap.put(conceptId, concept);
+            Logger.getLogger(getClass()).debug("  concept = " + concept);
+          }
+        }
+
+      }
+
+      // Set total count
+      // TODO
+      /*
+       * conceptList.setTotalCount(
+       * Integer.parseInt(doc.get("details").get("total").asText()));
+       */
+      conceptList.setTotalCount(200);
+
+    } else { // lookup was conceptId, not term
+      if (doc.get("items") == null) {
+        return conceptList;
+      }
+      for (final JsonNode conceptNode : doc.get("items")) {
+
+        final Concept concept = new ConceptJpa();
+        concept.setActive(conceptNode.get("active").asText().equals("true"));
+
+        concept.setTerminologyId(conceptNode.get("id").asText());
+        concept.setEffectiveTime(ConfigUtility.DATE_FORMAT
+            .parse(conceptNode.get("effectiveTime").asText()));
+        concept.setLastModified(concept.getEffectiveTime());
+        concept.setLastModifiedBy(terminology);
+        concept.setModuleId(conceptNode.get("moduleId").asText());
+        concept.setDefinitionStatusId(
+            conceptNode.get("definitionStatus").asText());
+        concept.setName(conceptNode.get("pt").get("term").asText());
+
+        concept.setPublishable(true);
+        concept.setPublished(true);
+        Logger.getLogger(getClass()).debug("  concept = " + concept);
+        conceptList.addObject(concept);
+      }
+
+      // Set total count
+      conceptList.setTotalCount(Integer.parseInt(doc.get("total").asText()));
     }
-    for (final JsonNode conceptNode : doc.get("items")) {
-
-      final Concept concept = new ConceptJpa();
-      concept.setActive(conceptNode.get("active").asText().equals("true"));
-
-      concept.setTerminologyId(conceptNode.get("id").asText());
-      concept.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse(conceptNode.get(
-          "effectiveTime").asText()));
-      concept.setLastModified(concept.getEffectiveTime());
-      concept.setLastModifiedBy(terminology);
-      concept.setModuleId(conceptNode.get("moduleId").asText());
-      concept.setDefinitionStatusId(conceptNode.get("definitionStatus")
-          .asText());
-      concept.setName(conceptNode.get("pt").get("term").asText());
-
-      concept.setPublishable(true);
-      concept.setPublished(true);
-      Logger.getLogger(getClass()).debug("  concept = " + concept);
-      conceptList.addObject(concept);
-    }
-
-    // Set total count
-    conceptList.setTotalCount(Integer.parseInt(doc.get("total").asText()));
     return conceptList;
   }
 
@@ -959,18 +897,17 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
   public ConceptList findRefsetsForQuery(String query, String terminology,
     String version, PfsParameter pfs) throws Exception {
     if (query != null && !query.isEmpty()) {
-      List<Concept> list =
-          resolveExpression(
-              "<< 900000000000496009 | Simple map type reference set  |",
-              terminology, version, pfs).getObjects();
+      List<Concept> list = resolveExpression(
+          "<< 900000000000496009 | Simple map type reference set  |",
+          terminology, version, pfs).getObjects();
 
       final RootServiceJpa service = new RootServiceJpa() {
         // n/a
       };
       ConceptList result = new ConceptListJpa();
       int[] totalCt = new int[1];
-      result.setObjects(service.applyPfsToList(list, Concept.class, totalCt,
-          pfs));
+      result.setObjects(
+          service.applyPfsToList(list, Concept.class, totalCt, pfs));
       result.setTotalCount(totalCt[0]);
       service.close();
       return result;
@@ -993,23 +930,25 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
 
   /* see superclass */
   @Override
-  public ConceptList getConceptParents(String terminologyId,
-    String terminology, String version) throws Exception {
+  public ConceptList getConceptParents(String terminologyId, String terminology,
+    String version) throws Exception {
     final ConceptList conceptList = new ConceptListJpa();
+
     // Make a webservice call to SnowOwl
     final Client client = ClientBuilder.newClient();
-    final WebTarget target =
-        client.target(url + "browser/" + branch + "/" + version + "/concepts/"
-            + terminologyId + "/parents");
+    final WebTarget target = client.target(url + "/browser/" + version
+        + "/concepts/" + terminologyId + "/parents");
     final Response response =
-        target.request("*/*").header("Authorization", authHeader)
-            .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6").get();
+        target.request("application/vnd.org.ihtsdo.browser+json")
+            .header("Authorization", authHeader)
+            .header("Accept-Language", getAcceptLanguage(terminology, version))
+            .header("Cookie", getCookieHeader()).get();
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
     } else {
-      throw new Exception("Unexpected terminology server failure. Message = "
-          + resultString);
+      throw new LocalException(
+          "Unexpected terminology server failure. Message = " + resultString);
     }
 
     /**
@@ -1056,21 +995,23 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
   @Override
   public ConceptList getConceptChildren(String terminologyId,
     String terminology, String version) throws Exception {
+
     final ConceptList conceptList = new ConceptListJpa();
     // Make a webservice call to SnowOwl
     final Client client = ClientBuilder.newClient();
-    final WebTarget target =
-        client.target(url + "browser/" + branch + "/" + version + "/concepts/"
-            + terminologyId + "/children?form=inferred");
+    final WebTarget target = client.target(url + "/browser/" + version
+        + "/concepts/" + terminologyId + "/children?form=inferred");
     final Response response =
-        target.request("*/*").header("Authorization", authHeader)
-            .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6").get();
+        target.request("application/vnd.org.ihtsdo.browser+json")
+            .header("Authorization", authHeader)
+            .header("Accept-Language", getAcceptLanguage(terminology, version))
+            .header("Cookie", getCookieHeader()).get();
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
     } else {
-      throw new Exception("Unexpected terminology server failure. Message = "
-          + resultString);
+      throw new LocalException(
+          "Unexpected terminology server failure. Message = " + resultString);
     }
 
     /**
@@ -1123,96 +1064,118 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
 
   /* see superclass */
   @Override
-  public boolean assignNames() throws Exception {
-    return ConfigUtility.isAssignNames();
+  public void setUrl(String url) throws Exception {
+    this.url = url;
+    this.domain = InternetDomainName.from(new URL(url).getHost())
+        .topPrivateDomain().toString();
   }
 
   /* see superclass */
   @Override
-  public List<DescriptionType> getStandardDescriptionTypes(String terminology)
-    throws Exception {
-    final List<DescriptionType> list = new ArrayList<>();
-    /**
-     * <pre>
-     * 0f928c01-b245-5907-9758-a46cbeed2674    20020131        1       900000000000207008      900000000000538005      900000000000003001      900000000000540000      255
-     * 807f775b-1d66-5069-b58e-a37ace985dcf    20140131        1       900000000000207008      900000000000538005      900000000000550004      900000000000540000      4096
-     * 909a711e-b114-5543-841e-242aaa246363    20020131        1       900000000000207008      900000000000538005      900000000000013009      900000000000540000      255
-     * </pre>
-     */
-    for (int i = 0; i < 4; i++) {
-      final DescriptionType type = new DescriptionTypeJpa();
-      type.setRefsetId("900000000000538005");
-      type.setDescriptionFormat("900000000000540000");
-      if (i == 0) {
-        type.setTerminologyId("909a711e-b114-5543-841e-242aaa246363");
-        type.setTypeId("900000000000013009");
-        type.setAcceptabilityId("900000000000548007");
-        type.setName("PN");
-        type.setDescriptionLength(255);
-      }
-      if (i == 1) {
-        type.setTerminologyId("0f928c01-b245-5907-9758-a46cbeed2674");
-        type.setTypeId("900000000000003001");
-        type.setAcceptabilityId("900000000000548007");
-        type.setName("FSN");
-        type.setDescriptionLength(255);
-      }
-      if (i == 2) {
-        type.setTerminologyId("909a711e-b114-5543-841e-242aaa246362");
-        type.setTypeId("900000000000013009");
-        type.setAcceptabilityId("900000000000549004");
-        type.setName("SY");
-        type.setDescriptionLength(255);
-      }
-      if (i == 3) {
-        type.setTerminologyId("807f775b-1d66-5069-b58e-a37ace985dcf");
-        type.setTypeId("900000000000550004");
-        type.setAcceptabilityId("900000000000548007");
-        type.setName("DEF");
-        type.setDescriptionLength(4096);
-      }
-      list.add(type);
+  public String getDefaultUrl() {
+    return defaultUrl;
+  }
+
+  /* see superclass */
+  @Override
+  public void setHeaders(Map<String, String> headers) throws Exception {
+    this.headers = headers;
+  }
+
+  /**
+   * Returns the cookie header.
+   *
+   * @return the cookie header
+   */
+  public String getCookieHeader() {
+    final String referer = headers.get("Referer");
+    if (referer.contains(domain)) {
+      return headers.get("Cookie");
+    } else {
+      Logger.getLogger(getClass())
+          .warn("UNEXPECTED referer not matching url domain = " + referer);
     }
-    return list;
+    return "";
   }
 
-  /* see superclass */
   @Override
-  public List<LanguageDescriptionType> getStandardLanguageDescriptionTypes(
-    String terminology) throws Exception {
+  public List<String> getLanguages(String terminology, String version)
+    throws Exception {
+    Logger.getLogger(getClass())
+        .info("  get languages - " + terminology + ", " + version);
+    // Make a webservice call to SnowOwl to get concept
+    final Client client = ClientBuilder.newClient();
 
-    // Assume these are in the correct order (see above)
-    final List<DescriptionType> descriptionTypes =
-        getStandardDescriptionTypes(terminology);
-    final List<LanguageDescriptionType> types = new ArrayList<>();
-    for (final DescriptionType descriptionType : descriptionTypes) {
-      // don't include definition
-      if (descriptionType.getName().equals("DEF")) {
-        continue;
-      }
-      final LanguageDescriptionType type = new LanguageDescriptionTypeJpa();
-      type.setDescriptionType(descriptionType);
-      type.setName("US English");
-      type.setRefsetId("900000000000509007");
-      type.setLanguage("en");
-      types.add(type);
+    PfsParameter localPfs = new PfsParameterJpa();
+    localPfs.setStartIndex(0);
+    localPfs.setMaxResults(200);
+
+    WebTarget target = client.target(url + "/" + version + "/concepts?escg="
+        + URLEncoder.encode("<900000000000506000", "UTF-8").replaceAll(" ",
+            "%20")
+        + "&limit=" + localPfs.getMaxResults() + "&offset="
+        + localPfs.getStartIndex() + "&expand=fsn()");
+
+    Response response =
+        target.request(accept).header("Authorization", authHeader)
+            .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
+            .header("Cookie", getCookieHeader()).get();
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+
+      throw new LocalException(
+          "Unexpected terminology server failure. Message = " + resultString);
     }
 
-    return types;
+    ObjectMapper mapper = new ObjectMapper();
+    JsonNode doc = mapper.readTree(resultString);
+
+    List<String> languages = new ArrayList<>();
+    for (final JsonNode conceptNode : doc.get("items")) {
+
+      String id = conceptNode.get("id").asText();
+      String term = conceptNode.get("fsn").get("term").asText();
+
+      if (!idsToIgnore.contains(id) && term.contains("code")) {
+        String code =
+            term.substring(term.indexOf("code") + 5, term.indexOf("]"));
+        languages.add(code + "-x-" + id);
+      }
+    }
+    languages.add("en-US");
+    languages.add("en-GB");
+
+    return languages;
   }
 
-  /* see superclass */
-  @Override
-  public Map<String, String> getStandardCaseSensitivityTypes(String terminology)
+  /**
+   * Returns the accept language.
+   *
+   * @param terminology the terminology
+   * @param version the version
+   * @return the accept language
+   * @throws Exception the exception
+   */
+  private String getAcceptLanguage(String terminology, String version)
     throws Exception {
-    final Map<String, String> map = new HashMap<>();
-
-    // For now this is hard-coded but could be looked up if term server had an
-    // API
-    map.put("900000000000017005", "Case sensitive");
-    map.put("900000000000448009", "Case insensitive");
-    map.put("900000000000020002", "Initial character case insensitive");
-    return map;
+    if (tvLanguageMap.containsKey(terminology + version)) {
+      return tvLanguageMap.get(terminology + version);
+    } else {
+      List<String> languages = getLanguages(terminology, version);
+      StringBuilder acceptValue = new StringBuilder();
+      double index = 0.9;
+      for (String lat : languages) {
+        if (index == 0.0) {
+          index = 0.1;
+        }
+        acceptValue.append(lat).append(";").append("q=" + index).append(",");
+        index = index - 0.1;
+      }
+      tvLanguageMap.put(terminology + version, acceptValue.toString());
+      return acceptValue.toString();
+    }
   }
 
 }

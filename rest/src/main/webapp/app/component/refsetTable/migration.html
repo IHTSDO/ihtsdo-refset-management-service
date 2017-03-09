@@ -1,6 +1,8 @@
 <div class="modal-header">
-  <h4>Migration</h4>
-
+  <h4 style="display: inline">Migration</h4>
+  <!-- no X at the top, too complicated -->
+</div>
+<div class="modal-body">
   <div class="row">
     <!-- Migration - choose terminology/version -->
     <table class="table">
@@ -27,7 +29,18 @@
             <b>New Version:</b>
           </td>
           <td>
-            <select ng-model="newVersion" ng-options="item for item in versions"></select>
+            <!-- <select ng-model="newVersion" ng-options="item for item in versions"></select> -->
+            <input style="width: 252px" ng-model="newVersion" list="versions"
+              placeholder="e.g. MAIN" ng-change="resetValidVersion();" />
+            <datalist id=versions>
+              <option ng-repeat="version in versions | orderBy:'version'"
+                value="{{version}}">{{version}}</option>
+            </datalist>
+            <button class="btn btn-xs btn-warning" ng-show="newVersion"
+              ng-click="newVersion=''">Clear</button>
+            <button class="btn btn-xs btn-primary"
+              ng-show="newVersion && versionNotInPicklist()"
+              ng-click="testTerminologyVersion();">Test</button>
           </td>
         </tr>
       </tbody>
@@ -50,7 +63,7 @@
 
   <div class="row">
     <!-- Errors table -->
-    <div class="col-md-12 col-md-12" ng-show="errors.length > 0">
+    <div class="col-md-12 col-md-12">
       <table>
         <tr ng-show="errors.length > 0">
           <td>
@@ -66,6 +79,11 @@
                 <br />{{errors[1]}}
               </p>
             </div>
+          </td>
+        </tr>
+        <tr ng-show="validVersion == 'false'">
+          <td colspan="2">
+            <div class="alert alert-danger">Invalid version entered.</div>
           </td>
         </tr>
       </table>
@@ -97,6 +115,14 @@
           <b>Members In Common ({{membersInCommon.totalCount}})</b>
         </h5>
         <span style="display: block;">
+          <span class="info-text" ng-show="membersInCommon.totalCount > 10"
+            style="float: right; margin-top: 4px">
+            Page size: <select ng-model="pageSize" title="Page Size"
+              ng-change="findMembersInCommon()"
+              ng-options="item.value as item.name for item in pageSizes">
+            </select>
+          </span>
+
           <uib-pagination items-per-page="pageSize" max-size="5"
             boundary-links="true" class="pagination-sm" previous-text="&lsaquo;"
             next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;"
@@ -151,10 +177,10 @@
                     class="noul material-icons md-18">delete</i>
                   <button class="btn btn-xs inactive"
                     ng-show="!member.conceptActive" uib-tooltip="Inactive">I</button>
-                  <i ng-click="include(stagedRefset, member, false)"
+                  <i ng-click="include(member, false, true)"
                     ng-show="!member.conceptActive"
                     title="Add replacement concepts to refset"
-                    class="noul material-icons md-12">add</i>
+                    class="noul material-icons md-18">rotate_right</i>
                 </span>
               </td>
             </tr>
@@ -164,14 +190,14 @@
           ng-show="membersInCommon.length == 0 && (paging['membersInCommon'].typeFilter || paging['membersInCommon'].filter)"
           class="alert alert-warning">No results</div>
         <div
-          ng-show="membersInCommon.length == 0 && !paging['membersInCommon'].typeFilter && !paging['membersInCommon'].typeFilter"
+          ng-show="membersInCommon.length == 0 && !paging['membersInCommon'].typeFilter && !paging['membersInCommon'].filter"
           class="alert alert-warning">No members in common</div>
 
       </div>
     </div>
 
     <!-- R1C2 new not old-->
-    <div ng-show="refset.type == 'INTENSIONAL'" class="col-md-5 col-xs-12">
+    <div class="col-md-5 col-xs-12">
       <div
         ng-show="newRegularMembers.length > 0 || membersInCommon.length > 0 || paging['newRegularMembers'].typeFilter || paging['newRegularMembers'].filter">
         <h5
@@ -314,7 +340,7 @@
                   <td>{{member.conceptName}}</td>
                   <td class="nobreak">
                     <i title="Add inclusion to migrated refset."
-                      ng-click="include(stagedRefset, member, true)"
+                      ng-click="include(member, true, false)"
                       class="noul material-icons md-18">arrow_forward</i>
                     <button class="btn btn-xs inactive"
                       ng-show="!member.conceptActive" uib-tooltip="Inactive">I</button>
@@ -553,7 +579,7 @@
     </div>
 
     <!-- R1C2 old not new -->
-    <div ng-show="refset.type == 'INTENSIONAL'" class="col-md-5 col-xs-12">
+    <div class="col-md-5 col-xs-12">
 
       <!-- show if there are old regular members -->
       <div
@@ -611,11 +637,15 @@
               <td class="nobreak">
                 <button class="btn btn-xs inactive"
                   ng-show="!member.conceptActive" uib-tooltip="Inactive">I</button>
-                <a ng-show="member.memberType == 'MEMBER'"
-                  ng-click="include(stagedRefset, member, true)">
-                  <i title="Include old member."
-                    class="noul material-icons md-18">add_circle_outline</i>
-                </a>
+
+                <i ng-show="member.memberType == 'MEMBER'"
+                  title="Include old member"
+                  ng-click="include(member, true, false)"
+                  class="noul material-icons md-18">add_circle_outline</i>
+                <i ng-show="member.memberType == 'MEMBER'"
+                  title="Include replacement concepts"
+                  ng-click="include(member, true, true)"
+                  class="noul material-icons md-18">rotate_right</i>
               </td>
             </tr>
           </tbody>
@@ -766,28 +796,34 @@
 
   </div>
 
-
   <!-- end modal-body -->
 </div>
 
 <div class="modal-footer">
-  <button class="btn btn-primary" ng-disabled="refset.staged"
+
+  <span style="float: left">
+    <button ng-show="refset.staged" class="btn btn-xs btn-primary"
+      ng-click="exportDiffReport();">Export Report</button>
+  </span>
+  <button class="btn btn-xs btn-primary"
+    ng-disabled="refset.staged || validVersion != 'true'"
+    title="Test version before migrating"
     ng-click="beginMigration(newTerminology, newVersion);">Migrate</button>
 
-  <button ng-show="refset.staged" class="btn btn-primary"
+  <button ng-show="refset.staged" class="btn btn-xs btn-primary"
     ng-click="saveForLater(refset);">Save for later</button>
 
-  <button class="btn btn-primary"
+  <button class="btn btn-xs btn-primary"
     confirm="Are you sure you want to finish migration?"
     ng-disabled="!refset.staged || stagedRefset.lookupInProgress || refset.lookupInProgress"
     ng-click="finish(refset); ">Finish</button>
 
   <button confirm="Are you sure you want to cancel migration?"
-    class="btn btn-warning"
+    class="btn btn-xs btn-warning"
     ng-disabled="!refset.staged || stagedRefset.lookupInProgress || refset.lookupInProgress"
     title="Cancel migration" ng-click="cancel(refset);">Cancel</button>
 
-  <button class="btn btn-warning"
+  <button class="btn btn-xs btn-warning"
     ng-show="!refset.staged && !stagedRefset.lookupInProgress && !refset.lookupInProgress"
     title="Close" ng-click="close(refset);">Close</button>
 </div>

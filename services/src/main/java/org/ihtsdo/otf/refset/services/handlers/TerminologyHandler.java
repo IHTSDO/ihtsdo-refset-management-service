@@ -11,9 +11,8 @@ import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.Configurable;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.rf2.Concept;
-import org.ihtsdo.otf.refset.rf2.DescriptionType;
-import org.ihtsdo.otf.refset.rf2.LanguageDescriptionType;
 
+// TODO: Auto-generated Javadoc
 /**
  * Generically represents a handler for accessing terminology objects.
  */
@@ -36,6 +35,16 @@ public interface TerminologyHandler extends Configurable {
    * @throws Exception the exception
    */
   public TerminologyHandler copy() throws Exception;
+
+  /**
+   * Test.
+   *
+   * @param terminology the terminology
+   * @param version the version
+   * @return true, if successful
+   * @throws Exception the exception
+   */
+  public boolean test(String terminology, String version) throws Exception;
 
   /**
    * Returns the terminology editions.
@@ -144,44 +153,6 @@ public interface TerminologyHandler extends Configurable {
     throws Exception;
 
   /**
-   * Assign names.
-   *
-   * @return true, if successful
-   * @throws Exception the exception
-   */
-  public boolean assignNames() throws Exception;
-
-  /**
-   * Returns the standard description types.
-   *
-   * @param terminology the terminology
-   * @return the standard description types
-   * @throws Exception the exception
-   */
-  public List<DescriptionType> getStandardDescriptionTypes(String terminology)
-    throws Exception;
-
-  /**
-   * Returns the standard language description types.
-   *
-   * @param terminology the terminology
-   * @return the standard language description types
-   * @throws Exception the exception
-   */
-  public List<LanguageDescriptionType> getStandardLanguageDescriptionTypes(
-    String terminology) throws Exception;
-
-  /**
-   * Returns the standard case sensitivity types.
-   *
-   * @param terminology the terminology
-   * @return the standard case sensitivity types
-   * @throws Exception the exception
-   */
-  public Map<String, String> getStandardCaseSensitivityTypes(String terminology)
-    throws Exception;
-
-  /**
    * Returns the concept parents.
    *
    * @param terminologyId the terminology id
@@ -237,4 +208,49 @@ public interface TerminologyHandler extends Configurable {
    * @throws Exception the exception
    */
   public boolean isConceptId(String value) throws Exception;
+
+  /**
+   * Sets the url.
+   *
+   * @param url the url
+   * @throws Exception the exception
+   */
+  public void setUrl(String url) throws Exception;
+
+  /**
+   * Returns the default url.
+   *
+   * @return the default url
+   * @throws Exception the exception
+   */
+  public String getDefaultUrl() throws Exception;
+
+  /**
+   * Sets the headers.
+   *
+   * @param headers the headers
+   * @throws Exception the exception
+   */
+  public void setHeaders(Map<String, String> headers) throws Exception;
+
+  /**
+   * Gets the languages.
+   *
+   * @param terminology the terminology
+   * @param version the version
+   * @return the languages
+   * @throws Exception the exception
+   */
+  public List<String> getLanguages(String terminology, String version)
+    throws Exception;
+
+  /**
+   * Translate.
+   *
+   * @param text the text
+   * @param langauge the langauge
+   * @return the string
+   * @throws Exception the exception
+   */
+  public String translate(String text, String langauge) throws Exception;
 }

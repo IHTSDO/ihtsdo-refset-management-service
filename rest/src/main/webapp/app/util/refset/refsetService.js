@@ -366,14 +366,15 @@ tsApp.service('refsetService', [
     };
 
     // find members for refset
-    this.findRefsetMembersForQuery = function(refsetId, query, pfs) {
+    this.findRefsetMembersForQuery = function(refsetId, query, pfs, translated) {
       console.debug('findRefsetMembersForQuery');
       var deferred = $q.defer();
 
       // find members
       gpService.increment();
       $http.post(
-        refsetUrl + 'members?refsetId=' + refsetId + '&query=' + utilService.prepQuery(query),
+        refsetUrl + 'members?refsetId=' + refsetId + '&query=' + utilService.prepQuery(query) +
+        (translated != null ? '&translated=' + translated : ''),
         utilService.prepPfs(pfs)).then(
       // success
       function(response) {
@@ -856,7 +857,8 @@ tsApp.service('refsetService', [
           var a = document.createElement('a');
           a.href = fileURL;
           a.target = '_blank';
-          a.download = 'definition.' + refset.terminologyId + handler.fileTypeFilter;
+          a.download = 'definition_' + utilService.toCamelCase(refset.name) + refset.terminologyId +
+            '_' + utilService.yyyymmdd(new Date()) + handler.fileTypeFilter;
           document.body.appendChild(a);
           gpService.decrement();
           a.click();
@@ -887,7 +889,8 @@ tsApp.service('refsetService', [
         var a = document.createElement('a');
         a.href = fileURL;
         a.target = '_blank';
-        a.download = 'members.' + refset.terminologyId + handler.fileTypeFilter;
+        a.download = 'members_' + utilService.toCamelCase(refset.name) + refset.terminologyId +
+        '_' + utilService.yyyymmdd(new Date()) + handler.fileTypeFilter;
         document.body.appendChild(a);
         gpService.decrement();
         a.click();
@@ -898,6 +901,39 @@ tsApp.service('refsetService', [
         utilService.handleError(response);
         gpService.decrement();
       });
+    };
+    
+    this.exportDiffReport = function(action, reportToken, refset) {
+      console.debug('exportDiffReport');
+      var deferred = $q.defer();
+      gpService.increment();
+      $http.get(
+        refsetUrl + 'export/report?reportToken=' + reportToken).then(
+      // Success
+      function(response) {
+        var blob = new Blob([ response.data ], {
+          type : ''
+        });
+
+        // fake a file URL and download it
+        var fileURL = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = fileURL;
+        a.target = '_blank';
+        a.download = action + '_' + utilService.toCamelCase(refset.name) + refset.terminologyId +
+        '_' + utilService.yyyymmdd(new Date()) + '.xls';
+        document.body.appendChild(a);
+        gpService.decrement();
+        a.click();
+        deferred.resolve(response.data);
+      },
+      // Error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
     };
 
     // Begin import members - if validation is result, OK to proceed.
@@ -999,6 +1035,29 @@ tsApp.service('refsetService', [
       function(evt) {
         var progressPercentage = parseInt(100.0 * evt.loaded / evt.total);
         console.debug('progress: ' + progressPercentage + '% ' + evt.config.data.file.name);
+      });
+      return deferred.promise;
+    };
+
+    this.convertRefset = function(refset, type) {
+      console.debug('convertRefset');
+      var deferred = $q.defer();
+
+      // get refset revision
+      gpService.increment();
+      $http.get(
+        refsetUrl + 'convert?refsetId=' + refset.id + '&type=' + type).then(
+      // success
+      function(response) {
+        console.debug('  refset conversion = ', response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
       });
       return deferred.promise;
     };
@@ -1233,14 +1292,15 @@ tsApp.service('refsetService', [
     };
 
     // get the count of items in the resolved expression
-    this.countExpression = function(expression, terminology, version) {
-      console.debug('count expression');
+    this.countExpression = function(projectId, expression, terminology, version) {
+      console.debug('count expression', projectId, expression, terminology, version);
       // Setup deferred
       var deferred = $q.defer();
 
       gpService.increment();
-      $http.post(refsetUrl + 'expression/count?terminology=' + terminology + '&version=' + version,
-        expression, {
+      $http.post(
+        refsetUrl + 'expression/count?projectId=' + projectId + '&terminology=' + terminology
+          + '&version=' + version, expression, {
           headers : {
             'Content-type' : 'text/plain'
           }
@@ -1261,14 +1321,15 @@ tsApp.service('refsetService', [
     };
 
     // checks if expression is valid
-    this.isExpressionValid = function(expression, terminology, version) {
-      console.debug('isExpressionValid');
+    this.isExpressionValid = function(projectId, expression, terminology, version) {
+      console.debug('isExpressionValid', projectId, expression, terminology, version);
       var deferred = $q.defer();
 
       // Get project roles
       gpService.increment();
-      $http.post(refsetUrl + 'expression/valid?terminology=' + terminology + '&version=' + version,
-        expression, {
+      $http.post(
+        refsetUrl + 'expression/valid?projectId=' + projectId + '&terminology=' + terminology
+          + '&version=' + version, expression, {
           headers : {
             'Content-type' : 'text/plain'
           }
@@ -1276,6 +1337,35 @@ tsApp.service('refsetService', [
       // success
       function(response) {
         console.debug('  expression valid = ' + response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    };
+    
+    // checks if terminology version is valid
+    this.isTerminologyVersionValid = function(projectId, terminology, version) {
+      console.debug('isTerminologyVersionValid', projectId, terminology, version);
+      var deferred = $q.defer();
+
+      // Get project roles
+      gpService.increment();
+      $http.get(
+        refsetUrl + 'version/valid?projectId=' + projectId + '&terminology=' + terminology
+          + '&version=' + version,  {
+          headers : {
+            'Content-type' : 'text/plain'
+          }
+        }).then(
+      // success
+      function(response) {
+        console.debug('  terminology version valid = ' + response.data);
         gpService.decrement();
         deferred.resolve(response.data);
       },
@@ -1339,16 +1429,19 @@ tsApp.service('refsetService', [
       console.debug('assignRefsetTerminologyId', projectId, refset);
       // Setup deferred
       var deferred = $q.defer();
+      gpService.increment();
 
       $http.post(refsetUrl + 'assign?projectId=' + projectId, refset).then(
       // success
       function(response) {
         console.debug('  terminologyId = ', response.data);
+        gpService.decrement();
         deferred.resolve(response.data);
       },
       // error
       function(response) {
         utilService.handleError(response);
+        gpService.decrement();
         deferred.reject(response.data);
       });
       return deferred.promise;

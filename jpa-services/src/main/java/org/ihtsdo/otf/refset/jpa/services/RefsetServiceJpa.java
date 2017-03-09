@@ -17,12 +17,14 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.persistence.NoResultException;
 
 import org.apache.log4j.Logger;
+import org.apache.lucene.queryparser.classic.ParseException;
 import org.hibernate.envers.AuditReader;
 import org.hibernate.envers.AuditReaderFactory;
 import org.hibernate.envers.query.AuditEntity;
 import org.hibernate.envers.query.AuditQuery;
 import org.ihtsdo.otf.refset.DefinitionClause;
 import org.ihtsdo.otf.refset.Note;
+import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.ReleaseInfo;
 import org.ihtsdo.otf.refset.StagedRefsetChange;
@@ -115,6 +117,9 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
     }
   }
 
+  /** The headers. */
+  public Map<String, String> headers;
+
   /**
    * Instantiates an empty {@link RefsetServiceJpa}.
    *
@@ -130,6 +135,17 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
       throw new Exception(
           "Export refset handlers did not properly initialize, serious error.");
     }
+  }
+
+  /**
+   * Instantiates a {@link RefsetServiceJpa} from the specified parameters.
+   *
+   * @param headers the headers
+   * @throws Exception the exception
+   */
+  public RefsetServiceJpa(Map<String, String> headers) throws Exception {
+    this();
+    this.headers = headers;
   }
 
   /**
@@ -293,51 +309,58 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
     if (pfs != null && pfs.getLatestOnly()) {
       pfs.setStartIndex(-1);
     }
-    // this will do filtering and sorting, but not paging
-    List<Refset> list = (List<Refset>) getQueryResults(
-        query == null || query.isEmpty() ? "id:[* TO *] AND provisional:false"
-            : query + " AND provisional:false",
-        RefsetJpa.class, RefsetJpa.class, pfs, totalCt);
 
-    final RefsetList result = new RefsetListJpa();
+    try {
+      // this will do filtering and sorting, but not paging
+      List<Refset> list = (List<Refset>) getQueryResults(
+          query == null || query.isEmpty() ? "id:[* TO *] AND provisional:false"
+              : query + " AND provisional:false",
+          RefsetJpa.class, RefsetJpa.class, pfs, totalCt);
 
-    if (pfs != null && pfs.getLatestOnly()) {
-      List<Refset> resultList = new ArrayList<>();
+      final RefsetList result = new RefsetListJpa();
 
-      Map<String, Refset> latestList = new HashMap<>();
-      for (final Refset refset : list) {
-        // This should pick up "READY_FOR_PUBLICATION" entries
-        if (refset.getEffectiveTime() == null) {
-          resultList.add(refset);
-        }
-        // This should catch the first encountered
-        else if (!latestList.containsKey(refset.getName())) {
-          latestList.put(refset.getName(), refset);
-        }
-        // This should update it effectiveTime is later
-        else {
-          Date effectiveTime =
-              latestList.get(refset.getName()).getEffectiveTime();
-          if (refset.getEffectiveTime().after(effectiveTime)) {
+      if (pfs != null && pfs.getLatestOnly()) {
+        List<Refset> resultList = new ArrayList<>();
+
+        Map<String, Refset> latestList = new HashMap<>();
+        for (final Refset refset : list) {
+          // This should pick up "READY_FOR_PUBLICATION" entries
+          if (refset.getEffectiveTime() == null) {
+            resultList.add(refset);
+          }
+          // This should catch the first encountered
+          else if (!latestList.containsKey(refset.getName())) {
             latestList.put(refset.getName(), refset);
           }
+          // This should update it effectiveTime is later
+          else {
+            Date effectiveTime =
+                latestList.get(refset.getName()).getEffectiveTime();
+            if (refset.getEffectiveTime().after(effectiveTime)) {
+              latestList.put(refset.getName(), refset);
+            }
+          }
         }
+        list = new ArrayList<Refset>(latestList.values());
+        list.addAll(resultList);
+        pfs.setStartIndex(origStartIndex);
+        String queryRestriction = pfs.getQueryRestriction();
+        pfs.setQueryRestriction(null);
+        // passing new int[1] because we're only using this for paging
+        result.setObjects(applyPfsToList(list, Refset.class, new int[1], pfs));
+        pfs.setQueryRestriction(queryRestriction);
+        result.setTotalCount(list.size());
+        pfs.setQueryRestriction(queryRestriction);
+      } else {
+        result.setTotalCount(totalCt[0]);
+        result.setObjects(list);
       }
-      list = new ArrayList<Refset>(latestList.values());
-      list.addAll(resultList);
-      pfs.setStartIndex(origStartIndex);
-      String queryRestriction = pfs.getQueryRestriction();
-      pfs.setQueryRestriction(null);
-      // passing new int[1] because we're only using this for paging
-      result.setObjects(applyPfsToList(list, Refset.class, new int[1], pfs));
-      pfs.setQueryRestriction(queryRestriction);
-      result.setTotalCount(list.size());
-      pfs.setQueryRestriction(queryRestriction);
-    } else {
-      result.setTotalCount(totalCt[0]);
-      result.setObjects(list);
+      return result;
+    } catch (ParseException e) {
+      // On parse error, return empty results
+      return new RefsetListJpa();
     }
-    return result;
+
   }
 
   /**
@@ -481,15 +504,20 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
       sb.append("refsetId:" + refsetId);
     }
 
-    int[] totalCt = new int[1];
-    final List<ConceptRefsetMember> list =
-        (List<ConceptRefsetMember>) getQueryResults(sb.toString(),
-            ConceptRefsetMemberJpa.class, ConceptRefsetMemberJpa.class, pfs,
-            totalCt);
-    final ConceptRefsetMemberList result = new ConceptRefsetMemberListJpa();
-    result.setTotalCount(totalCt[0]);
-    result.setObjects(list);
-    return result;
+    try {
+      int[] totalCt = new int[1];
+      final List<ConceptRefsetMember> list =
+          (List<ConceptRefsetMember>) getQueryResults(sb.toString(),
+              ConceptRefsetMemberJpa.class, ConceptRefsetMemberJpa.class, pfs,
+              totalCt);
+      final ConceptRefsetMemberList result = new ConceptRefsetMemberListJpa();
+      result.setTotalCount(totalCt[0]);
+      result.setObjects(list);
+      return result;
+    } catch (ParseException e) {
+      // On parse error, return empty results
+      return new ConceptRefsetMemberListJpa();
+    }
   }
 
   /* see superclass */
@@ -835,14 +863,20 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
       sb.append("refsetId:" + refsetId);
     }
 
-    int[] totalCt = new int[1];
-    final List<ReleaseInfo> list =
-        (List<ReleaseInfo>) getQueryResults(sb.toString(), ReleaseInfoJpa.class,
-            ReleaseInfoJpa.class, pfs, totalCt);
-    final ReleaseInfoList result = new ReleaseInfoListJpa();
-    result.setTotalCount(totalCt[0]);
-    result.setObjects(list);
-    return result;
+    try {
+      int[] totalCt = new int[1];
+      final List<ReleaseInfo> list =
+          (List<ReleaseInfo>) getQueryResults(sb.toString(),
+              ReleaseInfoJpa.class, ReleaseInfoJpa.class, pfs, totalCt);
+      final ReleaseInfoList result = new ReleaseInfoListJpa();
+      result.setTotalCount(totalCt[0]);
+      result.setObjects(list);
+      return result;
+    } catch (ParseException e) {
+      // On parse error, return empty results
+      return new ReleaseInfoListJpa();
+    }
+
   }
 
   /* see superclass */
@@ -852,7 +886,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
     Logger.getLogger(getClass()).info("Release Service - lookup member names - "
         + refsetId + ", " + background);
     // Only launch process if refset not already looked-up
-    if (getTerminologyHandler().assignNames()) {
+    if (ConfigUtility.isAssignNames()) {
       if (!lookupProgressMap.containsKey(refsetId)) {
         // Create new thread
         Runnable lookup = new LookupMemberNamesThread(refsetId, label);
@@ -876,7 +910,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
         .info("Release Service - lookup member names (2) - " + refsetId + ", "
             + background);
     // Only launch process if refset not already looked-up
-    if (getTerminologyHandler().assignNames()) {
+    if (ConfigUtility.isAssignNames()) {
       if (!lookupProgressMap.containsKey(refsetId)) {
         // Create new thread
         Runnable lookup =
@@ -945,7 +979,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
      * @throws Exception the exception
      */
     public LookupMemberNamesThread(Long id, String label) throws Exception {
-      refsetId = id;
+      this.refsetId = id;
       this.label = label;
     }
 
@@ -961,7 +995,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
      */
     public LookupMemberNamesThread(Long id, List<ConceptRefsetMember> members,
         String label, boolean saveMembers) throws Exception {
-      refsetId = id;
+      this.refsetId = id;
       this.members = members;
       this.label = label;
       this.saveMembers = saveMembers;
@@ -1044,7 +1078,8 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
               termIds.add(members.get(i).getConceptId());
             }
             // Get concepts from Term Server based on list
-            final TerminologyHandler handler = getTerminologyHandler();
+            final TerminologyHandler handler =
+                getTerminologyHandler(refset.getProject(), headers);
             final ConceptList cons =
                 handler.getConcepts(termIds, terminology, version);
 
@@ -1141,12 +1176,12 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
 
   /* see superclass */
   @Override
-  public Integer countExpression(String terminology, String version,
-    String expression) throws Exception {
+  public Integer countExpression(Project project, String terminology,
+    String version, String expression) throws Exception {
     int total = 0;
     try {
-      total = getTerminologyHandler().countExpression(expression, terminology,
-          version);
+      total = getTerminologyHandler(project, headers)
+          .countExpression(expression, terminology, version);
     } catch (Exception e) {
       throw new LocalException(
           "Unable to count total expression items, the expression could not be resolved - "
@@ -1183,8 +1218,10 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
     }
     ConceptList resolvedFromExpression = null;
     try {
-      resolvedFromExpression = getTerminologyHandler().resolveExpression(
-          definition, refset.getTerminology(), refset.getVersion(), null);
+      final Project project = this.getProject(refset.getProject().getId());
+      resolvedFromExpression =
+          getTerminologyHandler(project, headers).resolveExpression(definition,
+              refset.getTerminology(), refset.getVersion(), null);
 
       // Save concepts
       for (final Concept concept : resolvedFromExpression.getObjects()) {

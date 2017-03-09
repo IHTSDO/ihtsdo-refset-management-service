@@ -33,6 +33,7 @@ tsApp.directive('conceptInfo', [
             sortField : 'name',
             ascending : null
           };
+
           $scope.concept = null;
           $scope.orderedDescriptions = null;
           $scope.orderedRelationships = null;
@@ -45,6 +46,16 @@ tsApp.directive('conceptInfo', [
 
           // When concept changes, redo paging
           $scope.$watch('data.concept', function() {
+            if ($scope.data.refset) {
+              $scope.projectId = $scope.data.refset.projectId;
+            } else if ($scope.data.translation) {
+              $scope.projectId = $scope.data.translation.projectId;
+            } else {
+              // window.alert('unexpected data object, no refset or
+              // translation');
+              // This can happen in the closed accordions.
+            }
+
             // When used by translation table, data.concept is null until
             // selected
             // Clear error
@@ -87,19 +98,19 @@ tsApp.directive('conceptInfo', [
             if (!concept) {
               return;
             }
-            projectService.getConceptParents(concept.terminologyId, $scope.data.terminology,
-              $scope.data.version, ($scope.data.translation ? $scope.data.translation.id : null))
-              .then(
-              // Success
-              function(data) {
-                $scope.parents = data.concepts;
-                $scope.getMemberTypes();
-              },
-              // Error
-              function(data) {
-                $scope.error = data;
-                utilService.clearError();
-              });
+            projectService.getConceptParents($scope.projectId, concept.terminologyId,
+              $scope.data.terminology, $scope.data.version,
+              ($scope.data.translation ? $scope.data.translation.id : null)).then(
+            // Success
+            function(data) {
+              $scope.parents = data.concepts;
+              $scope.getMemberTypes();
+            },
+            // Error
+            function(data) {
+              $scope.error = data;
+              utilService.clearError();
+            });
 
           };
 
@@ -108,9 +119,9 @@ tsApp.directive('conceptInfo', [
 
             // No PFS, get all children - term server doesn't handle paging
             // of children
-            projectService.getConceptChildren(concept.terminologyId, $scope.data.terminology,
-              $scope.data.version, ($scope.data.translation ? $scope.data.translation.id : null),
-              {}).then(
+            projectService.getConceptChildren($scope.projectId, concept.terminologyId,
+              $scope.data.terminology, $scope.data.version,
+              ($scope.data.translation ? $scope.data.translation.id : null), {}).then(
             // Success
             function(data) {
               $scope.children = data.concepts;
@@ -127,33 +138,33 @@ tsApp.directive('conceptInfo', [
 
           // get concept with descriptions
           $scope.getFullConcept = function(concept) {
-            projectService.getFullConcept(concept.terminologyId, $scope.data.terminology,
-              $scope.data.version, ($scope.data.translation ? $scope.data.translation.id : null))
-              .then(
-                // Success
-                function(data) {
-                  // Needed to communicate phrase memory info back to the
-                  // translation editing.
-                  $scope.data.descriptions = data.descriptions;
-                  // Needed for local scope
-                  $scope.concept = data;
-                  $scope.orderedDescriptions = [];
-                  if ($scope.concept && $scope.concept.descriptions.length > 0) {
-                    $scope.orderedDescriptions = $scope.concept.descriptions
-                      .sort($scope.sortByDescriptionType);
-                  }
-                  $scope.orderedRelationships = [];
-                  if ($scope.concept && $scope.concept.relationships.length > 0) {
-                    $scope.orderedRelationships = $scope.concept.relationships
-                      .sort($scope.sortByRelationshipGroup);
-                  }
+            projectService.getFullConcept($scope.projectId, concept.terminologyId,
+              $scope.data.terminology, $scope.data.version,
+              ($scope.data.translation ? $scope.data.translation.id : null)).then(
+              // Success
+              function(data) {
+                // Needed to communicate phrase memory info back to the
+                // translation editing.
+                $scope.data.descriptions = data.descriptions;
+                // Needed for local scope
+                $scope.concept = data;
+                $scope.orderedDescriptions = [];
+                if ($scope.concept && $scope.concept.descriptions.length > 0) {
+                  $scope.orderedDescriptions = $scope.concept.descriptions
+                    .sort($scope.sortByDescriptionType);
+                }
+                $scope.orderedRelationships = [];
+                if ($scope.concept && $scope.concept.relationships.length > 0) {
+                  $scope.orderedRelationships = $scope.concept.relationships
+                    .sort($scope.sortByRelationshipGroup);
+                }
 
-                },
-                // Error
-                function(data) {
-                  $scope.error = data;
-                  utilService.clearError();
-                });
+              },
+              // Error
+              function(data) {
+                $scope.error = data;
+                utilService.clearError();
+              });
 
           };
 
@@ -176,7 +187,7 @@ tsApp.directive('conceptInfo', [
           $scope.getDescriptionType = function(description) {
             for (var i = 0; i < $scope.data.descriptionTypes.length; i++) {
               var type = $scope.data.descriptionTypes[i];
-              if (description.typeId == type.typeId && description.languages
+              if (description.typeId == type.typeId && description.languages && description.languages[0]
                 && description.languages[0].acceptabilityId == type.acceptabilityId) {
                 return type.name;
               }
@@ -278,8 +289,9 @@ tsApp.directive('conceptInfo', [
             }
 
             // Get child trees
-            projectService.getConceptChildren(tree.terminologyId, $scope.data.terminology,
-              $scope.data.version, ($scope.data.translation ? $scope.data.translation.id : null), {
+            projectService.getConceptChildren($scope.projectId, tree.terminologyId,
+              $scope.data.terminology, $scope.data.version,
+              ($scope.data.translation ? $scope.data.translation.id : null), {
                 startIndex : -1
               }).then(function(data) {
 
@@ -331,18 +343,18 @@ tsApp.directive('conceptInfo', [
             }
 
             // Get parent trees
-            projectService.getConceptParents(tree.terminologyId, $scope.data.terminology,
-              $scope.data.version, ($scope.data.translation ? $scope.data.translation.id : null))
-              .then(function(data) {
+            projectService.getConceptParents($scope.projectId, tree.terminologyId,
+              $scope.data.terminology, $scope.data.version,
+              ($scope.data.translation ? $scope.data.translation.id : null)).then(function(data) {
 
-                // cycle over parents, and construct tree nodes
-                for (var i = 0; i < data.concepts.length; i++) {
-                  tree.inner.push(data.concepts[i]);
-                }
+              // cycle over parents, and construct tree nodes
+              for (var i = 0; i < data.concepts.length; i++) {
+                tree.inner.push(data.concepts[i]);
+              }
 
-                $scope.getMemberTypes();
+              $scope.getMemberTypes();
 
-              });
+            });
           };
 
           // Function to find all concepts in the graph
@@ -498,40 +510,40 @@ tsApp.directive('conceptInfo', [
                   negated : false
                 };
                 refset.definitionClauses.push(clause);
-                refsetService.countExpression(value, refset.terminology, refset.version).then(
-                  // Success - count expression
-                  function(data) {
-                    var count = data;
-                    if (count < 20000) {
-                      $scope.warnings = [];
-                      $scope.continueAdd(refset, concept, value);
-                    } else {
-                      $scope.warnings[0] = 'Expression resolves to ' + count + ' members.';          
-                    }
-                  },
-                  // Error - count expression
-                  function(data) {
-                    handleError($scope.errors, data);
+                refsetService.countExpression(refset.projectId, value, refset.terminology, refset.version).then(
+                // Success - count expression
+                function(data) {
+                  var count = data;
+                  if (count < 20000) {
+                    $scope.warnings = [];
+                    $scope.continueAdd(refset, concept, value);
+                  } else {
+                    $scope.warnings[0] = 'Expression resolves to ' + count + ' members.';
+                  }
+                },
+                // Error - count expression
+                function(data) {
+                  handleError($scope.errors, data);
                 });
-   
+
               }
               // if extensional and clause defined, call
               // addRefsetMembersForExpression
               else if (refset.type == 'EXTENSIONAL' && definitionClause) {
-                refsetService.countExpression(value, refset.terminology, refset.version).then(
-                  // Success - count expression
-                  function(data) {
-                    var count = data;
-                    if (count < 20000) {
-                      $scope.warnings = [];
-                      $scope.continueAddRefsetMembers(refset, concept, value);
-                    } else {
-                      $scope.warnings[0] = 'Expression resolves to ' + count + ' members.';          
-                    }
-                  },
-                  // Error - count expression
-                  function(data) {
-                    handleError($scope.errors, data);
+                refsetService.countExpression(refset.projectId, value, refset.terminology, refset.version).then(
+                // Success - count expression
+                function(data) {
+                  var count = data;
+                  if (count < 20000) {
+                    $scope.warnings = [];
+                    $scope.continueAddRefsetMembers(refset, concept, value);
+                  } else {
+                    $scope.warnings[0] = 'Expression resolves to ' + count + ' members.';
+                  }
+                },
+                // Error - count expression
+                function(data) {
+                  handleError($scope.errors, data);
                 });
               }
               // if intensional and clause undefined, call add inclusion
@@ -546,28 +558,28 @@ tsApp.directive('conceptInfo', [
 
             $scope.continueAdd = function(refset, concept, value) {
               refsetService.updateRefset(refset).then(
-                // Success - update refset
-                function(data) {
-                  $uibModalInstance.close(refset);
-                },
-                // Error - add refset
-                function(data) {
-                  handleError($scope.errors, data);
-                });
+              // Success - update refset
+              function(data) {
+                $uibModalInstance.close(refset);
+              },
+              // Error - add refset
+              function(data) {
+                handleError($scope.errors, data);
+              });
             }
-            
+
             $scope.continueAddRefsetMembers = function(refset, concept, value) {
               refsetService.addRefsetMembersForExpression(refset, value).then(
-                // Success - update refset
-                function(data) {
-                  $uibModalInstance.close(refset);
-                },
-                // Error - add refset
-                function(data) {
-                  handleError($scope.errors, data);
-                });
+              // Success - update refset
+              function(data) {
+                $uibModalInstance.close(refset);
+              },
+              // Error - add refset
+              function(data) {
+                handleError($scope.errors, data);
+              });
             }
-            
+
             // Dismiss modal
             $scope.cancel = function() {
               $uibModalInstance.dismiss('cancel');

@@ -22,7 +22,7 @@ import org.ihtsdo.otf.refset.jpa.helpers.IndexedFieldTester;
 import org.ihtsdo.otf.refset.jpa.helpers.NullableFieldTester;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
-import org.ihtsdo.otf.refset.worfklow.TrackingRecordJpa;
+import org.ihtsdo.otf.refset.workflow.TrackingRecordJpa;
 import org.ihtsdo.otf.refset.workflow.TrackingRecord;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -246,14 +246,18 @@ public class TrackingRecordJpaUnitTest extends ModelUnitSupport {
     tester.include("reviewers");
     tester.include("conceptName");
     tester.include("refsetName");
+    tester.include("reviewersorder");
+    tester.include("authorsorder");
     assertTrue(tester.testAnalyzedIndexedFields());
 
     // Test non analyzed fields
     tester = new IndexedFieldTester(object);
+    tester.include("localSet");
     tester.include("lastModified");
     tester.include("lastModifiedBy");
     tester.include("translationid");
     tester.include("refsetId");
+    tester.include("refsetTerminologyId");
     tester.include("forReview");
     tester.include("revision");
     tester.include("forAuthoring");

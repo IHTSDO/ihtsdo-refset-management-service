@@ -35,6 +35,7 @@ import org.ihtsdo.otf.refset.rest.client.RefsetClientRest;
 import org.ihtsdo.otf.refset.rest.client.SecurityClientRest;
 import org.ihtsdo.otf.refset.rest.client.ValidationClientRest;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
+import org.ihtsdo.otf.refset.services.handlers.TerminologyHandler;
 import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 import org.junit.After;
 import org.junit.Before;
@@ -101,7 +102,8 @@ public class RefsetLookupRestTest extends RestSupport {
       throw new Exception("Test prerequisite: admin.user must be specified");
     }
     if (adminPassword == null || adminPassword.isEmpty()) {
-      throw new Exception("Test prerequisite: admin.password must be specified");
+      throw new Exception(
+          "Test prerequisite: admin.password must be specified");
     }
 
   }
@@ -145,8 +147,8 @@ public class RefsetLookupRestTest extends RestSupport {
    * @return the refset jpa
    * @throws Exception the exception
    */
-  private RefsetJpa makeRefset(String name, String definition,
-    Refset.Type type, Project project, String refsetId) throws Exception {
+  private RefsetJpa makeRefset(String name, String definition, Refset.Type type,
+    Project project, String refsetId) throws Exception {
 
     RefsetJpa refset = new RefsetJpa();
     refset.setActive(true);
@@ -179,17 +181,16 @@ public class RefsetLookupRestTest extends RestSupport {
     refset.setTerminologyId(refsetId);
     // This is an opportunity to use "branch"
     refset.setVersion("20150131");
-    refset.setWorkflowPath("DFEAULT");
     refset.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
+    refset.setLocalSet(false);
 
     if (type == Refset.Type.EXTERNAL) {
       refset.setExternalUrl("http://www.example.com/some/other/refset.txt");
     }
 
     // Validate refset
-    ValidationResult result =
-        validationService.validateRefset(refset, project.getId(),
-            adminAuthToken);
+    ValidationResult result = validationService.validateRefset(refset,
+        project.getId(), adminAuthToken);
     if (!result.isValid()) {
       Logger.getLogger(getClass()).error(result.toString());
       throw new Exception("Refset does not pass validation.");
@@ -235,14 +236,12 @@ public class RefsetLookupRestTest extends RestSupport {
 
     Project project = projectService.getProject(3L, adminAuthToken);
 
-    RefsetJpa refset =
-        makeRefset("refset", null, Refset.Type.EXTENSIONAL, project, UUID
-            .randomUUID().toString());
+    RefsetJpa refset = makeRefset("refset", null, Refset.Type.EXTENSIONAL,
+        project, UUID.randomUUID().toString());
 
     refsetService = new RefsetClientRest(properties);
-    assertEquals(100,
-        refsetService.getLookupProgress(refset.getId(), adminAuthToken)
-            .intValue());
+    assertEquals(100, refsetService
+        .getLookupProgress(refset.getId(), adminAuthToken).intValue());
 
     // clean up
     refsetService.removeRefset(refset.getId(), true, adminAuthToken);
@@ -259,27 +258,24 @@ public class RefsetLookupRestTest extends RestSupport {
 
     // Setup Project & Refset
     Project project = projectService.getProject(3L, adminAuthToken);
-    RefsetJpa refset =
-        makeRefset("refset", null, Refset.Type.EXTENSIONAL, project, UUID
-            .randomUUID().toString());
+    RefsetJpa refset = makeRefset("refset", null, Refset.Type.EXTENSIONAL,
+        project, UUID.randomUUID().toString());
     refsetService = new RefsetClientRest(properties);
 
     // Import 1-member extensional refset from file
-    File refsetImportFile =
-        new File("../config/src/main/resources/data/lookup/OneMemberRefset.txt");
+    File refsetImportFile = new File(
+        "../config/src/main/resources/data/lookup/OneMemberRefset.txt");
     importMemberFile(refset.getId(), refsetImportFile);
 
     int completed = 0;
     while (completed < 100) {
       Thread.sleep(1000);
-      completed =
-          refsetService.getLookupProgress(refset.getId(), adminAuthToken)
-              .intValue();
+      completed = refsetService
+          .getLookupProgress(refset.getId(), adminAuthToken).intValue();
     }
 
-    ConceptRefsetMemberList members =
-        refsetService.findRefsetMembersForQuery(refset.getId(), "",
-            new PfsParameterJpa(), adminAuthToken);
+    ConceptRefsetMemberList members = refsetService.findRefsetMembersForQuery(
+        refset.getId(), "", false, new PfsParameterJpa(), adminAuthToken);
 
     // Verify proper name & statues set
     assertTrue(members.getObjects().get(0).getConceptName()
@@ -301,14 +297,13 @@ public class RefsetLookupRestTest extends RestSupport {
 
     // Setup Project & Refset
     Project project = projectService.getProject(3L, adminAuthToken);
-    RefsetJpa refset =
-        makeRefset("refset", null, Refset.Type.EXTENSIONAL, project, UUID
-            .randomUUID().toString());
+    RefsetJpa refset = makeRefset("refset", null, Refset.Type.EXTENSIONAL,
+        project, UUID.randomUUID().toString());
     refsetService = new RefsetClientRest(properties);
 
     // Import 2-member extensional refset from file
-    File refsetImportFile =
-        new File("../config/src/main/resources/data/lookup/TwoMemberRefset.txt");
+    File refsetImportFile = new File(
+        "../config/src/main/resources/data/lookup/TwoMemberRefset.txt");
     importMemberFile(refset.getId(), refsetImportFile);
 
     // Sleep until progess indicator states process complete
@@ -341,20 +336,19 @@ public class RefsetLookupRestTest extends RestSupport {
    * @throws Exception the exception
    */
   @Test
-  public void testLaunchingCompletingLookupTwentyFiveMembers() throws Exception {
+  public void testLaunchingCompletingLookupTwentyFiveMembers()
+    throws Exception {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
 
     // Setup Project & Refset
     Project project = projectService.getProject(3L, adminAuthToken);
-    RefsetJpa refset =
-        makeRefset("refset", null, Refset.Type.EXTENSIONAL, project, UUID
-            .randomUUID().toString());
+    RefsetJpa refset = makeRefset("refset", null, Refset.Type.EXTENSIONAL,
+        project, UUID.randomUUID().toString());
     refsetService = new RefsetClientRest(properties);
 
     // Import 2-member extensional refset from file
-    File refsetImportFile =
-        new File(
-            "../config/src/main/resources/data/lookup/TwentyFiveMemberRefset.txt");
+    File refsetImportFile = new File(
+        "../config/src/main/resources/data/lookup/TwentyFiveMemberRefset.txt");
     importMemberFile(refset.getId(), refsetImportFile);
 
     // Sleep until progess indicator states process complete
@@ -365,7 +359,8 @@ public class RefsetLookupRestTest extends RestSupport {
 
     // Verify name set for all members
     for (ConceptRefsetMember member : refset.getMembers()) {
-      assertFalse(member.getConceptName().equals("name lookup in progress"));
+      assertFalse(member.getConceptName()
+          .equals(TerminologyHandler.NAME_LOOKUP_IN_PROGRESS));
       assertFalse(member.getConceptName().isEmpty());
     }
 

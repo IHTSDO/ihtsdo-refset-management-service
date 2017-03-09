@@ -29,7 +29,7 @@ import org.ihtsdo.otf.refset.rf2.LanguageDescriptionType;
 import org.ihtsdo.otf.refset.rf2.jpa.LanguageDescriptionTypeJpa;
 
 /**
- * JPA enabled implementation of {@link UserPreferences}.
+ * The Class UserPreferencesJpa.
  */
 @Entity
 @Table(name = "user_preferences")
@@ -43,21 +43,21 @@ public class UserPreferencesJpa implements UserPreferences {
   @GeneratedValue(strategy = GenerationType.TABLE, generator = "EntityIdGen")
   private Long id;
 
-  /** The user name. */
+  /** The user. */
   @OneToOne(targetEntity = UserJpa.class)
   private User user;
 
-  /** The language Refset members. */
+  /** The language description types. */
   @OneToMany(cascade = CascadeType.ALL, targetEntity = LanguageDescriptionTypeJpa.class, orphanRemoval = true)
   @CollectionTable(name = "user_pref_language_desc_types")
   private List<LanguageDescriptionType> languageDescriptionTypes =
       new ArrayList<>();
 
-  /** The lastTab. */
+  /** The last tab. */
   @Column(nullable = true)
   private String lastTab;
 
-  /** The lastRefsetAccordion. */
+  /** The last refset accordion. */
   @Column(nullable = true)
   private String lastRefsetAccordion;
 
@@ -69,50 +69,55 @@ public class UserPreferencesJpa implements UserPreferences {
   @Column(nullable = false)
   private boolean memoryEnabled = true;
 
-  /** The lastTranslationAccordion. */
+  /** The last translation accordion. */
   private String lastTranslationAccordion;
 
-  /** The lastDirectoryAccordion. */
+  /** The last directory accordion. */
   private String lastDirectoryAccordion;
 
-  /** The lastProjectRole. */
+  /** The last project role. */
   private UserRole lastProjectRole;
 
-  /** The lastProjectId. */
+  /** The last project id. */
   private Long lastProjectId;
+
+  /** The last refset id. */
+  private Long lastRefsetId;
+
+  /** The last translation id. */
+  private Long lastTranslationId;
   
-  /**  The module id. */
+  /** The module id. */
   @Column(nullable = true)
   private String moduleId;
-  
-  /**  The module id. */
+
+  /** The feedback email. */
   @Column(nullable = true)
   private String feedbackEmail;
-  
-  /**  The namespace. */
+
+  /** The namespace. */
   @Column(nullable = true)
   private String namespace;
-  
-  /**  The organization. */
+
+  /** The organization. */
   @Column(nullable = true)
   private String organization;
-  
-  /**  The exclusion clause. */
+
+  /** The exclusion clause. */
   @Column(nullable = true)
   private String exclusionClause;
-  
 
   /**
-   * The default constructor.
+   * Instantiates an empty {@link UserPreferencesJpa}.
    */
   public UserPreferencesJpa() {
     // n/a
   }
 
   /**
-   * Instantiates a new user jpa.
+   * Instantiates a {@link UserPreferencesJpa} from the specified parameters.
    *
-   * @param prefs the user preferences
+   * @param prefs the prefs
    */
   public UserPreferencesJpa(UserPreferences prefs) {
     super();
@@ -128,6 +133,8 @@ public class UserPreferencesJpa implements UserPreferences {
     lastDirectoryAccordion = prefs.getLastDirectoryAccordion();
     lastProjectRole = prefs.getLastProjectRole();
     lastProjectId = prefs.getLastProjectId();
+    lastRefsetId = prefs.getLastRefsetId();
+    lastTranslationId = prefs.getLastTranslationId();
     moduleId = prefs.getModuleId();
     namespace = prefs.getNamespace();
     organization = prefs.getOrganization();
@@ -135,42 +142,26 @@ public class UserPreferencesJpa implements UserPreferences {
     feedbackEmail = prefs.getFeedbackEmail();
   }
 
-  /**
-   * Returns the id.
-   *
-   * @return the id
-   */
+  /* see superclass */
   @Override
   public Long getId() {
     return id;
   }
 
-  /**
-   * Sets the id.
-   *
-   * @param id the id
-   */
+  /* see superclass */
   @Override
   public void setId(Long id) {
     this.id = id;
   }
 
-  /**
-   * Returns the user.
-   *
-   * @return the user
-   */
+  /* see superclass */
   @XmlTransient
   @Override
   public User getUser() {
     return user;
   }
 
-  /**
-   * Sets the user.
-   *
-   * @param user the user
-   */
+  /* see superclass */
   @Override
   public void setUser(User user) {
     this.user = user;
@@ -219,130 +210,103 @@ public class UserPreferencesJpa implements UserPreferences {
     user.setUserName(userName);
   }
 
-  /**
-   * Returns the last tab accessed.
-   *
-   * @return the lastTab
-   */
+  /* see superclass */
   @Override
   public String getLastTab() {
     return lastTab;
   }
 
-  /**
-   * Sets the last tab accessed.
-   *
-   * @param lastTab the last tab accessed
-   */
+  /* see superclass */
   @Override
   public void setLastTab(String lastTab) {
     this.lastTab = lastTab;
   }
 
-  /**
-   * Returns the last refset accordion accessed.
-   *
-   * @return the lastRefsetAccordion
-   */
+  /* see superclass */
   @Override
   public String getLastRefsetAccordion() {
     return lastRefsetAccordion;
   }
 
-  /**
-   * Sets the last refset accordion accessed.
-   *
-   * @param lastRefsetAccordion the last refset accordion accessed
-   */
+  /* see superclass */
   @Override
   public void setLastRefsetAccordion(String lastRefsetAccordion) {
     this.lastRefsetAccordion = lastRefsetAccordion;
   }
 
-  /**
-   * Returns the last translation accordion accessed.
-   *
-   * @return the lastTranslationAccordion
-   */
+  /* see superclass */
   @Override
   public String getLastTranslationAccordion() {
     return lastTranslationAccordion;
   }
 
-  /**
-   * Sets the last translation accordion accessed.
-   *
-   * @param lastTranslationAccordion the last translation accordion accessed
-   */
+  /* see superclass */
   @Override
   public void setLastTranslationAccordion(String lastTranslationAccordion) {
     this.lastTranslationAccordion = lastTranslationAccordion;
   }
 
-  /**
-   * Returns the last directory accordion accessed.
-   *
-   * @return the lastDirectoryAccordion
-   */
+  /* see superclass */
   @Override
   public String getLastDirectoryAccordion() {
     return lastDirectoryAccordion;
   }
 
-  /**
-   * Sets the last directory accordion accessed.
-   *
-   * @param lastDirectoryAccordion the last directory accordion accessed
-   */
+  /* see superclass */
   @Override
   public void setLastDirectoryAccordion(String lastDirectoryAccordion) {
     this.lastDirectoryAccordion = lastDirectoryAccordion;
   }
 
-  /**
-   * Returns the last project role accessed.
-   *
-   * @return the lastProjectRole
-   */
+  /* see superclass */
   @Override
   public UserRole getLastProjectRole() {
     return lastProjectRole;
   }
 
-  /**
-   * Sets the last project role accessed.
-   *
-   * @param lastProjectRole the last project role accessed
-   */
+  /* see superclass */
   @Override
   public void setLastProjectRole(UserRole lastProjectRole) {
     this.lastProjectRole = lastProjectRole;
   }
 
-  /**
-   * Returns the last project ID accessed.
-   *
-   * @return the lastProjectId
-   */
+  /* see superclass */
   @Override
   public Long getLastProjectId() {
     return lastProjectId;
   }
 
-  /**
-   * Sets the last project accessed.
-   *
-   * @param lastProjectId the last project id
-   */
+  /* see superclass */
   @Override
   public void setLastProjectId(Long lastProjectId) {
     this.lastProjectId = lastProjectId;
   }
 
   /* see superclass */
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.refset.UserPreferences#getLanguageDescriptionTypes()
-   */
+  @Override
+  public Long getLastRefsetId() {
+    return lastRefsetId;
+  }
+
+  /* see superclass */
+  @Override
+  public void setLastRefsetId(Long lastRefsetId) {
+    this.lastRefsetId = lastRefsetId;
+  }
+
+  /* see superclass */
+  @Override
+  public Long getLastTranslationId() {
+    return lastTranslationId;
+  }
+
+  /* see superclass */
+  @Override
+  public void setLastTranslationId(Long lastTranslationId) {
+    this.lastTranslationId = lastTranslationId;
+  }
+
+  /* see superclass */
   @XmlElement(type = LanguageDescriptionTypeJpa.class)
   @Override
   public List<LanguageDescriptionType> getLanguageDescriptionTypes() {
@@ -353,9 +317,6 @@ public class UserPreferencesJpa implements UserPreferences {
   }
 
   /* see superclass */
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.refset.UserPreferences#setLanguageDescriptionTypes(java.util.List)
-   */
   @Override
   public void setLanguageDescriptionTypes(
     List<LanguageDescriptionType> languageDescriptionTypes) {
@@ -363,7 +324,9 @@ public class UserPreferencesJpa implements UserPreferences {
   }
 
   /* see superclass */
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see org.ihtsdo.otf.refset.UserPreferences#isSpellingEnabled()
    */
   @Override
@@ -372,7 +335,9 @@ public class UserPreferencesJpa implements UserPreferences {
   }
 
   /* see superclass */
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see org.ihtsdo.otf.refset.UserPreferences#setSpellingEnabled(boolean)
    */
   @Override
@@ -381,7 +346,9 @@ public class UserPreferencesJpa implements UserPreferences {
   }
 
   /* see superclass */
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see org.ihtsdo.otf.refset.UserPreferences#isMemoryEnabled()
    */
   @Override
@@ -390,7 +357,9 @@ public class UserPreferencesJpa implements UserPreferences {
   }
 
   /* see superclass */
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see org.ihtsdo.otf.refset.UserPreferences#setMemoryEnabled(boolean)
    */
   @Override
@@ -398,45 +367,99 @@ public class UserPreferencesJpa implements UserPreferences {
     this.memoryEnabled = memoryEnabled;
   }
 
-  /* (non-Javadoc)
-   * @see java.lang.Object#hashCode()
-   */
+  /* see superclass */
+  @Override
+  public String getModuleId() {
+    return moduleId;
+  }
+
+  /* see superclass */
+  @Override
+  public void setModuleId(String moduleId) {
+    this.moduleId = moduleId;
+  }
+
+  /* see superclass */
+  @Override
+  public String getFeedbackEmail() {
+    return feedbackEmail;
+  }
+
+  /* see superclass */
+  @Override
+  public void setFeedbackEmail(String feedbackEmail) {
+    this.feedbackEmail = feedbackEmail;
+  }
+
+  /* see superclass */
+
+  @Override
+  public String getNamespace() {
+    return namespace;
+  }
+
+  /* see superclass */
+
+  @Override
+  public void setNamespace(String namespace) {
+    this.namespace = namespace;
+  }
+
+  /* see superclass */
+
+  @Override
+  public String getOrganization() {
+    return organization;
+  }
+
+  /* see superclass */
+  @Override
+  public void setOrganization(String organization) {
+    this.organization = organization;
+  }
+
+  /* see superclass */
+  @Override
+  public String getExclusionClause() {
+    return exclusionClause;
+  }
+
+  /* see superclass */
+  @Override
+  public void setExclusionClause(String exclusionClause) {
+    this.exclusionClause = exclusionClause;
+  }
+  /* see superclass */
+
   @Override
   public int hashCode() {
     final int prime = 31;
     int result = 1;
+    result = prime * result + ((languageDescriptionTypes == null) ? 0
+        : languageDescriptionTypes.hashCode());
+    result = prime * result + ((lastDirectoryAccordion == null) ? 0
+        : lastDirectoryAccordion.hashCode());
+    result = prime * result
+        + ((lastProjectId == null) ? 0 : lastProjectId.hashCode());
     result =
-        prime
-            * result
-            + ((languageDescriptionTypes == null) ? 0
-                : languageDescriptionTypes.hashCode());
-    result =
-        prime
-            * result
-            + ((lastDirectoryAccordion == null) ? 0 : lastDirectoryAccordion
-                .hashCode());
-    result =
-        prime * result
-            + ((lastProjectId == null) ? 0 : lastProjectId.hashCode());
-    result =
-        prime * result
-            + ((lastProjectRole == null) ? 0 : lastProjectRole.hashCode());
-    result =
-        prime
-            * result
-            + ((lastRefsetAccordion == null) ? 0 : lastRefsetAccordion
-                .hashCode());
+        prime * result + ((lastRefsetId == null) ? 0 : lastRefsetId.hashCode());
+    result = prime * result
+        + ((lastTranslationId == null) ? 0 : lastTranslationId.hashCode());
+    result = prime * result
+        + ((lastProjectRole == null) ? 0 : lastProjectRole.hashCode());
+    result = prime * result
+        + ((lastRefsetAccordion == null) ? 0 : lastRefsetAccordion.hashCode());
     result = prime * result + ((lastTab == null) ? 0 : lastTab.hashCode());
     result = prime * result + ((moduleId == null) ? 0 : moduleId.hashCode());
     result = prime * result + ((namespace == null) ? 0 : namespace.hashCode());
-    result = prime * result + ((organization == null) ? 0 : organization.hashCode());
-    result = prime * result + ((exclusionClause == null) ? 0 : exclusionClause.hashCode());
-    result = prime * result + ((feedbackEmail == null) ? 0 : feedbackEmail.hashCode());
     result =
-        prime
-            * result
-            + ((lastTranslationAccordion == null) ? 0
-                : lastTranslationAccordion.hashCode());
+        prime * result + ((organization == null) ? 0 : organization.hashCode());
+    result = prime * result
+        + ((exclusionClause == null) ? 0 : exclusionClause.hashCode());
+    result = prime * result
+        + ((feedbackEmail == null) ? 0 : feedbackEmail.hashCode());
+    result = prime * result + ((lastTranslationAccordion == null) ? 0
+        : lastTranslationAccordion.hashCode());
     result = prime * result + (memoryEnabled ? 1231 : 1237);
     result = prime * result + (spellingEnabled ? 1231 : 1237);
     final String userName =
@@ -446,9 +469,8 @@ public class UserPreferencesJpa implements UserPreferences {
     return result;
   }
 
-  /* (non-Javadoc)
-   * @see java.lang.Object#equals(java.lang.Object)
-   */
+  /* see superclass */
+
   @Override
   public boolean equals(Object obj) {
     if (this == obj)
@@ -472,6 +494,16 @@ public class UserPreferencesJpa implements UserPreferences {
       if (other.lastProjectId != null)
         return false;
     } else if (!lastProjectId.equals(other.lastProjectId))
+      return false;
+    if (lastRefsetId == null) {
+      if (other.lastRefsetId != null)
+        return false;
+    } else if (!lastRefsetId.equals(other.lastRefsetId))
+      return false;
+    if (lastTranslationId == null) {
+      if (other.lastTranslationId != null)
+        return false;
+    } else if (!lastTranslationId.equals(other.lastTranslationId))
       return false;
     if (lastProjectRole != other.lastProjectRole)
       return false;
@@ -542,9 +574,7 @@ public class UserPreferencesJpa implements UserPreferences {
     return true;
   }
 
-  /* (non-Javadoc)
-   * @see java.lang.Object#toString()
-   */
+  /* see superclass */
   @Override
   public String toString() {
     return "UserPreferencesJpa [id=" + id + ", user=" + user
@@ -554,87 +584,11 @@ public class UserPreferencesJpa implements UserPreferences {
         + ", memoryEnabled=" + memoryEnabled + ", lastTranslationAccordion="
         + lastTranslationAccordion + ", lastDirectoryAccordion="
         + lastDirectoryAccordion + ", lastProjectRole=" + lastProjectRole
-        + ", lastProjectId=" + lastProjectId 
-        + ", moduleId=" + moduleId
-        + ", namespace=" + namespace
-        + ", organization=" + organization
-        + ", exclusionClause=" + exclusionClause
-        + ", feedbackEmail=" + feedbackEmail
-        + "]";
-  }
-
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.refset.UserPreferences#getModuleId()
-   */
-  @Override
-  public String getModuleId() {
-    return moduleId;
-  }
-
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.refset.UserPreferences#setModuleId(java.lang.String)
-   */
-  @Override
-  public void setModuleId(String moduleId) {
-    this.moduleId = moduleId;
-  }
-  
-  @Override
-  public String getFeedbackEmail() {
-    return feedbackEmail;
-  }
-  
-  @Override
-  public void setFeedbackEmail(String feedbackEmail) {
-    this.feedbackEmail = feedbackEmail;
-  }
-
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.refset.UserPreferences#getNamespace()
-   */
-  @Override
-  public String getNamespace() {
-    return namespace;
-  }
-
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.refset.UserPreferences#setNamespace(java.lang.String)
-   */
-  @Override
-  public void setNamespace(String namespace) {
-    this.namespace = namespace;
-  }
-
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.refset.UserPreferences#getOrganization()
-   */
-  @Override
-  public String getOrganization() {
-    return organization;
-  }
-
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.refset.UserPreferences#setOrganization(java.lang.String)
-   */
-  @Override
-  public void setOrganization(String organization) {
-    this.organization = organization;
-  }
-
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.refset.UserPreferences#getExclusionClause()
-   */
-  @Override
-  public String getExclusionClause() {
-    return exclusionClause;
-  }
-
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.refset.UserPreferences#setExclusionClause(java.lang.String)
-   */
-  @Override
-  public void setExclusionClause(String exclusionClause) {
-    this.exclusionClause = exclusionClause;
+        + ", lastProjectId=" + lastProjectId + ", moduleId=" + moduleId
+        + ", namespace=" + namespace + ", organization=" + organization
+        + ", exclusionClause=" + exclusionClause + ", feedbackEmail="
+        + feedbackEmail + ", lastRefsetId=" + lastRefsetId
+        + ", lastTranslationId=" + lastTranslationId + "]";
   }
 
 }

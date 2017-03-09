@@ -117,7 +117,7 @@ tsApp.config([ '$routeProvider', '$logProvider', function($routeProvider, $logPr
 tsApp.controller('GlassPaneCtrl', [ '$scope', 'gpService', function($scope, gpService) {
   console.debug('configure GlassPaneCtrl');
 
-  $scope.glassPane = gpService.glassPane;
+  $scope.glassPane = gpService.getGlassPane();
 
 } ]);
 
@@ -193,7 +193,12 @@ tsApp.controller('TabCtrl', [ '$scope', '$interval', '$timeout', 'securityServic
   } ]);
 
 // Header controller
-tsApp.controller('HeaderCtrl', [ '$scope', '$location', '$http', 'securityService', 'appConfig',
+tsApp.controller('HeaderCtrl', [
+  '$scope',
+  '$location',
+  '$http',
+  'securityService',
+  'appConfig',
   function($scope, $location, $http, securityService, appConfig) {
     console.debug('configure HeaderCtrl');
 
@@ -227,6 +232,15 @@ tsApp.controller('HeaderCtrl', [ '$scope', '$location', '$http', 'securityServic
     $scope.isLoggedIn = function() {
       return securityService.isLoggedIn();
     };
+
+    // For an ng-show
+    $scope.showJiraFeedback = function() {
+      var retval = (appConfig['base.url'].indexOf('ihtsdotools') != -1 && appConfig['base.url']
+        .indexOf('uat') != -1)
+        || appConfig['base.url'].indexOf('localhost') != -1
+        || appConfig['base.url'].indexOf('local.ihtsdotools') != -1;
+      return retval;
+    }
 
   } ]);
 
@@ -273,7 +287,7 @@ tsApp
   .value(
     '$confirmModalDefaults',
     {
-      template : '<div class="modal-header"><h3 class="modal-title">Confirm</h3></div><div class="modal-body">{{data.text}}</div><div class="modal-footer"><form name="name" class="form" ng-submit="ok()"><button autofocus type="submit" class="btn btn-primary" >OK</button><button type="button" class="btn btn-warning" ng-click="cancel()">Cancel</button></form></div>',
+      template : '<div class="modal-header"><h3 class="modal-title">Confirm</h3></div><div class="modal-body">{{data.text}}</div><div class="modal-footer"><form name="name" class="form" ng-submit="ok()"><button autofocus type="submit" class="btn btn-xs btn-primary" >OK</button><button type="button" class="btn btn-xs btn-warning" ng-click="cancel()">Cancel</button></form></div>',
       controller : 'ConfirmModalCtrl'
     });
 
@@ -333,3 +347,5 @@ tsApp.directive('confirm', function($confirm) {
     }
   };
 });
+
+

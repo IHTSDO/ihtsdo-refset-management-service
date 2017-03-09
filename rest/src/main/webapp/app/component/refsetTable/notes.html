@@ -1,5 +1,5 @@
 <div class="modal-header">
-  <h4>{{type}} Notes</h4>
+  <h4 style="display: inline">{{type}} Notes</h4>
 </div>
 
 <div class="modal-body">
@@ -101,7 +101,7 @@
               {{errors[0]}}
               <div style="display: inline; float: right;">
                 <i ng-show="errors[1]"
-                  title="{{error.expand ? 'Show' : 'Hide'}} long eror"
+                  title="{{error.expand ? 'Show' : 'Hide'}} long error"
                   class="noul material-icons md-18"
                   ng-click="error.expand = !error.expand;">attach_file</i>
               </div>
@@ -122,7 +122,7 @@
 </div>
 
 <div class="modal-footer">
-  <button class="btn btn-primary" ng-disabled="!newNote"
+  <button class="btn btn-xs btn-primary" ng-disabled="!newNote"
     ng-click="submitNote(object, newNote);" title=" Add new note to {{type}}">Add</button>
-  <button class="btn btn-warning" ng-click="cancel()">Close</button>
+  <button class="btn btn-xs btn-warning" ng-click="cancel()">Close</button>
 </div>

@@ -377,7 +377,8 @@ public class RefsetClientRest extends RootClientRest
   /* see superclass */
   @Override
   public ConceptRefsetMemberList findRefsetMembersForQuery(Long refsetId,
-    String query, PfsParameterJpa pfs, String authToken) throws Exception {
+    String query, Boolean translated, PfsParameterJpa pfs, String authToken)
+    throws Exception {
     Logger.getLogger(getClass())
         .debug("Refset Client - find refset members for query " + refsetId
             + ", " + query);
@@ -388,7 +389,8 @@ public class RefsetClientRest extends RootClientRest
     WebTarget target = client.target(config.getProperty("base.url")
         + "/refset/members" + "?refsetId=" + refsetId + "&query="
         + URLEncoder.encode(query == null ? "" : query, "UTF-8")
-            .replaceAll("\\+", "%20"));
+            .replaceAll("\\+", "%20")
+        + (translated != null ? ("&translated=" + translated) : ""));
     String pfsString = ConfigUtility
         .getStringForGraph(pfs == null ? new PfsParameterJpa() : pfs);
     Response response = target.request(MediaType.APPLICATION_XML)
@@ -1307,15 +1309,16 @@ public class RefsetClientRest extends RootClientRest
 
   /* see superclass */
   @Override
-  public Boolean isExpressionValid(String expression, String terminology,
-    String version, String authToken) throws Exception {
+  public Boolean isExpressionValid(Long projectId, String expression,
+    String terminology, String version, String authToken) throws Exception {
     validateNotEmpty(expression, "expression");
     validateNotEmpty(terminology, "terminology");
     validateNotEmpty(version, "version");
+    validateNotEmpty(projectId, "projectId");
     Client client = ClientBuilder.newClient();
-    WebTarget target = client
-        .target(config.getProperty("base.url") + "/refset/expression/valid"
-            + "?terminology=" + terminology + "&version=" + version);
+    WebTarget target = client.target(config.getProperty("base.url")
+        + "/refset/expression/valid" + "?projectId=" + projectId
+        + "&terminology=" + terminology + "&version=" + version);
     Response response = target.request(MediaType.TEXT_PLAIN)
         .header("Authorization", authToken).post(Entity.text(expression));
 
@@ -1387,15 +1390,16 @@ public class RefsetClientRest extends RootClientRest
   }
 
   @Override
-  public Integer countExpression(String expression, String terminology,
-    String version, String authToken) throws Exception {
+  public Integer countExpression(Long projectId, String expression,
+    String terminology, String version, String authToken) throws Exception {
     validateNotEmpty(expression, "expression");
     validateNotEmpty(terminology, "terminology");
     validateNotEmpty(version, "version");
+    validateNotEmpty(projectId, "projectId");
     Client client = ClientBuilder.newClient();
-    WebTarget target = client
-        .target(config.getProperty("base.url") + "/refset/expression/count"
-            + "?terminology=" + terminology + "&version=" + version);
+    WebTarget target = client.target(config.getProperty("base.url")
+        + "/refset/expression/count" + "?projectId=" + projectId
+        + "&terminology=" + terminology + "&version=" + version);
     Response response = target.request(MediaType.TEXT_PLAIN)
         .header("Authorization", authToken).post(Entity.text(expression));
 
@@ -1472,6 +1476,77 @@ public class RefsetClientRest extends RootClientRest
       throw new Exception(response.toString());
     }
     return refsetId;
+  }
+
+  /* see superclass */
+  @Override
+  public InputStream exportDiffReport(String reportToken, String authToken)
+    throws Exception {
+    Logger.getLogger(getClass())
+        .debug("Refset Client - export diff report - " + reportToken);
+
+    Client client = ClientBuilder.newClient();
+    WebTarget target = client.target(config.getProperty("base.url")
+        + "/refset/export/report" + "?reportToken=" + reportToken);
+    Response response = target.request(MediaType.APPLICATION_OCTET_STREAM)
+        .header("Authorization", authToken).get();
+
+    InputStream in = response.readEntity(InputStream.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+    return in;
+  }
+
+  @Override
+  public Refset convertRefset(Long refsetId, String refsetType,
+    String authToken) throws Exception {
+    Logger.getLogger(getClass())
+        .debug("Refset Client - convert - " + refsetId + ", " + refsetType);
+
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url") + "/refset/convert"
+            + "?refsetId=" + refsetId + "&refsetType=" + refsetType);
+    Response response = target.request(MediaType.APPLICATION_OCTET_STREAM)
+        .header("Authorization", authToken).get();
+
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+    String resultString = response.readEntity(String.class);
+
+    // converting to object
+    return (RefsetJpa) ConfigUtility.getGraphForString(resultString,
+        RefsetJpa.class);
+  }
+
+  @Override
+  public Boolean isTerminologyVersionValid(Long projectId, String terminology,
+    String version, String authToken) throws Exception {
+    validateNotEmpty(terminology, "terminology");
+    validateNotEmpty(version, "version");
+    validateNotEmpty(projectId, "projectId");
+    Client client = ClientBuilder.newClient();
+    WebTarget target = client.target(config.getProperty("base.url")
+        + "/refset/expression/valid" + "?projectId=" + projectId
+        + "&terminology=" + terminology + "&version=" + version);
+    Response response = target.request(MediaType.TEXT_PLAIN)
+        .header("Authorization", authToken).get();
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+
+    return resultString.equals("true");
+
   }
 
 }

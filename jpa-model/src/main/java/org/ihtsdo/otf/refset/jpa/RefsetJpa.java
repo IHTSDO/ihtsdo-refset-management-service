@@ -135,10 +135,6 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   @Column(nullable = false)
   private WorkflowStatus workflowStatus = WorkflowStatus.NEW;
 
-  /** The workflow path. */
-  @Column(nullable = false)
-  private String workflowPath;
-
   /** The namespace. */
   @Column(nullable = true)
   private String namespace;
@@ -150,6 +146,10 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   /** The domain (content area). */
   @Column(nullable = true)
   private String domain;
+
+  /** The is local set. */
+  @Column(nullable = false)
+  private boolean localSet;
 
   /**
    * The refset descriptors.
@@ -226,8 +226,8 @@ public class RefsetJpa extends AbstractComponent implements Refset {
     lookupInProgress = refset.isLookupInProgress();
     feedbackEmail = refset.getFeedbackEmail();
     workflowStatus = refset.getWorkflowStatus();
-    workflowPath = refset.getWorkflowPath();
     project = refset.getProject();
+    localSet = refset.isLocalSet();
     enabledFeedbackEvents = new HashSet<>(refset.getEnabledFeedbackEvents());
     for (DefinitionClause definitionClause : refset.getDefinitionClauses()) {
       getDefinitionClauses().add(new DefinitionClauseJpa(definitionClause));
@@ -299,6 +299,31 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   @Override
   public void setPublic(boolean isPublic) {
     this.isPublic = isPublic;
+  }
+
+  /* see superclass */
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  @Override
+  public boolean isLocalSet() {
+    return localSet;
+  }
+
+  /* see superclass */
+  @Override
+  public void setLocalSet(boolean localSet) {
+    this.localSet = localSet;
+  }
+
+  /* see superclass */
+  @Override
+  public boolean isTranslated() {
+    return this.getTranslations().size() > 0;
+  }
+
+  /* see superclass */
+  @Override
+  public void setTranslated(boolean translated) {
+    // no-op
   }
 
   /* see superclass */
@@ -387,18 +412,6 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   @Override
   public void setWorkflowStatus(WorkflowStatus workflowStatus) {
     this.workflowStatus = workflowStatus;
-  }
-
-  /* see superclass */
-  @Override
-  public String getWorkflowPath() {
-    return workflowPath;
-  }
-
-  /* see superclass */
-  @Override
-  public void setWorkflowPath(String workflowPath) {
-    this.workflowPath = workflowPath;
   }
 
   /* see superclass */
@@ -492,7 +505,8 @@ public class RefsetJpa extends AbstractComponent implements Refset {
 
   /* see superclass */
   @Override
-  public void setEnabledFeedbackEvents(Set<FeedbackEvent> enabledFeedbackEvents) {
+  public void setEnabledFeedbackEvents(
+    Set<FeedbackEvent> enabledFeedbackEvents) {
     this.enabledFeedbackEvents = enabledFeedbackEvents;
   }
 
@@ -637,8 +651,8 @@ public class RefsetJpa extends AbstractComponent implements Refset {
       if (positiveClauses.size() > 1 && negativeClauses.size() > 0) {
         computedDefinition.append("(");
       }
-      computedDefinition.append(getClauseValue(positiveClauses.get(0)
-          .getValue(), groupSize));
+      computedDefinition
+          .append(getClauseValue(positiveClauses.get(0).getValue(), groupSize));
       for (int i = 1; i < positiveClauses.size(); i++) {
         computedDefinition.append(" OR ").append(
             getClauseValue(positiveClauses.get(i).getValue(), groupSize));
@@ -653,8 +667,8 @@ public class RefsetJpa extends AbstractComponent implements Refset {
       if (negativeClauses.size() > 1) {
         computedDefinition.append("(");
       }
-      computedDefinition.append(getClauseValue(negativeClauses.get(0)
-          .getValue(), groupSize));
+      computedDefinition
+          .append(getClauseValue(negativeClauses.get(0).getValue(), groupSize));
       for (int i = 1; i < negativeClauses.size(); i++) {
         computedDefinition.append(" OR ").append(
             getClauseValue(negativeClauses.get(i).getValue(), groupSize));
@@ -681,7 +695,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
     // e.g. .. 19829001 : 116676008 ...
         (clause.matches(".*\\d\\s*:\\s*\\d.*") ||
         // e.g. .. 19829001 |abc| : 116676008 ...
-        clause.matches(".*\\|\\s*:\\s*\\d.*"))) {
+            clause.matches(".*\\|\\s*:\\s*\\d.*"))) {
       return "(" + clause + ")";
     }
     if (clause.matches(".* AND .*")) {
@@ -799,9 +813,8 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   public int hashCode() {
     final int prime = 31;
     int result = super.hashCode();
-    result =
-        prime * result
-            + ((definitionClauses == null) ? 0 : definitionClauses.hashCode());
+    result = prime * result
+        + ((definitionClauses == null) ? 0 : definitionClauses.hashCode());
     result =
         prime * result + ((description == null) ? 0 : description.hashCode());
     result =
@@ -811,6 +824,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
     result = prime * result + (lookupInProgress ? 1231 : 1237);
     result = prime * result + (isPublic ? 1231 : 1237);
     result = prime * result + (revision ? 1231 : 1237);
+    result = prime * result + (localSet ? 1231 : 1237);
     result =
         prime * result + ((terminology == null) ? 0 : terminology.hashCode());
     // not version
@@ -858,6 +872,8 @@ public class RefsetJpa extends AbstractComponent implements Refset {
       return false;
     if (isPublic != other.isPublic)
       return false;
+    if (localSet != other.localSet)
+      return false;
     if (name == null) {
       if (other.name != null)
         return false;
@@ -893,17 +909,17 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   /* see superclass */
   @Override
   public String toString() {
-    return "RefsetJpa [name=" + name + ", description=" + description
-        + ", isPublic=" + isPublic + ", stagingType=" + stagingType + ", type="
-        + type + ", definitionClauses=" + definitionClauses + ", externalUrl="
-        + externalUrl + ", forTranslation=" + forTranslation
-        + ", workflowStatus=" + workflowStatus + ", workflowPath="
-        + workflowPath + ", namespace=" + namespace + ", domain=" + domain
-        + ", refsetDescriptorUuid=" + refsetDescriptorUuid + ", project="
-        + (project == null ? null : project.getId())
-        + ", enabledFeedbackEvents=" + enabledFeedbackEvents
-        + ", inPublicationProcess=" + inPublicationProcess
-        + ", lookupInProgress=" + lookupInProgress + "]";
+    // NOTE: consider that these fields are used both for searching in
+    // appyPfsToList mode
+    // and for creating log entries
+    return "RefsetJpa [id=" + getId() + " - " + getTerminologyId() + ", name="
+        + name + ", description=" + description + ", type=" + type
+        + ", terminology=" + getTerminology() + ", version=" + getVersion()
+        + ", namespace=" + namespace + ", definitionClauses="
+        + definitionClauses + ", extUrl=" + externalUrl + ", workflowStatus="
+        + workflowStatus  + ", domain="
+        + domain + ", project=" + (project == null ? null : project.getId())
+        + ", localSet=" + localSet + "]";
   }
 
 }

@@ -1,7 +1,7 @@
 /**
  * Copyright 2015 West Coast Informatics, LLC
  */
-package org.ihtsdo.otf.refset.worfklow;
+package org.ihtsdo.otf.refset.workflow;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -16,6 +16,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
+import javax.persistence.OrderColumn;
 import javax.persistence.Table;
 import javax.persistence.TableGenerator;
 import javax.persistence.Temporal;
@@ -38,6 +39,7 @@ import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.CollectionToCsvBridge;
+import org.ihtsdo.otf.refset.jpa.helpers.ListOrderBridge;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.refset.workflow.TrackingRecord;
@@ -82,11 +84,13 @@ public class TrackingRecordJpa implements TrackingRecord {
   /** The authors. */
   @ElementCollection
   @CollectionTable(name = "tracking_record_authors")
+  @OrderColumn
   private List<String> authors = new ArrayList<>();
 
   /** The reviewers. */
   @ElementCollection
   @CollectionTable(name = "tracking_record_reviewers")
+  @OrderColumn
   private List<String> reviewers = new ArrayList<>();
 
   /** The Translation. */
@@ -175,7 +179,10 @@ public class TrackingRecordJpa implements TrackingRecord {
   }
 
   /* see superclass */
-  @Field(bridge = @FieldBridge(impl = CollectionToCsvBridge.class), index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+  @Fields({
+    @Field(bridge = @FieldBridge(impl = CollectionToCsvBridge.class), index = Index.YES, analyze = Analyze.YES, store = Store.NO),
+    @Field(name="authorsOrder", bridge = @FieldBridge(impl = ListOrderBridge.class), index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+  })
   @Override
   public List<String> getAuthors() {
     if (authors == null) {
@@ -193,9 +200,8 @@ public class TrackingRecordJpa implements TrackingRecord {
   /**
    * Returns the project id. Just for indexing. Possibly consider making this
    *
-   * @return the project id
-   * @XmlElement, though then "set" method becomes complicated and
-   *              nondeterministic for testing.
+   * @return the project id @XmlElement, though then "set" method becomes
+   *         complicated and nondeterministic for testing.
    */
   @XmlTransient
   @FieldBridge(impl = LongBridge.class)
@@ -210,7 +216,11 @@ public class TrackingRecordJpa implements TrackingRecord {
   }
 
   /* see superclass */
-  @Field(bridge = @FieldBridge(impl = CollectionToCsvBridge.class), index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+  @Fields({
+      @Field(bridge = @FieldBridge(impl = CollectionToCsvBridge.class), index = Index.YES, analyze = Analyze.YES, store = Store.NO),
+      @Field(name="reviewersOrder", bridge = @FieldBridge(impl = ListOrderBridge.class), index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+
+  }) 
   @Override
   public List<String> getReviewers() {
     if (reviewers == null) {
@@ -299,6 +309,29 @@ public class TrackingRecordJpa implements TrackingRecord {
     refset.setId(refsetId);
   }
 
+  /**
+   * Returns the refset terminology id. For JAXB.
+   *
+   * @return the refset terminology id
+   */
+  @XmlTransient
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  public String getRefsetTerminologyId() {
+    return refset == null ? null : refset.getTerminologyId();
+  }
+
+  /**
+   * Sets the refset terminology id. For JAXB.
+   *
+   * @param refsetTerminologyId the refset terminology id
+   */
+  public void setRefsetTerminologyId(Long refsetTerminologyId) {
+    if (refset == null) {
+      refset = new RefsetJpa();
+    }
+    refset.setId(refsetTerminologyId);
+  }
+
   /* see superclass */
   @XmlElement(type = ConceptJpa.class)
   @Override
@@ -383,6 +416,17 @@ public class TrackingRecordJpa implements TrackingRecord {
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   public String getRefsetType() {
     return refset == null ? "" : refset.getType().toString();
+  }
+  
+  /**
+   * Checks if is local set.  For indexing.
+   *
+   * @return true, if is local set
+   */
+  @XmlTransient
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  public boolean isLocalSet() {
+    return refset == null ? false : refset.isLocalSet();
   }
 
   /**
@@ -525,8 +569,8 @@ public class TrackingRecordJpa implements TrackingRecord {
     return "TrackingRecordJpa [id=" + id + ", lastModified=" + lastModified
         + ", lastModifiedBy=" + lastModifiedBy + ", forAuthoring="
         + forAuthoring + ", forReview=" + forReview + ", revision=" + revision
-        + ", authors=" + authors + ", reviewers=" + reviewers
-        + ", translation=" + translation + ", refset="
+        + ", authors=" + authors + ", reviewers=" + reviewers + ", translation="
+        + translation + ", refset="
         + (refset != null ? refset.getTerminologyId() : "") + ", concept="
         + (concept != null ? concept.getTerminologyId() : "")
         + ", originRevision=" + originRevision + ", reviewOriginRevision="

@@ -277,6 +277,7 @@ public class GenerateProdDataMojo extends AbstractMojo {
     project.setTerminologyId("");
     project.setVersion("");
     project.setOrganization("IHTSDO");
+    project.setWorkflowPath("DEFAULT");
     // This is the only namespace configured in the sample id generation service
     // when there are others, we can play with this
     project.setNamespace(namespaceId);
@@ -340,8 +341,8 @@ public class GenerateProdDataMojo extends AbstractMojo {
     refset.setEffectiveTime(null);
     // This is an opportunity to use "branch"
     refset.setVersion(version);
-    refset.setWorkflowPath("DEFAULT");
     refset.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
+    refset.setLocalSet(false);
 
     RefsetServiceRest refsetService = new RefsetServiceRestImpl();
 
@@ -478,7 +479,6 @@ public class GenerateProdDataMojo extends AbstractMojo {
     translation.setTerminology(refset.getTerminology());
     translation.setVersion(refset.getVersion());
     translation.setTerminologyId(terminologyId);
-    translation.setWorkflowPath("DEFAULT");
     translation.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
     translation.setEffectiveTime(null);
     TranslationServiceRest translationService =

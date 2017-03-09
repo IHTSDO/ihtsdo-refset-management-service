@@ -12,8 +12,12 @@ import java.util.Properties;
 import javax.persistence.NoResultException;
 
 import org.apache.log4j.Logger;
+import org.apache.lucene.queryparser.classic.ParseException;
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
+import org.ihtsdo.otf.refset.helpers.KeyValuePair;
+import org.ihtsdo.otf.refset.helpers.KeyValuePairList;
+import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.ProjectList;
 import org.ihtsdo.otf.refset.jpa.ProjectJpa;
@@ -26,7 +30,8 @@ import org.ihtsdo.otf.refset.services.handlers.WorkflowListener;
 /**
  * JPA enabled implementation of {@link ProjectService}.
  */
-public class ProjectServiceJpa extends RootServiceJpa implements ProjectService {
+public class ProjectServiceJpa extends RootServiceJpa
+    implements ProjectService {
 
   /** The listeners enabled. */
   protected boolean listenersEnabled = true;
@@ -38,30 +43,29 @@ public class ProjectServiceJpa extends RootServiceJpa implements ProjectService 
   protected boolean assignIdentifiersFlag = true;
 
   /** The terminology handler . */
-  private static TerminologyHandler terminologyHandler;
+  private static Map<String, TerminologyHandler> terminologyHandlers =
+      new HashMap<>();
 
   static {
     try {
       if (config == null)
         config = ConfigUtility.getConfigProperties();
       String key = "terminology.handler";
+
       for (String handlerName : config.getProperty(key).split(",")) {
         if (handlerName.isEmpty())
           continue;
-        if (!handlerName.equals(ConfigUtility.DEFAULT)) {
-          throw new Exception("terminology.handler." + ConfigUtility.DEFAULT
-              + " should be the only entry.");
-        }
         // Add handlers to map
         TerminologyHandler handlerService =
             ConfigUtility.newStandardHandlerInstanceWithConfiguration(key,
                 handlerName, TerminologyHandler.class);
-        terminologyHandler = handlerService;
+        terminologyHandlers.put(handlerName, handlerService);
       }
+
     } catch (Exception e) {
-      Logger.getLogger(ProjectServiceJpa.class).error(
-          "Failed to initialize terminology.handler - serious error", e);
-      terminologyHandler = null;
+      Logger.getLogger(ProjectServiceJpa.class)
+          .error("Failed to initialize terminology.handler - serious error", e);
+      terminologyHandlers = null;
     }
   }
 
@@ -114,10 +118,14 @@ public class ProjectServiceJpa extends RootServiceJpa implements ProjectService 
       }
     } catch (Exception e) {
       Logger.getLogger(ProjectServiceJpa.class).error(
-          "Failed to initialize identifier.assignment.handler - serious error", e);
+          "Failed to initialize identifier.assignment.handler - serious error",
+          e);
       idHandlerMap = null;
     }
   }
+
+  /** The headers. */
+  Map<String, String> headers;
 
   /**
    * Instantiates an empty {@link ProjectServiceJpa}.
@@ -137,11 +145,22 @@ public class ProjectServiceJpa extends RootServiceJpa implements ProjectService 
           "Identifier assignment handler did not properly initialize, serious error.");
     }
 
-    if (terminologyHandler == null) {
+    if (terminologyHandlers == null) {
       throw new Exception(
           "Terminology handler did not properly initialize, serious error.");
     }
 
+  }
+
+  /**
+   * Instantiates a {@link ProjectServiceJpa} from the specified parameters.
+   *
+   * @param headers the headers
+   * @throws Exception the exception
+   */
+  public ProjectServiceJpa(Map<String, String> headers) throws Exception {
+    this();
+    this.headers = headers;
   }
 
   /* see superclass */
@@ -176,8 +195,8 @@ public class ProjectServiceJpa extends RootServiceJpa implements ProjectService 
   /* see superclass */
   @Override
   public Project addProject(Project project) throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Project Service - add project - " + project);
+    Logger.getLogger(getClass())
+        .debug("Project Service - add project - " + project);
 
     // Add component
     Project newProject = addHasLastModified(project);
@@ -188,8 +207,8 @@ public class ProjectServiceJpa extends RootServiceJpa implements ProjectService 
   /* see superclass */
   @Override
   public void updateProject(Project project) throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Project Service - update project - " + project);
+    Logger.getLogger(getClass())
+        .debug("Project Service - update project - " + project);
 
     // update component
     this.updateHasLastModified(project);
@@ -208,21 +227,25 @@ public class ProjectServiceJpa extends RootServiceJpa implements ProjectService 
   @Override
   public ProjectList findProjectsForQuery(String query, PfsParameter pfs)
     throws Exception {
-    Logger.getLogger(getClass()).info(
-        "Project Service - find projects " + "/" + query);
+    Logger.getLogger(getClass())
+        .info("Project Service - find projects " + "/" + query);
 
-    int[] totalCt = new int[1];
-    List<Project> list =
-        (List<Project>) getQueryResults(query == null || query.isEmpty()
-            ? "id:[* TO *]" : query, ProjectJpa.class, ProjectJpa.class, pfs,
-            totalCt);
-    ProjectList result = new ProjectListJpa();
-    result.setTotalCount(totalCt[0]);
-    result.setObjects(list);
-    for (Project project : result.getObjects()) {
-      handleLazyInit(project);
+    try {
+      int[] totalCt = new int[1];
+      List<Project> list = (List<Project>) getQueryResults(
+          query == null || query.isEmpty() ? "id:[* TO *]" : query,
+          ProjectJpa.class, ProjectJpa.class, pfs, totalCt);
+      ProjectList result = new ProjectListJpa();
+      result.setTotalCount(totalCt[0]);
+      result.setObjects(list);
+      for (Project project : result.getObjects()) {
+        handleLazyInit(project);
+      }
+      return result;
+    } catch (ParseException e) {
+      // On parse error, return empty results
+      return new ProjectListJpa();
     }
-    return result;
   }
 
   /**
@@ -292,12 +315,52 @@ public class ProjectServiceJpa extends RootServiceJpa implements ProjectService 
 
   /* see superclass */
   @Override
-  public TerminologyHandler getTerminologyHandler() throws Exception {
-    // Copy the template
-    TerminologyHandler handler = terminologyHandler.copy();
-    // configure it with the entity manager
-    // return it
+  public TerminologyHandler getTerminologyHandler(Project project,
+    Map<String, String> headers) throws Exception {
+    if (!terminologyHandlers.containsKey(project.getTerminologyHandlerKey())) {
+      throw new LocalException(
+          "No terminology handler exists for the specified key: "
+              + project.getTerminologyHandlerKey());
+    }
+    final TerminologyHandler handler =
+        terminologyHandlers.get(project.getTerminologyHandlerKey()).copy();
+    handler.setUrl(project.getTerminologyHandlerUrl());
+    handler.setHeaders(headers);
     return handler;
+  }
+
+  @Override
+  public KeyValuePairList getTerminologyHandlers() throws Exception {
+    final KeyValuePairList list = new KeyValuePairList();
+    for (final String key : terminologyHandlers.keySet()) {
+      list.addKeyValuePair(
+          new KeyValuePair(key, terminologyHandlers.get(key).getDefaultUrl()));
+    }
+    return list;
+  }
+
+  /**
+   * Test handler url.
+   *
+   * @param key the key
+   * @param url the url
+   * @param terminology the terminology
+   * @param version the version
+   * @return true, if successful
+   * @throws Exception the exception
+   */
+  @Override
+  public boolean testHandlerUrl(String key, String url, String terminology,
+    String version) throws Exception {
+    if (!terminologyHandlers.containsKey(key)) {
+      throw new LocalException(
+          "No terminology handler exists for the specified key: " + key);
+    }
+    final TerminologyHandler handler = terminologyHandlers.get(key).copy();
+    handler.setUrl(url);
+    handler.setHeaders(headers);
+    handler.test(terminology, version);
+    return true;
   }
 
 }

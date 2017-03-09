@@ -1,11 +1,15 @@
 <div class="modal-header">
-  <h4>ASSIGN Concepts</h4>
+  <h4 style="display: inline">ASSIGN Concepts</h4>
+  <span style="float: right">
+    <i class="noul glyphicon glyphicon-remove" ng-click="cancel()"> </i>
+  </span>
 </div>
 
 <div class="modal-body">
 
   <!-- Translation info -->
-  <div translation-info translation="translation" form="short"></div>
+  <div translation-info translation="translation" form="short"
+    metadata="metadata"></div>
 
   <table class="table">
     <tr>
@@ -13,11 +17,7 @@
         <b>Batch size</b>
       </td>
       <td class="col-md-8 col-xs-8">
-        <select ng-model="batchSize">
-          <option>5</option>
-          <option>10</option>
-          <option>25</option>
-          <option>100</option>
+        <select ng-model="batchSize" ng-options="size for size in batchSizes">
         </select>
       </td>
     </tr>
@@ -44,8 +44,10 @@
         <div class="alert alert-danger alert-error">
           {{errors[0]}}
           <div style="display: inline; float: right;">
-            <i ng-show="errors[1]" title="{{error.expand ? 'Show' : 'Hide'}} long eror"
-              class="noul material-icons md-18" ng-click="error.expand = !error.expand;">attach_file</i>
+            <i ng-show="errors[1]"
+              title="{{error.expand ? 'Show' : 'Hide'}} long error"
+              class="noul material-icons md-18"
+              ng-click="error.expand = !error.expand;">attach_file</i>
           </div>
           <p ng-show="errors[1] && error.expand">
             <br />{{errors[1]}}
@@ -57,7 +59,7 @@
 </div>
 
 <div class="modal-footer">
-  <button class="btn btn-primary" ng-click="assignBatch(); 
+  <button class="btn btn-xs btn-primary" ng-click="assignBatch(); 
     ">Assign</button>
-  <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
+  <button class="btn btn-xs btn-warning" ng-click="cancel()">Cancel</button>
 </div>
