@@ -5,10 +5,19 @@
   <div class="col-md-6 col-xs-12">
 
     <div>
-      <uib-pagination items-per-page="pageSize" max-size="5"
-        boundary-links="true" class="pagination-sm" previous-text="&lsaquo;"
-        next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;"
-        ng-show="translations.totalCount > visibleSize || paging['translation'].filter"
+      <span class="info-text" ng-show="translations.totalCount > 10"
+        style="float: right; margin-top: 4px">
+        Page size: <select ng-model="paging['translation'].page"
+          title="Page Size" ng-change="getTranslations()"
+          ng-options="item.value as item.name for item in pageSizes">
+        </select>
+      </span>
+
+      <uib-pagination items-per-page="paging['translation'].pageSize"
+        max-size="5" boundary-links="true" class="pagination-sm"
+        previous-text="&lsaquo;" next-text="&rsaquo;" first-text="&laquo;"
+        last-text="&raquo;"
+        ng-show="translations.totalCount > paging['translation'].pageSize"
         total-items="translations.totalCount"
         ng-model="paging['translation'].page" ng-change="getTranslations()"></uib-pagination>
 
@@ -18,7 +27,7 @@
       </span>
 
       <input class="input-filter" placeholder="Search"
-        ng-show="translations.totalCount > visibleSize || paging['translation'].filter"
+        ng-show="translations.totalCount > 0 || paging['translation'].filter"
         type="text" ng-model="paging['translation'].filter"
         ng-model-options="{ debounce: 300 }" ng-change="getTranslations()"
         title="{{paging['translation'].filter}}" list="filter{{value}}">
@@ -29,7 +38,7 @@
 
       <button class="btn btn-xs btn-warning"
         ng-show="paging['translation'].filter"
-        ng-click="paging['translation'].filter = ''; getTranslations()"
+        ng-click="paging['translation'].filter = ''; clearUrlParams(); getTranslations()"
         title="Click to clear filter text">Clear</button>
 
       <!-- No need to show for BETA, there should be only one -->
@@ -37,8 +46,10 @@
         ng-show="translations.totalCount > 0 && isDirectory()"
         ng-model="showLatest" ng-change="getTranslations()" uib-btn-checkbox
         btn-checkbox-true="true" btn-checkbox-false="false">
-        <span ng-show="showLatest" title="Click to show all">Latest</span>
-        <span ng-hide="showLatest" title="Click to show only most recent">All</span>
+        <span ng-show="showLatest"
+          title="Showing only most recent, click to toggle">Latest</span>
+        <span ng-hide="showLatest"
+          title="Showing only most recent, click to toggle">All</span>
       </button>
 
       <h4 ng-show="value=='EDITING' && translations.totalCount == 0">
@@ -54,7 +65,7 @@
     <span ng-show="translations.totalCount == 0" style="display: block;"
       class="alert alert-warning">No translations.</span>
     <table ng-show="translations.totalCount > 0" class="table">
-      <thead>
+      <thead class="table-select-row">
         <tr>
           <th class="col-md-2 col-xs-2"><span
               ng-click="setSortField('translation','terminologyId')">
@@ -92,7 +103,7 @@
                 Effective Time
                 <span ng-bind="getSortIndicator('translation','effectiveTime')"></span>
               </span>
-            </span> <span ng-show="!isDirectory && value != 'RELEASE'">
+            </span> <span ng-show="!isDirectory() && value != 'RELEASE'">
               <span ng-click="setSortField('translation','lastModified')">
                 Last Modified
                 <span ng-bind="getSortIndicator('translation','lastModified')"></span>
@@ -130,7 +141,7 @@
           </th>
         </tr>
       </thead>
-      <tbody>
+      <tbody class="table-select-row">
         <tr ng-repeat="translation in translations"
           ng-class="{selected: translation.id == selected.translation.id}"
           ng-click="selectTranslation(translation);" class="table-select-row">
@@ -162,7 +173,7 @@
             <span>{{getTerminologyName(translation.terminology)}}
               {{translation.version}} </span>
 
-            <span ng-show="!isDirectory">
+            <span ng-show="!isDirectory()">
               <span ng-show="projects.role == 'ADMIN' || value == 'RELEASE'">
                 <br />{{translation.workflowStatus}}
               </span>
@@ -302,9 +313,12 @@
               <b>Actions</b>
             </td>
             <td>
-              <i
+              <i ng-show="selected.translation.feedbackEmail"
                 ng-click="openFeedbackModal(selected.translation); $event.stopPropagation()"
                 title="Submit feedback" class="noul material-icons md-18">speaker_notes</i>
+              <i ng-show="!selected.translation.feedbackEmail"
+                title="Feedback email not configured"
+                class="md-grey material-icons md-18">speaker_notes</i>
             </td>
           </tr>
 
@@ -375,6 +389,12 @@
             <td>{{getTerminologyName(selected.translation.terminology)}}
               {{selected.translation.version}}</td>
           </tr>
+          <tr ng-show="value == 'PUBLISHED'">
+            <td>Url</td>
+            <td>
+              <a href="{{link}}" target="_blank">{{link}}</a>
+            </td>
+          </tr>
           <tr
             ng-show="selected.translation.workflowStatus != 'BETA' && selected.translation.workflowStatus != 'PUBLISHED'">
             <td>
@@ -382,27 +402,27 @@
             </td>
             <td>
               <input type="checkbox" ng-change="saveUserPreferences()"
-                ng-disabled="user.applicationRole == 'ADMIN' && user.applicationRole != 'VIEWER'"
+                ng-disabled="user.applicationRole != 'VIEWER'"
                 ng-model="user.userPreferences.spellingEnabled">
               <span ng-show="user.userPreferences.spellingEnabled">ENABLED</span>
               <span ng-show="!user.userPreferences.spellingEnabled">DISABLED</span>
               <i
-                ng-show="!selected.translation.spellingDictionaryEmpty && user.applicationRole != 'ADMIN' && user.applicationRole != 'VIEWER'"
+                ng-show="!selected.translation.spellingDictionaryEmpty && user.applicationRole != 'VIEWER'"
                 ng-click="openImportExportModal(selected.translation,'Export','Spelling Dictionary'); $event.stopPropagation()"
                 title="Export spelling dictionary"
                 class="noul material-icons md-18">file_download</i>
               <i
-                ng-show="selected.translation.spellingDictionaryEmpty && user.applicationRole != 'ADMIN' && user.applicationRole != 'VIEWER'"
+                ng-show="selected.translation.spellingDictionaryEmpty && user.applicationRole != 'VIEWER'"
                 ng-click="openImportExportModal(selected.translation,'Import','Spelling Dictionary'); $event.stopPropagation()"
                 title="Import spelling dictionary"
                 class="noul material-icons md-18">file_upload</i>
               <i
-                ng-show="selected.translation.spellingDictionaryEmpty && user.applicationRole != 'ADMIN' && user.applicationRole != 'VIEWER'"
+                ng-show="selected.translation.spellingDictionaryEmpty && user.applicationRole != 'VIEWER'"
                 ng-click="openCopyModal(selected.translation,'Spelling Dictionary'); $event.stopPropagation()"
                 title="Copy spelling dictionary from another translation"
                 class="noul material-icons md-18">content_copy</i>
               <i
-                ng-show="!selected.translation.spellingDictionaryEmpty && user.applicationRole != 'ADMIN' && user.applicationRole != 'VIEWER'"
+                ng-show="!selected.translation.spellingDictionaryEmpty && user.applicationRole != 'VIEWER'"
                 ng-click="clearSpellingDictionary(selected.translation)"
                 title="Clear spelling dictionary entries"
                 class="noul material-icons md-18">delete</i>
@@ -415,25 +435,25 @@
             </td>
             <td>
               <input type="checkbox" ng-change="saveUserPreferences()"
-                ng-disabled="user.applicationRole == 'ADMIN' && user.applicationRole != 'VIEWER'"
+                ng-disabled="user.applicationRole != 'VIEWER'"
                 ng-model="user.userPreferences.memoryEnabled">
               <span ng-show="user.userPreferences.memoryEnabled">ENABLED</span>
               <span ng-show="!user.userPreferences.memoryEnabled">DISABLED</span>
               <i
-                ng-show="!selected.translation.phraseMemoryEmpty  && user.applicationRole != 'ADMIN' && user.applicationRole != 'VIEWER'"
+                ng-show="!selected.translation.phraseMemoryEmpty && user.applicationRole != 'VIEWER'"
                 ng-click="openImportExportModal(selected.translation,'Export', 'Phrase Memory'); $event.stopPropagation()"
                 title="Export phrase memory" class="noul material-icons md-18">file_download</i>
               <i
-                ng-show="selected.translation.phraseMemoryEmpty  && user.applicationRole != 'ADMIN' && user.applicationRole != 'VIEWER'"
+                ng-show="selected.translation.phraseMemoryEmpty && user.applicationRole != 'VIEWER'"
                 ng-click="openImportExportModal(selected.translation,'Import', 'Phrase Memory'); $event.stopPropagation()"
                 title="Import phrase memory" class="noul material-icons md-18">file_upload</i>
               <i
-                ng-show="selected.translation.phraseMemoryEmpty  && user.applicationRole != 'ADMIN' && user.applicationRole != 'VIEWER'"
+                ng-show="selected.translation.phraseMemoryEmpty  && user.applicationRole != 'VIEWER'"
                 ng-click="openCopyModal(selected.translation,'Phrase Memory'); $event.stopPropagation()"
                 title="Copy phrase memory from another translation"
                 class="noul material-icons md-18">content_copy</i>
               <i
-                ng-show="!selected.translation.phraseMemoryEmpty && user.applicationRole != 'ADMIN' && user.applicationRole != 'VIEWER'"
+                ng-show="!selected.translation.phraseMemoryEmpty && user.applicationRole != 'VIEWER'"
                 ng-click="clearPhraseMemory(selected.translation)"
                 title="Clear phrase memory entries"
                 class="noul material-icons md-18">delete</i>
@@ -512,17 +532,27 @@
         ({{selected.translation.available.totalCount}})</span>
     </h4>
     <span style="display: block;">
-      <uib-pagination items-per-page="pageSize" max-size="5"
+      <span class="info-text"
+        ng-show="selected.translation.available.totalCount > 10"
+        style="float: right; margin-top: 4px">
+        Page size: <select ng-model="paging['available'].pageSize"
+          title="Page Size"
+          ng-change="getAvailableConcepts(selected.translation)"
+          ng-options="item.value as item.name for item in pageSizes">
+
+        </select>
+      </span>
+      <uib-pagination items-per-page="paging['available'].pageSize" max-size="5"
         boundary-links="true" class="pagination-sm" previous-text="&lsaquo;"
         next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;"
-        ng-show="selected.translation.available.totalCount > pageSize || paging['available'].filter"
+        ng-show="selected.translation.available.totalCount > paging['available'].pageSize"
         total-items="selected.translation.available.totalCount"
         ng-model="paging['available'].page"
         ng-change="getAvailableConcepts(selected.translation)"></uib-pagination>
 
-      <input class="input-filter" placeholder="Search"
-        ng-show="selected.translation.available.totalCount > pageSize || paging['available'].filter"
-        type="text" ng-model="paging['available'].filter"
+      <input class="input-filter" placeholder="Search" type="text"
+        ng-show="selected.translation.available.totalCount > 1 || paging['available'].filter"
+        ng-model="paging['available'].filter"
         ng-model-options="{ debounce: 300 }"
         ng-change="getAvailableConcepts(selected.translation)">
 
@@ -532,10 +562,8 @@
         title="Click to clear filter text">Clear</button>
     </span>
 
-    <span ng-show="selected.translation.available.totalCount == 0"
-      style="display: block;" class="alert alert-warning">No available
-      concepts for {{projects.role}}.</span>
-    <table ng-show="selected.translation.available.totalCount > 0" class="table">
+
+    <table ng-show="selected.translation" class="table">
       <thead>
         <tr>
           <th class="col-md-3 col-xs-3"
@@ -557,16 +585,19 @@
               <span ng-bind="getSortIndicator('available','workflowStatus')"></span>
             </span>
           </th>
-          <th class="col-md-2 col-xs-2">Actions <!-- Assign --> <i
-              ng-show="selected.translation.available.totalCount > 0 && projects.role != 'ADMIN'"
-              ng-click="openBatchAssignConceptModal(); $event.stopPropagation()"
-              title="Assign batch" class="noul material-icons md-18">assignment_ind</i>
+          <th class="col-md-2 col-xs-2"><span class="nobreak">
+              Actions
+              <!-- Assign -->
+              <i
+                ng-show="selected.translation.available.totalCount > 0 && projects.role != 'ADMIN'"
+                ng-click="openBatchAssignConceptModal('Available'); $event.stopPropagation()"
+                title="Assign batch" class="noul material-icons md-18">assignment_ind</i>
 
-            <i
-              ng-show="selected.translation.available.totalCount > 0 && projects.role == 'ADMIN'"
-              title="Assign batch - not allowed as ADMIN"
-              class="md-grey material-icons md-18">assignment_ind</i>
-          </th>
+              <i
+                ng-show="selected.translation.available.totalCount > 0 && projects.role == 'ADMIN'"
+                title="Assign batch - not allowed as ADMIN"
+                class="md-grey material-icons md-18">assignment_ind</i>
+            </span></th>
         </tr>
       </thead>
       <tbody>
@@ -584,42 +615,33 @@
           </td>
           <!-- Actions -->
           <td class="nobreak">
+
             <!-- Assign -->
-            <i ng-show="projects.role != 'ADMIN'"
+            <i ng-show="isAllowed('ASSIGN', concept)"
               ng-click="openAssignConceptModal(concept, 'ASSIGN'); $event.stopPropagation()"
               title="Assign" class="noul material-icons md-18">assignment_ind</i>
 
-            <!-- Assign -->
-            <i
-              ng-show="projects.role == 'ADMIN' && concept.workflowStatus=='NEW'"
-              ng-click="openAssignConceptModal(concept, 'ASSIGN', 'AUTHOR'); $event.stopPropagation()"
-              title="Assign" class="noul material-icons md-18">assignment_ind</i>
+            <!-- Unassign - n/a - these are available concepts -->
 
-            <!-- Assign -->
-            <i
-              ng-show="projects.role == 'ADMIN' && concept.workflowStatus=='EDITING_DONE'"
-              ng-click="openAssignConceptModal(concept, 'ASSIGN', 'REVIEWER'); $event.stopPropagation()"
-              title="Assign" class="noul material-icons md-18">assignment_ind</i>
+            <!-- Notes -->
+            <i ng-show="projects.role != 'ADMIN' && concept.notes.length > 0"
+              ng-click="openNotesModal(concept, 'Concept'); $event.stopPropagation()"
+              title="Edit concept notes" class="noul material-icons md-18">assignment</i>
+            <i ng-show="projects.role != 'ADMIN' && concept.notes.length == 0"
+              ng-click="openNotesModal(concept, 'Concept'); $event.stopPropagation()"
+              title="Add concept notes" class="md-grey material-icons md-18">assignment</i>
 
-            <!-- Reassign -->
-            <i
-              ng-show="projects.role != 'AUTHOR' && concept.workflowStatus!='NEW'"
-              confirm="Are you sure you want to reassign this concept ({{concept.terminologyId}}, {{concept.name}})"
-              ng-click="openAssignConceptModal(concept, 'REASSIGN'); $event.stopPropagation()"
-              title="Reassign back to author" class="noul material-icons md-18">assignment_returned</i>
-
-            <!-- Unassign -->
-            <i
-              ng-show="projects.role == 'ADMIN' && concept.workflowStatus!='NEW'"
-              confirm="Are you sure you want to unassign this concept ({{concept.terminologyId}}, {{concept.name}})"
-              ng-click="unassign(concept, user.userName)" title="Unassign"
-              class="noul material-icons md-18">assignment_return</i>
-
-
+            <!--  Log -->
+            <i ng-show="concept.workflowStatus != 'NEW'"
+              ng-click="openLogModal(concept)" title="Retrieve log"
+              class="noul material-icons md-18">event_note</i>
           </td>
         </tr>
       </tbody>
     </table>
+    <span ng-show="selected.translation.available.totalCount == 0"
+      style="display: block;" class="alert alert-warning">No available
+      concepts for {{projects.role}}.</span>
 
     <!-- End R2C1 -->
   </div>
@@ -630,22 +652,32 @@
     <div class="col-md-12 col-xs-12"></div>
 
     <h4 ng-show="selected.translation">
-      Assigned Concepts
+      {{projectsRole}} Assigned Concepts
       <span ng-show="selected.translation.assigned.totalCount>0">
         ({{selected.translation.assigned.totalCount}})</span>
     </h4>
     <span style="display: block;">
-      <uib-pagination items-per-page="pageSize" max-size="5"
+      <span class="info-text"
+        ng-show="selected.translation.assigned.totalCount > 10"
+        style="float: right; margin-top: 4px">
+        Page size: <select ng-model="paging['assigned'].pageSize"
+          title="Page Size"
+          ng-change="getAssignedConcepts(selected.translation)"
+          ng-options="item.value as item.name for item in pageSizes">
+        </select>
+      </span>
+
+      <uib-pagination items-per-page="paging['assigned'].pageSize" max-size="5"
         boundary-links="true" class="pagination-sm" previous-text="&lsaquo;"
         next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;"
-        ng-show="selected.translation.assigned.totalCount > pageSize || paging['assigned'].filter"
+        ng-show="selected.translation.assigned.totalCount > paging['assigned'].pageSize"
         total-items="selected.translation.assigned.totalCount"
         ng-model="paging['assigned'].page"
         ng-change="getAssignedConcepts(selected.translation)"></uib-pagination>
 
-      <input class="input-filter" placeholder="Search"
-        ng-show="selected.translation.assigned.totalCount > pageSize || paging['assigned'].filter"
-        type="text" ng-model="paging['assigned'].filter"
+      <input class="input-filter" placeholder="Search" type="text"
+        ng-show="selected.translation.assigned.totalCount > 1 || paging['assigned'].filter"
+        ng-model="paging['assigned'].filter"
         ng-model-options="{ debounce: 300 }"
         ng-change="getAssignedConcepts(selected.translation)">
 
@@ -654,10 +686,7 @@
         title="Click to clear filter text">Clear</button>
     </span>
 
-    <span ng-show="selected.translation.assigned.totalCount == 0"
-      style="display: block;" class="alert alert-warning">No assigned
-      concepts for {{projects.role}}.</span>
-    <table ng-show="selected.translation.assigned.totalCount > 0" class="table">
+    <table ng-show="selected.translation" class="table">
       <thead>
         <tr>
           <th class="col-md-3 col-xs-3"
@@ -679,12 +708,24 @@
                 Status</span>
               <span ng-bind="getSortIndicator('assigned','workflowStatus')"></span>
             </span></th>
-          <th class="col-md-2 col-xs-2">Actions <!--  Unassign all --> <i
-              ng-show="selected.translation.assigned.totalCount > 0"
-              confirm="Are you sure you want to unassign this concept ({{concept.terminologyId}}, {{concept.name}})"
-              ng-click="unassignAll();" title="Unassign all"
-              class="noul material-icons md-18">assignment_return</i>
+          <th class="col-md-2 col-xs-2">Actions<br /> <span
+              class="nobreak">
+              <!--  Unassign all -->
+              <i ng-show="selected.translation.assigned.totalCount > 0"
+                confirm="Are you sure you want to unassign all concepts?"
+                ng-click="unassignAll(user.userName)" title="Unassign all"
+                class="noul material-icons md-18">assignment_return</i>
+              <i
+                ng-show="selected.translation.assigned.totalCount > 0 && projects.role != 'ADMIN'"
+                ng-click="finishAll(user.userName)" title="Finish all"
+                class="noul material-icons md-18">done</i>
+              <i
+                ng-show="selected.translation.assigned.totalCount > 0 && projects.role != 'ADMIN' && projects.role != 'AUTHOR'"
+                ng-click="publishAll(user.userName)" title="Publish all"
+                class="noul material-icons md-18">open_in_new</i>
+            </span>
           </th>
+
         </tr>
       </thead>
       <tbody>
@@ -698,9 +739,18 @@
           <td>
             {{toDate(record.lastModified)}}
             <span ng-show="projects.role == 'ADMIN'">
-              <br />
-              <span ng-repeat="author in record.authors">{{author}}</span>
-              <span ng-repeat="reviewer in record.reviewers">{{reviewer}}</span>
+              <!-- Need to show how to effectively display this info, user can look at the log to see the info -->
+              <!--               <br />
+              <span ng-show="record.authors.length > 0">
+                author<span ng-show="record.authors.length>1">s</span>:
+                <span ng-repeat="author in record.authors track by $index">{{author}}</span>
+              </span>
+              <span ng-show="record.reviewers.length > 0">
+                reviewers:
+                <span ng-repeat="reviewer in record.reviewers track by $index">{{reviewer}}
+                </span>
+              </span>
+ -->
               <br /> {{record.concept.workflowStatus}}
             </span>
 
@@ -716,47 +766,23 @@
               title="Edit concept" class="noul material-icons md-18">edit</i>
 
             <!-- UnAssign (instead of delete) -->
-            <i ng-show="projects.role != 'ADMIN'"
-              confirm="Are you sure you want to unassign this concept ({{record.concept.terminologyId}}, {{record.concept.name}})"
+            <i ng-show="isAllowed('UNASSIGN', record.concept)"
               ng-click="unassign(record.concept, user.userName)"
               title="Unassign" class="noul material-icons md-18">assignment_return</i>
 
-            <span ng-show="projects.role == 'ADMIN'">
-              <span ng-repeat="author in record.authors">
-                <!-- Only unassign if there are no reviewers -->
-                <i ng-show="!record.reviewers || record.reviewers.length == 0"
-                  title="Unassign author: {{author}}"
-                  confirm="Are you sure you want to unassign this concept ({{record.concept.terminologyId}}, {{record.concept.name}})"
-                  ng-click="unassign(record.concept, user.userName)"
-                  class="noul material-icons md-18">assignment_return</i>
-                <i ng-show="record.reviewers.length > 0"
-                  title="Author: {{author}}, unassign reviewer first"
-                  class="md-grey material-icons md-18">assignment_ind</i>
-              </span>
-              <span ng-repeat="reviewer in record.reviewers">
-                <i title="Unassign reviewer: {{reviewer}}"
-                  confirm="Are you sure you want to unassign this concept ({{record.concept.terminologyId}}, {{record.concept.name}})"
-                  ng-click="unassign(record.concept, user.userName)"
-                  class="noul material-icons md-18">assignment_return</i>
-              </span>
-            </span>
-
-            <!-- Reassign -->
-            <i ng-show="projects.role == 'REVIEWER'"
-              confirm="Are you sure you want to reassign this concept ({{concept.terminologyId}}, {{concept.name}})"
-              ng-click="openAssignConceptModal(record.concept, 'UNASSIGN-REASSIGN'); $event.stopPropagation()"
-              title="Reassign back to author" class="noul material-icons md-18">assignment_returned</i>
+            <!-- Feedback -->
+            <i ng-show="isAllowed('FEEDBACK', record.concept)"
+              ng-click="openAssignConceptModal(record.concept,'FEEDBACK', record); $event.stopPropagation()"
+              title="Feedback" class="noul material-icons md-18">assignment_returned</i>
 
             <!-- Finish -->
-            <i confirm="Are you sure you want to finalize editing/review?"
-              ng-show="projects.role != 'ADMIN' && (record.concept.workflowStatus.indexOf('IN_PROGRESS') != -1 || record.concept.workflowStatus=='REVIEW_NEW')"
+            <i ng-show="isAllowed('FINISH', record.concept)"
               ng-click="performWorkflowAction(record.concept, 'FINISH');"
               title="Finish" class="noul material-icons md-18">done</i>
 
             <!-- Mark ready for publication -->
-            <i
-              ng-show="projects.role != 'ADMIN' && record.concept.workflowStatus == 'REVIEW_DONE'"
-              ng-click="performWorkflowAction(record.concept, 'FINISH')"
+            <i ng-show="isAllowed('PREPARE_FOR_PUBLICATION', record.concept)"
+              ng-click="performWorkflowAction(record.concept, 'PREPARE_FOR_PUBLICATION')"
               title="Mark ready for publication"
               class="noul material-icons md-18">open_in_new</i>
 
@@ -768,13 +794,17 @@
               ng-click="openNotesModal(record.concept, 'Concept');"
               title="Add concept notes (no notes yet)"
               class="md-grey material-icons md-18">assignment</i>
+            <i ng-click="openLogModal(record.concept)" title="Retrieve log"
+              class="noul material-icons md-18">event_note</i>
 
             <br>
           </td>
         </tr>
       </tbody>
     </table>
-
+    <span ng-show="selected.translation.assigned.totalCount == 0"
+      style="display: block;" class="alert alert-warning">No assigned
+      concepts for {{projects.role}}.</span>
 
     <!-- End R2C2 -->
   </div>
@@ -820,9 +850,18 @@
 
       <div>
         <span style="display: block;"
-          ng-show="selected.translation.concepts.totalCount > pageSize || paging['concept'].filter || withNotesOnly">
-          <uib-pagination items-per-page="pageSize" max-size="5"
-            ng-show="selected.translation.concepts.totalCount > pageSize"
+          ng-show="selected.translation.concepts.totalCount > paging['concept'].pageSize || paging['concept'].filter || withNotesOnly">
+          <span class="info-text"
+            ng-show="selected.translation.concepts.totalCount  > 10"
+            style="float: right; margin-top: 4px">
+            Page size: <select ng-model="paging['concept'].pageSize"
+              title="Page Size" ng-change="getConcepts(selected.translation)"
+              ng-options="item.value as item.name for item in pageSizes">
+            </select>
+          </span>
+          <uib-pagination items-per-page="paging['concept'].pageSize"
+            max-size="5"
+            ng-show="selected.translation.concepts.totalCount > paging['concept'].pageSize"
             boundary-links="true" class="pagination-sm" previous-text="&lsaquo;"
             next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;"
             total-items="selected.translation.concepts.totalCount"
@@ -830,6 +869,7 @@
             ng-change="getConcepts(selected.translation)"></uib-pagination>
 
           <input placeholder="Search" type="text"
+            ng-show="selected.translation.concepts.totalCount > 1 || paging['concept'].filter"
             ng-model="paging['concept'].filter"
             ng-model-options="{ debounce: 300 }"
             ng-change="getConcepts(selected.translation)">
@@ -846,9 +886,8 @@
             title="Click to clear filter text">Clear</button>
 
         </span>
-
-        <table class="table">
-          <thead>
+        <table ng-show="selected.translation" class="table">
+          <thead class="table-select-row">
             <tr>
               <th class="col-md-3 col-xs-3"
                 ng-click="setSortField('concept','terminologyId', selected.translation)">Concept
@@ -858,7 +897,7 @@
                 ng-click="setSortField('concept','name', selected.translation)">Name<span
                   ng-bind="getSortIndicator('concept','name')"></span>
               </th>
-              <th ng-show="!isDirectory && value != 'RELEASE'"
+              <th ng-show="!isDirectory() && value != 'RELEASE'"
                 class="col-md-3 col-xs-3"
                 ng-click="setSortField('concept','lastModified', selected.translation)">Last
                 Modified<span
@@ -869,10 +908,13 @@
                 ng-click="setSortField('concept','effectiveTime', selected.translation)">Effective
                 Time<span ng-bind="getSortIndicator('concept','effectiveTime')"></span>
               </th>
-              <th ng-show="value == 'EDITING'">Actions</th>
+              <th ng-show="value == 'EDITING'">Actions <i
+                  ng-show="selected.translation.concepts.totalCount > 0 && projects.role != 'ADMIN'"
+                  ng-click="openBatchAssignConceptModal('Finished'); $event.stopPropagation()"
+                  title="Assign batch" class="noul material-icons md-18">assignment_ind</i></th>
             </tr>
           </thead>
-          <tbody>
+          <tbody class="table-select-row">
             <tr ng-repeat="concept in selected.translation.concepts"
               ng-class="{selected: concept.id == selected.concept.id}"
               ng-click="selectConcept(concept);">
@@ -886,22 +928,20 @@
                   <br /> &bull;&nbsp;{{desc.term}}
                 </span>
               </td>
-              <td ng-show="!isDirectory && value !='RELEASE'">
+              <td ng-show="!isDirectory() && value !='RELEASE'">
                 {{toDate(concept.lastModified)}}
                 <span ng-show="projects.role == 'ADMIN'">
                   <br />{{concept.lastModifiedBy}} <br />{{concept.workflowStatus}}
                 </span>
               </td>
               <td ng-show="isDirectory() || value == 'RELEASE'">{{toSimpleDate(concept.effectiveTime)}}</td>
-              <td ng-show="value == 'EDITING'">
+              <td class="nobreak" ng-show="value == 'EDITING'">
                 <!-- Assign (for error fixing) -->
                 <i ng-show="projects.role != 'ADMIN'"
-                  ng-click="openAssignConceptModal(concept, 'ASSIGN', 'AUTHOR'); $event.stopPropagation()"
+                  ng-click="openAssignConceptModal(concept, 'ASSIGN'); $event.stopPropagation()"
                   title="Assign" class="noul material-icons md-18">assignment_ind</i>
                 <!-- Unassign (for ADMIN fixing) -->
-                <i
-                  ng-show="projects.role == 'ADMIN' && concept.workflowStatus != 'READY_FOR_PUBLICATION' && concept.workflowStatus != 'NEW'"
-                  confirm="Are you sure you want to unassign this concept ({{concept.terminologyId}}, {{concept.name}})"
+                <i ng-show="isAllowed('UNASSIGN', concept)"
                   title="Unassign concept"
                   ng-click="unassign(concept, user.userName)"
                   class="noul material-icons md-18">assignment_return</i>
@@ -927,18 +967,20 @@
                   ng-click="startLookup(selected.translation); $event.stopPropagation()"
                   ng-show="concept.name == 'name lookup in progress' && !selected.translation.lookupInProgress"
                   title="Restart name lookup" class="noul material-icons md-18">play_arrow</i>
-
+                <!-- log -->
+                <i ng-click="openLogModal(concept)" title="Retrieve log"
+                  class="noul material-icons md-18">event_note</i>
               </td>
             </tr>
           </tbody>
         </table>
         <span
-          ng-show="selected.translation && !withNotesOnly && !paging['concept'].filter && selected.translation.concepts.totalCount == 0">
+          ng-show="selected.translation && selected.translation.concepts.totalCount == 0">
           <br />
           <span class="alert alert-warning">
-            Translation has no
+            No
             <span ng-show="value == 'EDITING'">publication ready</span>
-            concepts
+            translation concepts found.
           </span>
         </span>
         <span

@@ -243,20 +243,6 @@ public interface Refset extends Component, Searchable {
   public void setWorkflowStatus(WorkflowStatus workflowStatus);
 
   /**
-   * Returns the workflow path.
-   *
-   * @return the workflow path
-   */
-  public String getWorkflowPath();
-
-  /**
-   * Sets the workflow path.
-   *
-   * @param workflowPath the workflow path
-   */
-  public void setWorkflowPath(String workflowPath);
-
-  /**
    * Returns the translations.
    *
    * @return the translations
@@ -485,4 +471,32 @@ public interface Refset extends Component, Searchable {
    * @param domain the domain
    */
   public void setDomain(String domain);
+
+  /**
+   * Local set.
+   *
+   * @return true, if successful
+   */
+  public boolean isLocalSet();
+
+  /**
+   * Sets the local set.
+   *
+   * @param localSet the new local set
+   */
+  public void setLocalSet(boolean localSet);
+
+  /**
+   * Checks if is translated.
+   *
+   * @return true, if is translated
+   */
+  public boolean isTranslated();
+
+  /**
+   * Sets the translated.
+   *
+   * @param translated the new translated
+   */
+  public void setTranslated(boolean translated);
 }

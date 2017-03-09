@@ -10,6 +10,7 @@ import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.helpers.Configurable;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 
+// TODO: Auto-generated Javadoc
 /**
  * Generically represents a handler for exporting refset data.
  * 
@@ -41,12 +42,12 @@ public interface ExportRefsetHandler extends Configurable {
   /**
    * Returns the beta file name.
    *
-   * @param namespace the namespace
+   * @param refset the refset
    * @param type the type
    * @param version the version
    * @return the beta file name
    */
-  public String getBetaFileName(String namespace, String type, String version);
+  public String getBetaFileName(Refset refset, String type, String version);
 
   /**
    * Returns the mime type.
@@ -78,5 +79,6 @@ public interface ExportRefsetHandler extends Configurable {
   public InputStream exportDefinition(Refset refset,
     List<ConceptRefsetMember> inclusions, List<ConceptRefsetMember> exclusions)
     throws Exception;
+
 
 }

@@ -115,6 +115,18 @@ public class ProjectJpa implements Project {
   @Column(nullable = true, length = 4000)
   private String exclusionClause;
 
+  /** The terminology handler key. */
+  @Column(nullable = false)
+  private String terminologyHandlerKey;
+
+  /** The terminology handler url. */
+  @Column(nullable = true)
+  private String terminologyHandlerUrl;
+  
+  /** The workflow path. */
+  @Column(nullable = false)
+  private String workflowPath;
+
   /** The role map. */
   @ElementCollection
   @MapKeyClass(value = UserJpa.class)
@@ -158,6 +170,9 @@ public class ProjectJpa implements Project {
     organization = project.getOrganization();
     description = project.getDescription();
     terminology = project.getTerminology();
+    terminologyHandlerKey = project.getTerminologyHandlerKey();
+    terminologyHandlerUrl = project.getTerminologyHandlerUrl();
+    workflowPath = project.getWorkflowPath();
     version = project.getVersion();
     feedbackEmail = project.getFeedbackEmail();
     exclusionClause = project.getExclusionClause();
@@ -219,11 +234,13 @@ public class ProjectJpa implements Project {
     return lastModifiedBy;
   }
 
+  /* see superclass */
   @Override
   public void setExclusionClause(String exclusionClause) {
     this.exclusionClause = exclusionClause;
   }
 
+  /* see superclass */
   @Override
   public String getExclusionClause() {
     return exclusionClause;
@@ -263,6 +280,47 @@ public class ProjectJpa implements Project {
 
   /* see superclass */
   @Override
+  public String getTerminologyId() {
+    // This is here b/c it Project extends Searchable class
+    if (id != null) {
+      return id.toString();
+    }
+    return null;
+  }
+
+  /* see superclass */
+  @Override
+  public void setTerminologyId(String terminologyId) {
+    // n/a
+  }
+
+  /* see superclass */
+  @Override
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  public String getTerminologyHandlerKey() {
+    return terminologyHandlerKey;
+  }
+
+  /* see superclass */
+  @Override
+  public void setTerminologyHandlerKey(String terminologyHandlerKey) {
+    this.terminologyHandlerKey = terminologyHandlerKey;
+  }
+
+  /* see superclass */
+  @Override
+  public String getTerminologyHandlerUrl() {
+    return terminologyHandlerUrl;
+  }
+
+  /* see superclass */
+  @Override
+  public void setTerminologyHandlerUrl(String terminologyHandlerUrl) {
+    this.terminologyHandlerUrl = terminologyHandlerUrl;
+  }
+
+  /* see superclass */
+  @Override
   public String getFeedbackEmail() {
     return feedbackEmail;
   }
@@ -276,9 +334,9 @@ public class ProjectJpa implements Project {
   /* see superclass */
   @Override
   @Fields({
-    @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO),
-    @Field(name = "nameSort", index = Index.YES, analyze = Analyze.NO, store = Store.NO)
-})
+      @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO),
+      @Field(name = "nameSort", index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  })
   public String getName() {
     return name;
   }
@@ -346,6 +404,20 @@ public class ProjectJpa implements Project {
   public void setOrganization(String organization) {
     this.organization = organization;
   }
+  
+  /* see superclass */
+  // n/a - @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  @Override
+  public String getWorkflowPath() {
+    return workflowPath;
+  }
+
+  /* see superclass */
+  @Override
+  public void setWorkflowPath(String workflowPath) {
+    this.workflowPath = workflowPath;
+  }
+
 
   /* see superclass */
   @Override
@@ -361,29 +433,16 @@ public class ProjectJpa implements Project {
         prime * result + ((organization == null) ? 0 : organization.hashCode());
     result =
         prime * result + ((terminology == null) ? 0 : terminology.hashCode());
+    result = prime * result + ((terminologyHandlerKey == null) ? 0
+        : terminologyHandlerKey.hashCode());
+    result = prime * result + ((terminologyHandlerUrl == null) ? 0
+        : terminologyHandlerUrl.hashCode());
     result = prime * result + ((version == null) ? 0 : version.hashCode());
-    result =
-        prime * result
-            + ((exclusionClause == null) ? 0 : exclusionClause.hashCode());
+    result = prime * result
+        + ((exclusionClause == null) ? 0 : exclusionClause.hashCode());
     // result = prime * result + ((validationChecks == null) ? 0 :
     // validationChecks.hashCode());
     return result;
-  }
-
-  /* see superclass */
-  @Override
-  public String getTerminologyId() {
-    // This is here b/c it Project extends Searchable class
-    if (id != null) {
-      return id.toString();
-    }
-    return null;
-  }
-
-  /* see superclass */
-  @Override
-  public void setTerminologyId(String terminologyId) {
-    // n/a
   }
 
   /* see superclass */
@@ -405,6 +464,50 @@ public class ProjectJpa implements Project {
   @Override
   public void setUserRoleMap(Map<User, UserRole> userRoleMap) {
     this.userRoleMap = userRoleMap;
+  }
+
+  /* see superclass */
+  @XmlTransient
+  @Override
+  public List<Refset> getRefsets() {
+    if (refsets == null) {
+      refsets = new ArrayList<Refset>();
+    }
+    return refsets;
+  }
+
+  /* see superclass */
+  @Override
+  public void setRefsets(List<Refset> refsets) {
+    this.refsets = refsets;
+  }
+
+  /* see superclass */
+  @XmlElement
+  @Override
+  public List<String> getValidationChecks() {
+    if (this.validationChecks == null) {
+      this.validationChecks = new ArrayList<String>();
+    }
+    return validationChecks;
+  }
+
+  /* see superclass */
+  @Override
+  public void setValidationChecks(List<String> validationChecks) {
+    this.validationChecks = validationChecks;
+  }
+
+  /* see superclass */
+  @Override
+  public void addValidationCheck(String validationCheck) {
+    this.validationChecks.add(validationCheck);
+  }
+
+  /* see superclass */
+  @Override
+  public void removeValidationCheck(String validationCheck) {
+    this.validationChecks.remove(validationCheck);
   }
 
   /* see superclass */
@@ -458,6 +561,16 @@ public class ProjectJpa implements Project {
         return false;
     } else if (!terminology.equals(other.terminology))
       return false;
+    if (terminologyHandlerKey == null) {
+      if (other.terminologyHandlerKey != null)
+        return false;
+    } else if (!terminologyHandlerKey.equals(other.terminologyHandlerKey))
+      return false;
+    if (terminologyHandlerUrl == null) {
+      if (other.terminologyHandlerUrl != null)
+        return false;
+    } else if (!terminologyHandlerUrl.equals(other.terminologyHandlerUrl))
+      return false;
     if (version == null) {
       if (other.version != null)
         return false;
@@ -467,21 +580,6 @@ public class ProjectJpa implements Project {
   }
 
   /* see superclass */
-  @XmlTransient
-  @Override
-  public List<Refset> getRefsets() {
-    if (refsets == null) {
-      refsets = new ArrayList<Refset>();
-    }
-    return refsets;
-  }
-
-  /* see superclass */
-  @Override
-  public void setRefsets(List<Refset> refsets) {
-    this.refsets = refsets;
-  }
-
   @Override
   public String toString() {
     return "ProjectJpa [id=" + id + ", lastModified=" + lastModified
@@ -489,33 +587,10 @@ public class ProjectJpa implements Project {
         + ", namespace=" + namespace + ", moduleId=" + moduleId
         + ", organization=" + organization + ", description=" + description
         + ", terminology=" + terminology + ", version=" + version
+        + ", terminologyHandlerKey=" + terminologyHandlerKey + ", workflowPath="
+        + workflowPath
         + ", exclusionClause=" + exclusionClause + ", userRoleMap="
         + userRoleMap + ", validationChecks=" + validationChecks + "]";
-  }
-
-  /* see superclass */
-  @XmlElement
-  @Override
-  public List<String> getValidationChecks() {
-    if (this.validationChecks == null) {
-      this.validationChecks = new ArrayList<String>();
-    }
-    return validationChecks;
-  }
-
-  @Override
-  public void setValidationChecks(List<String> validationChecks) {
-    this.validationChecks = validationChecks;
-  }
-
-  @Override
-  public void addValidationCheck(String validationCheck) {
-    this.validationChecks.add(validationCheck);
-  }
-
-  @Override
-  public void removeValidationCheck(String validationCheck) {
-    this.validationChecks.remove(validationCheck);
   }
 
 }

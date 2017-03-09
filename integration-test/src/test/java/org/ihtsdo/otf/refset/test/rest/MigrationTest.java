@@ -198,7 +198,7 @@ public class MigrationTest extends RestSupport {
     assertEquals(
         21,
         refsetService
-            .findRefsetMembersForQuery(julyStagedRefset.getId(), "",
+            .findRefsetMembersForQuery(julyStagedRefset.getId(), "",false, 
                 new PfsParameterJpa(), adminAuthToken).getObjects().size());
 
     // Compare refsets
@@ -223,7 +223,7 @@ public class MigrationTest extends RestSupport {
     assertEquals(
         21,
         refsetService
-            .findRefsetMembersForQuery(janRefset.getId(), "",
+            .findRefsetMembersForQuery(janRefset.getId(), "",false, 
                 new PfsParameterJpa(), adminAuthToken).getObjects().size());
 
     // verifyRefsetLookupCompleted(julyStagedRefset.getId());
@@ -253,7 +253,7 @@ public class MigrationTest extends RestSupport {
     assertEquals(
         118,
         refsetService
-            .findRefsetMembersForQuery(janRefset.getId(), "",
+            .findRefsetMembersForQuery(janRefset.getId(), "",false, 
                 new PfsParameterJpa(), adminAuthToken).getObjects().size());
 
     // Add some inclusions and exclusions
@@ -283,7 +283,7 @@ public class MigrationTest extends RestSupport {
     assertEquals(
         120,
         refsetService
-            .findRefsetMembersForQuery(janRefset.getId(), "",
+            .findRefsetMembersForQuery(janRefset.getId(), "",false, 
                 new PfsParameterJpa(), adminAuthToken).getObjects().size());
 
     // Begin migration to 20150731
@@ -296,7 +296,7 @@ public class MigrationTest extends RestSupport {
     assertEquals(
         164,
         refsetService
-            .findRefsetMembersForQuery(julyStagedRefset.getId(), "",
+            .findRefsetMembersForQuery(julyStagedRefset.getId(), "",false, 
                 new PfsParameterJpa(), adminAuthToken).getObjects().size());
 
     // Compare refsets
@@ -342,7 +342,7 @@ public class MigrationTest extends RestSupport {
     assertEquals(
         164,
         refsetService
-            .findRefsetMembersForQuery(janRefset.getId(), "",
+            .findRefsetMembersForQuery(janRefset.getId(), "",false, 
                 new PfsParameterJpa(), adminAuthToken).getObjects().size());
 
     // cleanup
@@ -411,8 +411,8 @@ public class MigrationTest extends RestSupport {
     refset.setTerminologyId(refsetId);
     // This is an opportunity to use "branch"
     refset.setVersion("20150131");
-    refset.setWorkflowPath("DFEAULT");
     refset.setWorkflowStatus(WorkflowStatus.PUBLISHED);
+    refset.setLocalSet(false);
 
     if (type == Refset.Type.EXTERNAL) {
       refset.setExternalUrl("http://www.example.com/some/other/refset.txt");

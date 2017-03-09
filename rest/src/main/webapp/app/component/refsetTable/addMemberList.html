@@ -1,5 +1,11 @@
 <div class="modal-header">
-  <h4>Add Refset Member List</h4>
+  <h4 style="display: inline">Add Refset Member List</h4>
+  <span style="float: right">
+    <i ng-show="!hasResults()" class="noul glyphicon glyphicon-remove"
+      ng-click="cancel()"></i>
+    <i ng-show="hasResults()" class="noul glyphicon glyphicon-remove"
+      ng-click="close()"></i>
+  </span>
 </div>
 
 <div class="modal-body">
@@ -87,7 +93,7 @@
             {{errors[0]}}
             <div style="display: inline; float: right;">
               <i ng-show="errors[1]"
-                title="{{error.expand ? 'Show' : 'Hide'}} long eror"
+                title="{{error.expand ? 'Show' : 'Hide'}} long error"
                 class="noul material-icons md-18"
                 ng-click="error.expand = !error.expand;">attach_file</i>
             </div>
@@ -114,15 +120,15 @@
   </div>
 
   <div class="modal-footer">
-    <button ng-show="refset.type == 'EXTENSIONAL'" class="btn btn-primary"
+    <button ng-show="refset.type == 'EXTENSIONAL'" class="btn btn-xs btn-primary"
       ng-disabled="!memberIdList || hasResults()" ng-click="includeMembers();">Add</button>
-    <button ng-show="refset.type == 'EXTENSIONAL'" class="btn btn-primary"
+    <button ng-show="refset.type == 'EXTENSIONAL'" class="btn btn-xs btn-primary"
       ng-disabled="!memberIdList || hasResults()" ng-click="excludeMembers();">Remove</button>
-    <button ng-show="refset.type == 'INTENSIONAL'" class="btn btn-primary"
+    <button ng-show="refset.type == 'INTENSIONAL'" class="btn btn-xs btn-primary"
       ng-disabled="!memberIdList || hasResults()" ng-click="includeMembers();">Include</button>
-    <button ng-show="refset.type == 'INTENSIONAL'" class="btn btn-primary"
+    <button ng-show="refset.type == 'INTENSIONAL'" class="btn btn-xs btn-primary"
       ng-disabled="!memberIdList || hasResults()" ng-click="excludeMembers();">Exclude</button>
-    <button ng-show="!hasResults()" class="btn btn-warning" ng-click="cancel()">Cancel</button>
-    <button ng-show="hasResults()" class="btn btn-warning" ng-click="close()">Close</button>
+    <button ng-show="!hasResults()" class="btn btn-xs btn-warning" ng-click="cancel()">Cancel</button>
+    <button ng-show="hasResults()" class="btn btn-xs btn-warning" ng-click="close()">Close</button>
   </div>
 </div>

@@ -1,5 +1,8 @@
 <div class="modal-header">
-  <h4>Replacement Concepts</h4>
+  <h4 style="display: inline">Replacement Concepts</h4>
+  <span style="float: right">
+    <i class="noul glyphicon glyphicon-remove" ng-click="cancel()"> </i>
+  </span>
 </div>
 
 <div class="modal-body">
@@ -28,7 +31,7 @@
             uib-tooltip="Inactive">I</button>
         </td>
       </tr>
-      <tr ng-repeat="concept in replacementConcepts"
+      <tr ng-repeat="concept in concepts"
         ng-class="{disabled : invalid.ids[concept.terminologyId]}">
         <td>
           <input type="checkbox" ng-show="!invalid.ids[concept.terminologyId]"
@@ -56,7 +59,7 @@
           {{errors[0]}}
           <div style="display: inline; float: right;">
             <i ng-show="errors[1]"
-              title="{{error.expand ? 'Show' : 'Hide'}} long eror"
+              title="{{error.expand ? 'Show' : 'Hide'}} long error"
               class="noul material-icons md-18"
               ng-click="error.expand = !error.expand;">attach_file</i>
           </div>
@@ -74,14 +77,14 @@
     </tr>
     <tr class="alert alert-warning" ng-repeat="warning in warnings">
       <td colspan="2">
-        <div class="alert alert-warning" ng-repeat="warning in warnings">{{warning}}</div>
+        <div class="alert alert-warning">{{warning}}</div>
       </td>
     </tr>
   </table>
 </div>
 
 <div class="modal-footer">
-  <button class="btn btn-primary" ng-disabled="selection.ids.length == 1"
+  <button class="btn btn-xs btn-primary" ng-disabled="selection.ids.length == 1"
     ng-click="submitAdd()">Submit</button>
-  <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
+  <button class="btn btn-xs btn-warning" ng-click="cancel()">Cancel</button>
 </div>

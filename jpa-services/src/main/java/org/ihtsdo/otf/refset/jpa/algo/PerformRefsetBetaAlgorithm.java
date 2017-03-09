@@ -126,8 +126,7 @@ public class PerformRefsetBetaAlgorithm extends RefsetServiceJpa implements
     artifact.setReleaseInfo(stageReleaseInfo);
     artifact.setIoHandlerId(ioHandlerId);
     artifact.setData(ByteStreams.toByteArray(inputStream));
-    artifact.setName(handler.getBetaFileName(stagedRefset.getProject()
-        .getNamespace(), "ActiveSnapshot", releaseInfo.getName()));
+    artifact.setName(handler.getBetaFileName(stagedRefset, "ActiveSnapshot", releaseInfo.getName()));
     artifact.setTimestamp(releaseInfo.getEffectiveTime());
     artifact.setLastModified(releaseInfo.getEffectiveTime());
     artifact.setLastModifiedBy(userName);
@@ -212,8 +211,7 @@ public class PerformRefsetBetaAlgorithm extends RefsetServiceJpa implements
       artifact.setReleaseInfo(stageReleaseInfo);
       artifact.setIoHandlerId(ioHandlerId);
       artifact.setData(ByteStreams.toByteArray(inputStream));
-      artifact.setName(handler.getBetaFileName(refset.getProject()
-          .getNamespace(), "Delta", stageReleaseInfo.getName()));
+      artifact.setName(handler.getBetaFileName(refset, "Delta", stageReleaseInfo.getName()));
       artifact.setTimestamp(stageReleaseInfo.getEffectiveTime());
       artifact.setLastModified(stageReleaseInfo.getEffectiveTime());
       artifact.setLastModifiedBy(userName);

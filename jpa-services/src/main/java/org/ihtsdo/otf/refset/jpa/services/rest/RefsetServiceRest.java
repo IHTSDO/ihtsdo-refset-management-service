@@ -214,13 +214,15 @@ public interface RefsetServiceRest {
    *
    * @param refsetId the refset id
    * @param query the query
+   * @param translated the translated
    * @param pfs the pfs
    * @param authToken the auth token
    * @return the concept refset member list
    * @throws Exception the exception
    */
   public ConceptRefsetMemberList findRefsetMembersForQuery(Long refsetId,
-    String query, PfsParameterJpa pfs, String authToken) throws Exception;
+    String query, Boolean translated, PfsParameterJpa pfs, String authToken)
+    throws Exception;
 
   /**
    * Adds the refset inclusion.
@@ -554,6 +556,7 @@ public interface RefsetServiceRest {
   /**
    * Is expression valid.
    *
+   * @param projectId the project id
    * @param expression the expression
    * @param terminology the terminology
    * @param version the version
@@ -561,8 +564,8 @@ public interface RefsetServiceRest {
    * @return the boolean
    * @throws Exception the exception
    */
-  public Boolean isExpressionValid(String expression, String terminology,
-    String version, String authToken) throws Exception;
+  public Boolean isExpressionValid(Long projectId, String expression,
+    String terminology, String version, String authToken) throws Exception;
 
   /**
    * Recover removed refset.
@@ -590,6 +593,7 @@ public interface RefsetServiceRest {
   /**
    * Count expression.
    *
+   * @param projectId the project id
    * @param expression the expression
    * @param terminology the terminology
    * @param version the version
@@ -597,8 +601,8 @@ public interface RefsetServiceRest {
    * @return the integer
    * @throws Exception the exception
    */
-  public Integer countExpression(String expression, String terminology,
-    String version, String authToken) throws Exception;
+  public Integer countExpression(Long projectId, String expression,
+    String terminology, String version, String authToken) throws Exception;
 
   /**
    * Returns values for various refset fields that can be used as easy picklist
@@ -634,4 +638,40 @@ public interface RefsetServiceRest {
    */
   public String assignRefsetTerminologyId(Long projectId, RefsetJpa refset,
     String authToken) throws Exception;
+
+  /**
+   * Export diff report.
+   *
+   * @param reportToken the report token
+   * @param authToken the auth token
+   * @return the input stream
+   * @throws Exception the exception
+   */
+  public InputStream exportDiffReport(String reportToken, String authToken)
+    throws Exception;
+
+  /**
+   * Convert refset.
+   *
+   * @param refsetId the refset id
+   * @param refsetType the refset type
+   * @param authToken the auth token
+   * @return the refset
+   * @throws Exception the exception
+   */
+  public Refset convertRefset(Long refsetId, String refsetType,
+    String authToken) throws Exception;
+
+  /**
+   * Checks if is terminology version valid.
+   *
+   * @param projectId the project id
+   * @param terminology the terminology
+   * @param version the version
+   * @param authToken the auth token
+   * @return the boolean
+   * @throws Exception the exception
+   */
+  public Boolean isTerminologyVersionValid(Long projectId, String terminology,
+    String version, String authToken) throws Exception;
 }

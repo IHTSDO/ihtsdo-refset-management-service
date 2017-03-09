@@ -140,6 +140,7 @@ public class RefsetJpaUnitTest extends ModelUnitSupport {
     tester.include("inPublicationProcess");
     tester.include("lookupInProgress");
     tester.include("revision");
+    tester.include("localSet");
 
     // Set up objects
     tester.proxy(Project.class, 1, p1);
@@ -215,6 +216,7 @@ public class RefsetJpaUnitTest extends ModelUnitSupport {
     tester.include("terminologyId");
     tester.include("terminology");
     tester.include("version");
+    tester.include("localSet");
     tester.include("name");
     tester.include("description");
     tester.include("isPublic");
@@ -222,7 +224,6 @@ public class RefsetJpaUnitTest extends ModelUnitSupport {
     tester.include("type");
     tester.include("forTranslation");
     tester.include("workflowStatus");
-    tester.include("workflowPath");
     tester.include("refsetDescriptorUuid");
     tester.include("inPublicationProcess");
     tester.include("lookupInProgress");
@@ -252,6 +253,8 @@ public class RefsetJpaUnitTest extends ModelUnitSupport {
     // Test non analyzed fields
     assertTrue(tester.testAnalyzedIndexedFields());
     tester = new IndexedFieldTester(object);
+    tester.include("id");
+    tester.include("localSet");
     tester.include("effectiveTime");
     tester.include("terminology");
     tester.include("version");
@@ -313,11 +316,12 @@ public class RefsetJpaUnitTest extends ModelUnitSupport {
     clause1.setValue("<<195967001");
     clause1.setNegated(false);
     refset.getDefinitionClauses().add(clause1);
-    assertEquals("<<195967001", refset.computeDefinition(null,null));
+    assertEquals("<<195967001", refset.computeDefinition(null, null));
 
     // <<195967001 with project exclusion clause
     project.setExclusionClause("<<304527002");
-    assertEquals("<<195967001 MINUS <<304527002", refset.computeDefinition(null,null));
+    assertEquals("<<195967001 MINUS <<304527002",
+        refset.computeDefinition(null, null));
 
     // <<195967001 MINUS <<304527002
     refset.getDefinitionClauses().clear();
@@ -327,18 +331,20 @@ public class RefsetJpaUnitTest extends ModelUnitSupport {
     clause2.setNegated(true);
     refset.getDefinitionClauses().add(clause1);
     refset.getDefinitionClauses().add(clause2);
-    assertEquals("<<195967001 MINUS <<304527002", refset.computeDefinition(null,null));
+    assertEquals("<<195967001 MINUS <<304527002",
+        refset.computeDefinition(null, null));
 
     // Try adding clauses in the reverse order
     refset.getDefinitionClauses().clear();
     refset.getDefinitionClauses().add(clause2);
     refset.getDefinitionClauses().add(clause1);
-    assertEquals("<<195967001 MINUS <<304527002", refset.computeDefinition(null,null));
+    assertEquals("<<195967001 MINUS <<304527002",
+        refset.computeDefinition(null, null));
 
     // <<195967001 MINUS <<304527002 with project exclusion clause
     project.setExclusionClause("<<370218001");
     assertEquals("<<195967001 MINUS (<<304527002 OR <<370218001)",
-        refset.computeDefinition(null,null));
+        refset.computeDefinition(null, null));
 
     // (<<195967001 OR <<304527002) MINUS <<370218001
     refset.getDefinitionClauses().clear();
@@ -351,7 +357,7 @@ public class RefsetJpaUnitTest extends ModelUnitSupport {
     refset.getDefinitionClauses().add(clause2);
     refset.getDefinitionClauses().add(clause3);
     assertEquals("(<<195967001 OR <<304527002) MINUS <<370218001",
-        refset.computeDefinition(null,null));
+        refset.computeDefinition(null, null));
 
     // (<<195967001 OR <<304527002) MINUS (<<370218001 OR <<389145006)
     refset.getDefinitionClauses().clear();
@@ -365,14 +371,14 @@ public class RefsetJpaUnitTest extends ModelUnitSupport {
     refset.getDefinitionClauses().add(clause4);
     assertEquals(
         "(<<195967001 OR <<304527002) MINUS (<<370218001 OR <<389145006)",
-        refset.computeDefinition(null,null));
+        refset.computeDefinition(null, null));
 
     // (<<195967001 OR <<304527002) MINUS (<<370218001 OR <<389145006) with
     // project exclusion
     project.setExclusionClause("<<12345");
     assertEquals(
         "(<<195967001 OR <<304527002) MINUS (<<370218001 OR <<389145006 OR <<12345)",
-        refset.computeDefinition(null,null));
+        refset.computeDefinition(null, null));
 
     // <<195967001 MINUS (<<370218001 OR <<389145006)
     refset.getDefinitionClauses().clear();
@@ -381,7 +387,7 @@ public class RefsetJpaUnitTest extends ModelUnitSupport {
     refset.getDefinitionClauses().add(clause3);
     refset.getDefinitionClauses().add(clause4);
     assertEquals("<<195967001 MINUS (<<370218001 OR <<389145006)",
-        refset.computeDefinition(null,null));
+        refset.computeDefinition(null, null));
 
     // (<<195967001 OR <<304527002 OR <<370218001) MINUS (<<370218001 OR
     // <<389145006 OR <<195967001)
@@ -399,7 +405,7 @@ public class RefsetJpaUnitTest extends ModelUnitSupport {
     refset.getDefinitionClauses().add(clause1b);
     assertEquals(
         "(<<195967001 OR <<304527002 OR <<370218001) MINUS (<<370218001 OR <<389145006 OR <<195967001)",
-        refset.computeDefinition(null,null));
+        refset.computeDefinition(null, null));
 
     // Test role restriction cases too
     // < 19829001 |disorder of lung|: 116676008 |associated morphology| =
@@ -413,19 +419,19 @@ public class RefsetJpaUnitTest extends ModelUnitSupport {
     refset.getDefinitionClauses().clear();
     project.setExclusionClause(null);
     clause1 = new DefinitionClauseJpa();
-    clause1
-        .setValue("< 19829001 |disorder of lung|: 116676008 |associated morphology| = 79654002 |edema|");
+    clause1.setValue(
+        "< 19829001 |disorder of lung|: 116676008 |associated morphology| = 79654002 |edema|");
     clause1.setNegated(false);
     refset.getDefinitionClauses().add(clause1);
     assertEquals(
         "< 19829001 |disorder of lung|: 116676008 |associated morphology| = 79654002 |edema|",
-        refset.computeDefinition(null,null));
+        refset.computeDefinition(null, null));
 
     // with project exclusion clause
     project.setExclusionClause("<<304527002");
     assertEquals(
         "(< 19829001 |disorder of lung|: 116676008 |associated morphology| = 79654002 |edema|) MINUS <<304527002",
-        refset.computeDefinition(null,null));
+        refset.computeDefinition(null, null));
 
     // (< 19829001 |disorder of lung|: 116676008 |associated morphology| =
     // 79654002 |edema|) OR <<409623005 | Respiratory insufficiency (disorder) |
@@ -439,14 +445,14 @@ public class RefsetJpaUnitTest extends ModelUnitSupport {
     assertEquals(
         "(< 19829001 |disorder of lung|: 116676008 |associated morphology| = 79654002 |edema|) "
             + "OR <<409623005 | Respiratory insufficiency (disorder) |",
-        refset.computeDefinition(null,null));
+        refset.computeDefinition(null, null));
 
     // with project exclusion clause
     project.setExclusionClause("<<304527002");
     assertEquals(
         "((< 19829001 |disorder of lung|: 116676008 |associated morphology| = 79654002 |edema|) "
             + "OR <<409623005 | Respiratory insufficiency (disorder) |) MINUS <<304527002",
-        refset.computeDefinition(null,null));
+        refset.computeDefinition(null, null));
 
     // < 19829001 |disorder of lung|: 116676008 |associated morphology| =
     // 79654002 |edema|
@@ -457,12 +463,12 @@ public class RefsetJpaUnitTest extends ModelUnitSupport {
     clause1.setNegated(false);
     refset.getDefinitionClauses().add(clause1);
     assertEquals("< 19829001 : 116676008 = 79654002",
-        refset.computeDefinition(null,null));
+        refset.computeDefinition(null, null));
 
     // with project exclusion clause
     project.setExclusionClause("<<304527002");
     assertEquals("(< 19829001 : 116676008 = 79654002) MINUS <<304527002",
-        refset.computeDefinition(null,null));
+        refset.computeDefinition(null, null));
 
     // (< 19829001 |disorder of lung|: 116676008 |associated morphology| =
     // 79654002 |edema|) OR <<409623005 | Respiratory insufficiency (disorder) |
@@ -474,13 +480,13 @@ public class RefsetJpaUnitTest extends ModelUnitSupport {
     refset.getDefinitionClauses().add(clause1);
     refset.getDefinitionClauses().add(clause2);
     assertEquals("(< 19829001 : 116676008 = 79654002) OR <<409623005",
-        refset.computeDefinition(null,null));
+        refset.computeDefinition(null, null));
 
     // with project exclusion clause
     project.setExclusionClause("<<304527002");
     assertEquals(
         "((< 19829001 : 116676008 = 79654002) OR <<409623005) MINUS <<304527002",
-        refset.computeDefinition(null,null));
+        refset.computeDefinition(null, null));
 
     //
     // Now, test compound clauses (containing AND, OR, or MINUS) - wrap with
@@ -506,7 +512,8 @@ public class RefsetJpaUnitTest extends ModelUnitSupport {
     clause2.setNegated(false);
     refset.getDefinitionClauses().add(clause1);
     refset.getDefinitionClauses().add(clause2);
-    assertEquals("(" + a + ") OR (" + b + ")", refset.computeDefinition(null,null));
+    assertEquals("(" + a + ") OR (" + b + ")",
+        refset.computeDefinition(null, null));
 
     //
     // Now, test compound clauses (containing AND, OR, or MINUS) - wrap with
@@ -520,10 +527,8 @@ public class RefsetJpaUnitTest extends ModelUnitSupport {
     // => (a) minus (b)
     refset.getDefinitionClauses().clear();
     project.setExclusionClause(null);
-    a =
-        "< 65801008|Excision (procedure)| AND < 118673008|Procedure on digestive system (procedure)|";
-    b =
-        "< 233604007|Pneumonia (disorder)| MINUS << 64667001|Interstitial pneumonia (disorder)|";
+    a = "< 65801008|Excision (procedure)| AND < 118673008|Procedure on digestive system (procedure)|";
+    b = "< 233604007|Pneumonia (disorder)| MINUS << 64667001|Interstitial pneumonia (disorder)|";
     clause1 = new DefinitionClauseJpa();
     clause1.setValue(a);
     clause1.setNegated(false);
@@ -532,7 +537,8 @@ public class RefsetJpaUnitTest extends ModelUnitSupport {
     clause2.setNegated(true);
     refset.getDefinitionClauses().add(clause1);
     refset.getDefinitionClauses().add(clause2);
-    assertEquals("(" + a + ") MINUS (" + b + ")", refset.computeDefinition(null,null));
+    assertEquals("(" + a + ") MINUS (" + b + ")",
+        refset.computeDefinition(null, null));
 
     //
     // Now, test compound clauses (containing AND, OR, or MINUS) - wrap with
@@ -547,8 +553,7 @@ public class RefsetJpaUnitTest extends ModelUnitSupport {
     refset.getDefinitionClauses().clear();
     project.setExclusionClause(null);
     a = "65801008";
-    b =
-        "< 65801008|Excision (procedure)| AND < 118673008|Procedure on digestive system (procedure)|";
+    b = "< 65801008|Excision (procedure)| AND < 118673008|Procedure on digestive system (procedure)|";
     String c =
         "< 233604007|Pneumonia (disorder)| MINUS << 64667001|Interstitial pneumonia (disorder)|";
     clause1 = new DefinitionClauseJpa();
@@ -565,7 +570,7 @@ public class RefsetJpaUnitTest extends ModelUnitSupport {
     refset.getDefinitionClauses().add(clause3);
 
     assertEquals(a + " OR (" + b + ") OR (" + c + ")",
-        refset.computeDefinition(null,null));
+        refset.computeDefinition(null, null));
 
     //
     // Now, test compound clauses (containing AND, OR, or MINUS) - wrap with
@@ -582,10 +587,8 @@ public class RefsetJpaUnitTest extends ModelUnitSupport {
     refset.getDefinitionClauses().clear();
     project.setExclusionClause(null);
     a = "65801008";
-    b =
-        "< 65801008|Excision (procedure)| AND < 118673008|Procedure on digestive system (procedure)|";
-    c =
-        "< 233604007|Pneumonia (disorder)| MINUS << 64667001|Interstitial pneumonia (disorder)|";
+    b = "< 65801008|Excision (procedure)| AND < 118673008|Procedure on digestive system (procedure)|";
+    c = "< 233604007|Pneumonia (disorder)| MINUS << 64667001|Interstitial pneumonia (disorder)|";
     String d = "233604007";
     clause1 = new DefinitionClauseJpa();
     clause1.setValue(a);
@@ -604,7 +607,7 @@ public class RefsetJpaUnitTest extends ModelUnitSupport {
     refset.getDefinitionClauses().add(clause3);
     refset.getDefinitionClauses().add(clause4);
     assertEquals("(" + a + " OR (" + b + ")) MINUS ((" + c + ") OR " + d + ")",
-        refset.computeDefinition(null,null)); // TODO: test
+        refset.computeDefinition(null, null)); // TODO: test
 
     //
     // Now, test compound clauses (containing AND, OR, or MINUS) - wrap with
@@ -622,11 +625,9 @@ public class RefsetJpaUnitTest extends ModelUnitSupport {
     // => ((a) or (b)) minus ((c) or (d))
     refset.getDefinitionClauses().clear();
     project.setExclusionClause(null);
-    a =
-        "< 65801008|Excision (procedure)| AND < 118673008|Procedure on digestive system (procedure)|";
+    a = "< 65801008|Excision (procedure)| AND < 118673008|Procedure on digestive system (procedure)|";
     b = a;
-    c =
-        "< 233604007|Pneumonia (disorder)| MINUS << 64667001|Interstitial pneumonia (disorder)|";
+    c = "< 233604007|Pneumonia (disorder)| MINUS << 64667001|Interstitial pneumonia (disorder)|";
     d = c;
     clause1 = new DefinitionClauseJpa();
     clause1.setValue(a);
@@ -644,8 +645,9 @@ public class RefsetJpaUnitTest extends ModelUnitSupport {
     refset.getDefinitionClauses().add(clause2);
     refset.getDefinitionClauses().add(clause3);
     refset.getDefinitionClauses().add(clause4);
-    assertEquals("((" + a + ") OR (" + b + ")) MINUS ((" + c + ") OR (" + d
-        + "))", refset.computeDefinition(null,null)); // TODO: test
+    assertEquals(
+        "((" + a + ") OR (" + b + ")) MINUS ((" + c + ") OR (" + d + "))",
+        refset.computeDefinition(null, null)); // TODO: test
 
   }
 

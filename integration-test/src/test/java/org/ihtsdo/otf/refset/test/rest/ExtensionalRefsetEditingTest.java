@@ -54,7 +54,7 @@ public class ExtensionalRefsetEditingTest extends RefsetTestSupport {
 
     // Workflow - Assign the refset
     currentRefset =
-        getNewRefsetInRefsetList(workflowService.findAvailableEditingRefsets(
+        getNewRefsetInRefsetList(workflowService.findAvailableRefsets( "AUTHOR",
             currentRefset.getProject().getId(), testUser,
             new PfsParameterJpa(), adminAuthToken), currentRefset);
     assertTrue(currentRefset != null);
@@ -68,7 +68,7 @@ public class ExtensionalRefsetEditingTest extends RefsetTestSupport {
     // Find the assigned refset
     currentRefset =
         getNewRefsetInTrackingRecordList(
-            workflowService.findAssignedEditingRefsets(currentRefset
+            workflowService.findAssignedRefsets("AUTHOR", currentRefset
                 .getProject().getId(), testUser, new PfsParameterJpa(),
                 adminAuthToken), record.getRefset());
     assertTrue(currentRefset != null);
@@ -102,7 +102,7 @@ public class ExtensionalRefsetEditingTest extends RefsetTestSupport {
 
     List<ConceptRefsetMember> addedMembers =
         refsetService.findRefsetMembersForQuery(currentRefset.getId(), "",
-            new PfsParameterJpa(), adminAuthToken).getObjects();
+            false, new PfsParameterJpa(), adminAuthToken).getObjects();
     assertEquals(5, addedMembers.size());
 
     // Remove 2 members
@@ -111,7 +111,7 @@ public class ExtensionalRefsetEditingTest extends RefsetTestSupport {
 
     List<ConceptRefsetMember> currentMembers =
         refsetService.findRefsetMembersForQuery(currentRefset.getId(), "",
-            new PfsParameterJpa(), adminAuthToken).getObjects();
+            false,  new PfsParameterJpa(), adminAuthToken).getObjects();
     assertEquals(3, currentMembers.size());
 
     // Change Refset Definition
@@ -143,8 +143,8 @@ public class ExtensionalRefsetEditingTest extends RefsetTestSupport {
 
     // Find available review refset
     currentRefset =
-        getNewRefsetInRefsetList(workflowService.findAvailableReviewRefsets(
-            currentRefset.getProject().getId(), testUser,
+        getNewRefsetInRefsetList(workflowService.findAvailableRefsets(
+            "REVIEWER", currentRefset.getProject().getId(), testUser,
             new PfsParameterJpa(), adminAuthToken), record.getRefset());
 
     if (currentRefset == null) {
@@ -161,7 +161,7 @@ public class ExtensionalRefsetEditingTest extends RefsetTestSupport {
     // Find assigned review refset
     currentRefset =
         getNewRefsetInTrackingRecordList(
-            workflowService.findAssignedReviewRefsets(currentRefset
+            workflowService.findAssignedRefsets("REVIEWER", currentRefset
                 .getProject().getId(), reviewer1.getUserName(),
                 new PfsParameterJpa(), adminAuthToken), record.getRefset());
 

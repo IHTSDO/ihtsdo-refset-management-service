@@ -30,10 +30,10 @@ import org.ihtsdo.otf.refset.jpa.services.handlers.IndexUtility;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.services.WorkflowService;
 import org.ihtsdo.otf.refset.services.handlers.WorkflowActionHandler;
-import org.ihtsdo.otf.refset.worfklow.TrackingRecordJpa;
-import org.ihtsdo.otf.refset.worfklow.TrackingRecordListJpa;
 import org.ihtsdo.otf.refset.workflow.TrackingRecord;
+import org.ihtsdo.otf.refset.workflow.TrackingRecordJpa;
 import org.ihtsdo.otf.refset.workflow.TrackingRecordList;
+import org.ihtsdo.otf.refset.workflow.TrackingRecordListJpa;
 import org.ihtsdo.otf.refset.workflow.WorkflowAction;
 
 /**
@@ -95,7 +95,7 @@ public class WorkflowServiceJpa extends TranslationServiceJpa
     final Refset refset = this.getRefset(refsetId);
     // Obtain the handler
     final WorkflowActionHandler handler =
-        getWorkflowHandlerForPath(refset.getWorkflowPath());
+        getWorkflowHandlerForPath(refset.getProject().getWorkflowPath());
     // Validate the action
     final ValidationResult result =
         handler.validateWorkflowAction(refset, user, projectRole, action, this);
@@ -169,7 +169,7 @@ public class WorkflowServiceJpa extends TranslationServiceJpa
     final Translation translation = getTranslation(translationId);
     // Obtain the handler
     final WorkflowActionHandler handler =
-        getWorkflowHandlerForPath(translation.getWorkflowPath());
+        getWorkflowHandlerForPath(translation.getProject().getWorkflowPath());
     // Validate the action
     final ValidationResult result = handler.validateWorkflowAction(translation,
         user, projectRole, action, concept, this);
@@ -265,9 +265,13 @@ public class WorkflowServiceJpa extends TranslationServiceJpa
       if (query != null && !query.isEmpty()) {
         escapedPfsQuery = QueryParserBase.escape(query);
       }
-      fullTextQuery =
+      try {
+        fullTextQuery =
           IndexUtility.applyPfsToLuceneQuery(TrackingRecordJpa.class,
               TrackingRecordJpa.class, escapedPfsQuery, pfs, manager);
+      } catch(ParseException pe) {
+        return new TrackingRecordListJpa();
+      }
     }
 
     // execute the query
@@ -341,5 +345,7 @@ public class WorkflowServiceJpa extends TranslationServiceJpa
     record.getAuthors().size();
     record.getReviewers().size();
   }
+  
+
 
 }

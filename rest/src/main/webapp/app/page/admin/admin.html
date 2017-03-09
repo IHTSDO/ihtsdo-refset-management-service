@@ -13,14 +13,14 @@
     <uib-accordion
       ng-show="user.applicationRole == 'ADMIN' || user.applicationRole == 'USER'">
 
-    <!-- A1 - Projects --> <uib-accordion-group> <uib-accordion-heading>
+    <!-- A1 - Projects --> <uib-accordion-group ng-show="user.applicationRole == 'ADMIN' || user.applicationRole == 'USER'"> <uib-accordion-heading>
     <h5>
       <span uib-tooltip="Add, edit, and remove projects">Projects</span>
     </h5>
     </uib-accordion-heading>
     <div class="col-md-12 col-xs-12">
       <h4>
-        <span style="float: right;">
+        <span style="float: right;" ng-show="user.applicationRole == 'ADMIN'">
           <button ng-click="openAddProjectModal()" title="Add project"
             class="btn btn-xs btn-primary">Add Project</button>
         </span>
@@ -71,12 +71,14 @@
             <td>{{project.namespace}}</td>
 
             <td class="nobreak">
-
+			  <i ng-click="openLogModal(project)" title="Retrieve log"
+                  class="noul material-icons md-18">event_note</i>
+                
               <i
                 ng-click="openEditProjectModal(project); $event.stopPropagation()"
                 title="Edit" class="noul material-icons md-18">edit</i>
 
-              <i
+              <i ng-show="user.applicationRole == 'ADMIN'"
                 confirm="Are you sure you want to remove the project ({{project.name}})?"
                 ng-click="removeProject(project); $event.stopPropagation()"
                 title="Delete" class="noul material-icons md-18">delete</i>

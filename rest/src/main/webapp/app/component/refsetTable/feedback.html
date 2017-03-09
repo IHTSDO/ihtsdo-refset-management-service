@@ -1,12 +1,15 @@
 <div class="modal-header">
-  <h4>Submit Feedback</h4>
+  <h4 style="display: inline">Submit Feedback</h4>
+  <span style="float: right">
+    <i class="noul glyphicon glyphicon-remove" ng-click="cancel()"> </i>
+  </span>
 </div>
 
 <div class="modal-body">
 
   <div>
     <!-- Refset info -->
-    <div refset-info refset="refset" form="long"></div>
+    <div refset-info refset="refset" form="long" metadata="metadata"></div>
 
     <!-- Form -->
     <table class="table">
@@ -46,7 +49,7 @@
 </div>
 
 <div class="modal-footer">
-  <button class="btn btn-primary"
+  <button class="btn btn-xs btn-primary"
     ng-click="addFeedback(refset, name, email, message);">Send Feedback</button>
-  <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
+  <button class="btn btn-xs btn-warning" ng-click="cancel()">Cancel</button>
 </div>

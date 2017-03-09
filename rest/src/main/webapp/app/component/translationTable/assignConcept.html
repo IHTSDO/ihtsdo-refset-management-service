@@ -1,13 +1,16 @@
 <div class="modal-header">
-  <h4>
+  <h4 style="display: inline">
     {{action}} Concept
-    <span ng-show="action == 'REASSIGN'"> to Author</span>
   </h4>
+  <span style="float: right">
+    <i class="noul glyphicon glyphicon-remove" ng-click="cancel()"> </i>
+  </span>
 </div>
 
 <div class="modal-body">
   <!-- Translation info -->
-  <div translation-info translation="translation" form="short"></div>
+  <div translation-info translation="translation" form="short"
+    metadata="metadata"></div>
 
   <table class="table">
     <tr>
@@ -23,14 +26,21 @@
       </td>
       <td>{{concept.name}}</td>
     </tr>
-    <!-- dont show username for reassign, it simply goes back to the author(s) -->
-    <tr ng-show="action == 'ASSIGN'">
+    <tr>
       <td>
-        <b>Select user</b>
+        <b>User</b>
       </td>
+      <td ng-show="assignedUsers.length > 1" >
+        <select ng-model="user" ng-options="item.name for item in assignedUsers"></select></td>
+      <td ng-show="assignedUsers.length == 1">{{assignedUsers[0].userName}}</td>
+    </tr>
+    <tr ng-show="action == 'FEEDBACK'">
       <td>
-        <select ng-model="user" ng-options="item.name for item in assignedUsers"></select>
+        <b>Role</b>
       </td>
+      <td ng-show="feedbackRoleOptions.length > 1" >
+        <select ng-model="role" ng-options="item for item in feedbackRoleOptions"></select></td>
+      <td ng-show="feedbackRoleOptions.length == 1">{{role}}</td>
     </tr>
     <!-- Show notes if we know the concept id -->
     <tr ng-show="concept.id">
@@ -51,7 +61,7 @@
           {{errors[0]}}
           <div style="display: inline; float: right;">
             <i ng-show="errors[1]"
-              title="{{error.expand ? 'Show' : 'Hide'}} long eror"
+              title="{{error.expand ? 'Show' : 'Hide'}} long error"
               class="noul material-icons md-18"
               ng-click="error.expand = !error.expand;">attach_file</i>
           </div>
@@ -65,9 +75,9 @@
 </div>
 
 <div class="modal-footer">
-  <button ng-show="action == 'ASSIGN'" class="btn btn-primary"
+  <button ng-show="action == 'ASSIGN'" class="btn btn-xs btn-primary"
     ng-click="assignConcept();">Assign</button>
-  <button ng-show="action == 'REASSIGN'" class="btn btn-primary"
-    ng-click="assignConcept();">Reassign</button>
-  <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
+  <button ng-show="action == 'FEEDBACK'" class="btn btn-xs btn-primary"
+    ng-click="assignConcept();">Feedback</button>
+  <button class="btn btn-xs btn-warning" ng-click="cancel()">Cancel</button>
 </div>

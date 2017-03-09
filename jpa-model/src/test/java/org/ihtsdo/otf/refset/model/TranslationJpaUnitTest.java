@@ -188,7 +188,6 @@ public class TranslationJpaUnitTest extends ModelUnitSupport {
     tester.include("description");
     tester.include("isPublic");
     tester.include("workflowStatus");
-    tester.include("workflowPath");
     tester.include("provisional");
     tester.include("spellingDictionaryEmpty");
     tester.include("phraseMemoryEmpty");
@@ -219,6 +218,7 @@ public class TranslationJpaUnitTest extends ModelUnitSupport {
     // Test non analyzed fields
     assertTrue(tester.testAnalyzedIndexedFields());
     tester = new IndexedFieldTester(object);
+    tester.include("id");
     tester.include("terminologyId");
     tester.include("terminology");
     tester.include("version");

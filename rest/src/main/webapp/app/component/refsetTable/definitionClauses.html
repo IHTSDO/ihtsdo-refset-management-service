@@ -1,11 +1,15 @@
 <div class="modal-header">
-  <h4>Definition Clauses</h4>
+  <h4 style="display: inline">Definition Clauses</h4>
+  <span style="float: right">
+    <i ng-show="value == 'ASSIGNED'" class="noul glyphicon glyphicon-remove" ng-click="close()"></i>
+    <i ng-show="value != 'ASSIGNED'" class="noul glyphicon glyphicon-remove" ng-click="cancel()"></i>
+  </span>
 </div>
 
 <div class="modal-body">
 
   <!-- Refset info -->
-  <div refset-info refset="refset" form="short"></div>
+  <div refset-info refset="refset" form="short" metadata="metadata"></div>
 
   <div class="row">
     <!--  Left hand side -->
@@ -84,7 +88,7 @@
                 {{errors[0]}}
                 <div style="display: inline; float: right;">
                   <i ng-show="errors[1]"
-                    title="{{error.expand ? 'Show' : 'Hide'}} long eror"
+                    title="{{error.expand ? 'Show' : 'Hide'}} long error"
                     class="noul material-icons md-18"
                     ng-click="error.expand = !error.expand;">attach_file</i>
                 </div>
@@ -103,16 +107,16 @@
 </div>
 
 <div class="modal-footer">
-  <button ng-disabled="!isDefinitionDirty()" class="btn btn-primary"
+  <button ng-disabled="!isDefinitionDirty()" class="btn btn-xs btn-primary"
     ng-show="value == 'ASSIGNED' && !warningFlag" ng-click="save(refset);"
     title="Save and recompute definition">Recompute</button>
   <button
     confirm="Are you sure you want to add an expression for large number of members?"
-    ng-disabled="!isDefinitionDirty()" class="btn btn-primary"
+    ng-disabled="!isDefinitionDirty()" class="btn btn-xs btn-primary"
     ng-show="value == 'ASSIGNED' && warningFlag" ng-click="save(refset);"
     title="Save and recompute definition">Recompute</button>
-  <button class="btn btn-warning" ng-show="value == 'ASSIGNED'"
+  <button class="btn btn-xs btn-warning" ng-show="value == 'ASSIGNED'"
     ng-click="cancel()">Cancel</button>
-  <button ng-show="value != 'ASSIGNED'" class="btn btn-warning"
+  <button ng-show="value != 'ASSIGNED'" class="btn btn-xs btn-warning"
     ng-click="cancel()">Close</button>
 </div>

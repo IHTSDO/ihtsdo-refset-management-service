@@ -166,70 +166,98 @@ public interface UserPreferences {
    * @param lastProjectId the last project id
    */
   public void setLastProjectId(Long lastProjectId);
-  
+
+  /**
+   * Returns the last refset id.
+   *
+   * @return the last refset id
+   */
+  public Long getLastRefsetId();
+
+  /**
+   * Sets the last refset id.
+   *
+   * @param lastRefsetId the last refset id
+   */
+  public void setLastRefsetId(Long lastRefsetId);
+
+  /**
+   * Returns the last translation id.
+   *
+   * @return the last translation id
+   */
+  public Long getLastTranslationId();
+
+  /**
+   * Sets the last translation id.
+   *
+   * @param lastTranslationId the last translation id
+   */
+  public void setLastTranslationId(Long lastTranslationId);
+
   /**
    * Returns the module id.
    *
    * @return the module id
    */
   public String getModuleId();
-  
+
   /**
    * Sets the module id.
    *
    * @param moduleId the module id
    */
   public void setModuleId(String moduleId);
-  
+
   /**
    * Returns the feedback email.
    *
    * @return the feedback email
    */
   public String getFeedbackEmail();
-  
+
   /**
    * Sets the feedback email.
    *
    * @param feedbackEmail the feedback email
    */
   public void setFeedbackEmail(String feedbackEmail);
-  
+
   /**
    * Returns the namespace.
    *
    * @return the namespace
    */
   public String getNamespace();
-  
+
   /**
    * Sets the namespace.
    *
    * @param namespace the namespace
    */
   public void setNamespace(String namespace);
-  
+
   /**
    * Returns the organization.
    *
    * @return the organization
    */
   public String getOrganization();
-  
+
   /**
    * Sets the organization.
    *
    * @param organization the organization
    */
   public void setOrganization(String organization);
-  
+
   /**
    * Returns the exclusion clause.
    *
    * @return the exclusion clause
    */
   public String getExclusionClause();
-  
+
   /**
    * Sets the exclusion clause.
    *

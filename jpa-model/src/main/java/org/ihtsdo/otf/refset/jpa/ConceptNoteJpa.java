@@ -105,11 +105,9 @@ public class ConceptNoteJpa extends AbstractNote {
     int result = 1;
     result =
         prime * result + ((getValue() == null) ? 0 : getValue().hashCode());
-    result =
-        prime
-            * result
-            + ((concept == null || concept.getTerminologyId() == null) ? 0
-                : concept.getTerminologyId().hashCode());
+    result = prime * result
+        + ((concept == null || concept.getTerminologyId() == null) ? 0
+            : concept.getTerminologyId().hashCode());
     return result;
   }
 
@@ -134,18 +132,17 @@ public class ConceptNoteJpa extends AbstractNote {
     } else if (concept.getTerminologyId() == null) {
       if (other.concept != null && other.concept.getTerminologyId() != null)
         return false;
-    } else if (!concept.getTerminologyId().equals(
-        other.concept.getTerminologyId()))
+    } else if (!concept.getTerminologyId()
+        .equals(other.concept.getTerminologyId()))
       return false;
     return true;
   }
 
+  /* see superclass */
   @Override
   public String toString() {
-    return "ConceptNoteJpa [concept=" + concept + ", getLastModified()="
-        + getLastModified() + ", getLastModifiedBy()=" + getLastModifiedBy()
-        + ", getValue()=" + getValue() + ", getClass()=" + getClass()
-        + ", toString()=" + super.toString() + "]";
+    // Used for logging
+    return getLastModifiedBy() + " " + getValue();
   }
 
 }

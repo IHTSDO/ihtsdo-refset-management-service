@@ -3,12 +3,16 @@
  */
 package org.ihtsdo.otf.refset.jpa.services.handlers;
 
+import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.persistence.Query;
 
+import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.User;
@@ -18,6 +22,7 @@ import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.RefsetList;
+import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.jpa.ValidationResultJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
@@ -32,11 +37,13 @@ import org.ihtsdo.otf.refset.services.RefsetService;
 import org.ihtsdo.otf.refset.services.TranslationService;
 import org.ihtsdo.otf.refset.services.WorkflowService;
 import org.ihtsdo.otf.refset.services.handlers.WorkflowActionHandler;
-import org.ihtsdo.otf.refset.worfklow.TrackingRecordJpa;
-import org.ihtsdo.otf.refset.worfklow.TrackingRecordListJpa;
 import org.ihtsdo.otf.refset.workflow.TrackingRecord;
+import org.ihtsdo.otf.refset.workflow.TrackingRecordJpa;
 import org.ihtsdo.otf.refset.workflow.TrackingRecordList;
+import org.ihtsdo.otf.refset.workflow.TrackingRecordListJpa;
 import org.ihtsdo.otf.refset.workflow.WorkflowAction;
+import org.ihtsdo.otf.refset.workflow.WorkflowConfig;
+import org.ihtsdo.otf.refset.workflow.WorkflowConfigJpa;
 import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 
 /**
@@ -95,17 +102,6 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
           "Unexpected number of tracking records for " + refset.getId());
     }
 
-    // TODO: possibly support this after testing
-    // if (projectRole == UserRole.REVIEWER
-    // && refset.getWorkflowStatus() == WorkflowStatus.EDITING_DONE
-    // && action == WorkflowAction.ASSIGN
-    // && record.getAuthors().contains(user.getUserName())) {
-    // result
-    // .addError("Reviewer cannot review work that was authored by him/her - "
-    // + action + ", " + user);
-    // return result;
-    // }
-
     // Validate actions that workflow status will allow
     boolean flag = false;
     switch (action) {
@@ -139,13 +135,6 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
         }
         break;
 
-      case REASSIGN:
-        // record has been unassigned from reviewer and is in EDITING_DONE
-        // Should be set back to EDITING_IN_PROGRESS
-        flag = projectRole == UserRole.AUTHOR && record != null
-            && EnumSet.of(WorkflowStatus.EDITING_DONE)
-                .contains(refset.getWorkflowStatus());
-        break;
       case SAVE:
         // dependent on project role
         authorFlag = projectRole == UserRole.AUTHOR && record != null
@@ -167,7 +156,9 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
         authorFlag = projectRole == UserRole.AUTHOR && record != null
             && EnumSet
                 .of(WorkflowStatus.NEW, WorkflowStatus.EDITING_IN_PROGRESS,
-                    WorkflowStatus.EDITING_DONE)
+                    WorkflowStatus.EDITING_DONE,
+                    // allowed for fixing errors
+                    WorkflowStatus.READY_FOR_PUBLICATION)
                 .contains(refset.getWorkflowStatus());
         reviewerFlag = projectRole == UserRole.REVIEWER && record != null
             && EnumSet.of(WorkflowStatus.REVIEW_NEW,
@@ -176,6 +167,20 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
         flag = authorFlag || reviewerFlag;
         break;
 
+      case PREPARE_FOR_PUBLICATION:
+        flag = projectRole == UserRole.REVIEWER && record != null
+            && EnumSet.of(WorkflowStatus.REVIEW_DONE)
+                .contains(refset.getWorkflowStatus());
+        break;
+
+      case FEEDBACK:
+        authorFlag = projectRole == UserRole.AUTHOR && record != null
+          && record.getAuthors().contains(user.getUserName());
+        reviewerFlag = projectRole == UserRole.REVIEWER && record != null
+            && record.getReviewers().contains(user.getUserName());
+        flag = authorFlag || reviewerFlag;
+        break;
+        
       case BETA:
         // Handled by release process, all editing must be done
         flag = EnumSet.of(WorkflowStatus.READY_FOR_PUBLICATION)
@@ -294,7 +299,6 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
                 WorkflowStatus.REVIEW_DONE)
             .contains(refset.getWorkflowStatus())) {
           record.getReviewers().remove(user.getUserName());
-          record.setForAuthoring(true);
           record.setForReview(false);
           record.setLastModifiedBy(user.getUserName());
           // get the origin review refset (e.g. the EDITING_DONE state)
@@ -320,13 +324,6 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
 
         break;
 
-      case REASSIGN:
-        // No need to set the author again because we've removed reference to
-        // the reviewer
-        record.setForAuthoring(true);
-        refset.setWorkflowStatus(WorkflowStatus.EDITING_IN_PROGRESS);
-        break;
-
       case SAVE:
         // AUTHOR - NEW becomes EDITING_IN_PROGRESS
         if (projectRole == UserRole.AUTHOR && EnumSet
@@ -346,8 +343,10 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
 
       case FINISH:
         // EDITING_IN_PROGRESS => EDITING_DONE (and mark as not for authoring)
-        if (refset.getWorkflowStatus() == WorkflowStatus.NEW || refset
-            .getWorkflowStatus() == WorkflowStatus.EDITING_IN_PROGRESS) {
+        if (EnumSet
+            .of(WorkflowStatus.NEW, WorkflowStatus.EDITING_IN_PROGRESS,
+                WorkflowStatus.READY_FOR_PUBLICATION)
+            .contains(refset.getWorkflowStatus())) {
           record.setForAuthoring(false);
           refset.setWorkflowStatus(WorkflowStatus.EDITING_DONE);
         }
@@ -358,9 +357,11 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
             .contains(refset.getWorkflowStatus())) {
           refset.setWorkflowStatus(WorkflowStatus.REVIEW_DONE);
         }
+        break;
 
+      case PREPARE_FOR_PUBLICATION:
         // REVIEW_DONE => READY_FOR_PUBLICATION
-        else if (EnumSet.of(WorkflowStatus.REVIEW_DONE)
+        if (EnumSet.of(WorkflowStatus.REVIEW_DONE)
             .contains(refset.getWorkflowStatus())) {
           refset.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
           service.removeTrackingRecord(record.getId());
@@ -370,6 +371,22 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
         // Otherwise status stays the same
         break;
 
+      case FEEDBACK:
+        //Save current state of the record
+        record.setRevision(true); 
+        record.setOriginRevision(service.getRefsetRevisionNumber(refset.getId()));
+        if (projectRole == UserRole.AUTHOR) {
+          record.setForAuthoring(true); 
+          record.setForReview(false);
+          refset.setWorkflowStatus(WorkflowStatus.EDITING_IN_PROGRESS);
+          record.setReviewers(new ArrayList<String>());
+        } else if (projectRole == UserRole.REVIEWER) {
+          record.setForAuthoring(false); 
+          record.setForReview(true);
+          refset.setWorkflowStatus(WorkflowStatus.REVIEW_IN_PROGRESS);
+        }
+        break;
+        
       case BETA:
         // Handled by release process. Simply set status to BETA.
         refset.setWorkflowStatus(WorkflowStatus.BETA);
@@ -402,8 +419,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     // supposed
     // to have been deleted
     if (action != WorkflowAction.UNASSIGN
-        && !(action == WorkflowAction.FINISH && refset
-            .getWorkflowStatus() == WorkflowStatus.READY_FOR_PUBLICATION)) {
+        && action != WorkflowAction.PREPARE_FOR_PUBLICATION) {
       record.setLastModifiedBy(user.getUserName());
       service.updateTrackingRecord(record);
     }
@@ -484,14 +500,6 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
         }
         break;
 
-      case REASSIGN:
-        // record has been unassigned from reviewer and is in EDITING_DONE
-        // Should be set back to EDITING_IN_PROGRESS
-        flag = projectRole == UserRole.AUTHOR && record != null
-            && EnumSet.of(WorkflowStatus.EDITING_DONE)
-                .contains(concept.getWorkflowStatus());
-
-        break;
       case SAVE:
         // dependent on project role
         authorFlag = projectRole == UserRole.AUTHOR && record != null
@@ -510,17 +518,33 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
 
       case FINISH:
         // dependent on project role
-        authorFlag = projectRole == UserRole.AUTHOR && record != null
-            && EnumSet
-                .of(WorkflowStatus.EDITING_IN_PROGRESS,
-                    WorkflowStatus.EDITING_DONE)
-                .contains(concept.getWorkflowStatus());
+        authorFlag = projectRole == UserRole.AUTHOR && record != null && EnumSet
+            .of(WorkflowStatus.EDITING_IN_PROGRESS, WorkflowStatus.EDITING_DONE,
+                WorkflowStatus.READY_FOR_PUBLICATION)
+            .contains(concept.getWorkflowStatus());
         reviewerFlag = projectRole == UserRole.REVIEWER && record != null
             && EnumSet.of(WorkflowStatus.REVIEW_NEW,
                 WorkflowStatus.REVIEW_IN_PROGRESS, WorkflowStatus.REVIEW_DONE)
                 .contains(concept.getWorkflowStatus());
         flag = authorFlag || reviewerFlag;
 
+        break;
+
+      case PREPARE_FOR_PUBLICATION:
+
+        flag = projectRole == UserRole.REVIEWER && record != null
+            && EnumSet.of(WorkflowStatus.REVIEW_DONE)
+                .contains(concept.getWorkflowStatus());
+
+        break;
+        
+
+      case FEEDBACK:
+        authorFlag = projectRole == UserRole.AUTHOR && record != null
+          && record.getAuthors().contains(user.getUserName());
+        reviewerFlag = projectRole == UserRole.REVIEWER && record != null
+            && record.getReviewers().contains(user.getUserName());
+        flag = authorFlag || reviewerFlag;
         break;
 
       case BETA:
@@ -658,7 +682,6 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
                 WorkflowStatus.REVIEW_DONE)
             .contains(concept.getWorkflowStatus())) {
           record.getReviewers().remove(user.getUserName());
-          record.setForAuthoring(true);
           record.setForReview(false);
           record.setLastModifiedBy(user.getUserName());
           // get the origin review concept (e.g. the EDITING_DONE state)
@@ -682,13 +705,6 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
         }
         break;
 
-      case REASSIGN:
-        // No need to set the author again because we've removed reference to
-        // the reviewer
-        record.setForAuthoring(true);
-        concept.setWorkflowStatus(WorkflowStatus.EDITING_IN_PROGRESS);
-        break;
-
       case SAVE:
         // AUTHOR - NEW becomes EDITING_IN_PROGRESS
         if (projectRole == UserRole.AUTHOR && EnumSet
@@ -709,7 +725,10 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
       case FINISH:
 
         // EDITING_IN_PROGRESS => EDITING_DONE
-        if (concept.getWorkflowStatus() == WorkflowStatus.EDITING_IN_PROGRESS) {
+        if (EnumSet
+            .of(WorkflowStatus.NEW, WorkflowStatus.EDITING_IN_PROGRESS,
+                WorkflowStatus.READY_FOR_PUBLICATION)
+            .contains(concept.getWorkflowStatus())) {
           record.setForAuthoring(false);
           concept.setWorkflowStatus(WorkflowStatus.EDITING_DONE);
         }
@@ -720,9 +739,11 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
             .contains(concept.getWorkflowStatus())) {
           concept.setWorkflowStatus(WorkflowStatus.REVIEW_DONE);
         }
+        break;
 
+      case PREPARE_FOR_PUBLICATION:
         // REVIEW_DONE => READY_FOR_PUBLICATION
-        else if (concept.getWorkflowStatus() == WorkflowStatus.REVIEW_DONE) {
+        if (concept.getWorkflowStatus() == WorkflowStatus.REVIEW_DONE) {
           concept.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
           service.removeTrackingRecord(record.getId());
           concept.setRevision(false);
@@ -731,6 +752,22 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
         // Otherwise status stays the same
         break;
 
+      case FEEDBACK:
+        //Save current state of the record
+        record.setRevision(true); 
+        record.setOriginRevision(service.getConceptRevisionNumber(concept.getId()));
+        if (projectRole == UserRole.AUTHOR) {
+          record.setForAuthoring(true); 
+          record.setForReview(false);
+          concept.setWorkflowStatus(WorkflowStatus.EDITING_IN_PROGRESS);
+          record.setReviewers(new ArrayList<String>());
+        } else if (projectRole == UserRole.REVIEWER) {
+          record.setForAuthoring(false); 
+          record.setForReview(true);
+          concept.setWorkflowStatus(WorkflowStatus.REVIEW_IN_PROGRESS);
+        }
+        break;
+        
       case BETA:
         // Handled by release process. Simply set status to BETA.
         translation.setLastModifiedBy(user.getUserName());
@@ -763,18 +800,27 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     // concept assigned also for FINISH, this would persist the tracking record
     // that was just supposed to have been deleted
     if (action != WorkflowAction.UNASSIGN
-        && !(action == WorkflowAction.FINISH && concept
-            .getWorkflowStatus() == WorkflowStatus.READY_FOR_PUBLICATION)) {
+        && action != WorkflowAction.PREPARE_FOR_PUBLICATION) {
       record.setLastModifiedBy(user.getUserName());
       service.updateTrackingRecord(record);
     }
+
     return record;
   }
 
-  /* see superclass */
-  @SuppressWarnings("unchecked")
-  @Override
-  public ConceptList findAvailableEditingConcepts(Translation translation,
+  /**
+   * Find available editing concepts.
+   *
+   * @param translation the translation
+   * @param pfs the pfs
+   * @param service the service
+   * @return the concept list
+   * @throws Exception the exception
+   */
+  @SuppressWarnings({
+      "static-method", "unchecked"
+  })
+  private ConceptList findAvailableEditingConcepts(Translation translation,
     PfsParameter pfs, WorkflowService service) throws Exception {
 
     // Cleanse PFS parameter to turn "concept" fields into concept refset member
@@ -799,7 +845,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     String queryStr = "select a from ConceptRefsetMemberJpa a, RefsetJpa b "
         + "where b.id = :refsetId and a.refset = b " + "and a.conceptId NOT IN "
         + "(select d.terminologyId from TranslationJpa c, ConceptJpa d "
-        + " where c.refset = b AND d.translation = c)";
+        + " where c.refset = b AND d.translation = c AND c.id = :translationId )";
 
     List<ConceptRefsetMember> results = null;
     final ConceptListJpa list = new ConceptListJpa();
@@ -813,12 +859,14 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
               + "where b.id = :refsetId and a.refset = b "
               + "and a.conceptId NOT IN "
               + "(select d.terminologyId from TranslationJpa c, ConceptJpa d "
-              + " where c.refset = b AND d.translation = c)");
+              + " where c.refset = b AND d.translation = c AND c.id = :translationId )");
       ctQuery.setParameter("refsetId", translation.getRefset().getId());
+      ctQuery.setParameter("translationId", translation.getId());
 
       final Query query =
           ((RootServiceJpa) service).applyPfsToJqlQuery(queryStr, localPfs);
       query.setParameter("refsetId", translation.getRefset().getId());
+      query.setParameter("translationId", translation.getId());
       results = query.getResultList();
       totalCount = ((Long) ctQuery.getSingleResult()).intValue();
     }
@@ -830,6 +878,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
       final Query query =
           ((RootServiceJpa) service).applyPfsToJqlQuery(queryStr, null);
       query.setParameter("refsetId", translation.getRefset().getId());
+      query.setParameter("translationId", translation.getId());
       int[] totalCt = new int[1];
       results = query.getResultList();
       results = service.applyPfsToList(results, ConceptRefsetMember.class,
@@ -852,10 +901,19 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
 
   }
 
-  /* see superclass */
-  @SuppressWarnings("unchecked")
-  @Override
-  public ConceptList findAvailableReviewConcepts(Translation translation,
+  /**
+   * Find available review concepts.
+   *
+   * @param translation the translation
+   * @param pfs the pfs
+   * @param service the service
+   * @return the concept list
+   * @throws Exception the exception
+   */
+  @SuppressWarnings({
+      "static-method", "unchecked"
+  })
+  private ConceptList findAvailableReviewConcepts(Translation translation,
     PfsParameter pfs, WorkflowService service) throws Exception {
 
     // Concepts of the translation with
@@ -912,26 +970,36 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
 
   }
 
-  /* see superclass */
-  @SuppressWarnings("unchecked")
-  @Override
-  public RefsetList findAvailableEditingRefsets(Long projectId,
+  /**
+   * Find available editing refsets.
+   *
+   * @param projectId the project id
+   * @param pfs the pfs
+   * @param service the service
+   * @return the refset list
+   * @throws Exception the exception
+   */
+  @SuppressWarnings({
+      "static-method", "unchecked"
+  })
+  private RefsetList findAvailableEditingRefsets(Long projectId,
     PfsParameter pfs, WorkflowService service) throws Exception {
 
+    // TODO: redo this with lucene and set joins (based around id)
     // NEW Refsets for this project that do not yet have tracking records
     // workflow status does not have to be 'NEW' because sometimes work
     // that is in progress is unassigned
     // For sure, ready, beta, or published refsets are not available
-    final String queryStr = "select a from RefsetJpa a where " 
+    final String queryStr = "select a from RefsetJpa a where "
         + " a.project.id = :projectId " + "and a.provisional = false "
         + "and a not in (select refset from TrackingRecordJpa where refset is not null) "
-        + "and workflowStatus not in ('BETA','PUBLISHED')";
+        + "and workflowStatus not in ('BETA','PUBLISHED','READY_FOR_PUBLICATION')";
 
     final Query ctQuery =
         ((RootServiceJpa) service).getEntityManager().createQuery(
             "select count(*) from RefsetJpa a where a.project.id = :projectId and a.provisional = false "
                 + "and a not in (select refset from TrackingRecordJpa where refset is not null) "
-                + "and workflowStatus not in ('BETA','PUBLISHED')");
+                + "and workflowStatus not in ('BETA','PUBLISHED','READY_FOR_PUBLICATION')");
 
     ctQuery.setParameter("projectId", projectId);
 
@@ -946,11 +1014,19 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     return list;
   }
 
+  /**
+   * Find available review refsets.
+   *
+   * @param projectId the project id
+   * @param pfs the pfs
+   * @param service the service
+   * @return the refset list
+   * @throws Exception the exception
+   */
   /* see superclass */
-  @SuppressWarnings("unchecked")
-  @Override
-  public RefsetList findAvailableReviewRefsets(Long projectId, PfsParameter pfs,
-    WorkflowService service) throws Exception {
+  @SuppressWarnings("static-method")
+  private RefsetList findAvailableReviewRefsets(Long projectId,
+    PfsParameter pfs, WorkflowService service) throws Exception {
 
     // Refsets for this project that are ready for review
     final String queryStr =
@@ -969,6 +1045,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
         ((RootServiceJpa) service).applyPfsToJqlQuery(queryStr, pfs);
     query.setParameter("projectId", projectId);
     query.setParameter("editingDone", WorkflowStatus.EDITING_DONE);
+    @SuppressWarnings("unchecked")
     final List<Refset> results = query.getResultList();
     final RefsetListJpa list = new RefsetListJpa();
     list.setObjects(results);
@@ -1014,7 +1091,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
    * @throws Exception the exception
    */
   @SuppressWarnings("static-method")
-  private Concept getOriginConcept(Long conceptId, Integer revision)
+  public Concept getOriginConcept(Long conceptId, Integer revision)
     throws Exception {
     final TranslationService translationService = new TranslationServiceJpa();
     try {
@@ -1029,5 +1106,325 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     } finally {
       translationService.close();
     }
+  }
+
+  /* see superclass */
+  @Override
+  public StringList getRefsetAvailableRoles() throws Exception {
+    final StringList list = new StringList();
+    list.setTotalCount(3);
+    list.getObjects().add(UserRole.AUTHOR.toString());
+    list.getObjects().add(UserRole.REVIEWER.toString());
+    list.getObjects().add(UserRole.ADMIN.toString());
+    return list;
+  }
+
+  /* see superclass */
+  @Override
+  public StringList getTranslationAvailableRoles() throws Exception {
+    final StringList list = new StringList();
+    list.setTotalCount(3);
+    list.getObjects().add(UserRole.AUTHOR.toString());
+    list.getObjects().add(UserRole.REVIEWER.toString());
+    list.getObjects().add(UserRole.ADMIN.toString());
+    return list;
+  }
+
+  /* see superclass */
+  @Override
+  public WorkflowConfig getWorkflowConfig() throws Exception {
+    WorkflowConfig config = new WorkflowConfigJpa();
+
+    // Available Roles
+    config.setRefsetAvailableRoles(getRefsetAvailableRoles());
+    config.setTranslationAvailableRoles(getTranslationAvailableRoles());
+
+    // Refset Allowed Map
+    // Will answer question: Is the control for action X visible?
+    Map<String, Boolean> refsetAllowedMap = new HashMap<>();
+
+    // Refset Admin Options
+    refsetAllowedMap.put("ASSIGN" + "ADMIN" + "*", true);
+    refsetAllowedMap.put("UNASSIGN" + "ADMIN" + "NEW", true);
+    refsetAllowedMap.put("UNASSIGN" + "ADMIN" + "EDITING_IN_PROGRESS", true);
+    refsetAllowedMap.put("UNASSIGN" + "ADMIN" + "EDITING_DONE", true);
+    refsetAllowedMap.put("UNASSIGN" + "ADMIN" + "REVIEW_NEW", true);
+    refsetAllowedMap.put("UNASSIGN" + "ADMIN" + "REVIEW_IN_PROGRESS", true);
+    refsetAllowedMap.put("UNASSIGN" + "ADMIN" + "REVIEW_DONE", true);
+
+    // Refset Author Options
+    refsetAllowedMap.put("ASSIGN" + "AUTHOR" + "NEW", true);
+    // refsetAllowedMap.put("ASSIGN" + "AUTHOR" + "READY_FOR_PUBLICATION", true);
+    // refsetAllowedMap.put("UNASSIGN" + "AUTHOR" + "NEW", true);
+    refsetAllowedMap.put("UNASSIGN" + "AUTHOR" + "EDITING_IN_PROGRESS", true);
+    refsetAllowedMap.put("UNASSIGN" + "AUTHOR" + "EDITING_DONE", true);
+    refsetAllowedMap.put("SAVE" + "AUTHOR" + "NEW", true);
+    refsetAllowedMap.put("SAVE" + "AUTHOR" + "EDITING_IN_PROGRESS", true);
+    refsetAllowedMap.put("SAVE" + "AUTHOR" + "READY_FOR_PUBLICATION", true);
+    refsetAllowedMap.put("FINISH" + "AUTHOR" + "NEW", true);
+    refsetAllowedMap.put("FINISH" + "AUTHOR" + "EDITING_IN_PROGRESS", true);
+    refsetAllowedMap.put("FINISH" + "AUTHOR" + "READY_FOR_PUBLICATION", true);
+    refsetAllowedMap.put("CANCEL" + "AUTHOR" + "*", true);
+
+    // Refset Reviewer Options
+    refsetAllowedMap.put("ASSIGN" + "REVIEWER" + "EDITING_DONE", true);
+    refsetAllowedMap.put("ASSIGN" + "REVIEWER" + "READY_FOR_PUBLICATION", true);
+    refsetAllowedMap.put("UNASSIGN" + "REVIEWER" + "REVIEW_NEW", true);
+    refsetAllowedMap.put("UNASSIGN" + "REVIEWER" + "REVIEW_IN_PROGRESS", true);
+    refsetAllowedMap.put("UNASSIGN" + "REVIEWER" + "REVIEW_DONE", true);
+    refsetAllowedMap.put("SAVE" + "REVIEWER" + "REVIEW_NEW", true);
+    refsetAllowedMap.put("SAVE" + "REVIEWER" + "REVIEW_IN_PROGRESS", true);
+    refsetAllowedMap.put("SAVE" + "REVIEWER" + "REVIEW_DONE", true);
+    refsetAllowedMap.put("FINISH" + "REVIEWER" + "REVIEW_NEW", true);
+    refsetAllowedMap.put("FINISH" + "REVIEWER" + "REVIEW_IN_PROGRESS", true);
+    refsetAllowedMap.put("PREPARE_FOR_PUBLICATION" + "REVIEWER" + "REVIEW_DONE",
+        true);
+    refsetAllowedMap.put("CANCEL" + "REVIEWER" + "*", true);
+    refsetAllowedMap.put("FEEDBACK" + "ADMIN" + "REVIEW_NEW", true);
+    refsetAllowedMap.put("FEEDBACK" + "ADMIN" + "REVIEW_IN_PROGRESS", true);
+    refsetAllowedMap.put("FEEDBACK" + "ADMIN" + "REVIEW_DONE", true);
+    refsetAllowedMap.put("FEEDBACK" + "REVIEWER" + "REVIEW_NEW", true);
+    refsetAllowedMap.put("FEEDBACK" + "REVIEWER" + "REVIEW_IN_PROGRESS", true);
+    refsetAllowedMap.put("FEEDBACK" + "REVIEWER" + "REVIEW_DONE", true);
+
+
+    config.setRefsetAllowedMap(refsetAllowedMap);
+
+    // Refset Role Map
+    // Answers question: "What are the details of what it does?"
+    Map<String, String> refsetRoleMap = new HashMap<>();
+    refsetRoleMap.put("ASSIGN" + "ADMIN" + "NEW", "AUTHOR");
+    refsetRoleMap.put("ASSIGN" + "ADMIN" + "READY_FOR_PUBLICATION", "AUTHOR");
+    refsetRoleMap.put("ASSIGN" + "ADMIN" + "*", "REVIEWER");
+    refsetRoleMap.put("ASSIGN" + "REVIEWER" + "READY_FOR_PUBLICATION",
+        "AUTHOR");
+    refsetRoleMap.put("UNASSIGN" + "ADMIN" + "NEW", "AUTHOR");
+    refsetRoleMap.put("UNASSIGN" + "ADMIN" + "EDITING_IN_PROGRESS", "AUTHOR");
+    refsetRoleMap.put("UNASSIGN" + "ADMIN" + "EDITING_DONE", "AUTHOR");
+    refsetRoleMap.put("UNASSIGN" + "ADMIN" + "*", "REVIEWER");
+
+    /*refsetRoleMap.put("FEEDBACK" + "ADMIN" + "REVIEW_NEW", "AUTHOR");
+    refsetRoleMap.put("FEEDBACK" + "ADMIN" + "REVIEW_IN_PROGRESS", "AUTHOR");
+    refsetRoleMap.put("FEEDBACK" + "ADMIN" + "REVIEW_DONE", "AUTHOR");
+    refsetRoleMap.put("FEEDBACK" + "REVIEWER" + "REVIEW_NEW", "AUTHOR");
+    refsetRoleMap.put("FEEDBACK" + "REVIEWER" + "REVIEW_IN_PROGRESS", "AUTHOR");
+    refsetRoleMap.put("FEEDBACK" + "REVIEWER" + "REVIEW_DONE", "AUTHOR");*/
+    // SAVE n/a
+
+    config.setRefsetRoleMap(refsetRoleMap);
+
+    // Translation Allowed Map
+    Map<String, Boolean> translationAllowedMap = new HashMap<>();
+
+    // Translation Admin Options
+    translationAllowedMap.put("ASSIGN" + "ADMIN" + "*", true);
+    translationAllowedMap.put("UNASSIGN" + "ADMIN" + "NEW", true);
+    translationAllowedMap.put("UNASSIGN" + "ADMIN" + "EDITING_IN_PROGRESS",
+        true);
+    translationAllowedMap.put("UNASSIGN" + "ADMIN" + "EDITING_DONE", true);
+    translationAllowedMap.put("UNASSIGN" + "ADMIN" + "REVIEW_NEW", true);
+    translationAllowedMap.put("UNASSIGN" + "ADMIN" + "REVIEW_IN_PROGRESS",
+        true);
+    translationAllowedMap.put("UNASSIGN" + "ADMIN" + "REVIEW_DONE", true);
+
+    // translationAllowedMap.put("REASSIGN" + "ADMIN" + "*", true);
+
+    // Translation Author Options
+    translationAllowedMap.put("ASSIGN" + "AUTHOR" + "NEW", true);
+    //translationAllowedMap.put("ASSIGN" + "AUTHOR" + "READY_FOR_PUBLICATION", true);
+    translationAllowedMap.put("UNASSIGN" + "AUTHOR" + "NEW", true);
+    translationAllowedMap.put("UNASSIGN" + "AUTHOR" + "EDITING_IN_PROGRESS",
+        true);
+    translationAllowedMap.put("UNASSIGN" + "AUTHOR" + "EDITING_DONE", true);
+    translationAllowedMap.put("SAVE" + "AUTHOR" + "NEW", true);
+    translationAllowedMap.put("SAVE" + "AUTHOR" + "EDITING_IN_PROGRESS", true);
+    translationAllowedMap.put("SAVE" + "AUTHOR" + "READY_FOR_PUBLICATION",
+        true);
+    // translationAllowedMap.put("FINISH" + "AUTHOR" + "NEW", true);
+    translationAllowedMap.put("FINISH" + "AUTHOR" + "EDITING_IN_PROGRESS",
+        true);
+    translationAllowedMap.put("FINISH" + "AUTHOR" + "READY_FOR_PUBLICATION",
+        true);
+    translationAllowedMap.put("CANCEL" + "AUTHOR" + "*", true);
+
+    // Translation Reviewer Options
+    translationAllowedMap.put("ASSIGN" + "REVIEWER" + "EDITING_DONE", true);
+    translationAllowedMap.put("ASSIGN" + "REVIEWER" + "READY_FOR_PUBLICATION",
+        true);
+    translationAllowedMap.put("UNASSIGN" + "REVIEWER" + "REVIEW_NEW", true);
+    translationAllowedMap.put("UNASSIGN" + "REVIEWER" + "REVIEW_IN_PROGRESS",
+        true);
+    translationAllowedMap.put("UNASSIGN" + "REVIEWER" + "REVIEW_DONE", true);
+    translationAllowedMap.put("SAVE" + "REVIEWER" + "REVIEW_NEW", true);
+    translationAllowedMap.put("SAVE" + "REVIEWER" + "REVIEW_IN_PROGRESS", true);
+    translationAllowedMap.put("SAVE" + "REVIEWER" + "REVIEW_DONE", true);
+    translationAllowedMap.put("FINISH" + "REVIEWER" + "REVIEW_NEW", true);
+    translationAllowedMap.put("FINISH" + "REVIEWER" + "REVIEW_IN_PROGRESS",
+        true);
+    translationAllowedMap
+        .put("PREPARE_FOR_PUBLICATION" + "REVIEWER" + "REVIEW_DONE", true);
+    translationAllowedMap.put("CANCEL" + "REVIEWER" + "*", true);
+
+    translationAllowedMap.put("FEEDBACK" + "ADMIN" + "REVIEW_NEW", true);
+    translationAllowedMap.put("FEEDBACK" + "ADMIN" + "REVIEW_IN_PROGRESS", true);
+    translationAllowedMap.put("FEEDBACK" + "ADMIN" + "REVIEW_DONE", true);
+    translationAllowedMap.put("FEEDBACK" + "REVIEWER" + "REVIEW_NEW", true);
+    translationAllowedMap.put("FEEDBACK" + "REVIEWER" + "REVIEW_IN_PROGRESS", true);
+    translationAllowedMap.put("FEEDBACK" + "REVIEWER" + "REVIEW_DONE", true);
+
+    config.setTranslationAllowedMap(translationAllowedMap);
+
+    // Translation Role Map
+    // Answers question: "What are the details of what it does?"
+    Map<String, String> translationRoleMap = new HashMap<>();
+    translationRoleMap.put("ASSIGN" + "ADMIN" + "NEW", "AUTHOR");
+    translationRoleMap.put("ASSIGN" + "ADMIN" + "READY_FOR_PUBLICATION",
+        "AUTHOR");
+    translationRoleMap.put("ASSIGN" + "ADMIN" + "*", "REVIEWER");
+    translationRoleMap.put("ASSIGN" + "REVIEWER" + "READY_FOR_PUBLICATION",
+        "AUTHOR");
+    translationRoleMap.put("UNASSIGN" + "ADMIN" + "NEW", "AUTHOR");
+    translationRoleMap.put("UNASSIGN" + "ADMIN" + "EDITING_IN_PROGRESS",
+        "AUTHOR");
+    translationRoleMap.put("UNASSIGN" + "ADMIN" + "EDITING_DONE", "AUTHOR");
+    translationRoleMap.put("UNASSIGN" + "ADMIN" + "*", "REVIEWER");
+    /*translationRoleMap.put("FEEDBACK" + "ADMIN" + "REVIEW_NEW", "AUTHOR");
+    translationRoleMap.put("FEEDBACK" + "ADMIN" + "REVIEW_IN_PROGRESS", "AUTHOR");
+    translationRoleMap.put("FEEDBACK" + "ADMIN" + "REVIEW_DONE", "AUTHOR");
+    translationRoleMap.put("FEEDBACK" + "REVIEWER" + "REVIEW_NEW", "AUTHOR");
+    translationRoleMap.put("FEEDBACK" + "REVIEWER" + "REVIEW_IN_PROGRESS", "AUTHOR");
+    translationRoleMap.put("FEEDBACK" + "REVIEWER" + "REVIEW_DONE", "AUTHOR");*/
+    // SAVE n/a
+
+    config.setTranslationRoleMap(translationRoleMap);
+
+    return config;
+  }
+
+  /* see superclass */
+  @Override
+  public ConceptList findAvailableConcepts(UserRole userRole,
+    Translation translation, PfsParameter pfs, WorkflowService service)
+    throws Exception {
+    if (userRole == UserRole.AUTHOR) {
+      return findAvailableEditingConcepts(translation, pfs, service);
+    } else if (userRole == UserRole.REVIEWER) {
+      return findAvailableReviewConcepts(translation, pfs, service);
+    } else if (userRole == UserRole.ADMIN) {
+      List<Concept> concepts = new ArrayList<>();
+      concepts.addAll(findAvailableEditingConcepts(translation, null, service)
+          .getObjects());
+      concepts.addAll(
+          findAvailableReviewConcepts(translation, null, service).getObjects());
+      final ConceptList conceptList = new ConceptListJpa();
+      final int[] totalCt = new int[1];
+      conceptList.getObjects().addAll(
+          service.applyPfsToList(concepts, Concept.class, totalCt, pfs));
+      conceptList.setTotalCount(totalCt[0]);
+
+      return conceptList;
+    } else {
+      throw new Exception(
+          "User role to find concepts must be AUTHOR, REVIEWER, or ADMIN.");
+    }
+  }
+
+  /* see superclass */
+  @Override
+  public RefsetList findAvailableRefsets(UserRole userRole, Long projectId,
+    PfsParameter pfs, WorkflowService service) throws Exception {
+    if (userRole == UserRole.AUTHOR) {
+      return findAvailableEditingRefsets(projectId, pfs, service);
+    } else if (userRole == UserRole.REVIEWER) {
+      return findAvailableReviewRefsets(projectId, pfs, service);
+    } else if (userRole == UserRole.ADMIN) {
+      List<Refset> refsets = new ArrayList<>();
+      refsets.addAll(
+          findAvailableEditingRefsets(projectId, null, service).getObjects());
+      refsets.addAll(
+          findAvailableReviewRefsets(projectId, null, service).getObjects());
+      final RefsetList list = new RefsetListJpa();
+      final int[] totalCt = new int[1];
+      list.getObjects()
+          .addAll(service.applyPfsToList(refsets, Refset.class, totalCt, pfs));
+      list.setTotalCount(totalCt[0]);
+
+      return list;
+    } else {
+      throw new Exception(
+          "User role to find refsets must be AUTHOR, REVIEWER, or ADMIN.");
+    }
+  }
+
+  /* see superclass */
+  @Override
+  public TrackingRecordList findAssignedRefsets(UserRole userRole,
+    Project project, String userName, PfsParameter pfs, WorkflowService service)
+    throws Exception {
+
+    final long projectId = project.getId();
+    String query = null;
+    if (userRole == UserRole.AUTHOR) {
+      if (userName != null && !userName.equals("")) {
+        query = "projectId:" + projectId + " AND " + "authors:" + userName
+            + " AND NOT refsetId:0"
+            + " AND forAuthoring:true AND forReview:false";
+      } else {
+        query = "NOT refsetId:0 AND forAuthoring:true AND forReview:false";
+      }
+    } else if (userRole == UserRole.REVIEWER) {
+      if (userName != null && !userName.equals("")) {
+        query = "projectId:" + projectId + " AND " + "reviewers:" + userName
+            + " AND NOT refsetId:0" + " AND forReview:true";
+      } else {
+        throw new Exception("UserName must always be set");
+      }
+    } else if (userRole == UserRole.ADMIN) {
+      if (userName != null && !userName.equals("")) {
+        query = "projectId:" + projectId + " AND " + "( (authors:" + userName
+            + " AND forAuthoring:true) OR" + "  (reviewers:" + userName
+            + " AND forReview:true) )" + " AND NOT refsetId:0";
+      } else {
+        query = "projectId:" + projectId
+            + " AND NOT refsetId:0 AND (forAuthoring:true OR forReview:true)";
+      }
+    } else {
+      throw new Exception(
+          "User role to find assigned refsets must be AUTHOR, REVIEWER, or ADMIN.");
+    }
+    final TrackingRecordList records =
+        service.findTrackingRecordsForQuery(query, pfs);
+
+    return records;
+  }
+
+  /* see superclass */
+  @Override
+  public TrackingRecordList findAssignedConcepts(UserRole userRole,
+    Translation translation, String userName, PfsParameter pfs,
+    WorkflowService service) throws Exception {
+
+    final long projectId = translation.getProject().getId();
+    final long translationId = translation.getId();
+    String query = null;
+    if (userRole == UserRole.AUTHOR) {
+      query = "projectId:" + projectId + " AND " + "authors:" + userName
+          + " AND translationId:" + translationId
+          + " AND forAuthoring:true AND forReview:false";
+
+    } else if (userRole == UserRole.REVIEWER) {
+      query = "projectId:" + projectId + " AND " + "reviewers:" + userName
+          + " AND translationId:" + translationId + " AND forReview:true";
+
+    } else if (userRole == UserRole.ADMIN) {
+      query = "projectId:" + projectId + " AND translationId:" + translationId
+          + " AND (forAuthoring:true OR forReview:true)";
+    } else {
+      throw new Exception(
+          "User role to find assigned concepts must be AUTHOR, REVIEWER, or ADMIN.");
+    }
+    final TrackingRecordList records =
+        service.findTrackingRecordsForQuery(query, pfs);
+    return records;
   }
 }

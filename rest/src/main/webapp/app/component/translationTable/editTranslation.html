@@ -1,5 +1,8 @@
 <div class="modal-header">
-  <h4>{{action}} Translation</h4>
+  <h4 style="display: inline">{{action}} Translation</h4>
+  <span style="float: right">
+    <i class="noul glyphicon glyphicon-remove" ng-click="cancel()"> </i>
+  </span>
 </div>
 
 <div class="modal-body">
@@ -65,6 +68,13 @@
       </tr>
       <tr>
         <td>
+          <b>Server Endpoint</b>
+        </td>
+        <td>{{project.terminologyHandlerKey}}
+          {{project.terminologyHandlerUrl}}</td>
+      </tr>
+      <tr>
+        <td>
           <b>Terminology</b>
         </td>
         <td>{{getTerminologyName(translation.terminology)}}</td>
@@ -75,17 +85,7 @@
         </td>
         <td>{{translation.version}}</td>
       </tr>
-      <tr>
-        <td>
-          <b>Workflow path</b>
-        </td>
-        <td>
-          <span ng-show="metadata.workflowPaths.length == 1">{{translation.workflowPath}}</span>
-          <select ng-show="metadata.workflowPaths.length > 1"
-            ng-model="translation.workflowPath"
-            ng-options="item for item in metadata.workflowPaths"></select>
-        </td>
-      </tr>
+      
 
       <!-- Errors and warnings-->
       <tr
@@ -95,7 +95,7 @@
             {{errors[0]}}
             <div style="display: inline; float: right;">
               <i ng-show="errors[1]"
-                title="{{error.expand ? 'Show' : 'Hide'}} long eror"
+                title="{{error.expand ? 'Show' : 'Hide'}} long error"
                 class="noul material-icons md-18"
                 ng-click="error.expand = !error.expandtrue;">attach_file</i>
             </div>
@@ -121,9 +121,12 @@
   </div>
 
   <div class="modal-footer">
-    <button class="btn btn-primary"
-      ng-click="submitTranslation(translation); 
-    ">{{action}}</button>
-    <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
+
+    <button ng-show="action == 'Add'" class="btn btn-xs btn-primary"
+      ng-click="submitTranslation(translation); ">Add</button>
+    <button ng-show="action == 'Edit'" class="btn btn-xs btn-primary"
+      ng-click="submitTranslation(translation); ">Save</button>
+
+    <button class="btn btn-xs btn-warning" ng-click="cancel()">Cancel</button>
   </div>
 </div>

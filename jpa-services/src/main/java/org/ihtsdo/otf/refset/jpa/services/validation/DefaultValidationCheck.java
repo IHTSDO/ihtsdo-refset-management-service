@@ -6,9 +6,12 @@ package org.ihtsdo.otf.refset.jpa.services.validation;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
+import org.apache.lucene.queryparser.classic.ParseException;
+import org.apache.lucene.queryparser.classic.QueryParserBase;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.ValidationResult;
+import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.jpa.ValidationResultJpa;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
@@ -75,7 +78,7 @@ public class DefaultValidationCheck extends AbstractValidationCheck {
         && refset.getMembers().size() > 0) {
       result.addError("Only external refsets should have members");
     }
-    
+
     return result;
   }
 
@@ -117,17 +120,67 @@ public class DefaultValidationCheck extends AbstractValidationCheck {
       }
 
       // Validate descriptionType length
+      int pnCt = 0;
       for (DescriptionType type : translation.getDescriptionTypes()) {
         if (type.getTypeId().equals(desc.getTypeId())
             && desc.getTerm().length() > type.getDescriptionLength()) {
           result.addError("Description exceeds length limit for its type ("
               + type.getName() + ", " + type.getDescriptionLength());
         }
-      }
 
+        // count Preferred Synonyms
+        if (desc.getTypeId().equals("900000000000013009")
+            && desc.getLanguageRefsetMembers().size() > 0
+            && desc.getLanguageRefsetMembers().get(0).getAcceptabilityId()
+                .equals("900000000000548007")) {
+          pnCt++;
+        }
+
+      }
+      // Warn if >1 PN
+      if (pnCt > 1) {
+        result.addWarning("Multiple PN descriptions");
+      }
       if (desc.getTypeId().equals("900000000000003001")
           && !desc.getTerm().matches(".* \\(.*\\)")) {
         result.addWarning("FSN description without semantic tag");
+      }
+
+      //
+      if (desc.getTypeId().equals("900000000000003001")) {
+        final String escapedDescriptionName =
+            QueryParserBase.escape(desc.getTerm());
+        final String query = "descriptions.termSort:\"" + escapedDescriptionName
+            + "\"" + " AND NOT terminologyId:" + concept.getTerminologyId();
+        try {
+
+          final ConceptList list = service
+              .findConceptsForTranslation(translation.getId(), query, null);
+
+          if (list.getTotalCount() > 0) {
+            result
+                .addWarning("Duplicate FSN descriptions in different concepts: "
+                    + list.getObjects().get(0).getTerminologyId() + " "
+                    + list.getObjects().get(0).getName());
+          }
+
+        } catch (ParseException e) {
+          // do nothing
+        }
+      }
+
+      // No two descriptions with the same term in the same translation concept
+      // should exist
+      int ct = 0;
+      for (final Description otherDesc : concept.getDescriptions()) {
+        if (otherDesc.getTerm().equals(desc.getTerm())) {
+          ct++;
+        }
+      }
+      if (ct > 1) {
+        result.addWarning(
+            "Duplicate descriptions in the same translation concept cannot exist: "
+                + desc.getTerm());
       }
     }
     return result;
@@ -145,9 +198,8 @@ public class DefaultValidationCheck extends AbstractValidationCheck {
     }
 
     // The language should be a 2 letter code matching a language
-    if (translation.getLanguage() != null
-        && !translation.getLanguage().toLowerCase()
-            .equals(translation.getLanguage())) {
+    if (translation.getLanguage() != null && !translation.getLanguage()
+        .toLowerCase().equals(translation.getLanguage())) {
       result.addError("Translation language must be lowercase");
     }
 

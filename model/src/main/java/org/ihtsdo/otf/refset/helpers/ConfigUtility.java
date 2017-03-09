@@ -53,6 +53,7 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
+import org.apache.commons.lang3.text.WordUtils;
 import org.apache.commons.lang3.time.FastDateFormat;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
@@ -87,6 +88,10 @@ public class ConfigUtility {
   /** The Constant DATE_FORMAT4. */
   public final static FastDateFormat DATE_FORMAT4 =
       FastDateFormat.getInstance("yyyy-MM-dd hh:mm:ss");
+
+  /** The Constant DATE_FORMAT5. */
+  public final static FastDateFormat DATE_FORMAT5 =
+      FastDateFormat.getInstance("yyyyMMddhhmmss");
 
   /** The config. */
   public static Properties config = null;
@@ -187,7 +192,7 @@ public class ConfigUtility {
       FileReader in = new FileReader(new File(configFileName));
       config.load(in);
       in.close();
-      Logger.getLogger(ConfigUtility.class).info("  properties = " + config);
+      Logger.getLogger(ConfigUtility.class).debug("  properties = " + config);
     }
     return config;
   }
@@ -206,8 +211,8 @@ public class ConfigUtility {
       final String str = prop.toString();
 
       if (str.startsWith("deploy.") || str.startsWith("site.")
-          || str.startsWith("base.url") || str.startsWith("logout.") ||
-          str.startsWith("help.url")) {
+          || str.startsWith("base.url") || str.startsWith("logout.")
+          || str.startsWith("help.url")) {
         p.put(prop, config.getProperty(prop.toString()));
       }
 
@@ -291,8 +296,10 @@ public class ConfigUtility {
       if (key.toString().startsWith(property + "." + handlerName + ".")) {
         String shortKey = key.toString()
             .substring((property + "." + handlerName + ".").length());
-        Logger.getLogger(ConfigUtility.class).info(" property " + shortKey
-            + " = " + config.getProperty(key.toString()));
+        if (!property.contains("password")) {
+          Logger.getLogger(ConfigUtility.class).debug(" property " + shortKey
+              + " = " + config.getProperty(key.toString()));
+        }
         handlerProperties.put(shortKey, config.getProperty(key.toString()));
       }
     }
@@ -842,5 +849,30 @@ public class ConfigUtility {
       background = false;
     }
     return background;
+  }
+
+  /**
+   * To camel case.
+   *
+   * @param text the text
+   * @return the string
+   */
+  public static String toCamelCase(String text) {
+    // Lower cases the string
+    String txt = text.toLowerCase()
+        // Replaces any - or _ characters with a space
+        .replaceAll("-", " ").replaceAll("_", " ")
+        // Removes any non alphanumeric characters
+        .replaceAll("[^A-Za-z0-9 ]", "")
+        // remove duplicate spaces
+        .replaceAll("\\s+", " ");
+    // Uppercases the first character in each group immediately following
+    // a space
+    txt = WordUtils.capitalize(txt);
+    // Make first character lowercase
+    txt = txt.substring(0, 1).toLowerCase() + txt.substring(1);
+    // Removes spaces
+    return txt.replaceAll(" ", "");
+
   }
 }

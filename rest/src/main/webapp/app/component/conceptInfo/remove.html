@@ -1,6 +1,9 @@
 <div class="modal-header">
-  <h4 ng-show="refset.type == 'INTENSIONAL'">Exclude Member(s)</h4>
-  <h4 ng-show="refset.type == 'EXTENSIONAL'">Remove Member(s)</h4>
+  <h4 style="display: inline" ng-show="refset.type == 'INTENSIONAL'">Exclude Member(s)</h4>
+  <h4 style="display: inline" ng-show="refset.type == 'EXTENSIONAL'">Remove Member(s)</h4>
+  <span style="float: right">
+    <i class="noul glyphicon glyphicon-remove" ng-click="cancel()"></i>
+  </span>
 </div>
 
 <div class="modal-body">
@@ -52,7 +55,7 @@
         <div class="alert alert-danger alert-error">
           {{errors[0]}}
           <div style="display: inline; float: right;">
-            <i ng-show="errors[1]" title="{{error.expand ? 'Show' : 'Hide'}} long eror"
+            <i ng-show="errors[1]" title="{{error.expand ? 'Show' : 'Hide'}} long error"
               class="noul material-icons md-18" ng-click="error.expand = !error.expand;">attach_file</i>
           </div>
           <p ng-show="errors[1] && error.expand">
@@ -76,7 +79,7 @@
 </div>
 
 <div class="modal-footer">
-  <button class="btn btn-primary"
+  <button class="btn btn-xs btn-primary"
     ng-click="remove(refset, member, removeClause)">Remove</button>
-  <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
+  <button class="btn btn-xs btn-warning" ng-click="cancel()">Cancel</button>
 </div>

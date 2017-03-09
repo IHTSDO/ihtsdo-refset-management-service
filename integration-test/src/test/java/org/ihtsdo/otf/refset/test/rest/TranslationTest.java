@@ -196,7 +196,6 @@ public class TranslationTest extends RestSupport {
     translation.setRefset(refset);
     translation.setTerminology(refset.getTerminology());
     translation.setTerminologyId(refset.getTerminologyId());
-    translation.setWorkflowPath("DEFAULT");
     translation.setWorkflowStatus(WorkflowStatus.PUBLISHED);
     translation.setVersion(refset.getVersion());
 
@@ -291,8 +290,8 @@ public class TranslationTest extends RestSupport {
     refset.setTerminologyId(refsetId);
     // This is an opportunity to use "branch"
     refset.setVersion("20150131");
-    refset.setWorkflowPath("DFEAULT");
     refset.setWorkflowStatus(WorkflowStatus.PUBLISHED);
+    refset.setLocalSet(false);
 
     if (type == Refset.Type.EXTERNAL) {
       refset.setExternalUrl("http://www.example.com/some/other/refset.txt");

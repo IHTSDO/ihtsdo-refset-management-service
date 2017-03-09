@@ -4,18 +4,21 @@
 package org.ihtsdo.otf.refset.rest.impl;
 
 import java.util.Calendar;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 
-import org.ihtsdo.otf.refset.Refset;
+import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.LogEntry;
 import org.ihtsdo.otf.refset.jpa.helpers.LogEntryJpa;
 import org.ihtsdo.otf.refset.services.ProjectService;
-import org.ihtsdo.otf.refset.services.RefsetService;
 import org.ihtsdo.otf.refset.services.RootService;
 import org.ihtsdo.otf.refset.services.SecurityService;
 import org.ihtsdo.otf.refset.services.handlers.ExceptionHandler;
@@ -24,6 +27,9 @@ import org.ihtsdo.otf.refset.services.handlers.ExceptionHandler;
  * Top level class for all REST services.
  */
 public class RootServiceRestImpl {
+
+  /** The user name for error messages. */
+  private String userName;
 
   /** The websocket. */
   private static NotificationWebsocket websocket = null;
@@ -41,10 +47,9 @@ public class RootServiceRestImpl {
    * @param e the e
    * @param whatIsHappening the what is happening
    */
-  @SuppressWarnings("static-method")
   public void handleException(Exception e, String whatIsHappening) {
     try {
-      ExceptionHandler.handleException(e, whatIsHappening, "");
+      ExceptionHandler.handleException(e, whatIsHappening, userName);
     } catch (Exception e1) {
       // do nothing
     }
@@ -59,19 +64,19 @@ public class RootServiceRestImpl {
     }
     // throw the local exception as a web application exception
     if (e instanceof LocalException) {
-      throw new WebApplicationException(Response.status(500).entity(message)
-          .build());
+      throw new WebApplicationException(
+          Response.status(500).entity(message).build());
     }
 
     // throw the web application exception as-is, e.g. for 401 errors
     if (e instanceof WebApplicationException) {
       throw new WebApplicationException(message, e);
     }
-    throw new WebApplicationException(Response
-        .status(500)
-        .entity(
-            "\"Unexpected error trying to " + whatIsHappening
-                + ". Please contact the administrator.\"").build());
+    throw new WebApplicationException(
+        Response
+            .status(500).entity("\"Unexpected error trying to "
+                + whatIsHappening + ". Please contact the administrator.\"")
+            .build());
 
   }
 
@@ -85,17 +90,18 @@ public class RootServiceRestImpl {
    * @return the username
    * @throws Exception the exception
    */
-  public static String authorizeApp(SecurityService securityService,
-    String authToken, String perform, UserRole requiredAppRole)
-    throws Exception {
+  public String authorizeApp(SecurityService securityService, String authToken,
+    String perform, UserRole requiredAppRole) throws Exception {
     // Verify the user has the privileges of the required app role
-    UserRole role = securityService.getApplicationRoleForToken(authToken);
-    if (!role.hasPrivilegesOf(requiredAppRole == null ? UserRole.VIEWER
-        : requiredAppRole)) {
+    final UserRole role = securityService.getApplicationRoleForToken(authToken);
+    if (!role.hasPrivilegesOf(
+        requiredAppRole == null ? UserRole.VIEWER : requiredAppRole)) {
       throw new WebApplicationException(Response.status(401)
-          .entity("User does not have permissions to " + perform + ".").build());
+          .entity("User does not have permissions to " + perform + ".")
+          .build());
     }
-    return securityService.getUsernameForToken(authToken);
+    userName = securityService.getUsernameForToken(authToken);
+    return userName;
   }
 
   /**
@@ -110,83 +116,30 @@ public class RootServiceRestImpl {
    * @return the username
    * @throws Exception the exception
    */
-  public static String authorizeProject(ProjectService projectService,
-    Long projectId, SecurityService securityService, String authToken,
-    String perform, UserRole requiredProjectRole) throws Exception {
+  public String authorizeProject(ProjectService projectService, Long projectId,
+    SecurityService securityService, String authToken, String perform,
+    UserRole requiredProjectRole) throws Exception {
 
     // Get userName
-    final String userName = securityService.getUsernameForToken(authToken);
+    userName = securityService.getUsernameForToken(authToken);
 
     // Allow application admin to do anything
-    UserRole appRole = securityService.getApplicationRoleForToken(authToken);
+    final UserRole appRole =
+        securityService.getApplicationRoleForToken(authToken);
     if (appRole == UserRole.USER || appRole == UserRole.ADMIN) {
       return userName;
     }
 
     // Verify that user project role has privileges of required role
-    UserRole role =
-        projectService.getProject(projectId).getUserRoleMap()
-            .get(securityService.getUser(userName));
-    UserRole projectRole = (role == null) ? UserRole.VIEWER : role;
+    final UserRole role = projectService.getProject(projectId).getUserRoleMap()
+        .get(securityService.getUser(userName));
+    final UserRole projectRole = (role == null) ? UserRole.VIEWER : role;
     if (!projectRole.hasPrivilegesOf(requiredProjectRole))
       throw new WebApplicationException(Response.status(401)
-          .entity("User does not have permissions to " + perform + ".").build());
+          .entity("User does not have permissions to " + perform + ".")
+          .build());
 
     // return username
-    return userName;
-  }
-
-  /**
-   * Authorize private project.
-   *
-   * @param refsetService the refset service
-   * @param refsetId the refset id
-   * @param securityService the security service
-   * @param authToken the auth token
-   * @param perform the perform
-   * @param requiredProjectRole the required project role
-   * @param requiredAppRole the required app role
-   * @return the string
-   * @throws Exception the exception
-   */
-  public static String authorizePrivateRefset(RefsetService refsetService,
-    Long refsetId, SecurityService securityService, String authToken,
-    String perform, UserRole requiredProjectRole, UserRole requiredAppRole)
-    throws Exception {
-
-    // Get userName
-    final String userName = securityService.getUsernameForToken(authToken);
-    UserRole userAppRole =
-        securityService.getApplicationRoleForToken(authToken);
-
-    // Allow application admin to do anything
-    if (userAppRole == UserRole.ADMIN) {
-      return userName;
-    }
-
-    Refset refset = refsetService.getRefset(refsetId);
-    // For public projects, verify user has required application role
-    if (refset.isPublic()) {
-      if (!userAppRole.hasPrivilegesOf(requiredAppRole)) {
-        throw new WebApplicationException(Response.status(401)
-            .entity("User does not have permissions to " + perform + ".")
-            .build());
-      }
-    }
-
-    // For private projects, verify user has required project role
-    else {
-      UserRole role =
-          refset.getProject().getUserRoleMap()
-              .get(securityService.getUser(userName));
-      UserRole projectRole = (role == null) ? UserRole.VIEWER : role;
-      if (!projectRole.hasPrivilegesOf(requiredProjectRole))
-        throw new WebApplicationException(Response.status(401)
-            .entity("User does not have permissions to " + perform + ".")
-            .build());
-    }
-
-    // Return username
     return userName;
   }
 
@@ -197,7 +150,7 @@ public class RootServiceRestImpl {
    * @return the total elapsed time str
    */
   @SuppressWarnings({
-    "boxing"
+      "boxing"
   })
   protected static String getTotalElapsedTimeStr(long time) {
     Long resultnum = (System.nanoTime() - time) / 1000000000;
@@ -223,7 +176,8 @@ public class RootServiceRestImpl {
    *
    * @param websocket2 the notification websocket
    */
-  public static void setNotificationWebsocket(NotificationWebsocket websocket2) {
+  public static void setNotificationWebsocket(
+    NotificationWebsocket websocket2) {
     websocket = websocket2;
   }
 
@@ -267,5 +221,36 @@ public class RootServiceRestImpl {
     // do not inform listeners
     return newLogEntry;
 
+  }
+
+  /**
+   * Returns the cookie header.
+   *
+   * @param headers the headers
+   * @return the cookie header
+   */
+  public Map<String, String> getHeaders(HttpHeaders headers) {
+    final Map<String, String> map = new HashMap<>();
+    if (headers == null) {
+      return map;
+    }
+    final List<String> referers = headers.getRequestHeader("Referer");
+    if (referers != null && referers.size() == 1) {
+      final String referer = referers.get(0);
+      map.put("Referer", referer);
+      List<String> cookies = headers.getRequestHeader("Cookie");
+      if (cookies != null && cookies.size() == 1) {
+        map.put("Cookie", cookies.get(0));
+        return map;
+      } else {
+        Logger.getLogger(getClass())
+            .warn("UNEXPECTED number of Cookie headers = " + cookies.size());
+      }
+    }
+    // else {
+    // Logger.getLogger(getClass())
+    // .warn("UNEXPECTED number of Referer headers = " + referers.size());
+    // }
+    return new HashMap<>();
   }
 }

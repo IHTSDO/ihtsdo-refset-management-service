@@ -1,5 +1,8 @@
 <div class="modal-header">
-  <h4>Log Entries</h4>
+  <h4 style="display: inline">Log Entries</h4>
+  <span style="float: right">
+    <i class="noul glyphicon glyphicon-remove" ng-click="close()"> </i>
+  </span>
 </div>
 
 <div class="modal-body">
@@ -9,7 +12,7 @@
       {{errors[0]}}
       <div style="display: inline; float: right;">
         <i ng-show="errors[1]"
-          title="{{error.expand ? 'Show' : 'Hide'}} long eror"
+          title="{{error.expand ? 'Show' : 'Hide'}} long error"
           class="noul material-icons md-18"
           ng-click="error.expand = !error.expand;">attach_file</i>
       </div>
@@ -30,5 +33,12 @@
 
 
 <div class="modal-footer">
-  <button class="btn btn-warning" ng-click="close()">Close</button>
+  <span style="float: left">
+    <input placeholder="Search" type="text" ng-model="filter"
+      ng-model-options="{ debounce: 500 }" ng-change="getLog()">
+
+    <button class="btn btn-xs btn-warning" ng-show="filter"
+      ng-click="filter = ''; getLog()" title="Click to clear filter text">Clear</button>
+  </span>
+  <button class="btn btn-xs btn-warning" ng-click="close()">Close</button>
 </div>
