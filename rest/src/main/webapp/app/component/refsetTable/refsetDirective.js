@@ -61,8 +61,10 @@ tsApp
               $scope.filters = [];
 
               // Page metadata
-              $scope.memberTypes = [ 'Member', 'Exclusion', 'Inclusion', 'Active', 'Inactive',
+              var memberTypes = [ 'Member', 'Exclusion', 'Inclusion', 'Active', 'Inactive',
                 'Translated', 'Not Translated' ];
+              var memberTypes2 = [ 'Member', 'Exclusion', 'Inclusion', 'Active', 'Inactive' ];
+
               $scope.refsetTypes = [ 'Refset', 'Local', 'Extensional', 'Intensional', 'External' ];
 
               // Used for project admin to know what users are assigned to
@@ -132,6 +134,15 @@ tsApp
               // link to error handling
               function handleError(errors, error) {
                 utilService.handleDialogError(errors, error);
+              }
+
+              // ..
+              $scope.getMemberTypes = function() {
+                if ($scope.selected.refset && $scope.selected.refset.translated) {
+                  return memberTypes;
+                } else {
+                  return memberTypes2;
+                }
               }
 
               // Set $scope.project and reload
@@ -931,26 +942,27 @@ tsApp
                 return workflowService.refsetGetRole(action, $scope.projects.role,
                   refset.workflowStatus, $scope.metadata.workflowConfig);
               }
-              
+
               $scope.showDelta = function(refset) {
                 releaseService.findCurrentRefsetReleaseInfo(refset.id).then(
                   function(data) {
                     // if no previous release,
-                    if (!data.refsetId || data.refsetId == 0) { 
-                      window.alert("No release for " + refset.name); 
-                      return; 
+                    if (!data.refsetId || data.refsetId == 0) {
+                      window.alert("No release for " + refset.name);
+                      return;
                     }
-                  // get the release refset
-                  refsetService.compareRefsets(refset.id, data.refsetId).then(
-                    function(data){ 
-                      var reportToken = data; 
-                      refsetService.exportDiffReport('diff', reportToken, refset).then(
-                        function(data) {
-                        // consider delaying next statement if it doesn't work 
-                        refsetService.releaseReportToken(reportToken);  });
-                    });
-                  }
-                );
+                    // get the release refset
+                    refsetService.compareRefsets(refset.id, data.refsetId).then(
+                      function(data) {
+                        var reportToken = data;
+                        refsetService.exportDiffReport('diff', reportToken, refset).then(
+                          function(data) {
+                            // consider delaying next statement if it doesn't
+                            // work
+                            refsetService.releaseReportToken(reportToken);
+                          });
+                      });
+                  });
               }
 
               //
