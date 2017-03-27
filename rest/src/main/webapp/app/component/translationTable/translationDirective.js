@@ -1857,22 +1857,17 @@ tsApp
                       return;
                     }
 
-                    // SAVE, FINISIH => compute next index, re-search, reopen
+                    // SAVE, FINISH => compute next index, re-search, reopen
                     // modal
                     // Search results in $scope.selected.translation.assigned
                     var searchAgain = false;
                     var nextIndex = index;
-                    if (action === 'FINISH') {
-                      // search again if there are more past the current index
-                      if ((index + 1) < $scope.selected.translation.assigned.totalCount) {
-                        searchAgain = true;
-                      }
-                      // nextIndex remains unchanged
-                    } else if (action === 'SAVE') {
+                    if (action === 'FINISH' || action === 'SAVE') {
                       // search again if we are at the end of the current search
                       // results, but not at the end of the total search results
                       if ((index + 1) == $scope.selected.translation.assigned.length
-                        && (index + 1) < $scope.selected.translation.assigned.totalCount) {
+                        && ((($scope.paging['assigned'].page - 1) * $scope.paging['assigned'].pageSize) + index + 1) 
+                        < $scope.selected.translation.assigned.totalCount) {
                         searchAgain = true;
                         nextIndex = 0;
                         $scope.paging['assigned'].page++;
