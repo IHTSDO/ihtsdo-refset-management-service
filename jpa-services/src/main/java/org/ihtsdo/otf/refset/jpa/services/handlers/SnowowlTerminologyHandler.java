@@ -72,6 +72,7 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     idsToIgnore.add("900000000000509007");
     idsToIgnore.add("900000000000508004");
     idsToIgnore.add("608771002");
+
   }
 
   /**
