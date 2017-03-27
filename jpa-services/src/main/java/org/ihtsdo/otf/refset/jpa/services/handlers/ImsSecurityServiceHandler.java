@@ -6,6 +6,8 @@ package org.ihtsdo.otf.refset.jpa.services.handlers;
 import java.util.Iterator;
 import java.util.Properties;
 
+import javax.ws.rs.WebApplicationException;
+
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.UserRole;
@@ -29,6 +31,10 @@ public class ImsSecurityServiceHandler implements SecurityServiceHandler {
   public User authenticate(String userName, String password) throws Exception {
     // password contains the IMS user document
 
+    if (userName == null || password == null) {
+      throw new WebApplicationException("IMS Authentication failed with invalid parameters.");
+    }
+    
     ObjectMapper mapper = new ObjectMapper();
     JsonNode doc = mapper.readTree(password);
     Logger.getLogger(getClass()).info("");
