@@ -587,7 +587,6 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     } else {
       concept.setId(1L);
     }
-    Logger.getLogger(getClass()).info("  concept test = " + doc);
     
     if (doc.has("effectiveTime")) {
       concept.setEffectiveTime(
@@ -884,9 +883,13 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
         concept.setActive(conceptNode.get("active").asText().equals("true"));
 
         concept.setTerminologyId(conceptNode.get("id").asText());
-        concept.setEffectiveTime(ConfigUtility.DATE_FORMAT
+        if (conceptNode.has("effectiveTime")) {
+          concept.setEffectiveTime(ConfigUtility.DATE_FORMAT
             .parse(conceptNode.get("effectiveTime").asText()));
-        concept.setLastModified(concept.getEffectiveTime());
+          concept.setLastModified(concept.getEffectiveTime());
+        } else {
+          concept.setLastModified(new Date());
+        }
         concept.setLastModifiedBy(terminology);
         concept.setModuleId(conceptNode.get("moduleId").asText());
         concept.setDefinitionStatusId(
