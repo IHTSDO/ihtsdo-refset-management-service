@@ -902,7 +902,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     throws Exception {
 
     Logger.getLogger(getClass())
-        .info("RESTful call GET (Project): get concept with conceptId, "
+        .info("RESTful call GET (Project): get concept with conceptId&, "
             + terminologyId + ", " + terminology + ", " + version + ", "
             + translationId);
 
@@ -928,6 +928,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
             .getTerminologyHandler(project, getHeaders(headers))
             .getFullConcept(terminologyId, terminology, version);
       } catch (Exception e) {
+        e.printStackTrace();
         Logger.getLogger(getClass()).info(
             "No results in call to Terminology Handler with terminologyId: "
                 + terminologyId + ", terminology: " + terminology
