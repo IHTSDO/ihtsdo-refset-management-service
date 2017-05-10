@@ -402,7 +402,7 @@
             </td>
             <td>
               <input type="checkbox" ng-change="saveUserPreferences()"
-                ng-disabled="user.applicationRole != 'VIEWER'"
+                ng-disabled="user.applicationRole == 'VIEWER'"
                 ng-model="user.userPreferences.spellingEnabled">
               <span ng-show="user.userPreferences.spellingEnabled">ENABLED</span>
               <span ng-show="!user.userPreferences.spellingEnabled">DISABLED</span>
@@ -435,7 +435,7 @@
             </td>
             <td>
               <input type="checkbox" ng-change="saveUserPreferences()"
-                ng-disabled="user.applicationRole != 'VIEWER'"
+                ng-disabled="user.applicationRole == 'VIEWER'"
                 ng-model="user.userPreferences.memoryEnabled">
               <span ng-show="user.userPreferences.memoryEnabled">ENABLED</span>
               <span ng-show="!user.userPreferences.memoryEnabled">DISABLED</span>
