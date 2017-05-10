@@ -68,11 +68,6 @@ public class BeginRefsetReleaseAlgorthm extends RefsetServiceJpa implements
   @Override
   public void checkPreconditions() throws Exception {
     Logger.getLogger(getClass()).info("  Check preconditions");
-    // Check that there are members
-    /*if (refset.getMembers() == null || refset.getMembers().size() == 0) {
-      throw new LocalException("Refset " + refset.getTerminologyId()
-          + " has no members to release.");
-    }*/
 
     // Check that refset id isn't "TMP"
     if (!refset.isLocalSet() && refset.getTerminologyId().startsWith("TMP")) {
