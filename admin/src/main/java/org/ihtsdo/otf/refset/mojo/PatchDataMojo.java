@@ -19,6 +19,8 @@
  */
 package org.ihtsdo.otf.refset.mojo;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
@@ -28,12 +30,18 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.ihtsdo.otf.refset.Project;
+import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.ProjectList;
 import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
+import org.ihtsdo.otf.refset.jpa.services.TranslationServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.WorkflowServiceJpa;
 import org.ihtsdo.otf.refset.rest.impl.ProjectServiceRestImpl;
+import org.ihtsdo.otf.refset.rf2.Concept;
+import org.ihtsdo.otf.refset.rf2.Description;
+import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
 import org.ihtsdo.otf.refset.services.SecurityService;
+import org.ihtsdo.otf.refset.services.TranslationService;
 import org.ihtsdo.otf.refset.services.WorkflowService;
 
 /**
@@ -70,31 +78,32 @@ public class PatchDataMojo extends AbstractMojo {
       getLog().info("  start = " + start);
       getLog().info("  end = " + end);
 
-      final WorkflowService service = new WorkflowServiceJpa();
+      final WorkflowService workflowService = new WorkflowServiceJpa();
+      final TranslationService translationService = new TranslationServiceJpa();
 
       // Patch 1000001
       // Set project handler key/url for all projects
       if ("20161215".compareTo(start) >= 0 && "20161215".compareTo(end) <= 0) {
         getLog().info(
             "Processing patch 20161215 - set project terminology handler key/url");
-        for (final Project project : service.findProjectsForQuery(null, null)
+        for (final Project project : workflowService.findProjectsForQuery(null, null)
             .getObjects()) {
           project.setTerminologyHandlerKey("BROWSER");
           project
               .setTerminologyHandlerUrl("https://sct-rest.ihtsdotools.org/api");
           getLog().info(
               "  project = " + project.getId() + ", " + project.getName());
-          service.updateProject(project);
+          workflowService.updateProject(project);
         }
 
         // project needs handler key and URL set
         getLog().info("  Set projects terminology handler key/url");
-        final ProjectList list = service.getProjects();
+        final ProjectList list = workflowService.getProjects();
         for (final Project project : list.getObjects()) {
           project.setTerminologyHandlerKey("BROWSER");
           project
               .setTerminologyHandlerUrl("https://sct-rest.ihtsdotools.org/api");
-          service.updateProject(project);
+          workflowService.updateProject(project);
         }
 
       }
@@ -114,13 +123,56 @@ public class PatchDataMojo extends AbstractMojo {
         // workflowPath column for projects
 
         // Set projects default
-        for (final Project project : service.findProjectsForQuery(null, null)
+        for (final Project project : workflowService.findProjectsForQuery(null, null)
             .getObjects()) {
           project.setWorkflowPath("DEFAULT");
           getLog().info(
               "  project = " + project.getId() + ", " + project.getName());
-          service.updateProject(project);
+          workflowService.updateProject(project);
         }
+      }
+      
+      // Patch 20170706
+      // Remove fsns on translation descriptions only in starter set translations
+      if ("20170706".compareTo(start) >= 0 && "20170706".compareTo(end) <= 0) {
+        getLog().info(
+            "Processing patch 20170706 - Remove fsns on translation descriptions"); // Patch
+        int ct = 0;
+        translationService.setTransactionPerOperation(false);
+        translationService.beginTransaction();
+        for (Translation trans : translationService.getTranslations().getObjects()) {
+          Translation translation = translationService.getTranslation(trans.getId());
+          if (translation.getRefset().getTerminologyId().equals("722128001") || 
+              translation.getRefset().getTerminologyId().equals("722131000") || 
+              translation.getRefset().getTerminologyId().equals("722130004") || 
+              translation.getRefset().getTerminologyId().equals("722129009"))
+          for (Concept cpt : translation.getConcepts()) {
+            ct++;
+            List<Description> newDescriptionList = new ArrayList<>();
+            Concept concept = translationService.getConcept(cpt.getId());
+            for (Description description : concept.getDescriptions()) {  
+                // if fsn, remove language refset members and description
+                if (description.getTypeId().equals("900000000000003001")) {
+                  description.setLanguageRefsetMembers(new ArrayList<LanguageRefsetMember>());
+                  for (LanguageRefsetMember lrm : description.getLanguageRefsetMembers()) {
+                    translationService.removeLanguageRefsetMember(lrm.getId());
+                  }  
+                  translationService.removeDescription(description.getId());
+                } else {
+                  newDescriptionList.add(description);
+                }
+                
+            }
+            concept.setDescriptions(newDescriptionList);
+            translationService.updateConcept(concept);
+            
+            if (ct % 10 == 0) {
+              getLog().info("  ct = " + ct);
+              translationService.commitClearBegin();
+            }
+          }
+        }
+        translationService.commit();
       }
 
       // Reindex
@@ -134,7 +186,8 @@ public class PatchDataMojo extends AbstractMojo {
       ProjectServiceRestImpl contentService = new ProjectServiceRestImpl();
       contentService.luceneReindex(null, authToken);
 
-      service.close();
+      workflowService.close();
+      translationService.close();
       getLog().info("Done ...");
     } catch (Exception e) {
       Logger.getLogger(getClass()).error("Unexpected exception", e);
