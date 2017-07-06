@@ -140,35 +140,40 @@ public class PatchDataMojo extends AbstractMojo {
         int ct = 0;
         translationService.setTransactionPerOperation(false);
         translationService.beginTransaction();
-        for (Translation trans : translationService.getTranslations().getObjects()) {
-          Translation translation = translationService.getTranslation(trans.getId());
-          if (translation.getRefset().getTerminologyId().equals("722128001") || 
-              translation.getRefset().getTerminologyId().equals("722131000") || 
-              translation.getRefset().getTerminologyId().equals("722130004") || 
-              translation.getRefset().getTerminologyId().equals("722129009"))
-          for (Concept cpt : translation.getConcepts()) {
-            ct++;
-            List<Description> newDescriptionList = new ArrayList<>();
-            Concept concept = translationService.getConcept(cpt.getId());
-            for (Description description : concept.getDescriptions()) {  
+        for (Translation trans : translationService.getTranslations()
+            .getObjects()) {
+          Translation translation =
+              translationService.getTranslation(trans.getId());
+          if (translation.getRefset().getTerminologyId().equals("722128001")
+              || translation.getRefset().getTerminologyId().equals("722131000")
+              || translation.getRefset().getTerminologyId().equals("722130004")
+              || translation.getRefset().getTerminologyId()
+                  .equals("722129009")) {
+            for (Concept cpt : translation.getConcepts()) {
+              ct++;
+              List<Description> newDescriptionList = new ArrayList<>();
+              Concept concept = translationService.getConcept(cpt.getId());
+              for (Description description : concept.getDescriptions()) {
                 // if fsn, remove language refset members and description
                 if (description.getTypeId().equals("900000000000003001")) {
-                  description.setLanguageRefsetMembers(new ArrayList<LanguageRefsetMember>());
-                  for (LanguageRefsetMember lrm : description.getLanguageRefsetMembers()) {
+                  description.setLanguageRefsetMembers(
+                      new ArrayList<LanguageRefsetMember>());
+                  for (LanguageRefsetMember lrm : description
+                      .getLanguageRefsetMembers()) {
                     translationService.removeLanguageRefsetMember(lrm.getId());
-                  }  
+                  }
                   translationService.removeDescription(description.getId());
                 } else {
                   newDescriptionList.add(description);
                 }
-                
-            }
-            concept.setDescriptions(newDescriptionList);
-            translationService.updateConcept(concept);
-            
-            if (ct % 10 == 0) {
-              getLog().info("  ct = " + ct);
-              translationService.commitClearBegin();
+              }
+              concept.setDescriptions(newDescriptionList);
+              translationService.updateConcept(concept);
+
+              if (ct % 10 == 0) {
+                getLog().info("  ct = " + ct);
+                translationService.commitClearBegin();
+              }
             }
           }
         }
