@@ -36,16 +36,20 @@ tsApp.controller('LoginCtrl',
             // Success
             function(response) {
               console.debug('user = ', response.data);
+              
               securityService.setUser(response.data);
 
-              // set request header authorization and rerouted
-              $http.defaults.headers.common.Authorization = response.data.authToken;
-              projectService.getUserHasAnyRole();
-              if (response.data.userPreferences && response.data.userPreferences.lastTab) {
-                $location.path(response.data.userPreferences.lastTab);
-              } else {
-                $location.path('/directory');
+              if (response.data != null) {
+                // set request header authorization and rerouted
+                $http.defaults.headers.common.Authorization = response.data.authToken;
+                projectService.getUserHasAnyRole();
+                if (response.data.userPreferences && response.data.userPreferences.lastTab) {
+                  $location.path(response.data.userPreferences.lastTab);
+                } else {
+                  $location.path('/directory');
+                }
               }
+              
               gpService.decrement();
 
             },

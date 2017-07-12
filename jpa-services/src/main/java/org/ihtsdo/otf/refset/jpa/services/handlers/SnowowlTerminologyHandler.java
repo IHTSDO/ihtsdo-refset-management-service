@@ -587,10 +587,14 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     } else {
       concept.setId(1L);
     }
-
-    concept.setEffectiveTime(
+    
+    if (doc.has("effectiveTime")) {
+      concept.setEffectiveTime(
         ConfigUtility.DATE_FORMAT.parse(doc.get("effectiveTime").asText()));
-    concept.setLastModified(concept.getEffectiveTime());
+      concept.setLastModified(concept.getEffectiveTime());
+    } else {
+      concept.setLastModified(new Date());
+    }
     concept.setLastModifiedBy(terminology);
     concept.setModuleId(doc.get("moduleId").asText());
     concept.setDefinitionStatusId(doc.get("definitionStatus").asText());
@@ -609,10 +613,14 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
             .setCaseSignificanceId(desc.get("caseSignificance").asText());
 
         description.setConcept(concept);
-        description.setEffectiveTime(ConfigUtility.DATE_FORMAT
+        if (desc.has("effectiveTime")) {
+          description.setEffectiveTime(ConfigUtility.DATE_FORMAT
             .parse(desc.get("effectiveTime").asText()));
+          description.setLastModified(description.getEffectiveTime());
+        } else {
+          description.setLastModified(new Date());
+        }
         description.setLanguageCode(desc.get("lang").asText());
-        description.setLastModified(description.getEffectiveTime());
         description.setLastModifiedBy(terminology);
         description.setModuleId(desc.get("moduleId").asText());
         description.setPublishable(true);
@@ -666,8 +674,13 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
         rel.setModifierId(relNode.get("modifier").asText());
         rel.setRelationshipGroup(
             Integer.valueOf(relNode.get("groupId").asText()));
-        rel.setEffectiveTime(ConfigUtility.DATE_FORMAT
+        if (relNode.has("effectiveTime")) {
+          rel.setEffectiveTime(ConfigUtility.DATE_FORMAT
             .parse(relNode.get("effectiveTime").asText()));
+          rel.setLastModified(rel.getEffectiveTime());
+        } else {
+          rel.setLastModified(new Date());
+        }
         rel.setModuleId(relNode.get("moduleId").asText());
         rel.setTypeId(relNode.get("type").get("fsn").asText()
             .replaceFirst(" \\([a-zA-Z0-9 ]*\\)", ""));
@@ -677,7 +690,6 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
         }
 
         rel.setSourceConcept(concept);
-        rel.setLastModified(rel.getEffectiveTime());
         rel.setLastModifiedBy(terminology);
         rel.setPublishable(true);
         rel.setPublished(true);
@@ -871,9 +883,13 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
         concept.setActive(conceptNode.get("active").asText().equals("true"));
 
         concept.setTerminologyId(conceptNode.get("id").asText());
-        concept.setEffectiveTime(ConfigUtility.DATE_FORMAT
+        if (conceptNode.has("effectiveTime")) {
+          concept.setEffectiveTime(ConfigUtility.DATE_FORMAT
             .parse(conceptNode.get("effectiveTime").asText()));
-        concept.setLastModified(concept.getEffectiveTime());
+          concept.setLastModified(concept.getEffectiveTime());
+        } else {
+          concept.setLastModified(new Date());
+        }
         concept.setLastModifiedBy(terminology);
         concept.setModuleId(conceptNode.get("moduleId").asText());
         concept.setDefinitionStatusId(

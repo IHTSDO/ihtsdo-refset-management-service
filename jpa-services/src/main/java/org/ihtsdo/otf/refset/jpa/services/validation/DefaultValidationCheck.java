@@ -105,6 +105,7 @@ public class DefaultValidationCheck extends AbstractValidationCheck {
     throws Exception {
     ValidationResult result = new ValidationResultJpa();
 
+    int pnCt = 0;
     Translation translation =
         service.getTranslation(concept.getTranslation().getId());
     // Fail for leading whitespace
@@ -120,26 +121,24 @@ public class DefaultValidationCheck extends AbstractValidationCheck {
       }
 
       // Validate descriptionType length
-      int pnCt = 0;
       for (DescriptionType type : translation.getDescriptionTypes()) {
         if (type.getTypeId().equals(desc.getTypeId())
             && desc.getTerm().length() > type.getDescriptionLength()) {
           result.addError("Description exceeds length limit for its type ("
               + type.getName() + ", " + type.getDescriptionLength());
         }
-
-        // count Preferred Synonyms
-        if (desc.getTypeId().equals("900000000000013009")
-            && desc.getLanguageRefsetMembers().size() > 0
-            && desc.getLanguageRefsetMembers().get(0).getAcceptabilityId()
-                .equals("900000000000548007")) {
-          pnCt++;
-        }
-
+      }
+      
+      // count Preferred Synonyms
+      if (desc.getTypeId().equals("900000000000013009")
+          && desc.getLanguageRefsetMembers().size() > 0
+          && desc.getLanguageRefsetMembers().get(0).getAcceptabilityId()
+              .equals("900000000000548007")) {
+        pnCt++;
       }
       // Warn if >1 PN
       if (pnCt > 1) {
-        result.addWarning("Multiple PN descriptions");
+        result.addWarning("Multiple PT descriptions");
       }
       if (desc.getTypeId().equals("900000000000003001")
           && !desc.getTerm().matches(".* \\(.*\\)")) {
