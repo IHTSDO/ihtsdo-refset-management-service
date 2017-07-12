@@ -902,7 +902,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     throws Exception {
 
     Logger.getLogger(getClass())
-        .info("RESTful call GET (Project): get concept with conceptId, "
+        .info("RESTful call GET (Project): get concept with conceptId&, "
             + terminologyId + ", " + terminology + ", " + version + ", "
             + translationId);
 
