@@ -306,6 +306,11 @@
 				<dst>/etc/supervisor/conf.d/${packageName}.conf</dst>
 			        <type>file</type>
 			</data>
+			<data>
+				<src>${basedir}/../admin/pom.xml</src>
+				<dst>/opt/refset-admin/pom.xml</dst>
+			        <type>file</type>
+			</data>
                         <data>
 				<src>${project.build.directory}/config/resources/config.properties</src>
                                 <dst>config.properties</dst>
