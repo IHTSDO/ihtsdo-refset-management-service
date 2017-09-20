@@ -207,6 +207,8 @@ public class PatchDataMojo extends AbstractMojo {
             	if (!Arrays.asList(alreadyReviewedJapanese).contains(concept.getTerminologyId())) {
             		concept.setWorkflowStatus(WorkflowStatus.EDITING_DONE);
             		ct++;
+            	} else {
+            		concept.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
             	}
                 translationService.updateConcept(concept);
 
