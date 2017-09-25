@@ -705,7 +705,8 @@ tsApp
                       var list = new Array();
                       for (var i = 0; i < data.records.length; i++) {
                         if (data.records[i].concept.workflowStatus.indexOf('IN_PROGRESS') != -1
-                          || data.records[i].concept.workflowStatus == 'REVIEW_NEW') {
+                          || data.records[i].concept.workflowStatus == 'REVIEW_NEW'
+                          || data.records[i].concept.workflowStatus == 'READY_FOR_PUBLICATION') {
                           list.push(data.records[i].concept);
                         }
                       }

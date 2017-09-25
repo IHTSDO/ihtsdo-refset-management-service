@@ -33,6 +33,7 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
+import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.ProjectList;
 import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.TranslationServiceJpa;
@@ -44,6 +45,10 @@ import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
 import org.ihtsdo.otf.refset.services.SecurityService;
 import org.ihtsdo.otf.refset.services.TranslationService;
 import org.ihtsdo.otf.refset.services.WorkflowService;
+import org.ihtsdo.otf.refset.workflow.TrackingRecord;
+import org.ihtsdo.otf.refset.workflow.TrackingRecordJpa;
+import org.ihtsdo.otf.refset.workflow.TrackingRecordList;
+import org.ihtsdo.otf.refset.workflow.TrackingRecordListJpa;
 import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 
 /**
@@ -191,36 +196,97 @@ public class PatchDataMojo extends AbstractMojo {
       // Remove fsns on translation descriptions only in starter set translations
       // 90979004	Chronic tonsillitis (disorder) example of Published concept already reviewed
       // 57759005	First degree perineal laceration (disorder)  example of Published concept not previously reviewed
-      if ("20170920".compareTo(start) >= 0 && "20170920".compareTo(end) <= 0) {
-        getLog().info(
-            "Processing patch 20170920 - Move unreviewed Japanese Starter Set Translation concepts back to EDITING_DONE state"); // Patch
+			if ("20170920".compareTo(start) >= 0 && "20170920".compareTo(end) <= 0) {
+				getLog().info(
+						"Processing patch 20170920 - Move unreviewed Japanese Starter Set Translation concepts back to EDITING_DONE state"); // Patch
 
-        int ct = 0;
-        translationService.setTransactionPerOperation(false);
-        translationService.beginTransaction();
-        for (Translation trans : translationService.getTranslations()
-            .getObjects()) {
-          Translation translation =
-              translationService.getTranslation(trans.getId());
-          if (translation.getRefset().getTerminologyId().equals("722129009")) {
-            for (Concept concept : translation.getConcepts()) {
-            	if (!Arrays.asList(alreadyReviewedJapanese).contains(concept.getTerminologyId())) {
-            		concept.setWorkflowStatus(WorkflowStatus.EDITING_DONE);
-            		ct++;
-            	} else {
-            		concept.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
-            	}
-                translationService.updateConcept(concept);
+				int ct = 0;
+				translationService.setTransactionPerOperation(false);
+				translationService.beginTransaction();
+				for (Translation trans : translationService.getTranslations().getObjects()) {
+					Translation translation = translationService.getTranslation(trans.getId());
+					if (translation.getRefset().getTerminologyId().equals("722129009")) {
+						for (Concept concept : translation.getConcepts()) {
+							// if it isn't already reviewed, but is READY_FOR_PUBLICATION, reassign
+							if (!Arrays.asList(alreadyReviewedJapanese).contains(concept.getTerminologyId()) &&
+									concept.getWorkflowStatus() == WorkflowStatus.READY_FOR_PUBLICATION) {
 
-                if (ct % 100 == 0) {
-                  getLog().info("  ct = " + ct);
-                  translationService.commitClearBegin();
-                }
-            }
-          }
-        }
-        translationService.commit();
-      }
+								ct++;
+								TrackingRecordList recordList = new TrackingRecordListJpa();
+								// do not perform a lookup if concept is new
+								if (concept != null && concept.getId() != null) {
+									recordList = workflowService.findTrackingRecordsForQuery("conceptId:"
+											+ ((concept == null || concept.getId() == null) ? -1 : concept.getId()),
+											null);
+								}
+								TrackingRecord record = null;
+								if (recordList.getCount() == 1) {
+									record = recordList.getObjects().get(0);
+									workflowService.handleLazyInit(record);
+									if (record.getConcept() != null) {
+										workflowService.handleLazyInit(record.getConcept());
+									}
+								} else if (recordList.getCount() > 1) {
+									throw new LocalException(
+											"Unexpected number of tracking records for " + concept.getTerminologyId());
+								}
+
+								// Author case
+								if (record == null) {
+									// Add the concept itself (if not already
+									// exists)
+									if (concept.getId() == null) {
+										concept.setTranslation(translation);
+										concept.setModuleId(translation.getModuleId());
+										concept.setEffectiveTime(null);
+										concept.setDefinitionStatusId("UNKNOWN");
+										concept.setLastModifiedBy("dshapiro");
+										workflowService.addConcept(concept);
+									}
+									// Create a tracking record, fill it out,
+									// and add it.
+									TrackingRecord record2 = new TrackingRecordJpa();
+									record2.getAuthors().add("dshapiro");
+									record2.setForAuthoring(true);
+									record2.setForReview(false);
+									record2.setLastModifiedBy("dshapiro");
+									record2.setTranslation(translation);
+									record2.setConcept(concept);
+									if (concept.getWorkflowStatus() == WorkflowStatus.READY_FOR_PUBLICATION) {
+										record2.setRevision(true);
+										record2.setOriginRevision(
+												workflowService.getConceptRevisionNumber(concept.getId()));
+										concept.setRevision(true);
+									}
+									record = record2;
+									workflowService.addTrackingRecord(record2);
+								}
+
+								// Reviewer case
+								else {
+									record.setForAuthoring(false);
+									record.setForReview(true);
+									// Set the review origin revision, so we can
+									// revert on unassign
+									record.setReviewOriginRevision(
+											workflowService.getConceptRevisionNumber(concept.getId()));
+									record.getReviewers().add("dshapiro");
+									record.setLastModifiedBy("dshapiro");
+									concept.setWorkflowStatus(WorkflowStatus.REVIEW_NEW);
+
+								}
+							}
+							translationService.updateConcept(concept);
+
+							if (ct % 100 == 0) {
+								getLog().info("  ct = " + ct);
+								translationService.commitClearBegin();
+							}
+						}
+					}
+				}
+				translationService.commit();
+			}
       
       // Reindex
       getLog().info("  Reindex");
