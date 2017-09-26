@@ -307,6 +307,16 @@
 			        <type>file</type>
 			</data>
                         <data>
+									<src>${basedir}/../admin/pom.xml</src>
+									<dst>pom.xml</dst>
+									<type>file</type>
+									<mapper>
+										<type>perm</type>
+										<prefix>/opt/refset-admin/</prefix>
+									</mapper>
+
+								</data>
+								<data>
 				<src>${project.build.directory}/config/resources/config.properties</src>
                                 <dst>config.properties</dst>
                                 <type>file</type>
