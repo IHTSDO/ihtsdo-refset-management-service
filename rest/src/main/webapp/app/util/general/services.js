@@ -41,6 +41,9 @@ tsApp
             name : 100,
             value : 100
           }, {
+            name : 500,
+            value : 500
+          }, {
             name : 'All',
             value : 100000
           } ];
