@@ -395,7 +395,6 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         // Only add where the refset doesn't already have a member
         if (!conceptIds.contains(concept.getTerminologyId())) {
           final ConceptRefsetMemberJpa member = new ConceptRefsetMemberJpa();
-          member.setTerminologyId(concept.getTerminologyId());
           member.setConceptId(concept.getTerminologyId());
           member.setConceptName(concept.getName());
           member.setMemberType(Refset.MemberType.MEMBER);
