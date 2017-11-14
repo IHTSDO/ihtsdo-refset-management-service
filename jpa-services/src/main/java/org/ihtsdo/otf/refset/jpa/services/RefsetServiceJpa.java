@@ -38,6 +38,7 @@ import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.RefsetList;
 import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
+import org.ihtsdo.otf.refset.helpers.TranslationList;
 import org.ihtsdo.otf.refset.jpa.ConceptRefsetMemberNoteJpa;
 import org.ihtsdo.otf.refset.jpa.IoHandlerInfoJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
@@ -48,6 +49,7 @@ import org.ihtsdo.otf.refset.jpa.helpers.ConceptRefsetMemberListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.IoHandlerInfoListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.RefsetListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ReleaseInfoListJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.TranslationListJpa;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefsetMember;
@@ -1570,6 +1572,24 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
       }
     }
 
+  }
+
+  /* see superclass */
+  @Override
+  @SuppressWarnings("unchecked")
+  public RefsetList getRefsets() {
+    Logger.getLogger(getClass())
+        .debug("Refset Service - get refsets");
+    javax.persistence.Query query =
+        manager.createQuery("select a from RefsetJpa a");
+    try {
+      final List<Refset> refsets = query.getResultList();
+      final RefsetList refsetList = new RefsetListJpa();
+      refsetList.setObjects(refsets);
+      return refsetList;
+    } catch (NoResultException e) {
+      return null;
+    }
   }
 
 }

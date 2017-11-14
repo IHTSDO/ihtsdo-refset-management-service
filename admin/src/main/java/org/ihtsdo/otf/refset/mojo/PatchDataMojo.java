@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
+import java.util.UUID;
 
 import org.apache.log4j.Logger;
 import org.apache.maven.plugin.AbstractMojo;
@@ -31,20 +32,27 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.ihtsdo.otf.refset.Project;
+import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.ProjectList;
+import org.ihtsdo.otf.refset.jpa.services.RefsetServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.TranslationServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.WorkflowServiceJpa;
+import org.ihtsdo.otf.refset.jpa.services.rest.RefsetServiceRest;
 import org.ihtsdo.otf.refset.rest.impl.ProjectServiceRestImpl;
+import org.ihtsdo.otf.refset.rest.impl.RefsetServiceRestImpl;
 import org.ihtsdo.otf.refset.rf2.Concept;
+import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.rf2.Description;
 import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
+import org.ihtsdo.otf.refset.services.RefsetService;
 import org.ihtsdo.otf.refset.services.SecurityService;
 import org.ihtsdo.otf.refset.services.TranslationService;
 import org.ihtsdo.otf.refset.services.WorkflowService;
+import org.ihtsdo.otf.refset.services.handlers.IdentifierAssignmentHandler;
 import org.ihtsdo.otf.refset.workflow.TrackingRecord;
 import org.ihtsdo.otf.refset.workflow.TrackingRecordJpa;
 import org.ihtsdo.otf.refset.workflow.TrackingRecordList;
@@ -89,6 +97,7 @@ public class PatchDataMojo extends AbstractMojo {
 
       final WorkflowService workflowService = new WorkflowServiceJpa();
       final TranslationService translationService = new TranslationServiceJpa();
+      final RefsetService refsetService = new RefsetServiceJpa();
 
       // Patch 1000001
       // Set project handler key/url for all projects
@@ -287,7 +296,43 @@ public class PatchDataMojo extends AbstractMojo {
 				}
 				translationService.commit();
 			}
-      
+
+			// Patch 20171113
+			// refset member ids set to referencedComponentIds instead of UUIDs
+			// when adding subtrees
+			// fix to give random UUID
+			if ("20171113".compareTo(start) >= 0 && "20171113".compareTo(end) <= 0) {
+				getLog().info("Processing patch 20171113 - Fix member ids that need UUIDs"); // Patch
+				int ct = 1;
+				translationService.setTransactionPerOperation(false);
+				translationService.beginTransaction();
+
+				for (Refset rfst : translationService.getRefsets().getObjects()) {
+					Refset refset = translationService.getRefset(rfst.getId());
+					// only execute this on the CDAC India project where refsets have
+					// not yet been published
+					if (!refset.getProject().getName().contains("CDAC")) {
+						continue;
+					}
+					for (ConceptRefsetMember member : refset.getMembers()) {
+						if (member.getTerminologyId().equals(member.getConceptId())) {
+							member.setTerminologyId(UUID.randomUUID().toString());
+							ct++;
+							translationService.updateMember(member);
+							getLog().info("Fixing member: " + member.getConceptId() + " in " + refset.getTerminologyId()); 
+						}
+
+						if (ct % 100 == 0) {
+							getLog().info("  ct = " + ct);
+							translationService.commitClearBegin();
+						}
+					}
+
+				}
+				translationService.commit();
+			}
+		
+			
       // Reindex
       getLog().info("  Reindex");
       // login as "admin", use token
