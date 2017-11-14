@@ -243,7 +243,7 @@ public class IhtsdoComponentIdentifierServiceHandler
   /* see superclass */
   @Override
   public boolean allowIdChangeOnUpdate() {
-    return false;
+    return true;
   }
 
   /* see superclass */
