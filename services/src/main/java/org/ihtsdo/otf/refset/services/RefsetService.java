@@ -403,5 +403,13 @@ public interface RefsetService extends ReleaseService {
    */
   public Integer countExpression(Project project, String terminology,
     String version, String expression) throws Exception;
+  
+  /**
+   * Gets the refsets.
+   *
+   * @return the refsets
+   */
+  public RefsetList getRefsets();
+
 
 }
