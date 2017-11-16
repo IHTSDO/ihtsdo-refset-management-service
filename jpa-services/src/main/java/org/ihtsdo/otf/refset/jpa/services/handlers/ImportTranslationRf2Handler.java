@@ -4,6 +4,7 @@
 package org.ihtsdo.otf.refset.jpa.services.handlers;
 
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -111,7 +112,7 @@ public class ImportTranslationRf2Handler implements ImportTranslationHandler {
     /** The lang seen. */
     boolean langSeen = false;
     // Handle the input stream as a zip input stream
-    final ZipInputStream zin = new ZipInputStream(content);
+    final ZipInputStream zin = new ZipInputStream(content, Charset.forName("UTF-8"));
     final Map<String, Concept> conceptCache = new HashMap<>();
 
     int inactiveDescriptionCt = 0;
@@ -139,7 +140,7 @@ public class ImportTranslationRf2Handler implements ImportTranslationHandler {
 
           // Scan through the file and create descriptions and cache concepts
           String line = null;
-          Scanner sc = new Scanner(zin);
+          Scanner sc = new Scanner(zin, "UTF-8");
           while (sc.hasNextLine()) {
             line = sc.nextLine();
             final String fields[] = FieldedStringTokenizer.split(line, "\t");
