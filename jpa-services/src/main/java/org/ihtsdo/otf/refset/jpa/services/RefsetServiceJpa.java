@@ -1572,4 +1572,22 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
 
   }
 
+  /* see superclass */
+  @Override
+  @SuppressWarnings("unchecked")
+  public RefsetList getRefsets() {
+    Logger.getLogger(getClass())
+        .debug("Refset Service - get refsets");
+    javax.persistence.Query query =
+        manager.createQuery("select a from RefsetJpa a");
+    try {
+      final List<Refset> refsets = query.getResultList();
+      final RefsetList refsetList = new RefsetListJpa();
+      refsetList.setObjects(refsets);
+      return refsetList;
+    } catch (NoResultException e) {
+      return null;
+    }
+  }
+
 }
