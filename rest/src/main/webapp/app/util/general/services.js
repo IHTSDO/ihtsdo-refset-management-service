@@ -241,6 +241,9 @@ tsApp
 
         // Convert date to a simple string
         this.toSimpleDate = function(lastModified) {
+          if (lastModified == null) {
+        	  return '';
+          }
           var date = new Date(lastModified + ((60 + workDate.getTimezoneOffset()) * 60000));
           var year = '' + date.getFullYear();
           var month = '' + (date.getMonth() + 1);
@@ -253,6 +256,22 @@ tsApp
           }
           return year + month + day;
         };
+
+        this.toWCISimpleDate = function(date) {
+        	if (date == null) {
+            	return '';
+            }
+        	var year = '' + date.getFullYear();
+            var month = '' + (date.getMonth() + 1);
+            if (month.length == 1) {
+              month = '0' + month;
+            }
+            var day = '' + date.getDate();
+            if (day.length == 1) {
+              day = '0' + day;
+            }
+            return year + month + day;
+          };
 
         // Table sorting mechanism
         this.setSortField = function(table, field, paging) {
