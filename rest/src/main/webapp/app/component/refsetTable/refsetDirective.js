@@ -2002,7 +2002,7 @@ tsApp
                 $scope.beginRefsetRelease = function(refset) {
 
                   releaseService.beginRefsetRelease(refset.id,
-                    utilService.toSimpleDate(refset.effectiveTime)).then(
+                    utilService.toWCISimpleDate(refset.effectiveTime)).then(
                   // Success
                   function(data) {
                     $scope.releaseInfo = data;
