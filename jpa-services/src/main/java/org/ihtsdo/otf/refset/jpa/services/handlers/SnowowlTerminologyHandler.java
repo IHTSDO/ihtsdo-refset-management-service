@@ -843,7 +843,7 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
 
         else {
           // Skip any new concepts past the limit
-          if (conceptCt++ < localPfs.getMaxResults()) {
+          if (conceptCt++ < localPfs.getMaxResults() && entry.get("active").asText().equals("true") || !localPfs.getActiveOnly()) {
             final Concept concept = new ConceptJpa();
             concept.setActive(entry.get("active").asText().equals("true"));
             concept.setDefinitionStatusId(
