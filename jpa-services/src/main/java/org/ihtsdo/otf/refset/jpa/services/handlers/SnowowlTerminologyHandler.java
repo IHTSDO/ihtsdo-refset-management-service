@@ -843,11 +843,11 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
 
         else {
           	// Filter out inactive concepts, if Active Only is set.
-          	if(conceptNode.get("active").asText().equals("true") || !localPfs.getActiveOnly()){
+          	if(entry.get("active").asText().equals("true") && (conceptNode.get("active").asText().equals("true")) || !localPfs.getActiveOnly()){
           	// Skip any new concepts past the limit
           	  if (conceptCt++ < localPfs.getMaxResults()) {
           		  final Concept concept = new ConceptJpa();
-          		  concept.setActive(entry.get("active").asText().equals("true"));
+          		  concept.setActive(conceptNode.get("active").asText().equals("true"));
           		  concept.setDefinitionStatusId(
           				  conceptNode.get("definitionStatus").asText());
           		  concept.setTerminologyId(conceptId);
