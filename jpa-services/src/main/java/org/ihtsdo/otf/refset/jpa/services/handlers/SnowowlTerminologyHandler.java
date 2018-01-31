@@ -842,29 +842,33 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
         }
 
         else {
-          // Skip any new concepts past the limit
-          if (conceptCt++ < localPfs.getMaxResults() && conceptNode.get("active").asText().equals("true") || !localPfs.getActiveOnly()) {
-            final Concept concept = new ConceptJpa();
-            concept.setActive(entry.get("active").asText().equals("true"));
-            concept.setDefinitionStatusId(
-                conceptNode.get("definitionStatus").asText());
-            concept.setTerminologyId(conceptId);
-            concept.setModuleId(conceptNode.get("moduleId").asText());
-            concept.setName(conceptNode.get("fsn").asText());
-            concept.setPublishable(true);
-            concept.setPublished(true);
+          	// Filter out inactive concepts, if Active Only is set.
+          	if(conceptNode.get("active").asText().equals("true") || !localPfs.getActiveOnly()){
+          	// Skip any new concepts past the limit
+          	  if (conceptCt++ < localPfs.getMaxResults()) {
+          		  final Concept concept = new ConceptJpa();
+          		  concept.setActive(entry.get("active").asText().equals("true"));
+          		  concept.setDefinitionStatusId(
+          				  conceptNode.get("definitionStatus").asText());
+          		  concept.setTerminologyId(conceptId);
+          		  concept.setModuleId(conceptNode.get("moduleId").asText());
+          		  concept.setName(conceptNode.get("fsn").asText());
+          		  concept.setPublishable(true);
+          		  concept.setPublished(true);
 
-            // Add the description
-            concept.getDescriptions().add(desc);
+          		  // Add the description
+          		  concept.getDescriptions().add(desc);
 
-            conceptList.addObject(concept);
-            conceptMap.put(conceptId, concept);
-            Logger.getLogger(getClass()).debug("  concept = " + concept);
-          }
+          		  conceptList.addObject(concept);
+          		  conceptMap.put(conceptId, concept);
+          		  Logger.getLogger(getClass()).debug("  concept = " + concept);
+          	  }
+          	}
         }
-
       }
 
+
+      
       // Set total count
       // TODO
       /*
