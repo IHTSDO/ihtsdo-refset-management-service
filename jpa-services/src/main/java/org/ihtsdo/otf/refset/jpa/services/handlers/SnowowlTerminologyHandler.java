@@ -802,11 +802,20 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
             + "&offset=" + localPfs.getStartIndex() + "&limit="
             + localPfs.getMaxResults() + "&expand=pt()");
 
-    final Response response =
-        target.request("application/vnd.org.ihtsdo.browser+json")
+    final Response response = useTerm
+        ? target.request("application/vnd.org.ihtsdo.browser+json")
             .header("Authorization", authHeader)
             .header("Accept-Language", getAcceptLanguage(terminology, version))
-            .header("Cookie", getCookieHeader()).get();
+            .header("Cookie", getCookieHeader()).get()
+            
+            :
+            	
+            target.request("application/vnd.com.b2international.snowowl+json")
+                .header("Authorization", authHeader)
+                .header("Accept-Language", getAcceptLanguage(terminology, version))
+                .header("Cookie", getCookieHeader()).get()            	
+            	;
+            
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
