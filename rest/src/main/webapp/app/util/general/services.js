@@ -33,10 +33,10 @@ tsApp
             value : 10
           }, {
             name : 20,
-            value : 30
+            value : 20
           }, {
             name : 40,
-            value : 50
+            value : 40
           }, {
             name : 100,
             value : 100
