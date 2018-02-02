@@ -75,7 +75,7 @@ tsApp
           page : 1,
           filter : '',
           sortField : 'lastModified',
-          ascending : null
+          ascending : false
         };
         $scope.paging['candidateProject'] = {
           page : 1,
@@ -811,15 +811,31 @@ tsApp
           $scope.selectedChecks = [];
           $scope.errors = [];
 
-          // Wire default validation check 'on' by default
+          // The others should only be selected if they were already saved as valid on the project
           for (var i = 0; i < $scope.validationChecks.length; i++) {
-            if ($scope.validationChecks[i].value == 'Default validation check') {
-              $scope.selectedChecks.push($scope.validationChecks[i].value);
-            } else {
-              $scope.availableChecks.push($scope.validationChecks[i].value);
-            }
+           
+        	  var selected = 0;
+              for (var j = 0; j < $scope.project.validationChecks.length; j++) {
+                if ($scope.validationChecks[i].key == $scope.project.validationChecks[j] &&
+                		$scope.selectedChecks.indexOf($scope.validationChecks[i].value) < 0) {
+                  $scope.selectedChecks.push($scope.validationChecks[i].value);
+                  selected = 1;
+                } 
+              }
+              if (selected == 0) {
+                  $scope.availableChecks.push($scope.validationChecks[i].value);
+              }
           }
-
+          
+          // if there are no selected checks, add the default check, and remove from available
+          if ($scope.selectedChecks.length == 0) {
+        	 $scope.selectedChecks.push('Default validation check');
+        	 if ($scope.availableChecks.indexOf('Default validation check') < 0) {
+        		 var index = $scope.availableChecks.indexOf('Default validation check');
+                 $scope.availableChecks.splice(index, 1);
+        	 }
+          }
+          
           // Get $scope.terminologies
           $scope.getTerminologyEditions = function() {
             projectService.getTerminologyEditions($scope.project).then(
@@ -915,6 +931,10 @@ tsApp
               if ($scope.selectedChecks.indexOf($scope.validationChecks[i].value) != -1) {
                 project.validationChecks.push($scope.validationChecks[i].key);
               }
+            }
+            // ensure that if no other checks are selected, the default validation
+            if (project.validationChecks.length == 0) {
+            	project.validationChecks.push('DEFAULT');
             }
 
             // copy clause - don't allow negation - it's implicitly negated
