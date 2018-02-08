@@ -74,6 +74,19 @@
               ]
             </p>
           </div>
+          <div ng-show="invalid.length>0" class="alert alert-warning">
+            {{invalid.length}} members not added because they are invalid
+            <div style="display: inline; float: right;">
+              <i title="Show concept ids for members that are invalid"
+                class="noul material-icons md-18"
+                ng-click="invalid.expand = !invalid.expand;">attach_file</i>
+            </div>
+            <p ng-show="invalid.expand">
+              [
+              <span ng-repeat="conceptId in invalid">{{conceptId}}, </span>
+              ]
+            </p>
+          </div>
         </td>
       </tr>
 

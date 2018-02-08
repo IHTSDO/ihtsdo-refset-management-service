@@ -2361,6 +2361,7 @@ tsApp
                 $scope.exists = [];
                 $scope.removed = [];
                 $scope.notExists = [];
+                $scope.invalid = [];
                 $scope.errors = [];
                 $scope.warnings = [];
                 $scope.comments = [];
@@ -2368,6 +2369,7 @@ tsApp
                 // Used for enabling/disabling in UI
                 $scope.hasResults = function() {
                   return $scope.added.length > 0 || $scope.removed.length > 0
+                    || $scope.invalid.length > 0
                     || $scope.exists.length > 0 || $scope.notExists.length > 0;
                 };
 
@@ -2389,6 +2391,12 @@ tsApp
 
                 // find member and add if not exists
                 function includeMember(refset, conceptId) {
+                  // check that concept id is only digits before proceding
+                  var reg = /^\d+$/;
+                  if (!reg.test(conceptId)) {
+                	  $scope.invalid.push(conceptId);
+                	  return;
+                  }
                   refsetService.findRefsetMembersForQuery(refset.id, 'conceptId:' + conceptId, {
                     startIndex : 0,
                     maxResults : 1
