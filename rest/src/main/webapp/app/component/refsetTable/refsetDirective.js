@@ -3688,7 +3688,7 @@ tsApp
                   // if inactive, find if there are replacement concepts
                   if (lookup) {
                     projectService.getReplacementConcepts($scope.project.id, member.conceptId,
-                      $scope.refset.terminology, $scope.refset.version).then(
+                      $scope.refset.terminology, $scope.newVersion).then(
                       // Success
                       function(data) {
                         $scope.concepts = data.concepts;
