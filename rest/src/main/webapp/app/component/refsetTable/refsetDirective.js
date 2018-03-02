@@ -2001,6 +2001,11 @@ tsApp
                 // Begin release
                 $scope.beginRefsetRelease = function(refset) {
 
+                  if (!refset.effectiveTime) {
+                     window.alert('Release Date cannot be empty');
+                     return;
+                  }
+                	
                   releaseService.beginRefsetRelease(refset.id,
                     utilService.toWCISimpleDate(refset.effectiveTime)).then(
                   // Success
