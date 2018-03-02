@@ -164,7 +164,7 @@ tsApp
                 }
 
                 var pfs = {
-                  startIndex : ($scope.paging['refset'].page)
+                  startIndex : ($scope.paging['refset'].page - 1)
                     * $scope.paging['refset'].pageSize,
                   maxResults : $scope.paging['refset'].pageSize,
                   sortField : $scope.paging['refset'].sortField,
