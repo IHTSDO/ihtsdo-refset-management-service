@@ -37,17 +37,22 @@ import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.ProjectList;
+import org.ihtsdo.otf.refset.jpa.services.RefsetServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.TranslationServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.WorkflowServiceJpa;
+import org.ihtsdo.otf.refset.jpa.services.rest.RefsetServiceRest;
 import org.ihtsdo.otf.refset.rest.impl.ProjectServiceRestImpl;
+import org.ihtsdo.otf.refset.rest.impl.RefsetServiceRestImpl;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.rf2.Description;
 import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
+import org.ihtsdo.otf.refset.services.RefsetService;
 import org.ihtsdo.otf.refset.services.SecurityService;
 import org.ihtsdo.otf.refset.services.TranslationService;
 import org.ihtsdo.otf.refset.services.WorkflowService;
+import org.ihtsdo.otf.refset.services.handlers.IdentifierAssignmentHandler;
 import org.ihtsdo.otf.refset.workflow.TrackingRecord;
 import org.ihtsdo.otf.refset.workflow.TrackingRecordJpa;
 import org.ihtsdo.otf.refset.workflow.TrackingRecordList;
@@ -92,6 +97,7 @@ public class PatchDataMojo extends AbstractMojo {
 
       final WorkflowService workflowService = new WorkflowServiceJpa();
       final TranslationService translationService = new TranslationServiceJpa();
+      final RefsetService refsetService = new RefsetServiceJpa();
 
       // Patch 1000001
       // Set project handler key/url for all projects
@@ -290,8 +296,7 @@ public class PatchDataMojo extends AbstractMojo {
 				}
 				translationService.commit();
 			}
-      
-			
+
 			// Patch 20171113
 			// refset member ids set to referencedComponentIds instead of UUIDs
 			// when adding subtrees
@@ -328,7 +333,6 @@ public class PatchDataMojo extends AbstractMojo {
 			}
 		
 			
-	
       // Reindex
       getLog().info("  Reindex");
       // login as "admin", use token
