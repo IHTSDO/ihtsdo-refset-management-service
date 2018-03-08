@@ -10,7 +10,6 @@ import org.ihtsdo.otf.refset.helpers.PfsParameter;
 
 /**
  * Generically represents a service. 
- * BOGUS CHANGE
  */
 public interface RootService {
 
