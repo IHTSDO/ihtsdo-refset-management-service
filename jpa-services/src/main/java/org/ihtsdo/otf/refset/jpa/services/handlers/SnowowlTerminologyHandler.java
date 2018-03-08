@@ -802,11 +802,20 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
             + "&offset=" + localPfs.getStartIndex() + "&limit="
             + localPfs.getMaxResults() + "&expand=pt()");
 
-    final Response response =
-        target.request("application/vnd.org.ihtsdo.browser+json")
+    final Response response = useTerm
+        ? target.request("application/vnd.org.ihtsdo.browser+json")
             .header("Authorization", authHeader)
             .header("Accept-Language", getAcceptLanguage(terminology, version))
-            .header("Cookie", getCookieHeader()).get();
+            .header("Cookie", getCookieHeader()).get()
+            
+            :
+            	
+            target.request("application/vnd.com.b2international.snowowl+json")
+                .header("Authorization", authHeader)
+                .header("Accept-Language", getAcceptLanguage(terminology, version))
+                .header("Cookie", getCookieHeader()).get()            	
+            	;
+            
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -842,29 +851,33 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
         }
 
         else {
-          // Skip any new concepts past the limit
-          if (conceptCt++ < localPfs.getMaxResults()) {
-            final Concept concept = new ConceptJpa();
-            concept.setActive(entry.get("active").asText().equals("true"));
-            concept.setDefinitionStatusId(
-                conceptNode.get("definitionStatus").asText());
-            concept.setTerminologyId(conceptId);
-            concept.setModuleId(conceptNode.get("moduleId").asText());
-            concept.setName(conceptNode.get("fsn").asText());
-            concept.setPublishable(true);
-            concept.setPublished(true);
+          	// Filter out inactive concepts, if Active Only is set.
+          	if(entry.get("active").asText().equals("true") && (conceptNode.get("active").asText().equals("true")) || !localPfs.getActiveOnly()){
+          	// Skip any new concepts past the limit
+          	  if (conceptCt++ < localPfs.getMaxResults()) {
+          		  final Concept concept = new ConceptJpa();
+          		  concept.setActive(conceptNode.get("active").asText().equals("true"));
+          		  concept.setDefinitionStatusId(
+          				  conceptNode.get("definitionStatus").asText());
+          		  concept.setTerminologyId(conceptId);
+          		  concept.setModuleId(conceptNode.get("moduleId").asText());
+          		  concept.setName(conceptNode.get("fsn").asText());
+          		  concept.setPublishable(true);
+          		  concept.setPublished(true);
 
-            // Add the description
-            concept.getDescriptions().add(desc);
+          		  // Add the description
+          		  concept.getDescriptions().add(desc);
 
-            conceptList.addObject(concept);
-            conceptMap.put(conceptId, concept);
-            Logger.getLogger(getClass()).debug("  concept = " + concept);
-          }
+          		  conceptList.addObject(concept);
+          		  conceptMap.put(conceptId, concept);
+          		  Logger.getLogger(getClass()).debug("  concept = " + concept);
+          	  }
+          	}
         }
-
       }
 
+
+      
       // Set total count
       // TODO
       /*
