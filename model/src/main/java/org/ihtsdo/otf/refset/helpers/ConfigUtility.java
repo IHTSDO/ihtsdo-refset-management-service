@@ -862,8 +862,9 @@ public class ConfigUtility {
     String txt = text.toLowerCase()
         // Replaces any - or _ characters with a space
         .replaceAll("-", " ").replaceAll("_", " ")
-        // Removes any non alphanumeric characters
-        .replaceAll("[^A-Za-z0-9 ]", "")
+        // Removes any non alphanumeric characters 
+        // "\\x7f-\\xff" makes sure to keep non-English characters like ä, å, etc.
+        .replaceAll("[^A-Za-z0-9\\x7f-\\xff ]", "")
         // remove duplicate spaces
         .replaceAll("\\s+", " ");
     // Uppercases the first character in each group immediately following

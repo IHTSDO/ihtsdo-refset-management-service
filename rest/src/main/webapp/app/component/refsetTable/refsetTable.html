@@ -14,7 +14,7 @@
       <span class="info-text" ng-show="refsets.totalCount > 10"
         style="float: right; margin-top: 4px">
         Page size: <select ng-model="paging['refset'].pageSize"
-          title="Page Size" ng-change="paging['refset'].page = 0; getRefsets()"
+          title="Page Size" ng-change="paging['refset'].page = 1; getRefsets()"
           ng-options="item.value as item.name for item in pageSizes">
         </select>
       </span>
