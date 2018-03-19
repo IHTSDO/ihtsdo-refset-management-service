@@ -1001,8 +1001,8 @@ tsApp
           $scope.errors = [];
 
           $scope.submitUser = function(user) {
-            if (!user || !user.name || !user.userName) {
-              window.alert('The name, user name fields cannot be blank. ');
+            if (!user || !user.name || !user.userName || !user.email) {
+              window.alert('The name, user name, email fields cannot be blank. ');
               return;
             }
             // Default application role
@@ -1018,6 +1018,7 @@ tsApp
             // Error
             function(data) {
               $scope.errors = data;
+              handleError($scope.errors, data);
               utilService.clearError();
             });
 
