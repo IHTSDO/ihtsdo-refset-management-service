@@ -338,9 +338,8 @@ public class PatchDataMojo extends AbstractMojo {
 			// Patch 20180316
 			// remove list of concepts from Starter Set translations
 			if ("20180316".compareTo(start) >= 0 && "20180316".compareTo(end) <= 0) {
-				getLog().info("Processing patch 20180316 - Remove translation concepts that were removed from corresponding refset"); // Patch
+				getLog().info("Processing patch 20180316 - *Remove translation concepts that were removed from corresponding refset"); // Patch
 				
-
 				String[] translationConceptsToRemoveArray = new String[] { "95801002", "91588005", "81877007", "81371004",
 						"8137003", "81102000", "77299006", "73879007", "72298008", "69124005", "68525005", "67415000",
 						"66064007", "64756007", "6408001", "60782007", "58850003", "50845008", "50548001", "5015009",
@@ -359,18 +358,22 @@ public class PatchDataMojo extends AbstractMojo {
 						"128079007", "11991005", "119424003", "119415007", "111726004", "111181004", "108267006",
 						"106130002", "105592009", "102602003" };
 				Set<String> translationConceptsToRemove = new HashSet<String>(Arrays.asList(translationConceptsToRemoveArray));
-				String refsetId = "722133002";  // Starter set refset
-				
+				String refsetId = "733876003";  // Starter set refset
+				translationService.setTransactionPerOperation(true);
+				getLog().info("#translations:" + translationService.getTranslations().getTotalCount());
 				for (Translation translation : translationService.getTranslations().getObjects()) {
+					getLog().info("refset tid:" + translation.getRefset().getTerminologyId());
 					if (!translation.getRefset().getTerminologyId().equals(refsetId)) {
 						continue;
 					}
 					ConceptList conceptList = translationService.findConceptsForTranslation(translation.getId(), "", null);
-					
+					getLog().info("conceptList size:" + conceptList.getTotalCount());
 					int ct = 1; 
 					for (Concept concept: conceptList.getObjects()) {
 						if (translationConceptsToRemove.contains(concept.getTerminologyId()) ) {
 							try {
+								translationService.setTransactionPerOperation(true);
+								
 							    translationService.removeConcept(concept.getId(), true);
 							    getLog().info("Removing translation concept: " + ct++ + " " + concept.toString()); 
 							} catch (Exception e) {
