@@ -433,12 +433,12 @@ public interface TranslationService extends RefsetService {
   /**
    * Returns the current release info for translation.
    *
-   * @param terminologyId the translation terminology id
+   * @param translation the translation terminology id
    * @param projectId the project id
    * @return the current release info for translation
    * @throws Exception the exception
    */
-  public ReleaseInfo getCurrentTranslationReleaseInfo(String terminologyId,
+  public ReleaseInfo getCurrentTranslationReleaseInfo(Translation translation,
     Long projectId) throws Exception;
 
   /**
