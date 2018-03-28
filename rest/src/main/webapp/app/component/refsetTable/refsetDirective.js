@@ -1755,9 +1755,9 @@ tsApp
                     },
                     ioHandlers : function() {
                       if (loperation == 'Import') {
-                        return $scope.metadata.importHandlers;
+                        return $scope.metadata.refsetImportHandlers;
                       } else {
-                        return $scope.metadata.exportHandlers;
+                        return $scope.metadata.refsetExportHandlers;
                       }
                     },
                     query : function() {
@@ -1940,7 +1940,7 @@ tsApp
                       return lrefset;
                     },
                     ioHandlers : function() {
-                      return $scope.metadata.exportHandlers;
+                      return $scope.metadata.refsetExportHandlers;
                     },
                     utilService : function() {
                       return utilService;

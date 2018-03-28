@@ -225,10 +225,10 @@ tsApp
         // Get $scope.metadata.{import,export}Handlers
         $scope.getIOHandlers = function() {
           refsetService.getImportRefsetHandlers().then(function(data) {
-            $scope.metadata.importHandlers = data.handlers;
+            $scope.metadata.refsetImportHandlers = data.handlers;
           });
           refsetService.getExportRefsetHandlers().then(function(data) {
-            $scope.metadata.exportHandlers = data.handlers;
+            $scope.metadata.refsetExportHandlers = data.handlers;
           });
         };
 
