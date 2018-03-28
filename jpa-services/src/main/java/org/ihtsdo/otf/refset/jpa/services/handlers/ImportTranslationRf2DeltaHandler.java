@@ -14,7 +14,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import org.apache.log4j.Logger;
-import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
@@ -154,7 +153,7 @@ public class ImportTranslationRf2DeltaHandler implements
 
             // Create description and populate from RF2
             final Description description = new DescriptionJpa();
-            setCommonFields(description, translation.getRefset());
+            setCommonFields(description, translation);
             description.setActive(fields[2].equals("1"));
             description.setTerminologyId(fields[0]);
             if (!fields[1].equals("")) {
@@ -171,7 +170,7 @@ public class ImportTranslationRf2DeltaHandler implements
             if (!conceptCache.containsKey(fields[4])) {
               conceptCache.put(fields[4], new ConceptJpa());
               concept = conceptCache.get(fields[4]);
-              setCommonFields(concept, translation.getRefset());
+              setCommonFields(concept, translation);
               if (!fields[1].equals("")) {
                 concept.setEffectiveTime(ConfigUtility.DATE_FORMAT
                     .parse(fields[1]));
@@ -249,7 +248,7 @@ public class ImportTranslationRf2DeltaHandler implements
 
             // Create and configure the member
             final LanguageRefsetMember member = new LanguageRefsetMemberJpa();
-            setCommonFields(member, translation.getRefset());
+            setCommonFields(member, translation);
             member.setActive(fields[2].equals("1"));
             member.setTerminologyId(fields[0]);
             if (!fields[1].equals("")) {
@@ -346,7 +345,7 @@ public class ImportTranslationRf2DeltaHandler implements
             concept = new ConceptJpa();
             conceptCache.put(conceptId, concept);
             concept = conceptCache.get(conceptId);
-            setCommonFields(concept, translation.getRefset());
+            setCommonFields(concept, translation);
             concept.setEffectiveTime(description.getEffectiveTime());
             concept.setTerminologyId(conceptId);
             concept.setDefinitionStatusId("unknown");
@@ -417,13 +416,13 @@ public class ImportTranslationRf2DeltaHandler implements
    * @param refset the refset
    */
   @SuppressWarnings("static-method")
-  private void setCommonFields(Component c, Refset refset) {
+  private void setCommonFields(Component c, Translation translation) {
     c.setActive(true);
     c.setEffectiveTime(null);
     c.setId(null);
     c.setPublishable(true);
     c.setPublished(false);
-    c.setModuleId(refset.getModuleId());
+    c.setModuleId(translation.getModuleId());
   }
 
   @Override
