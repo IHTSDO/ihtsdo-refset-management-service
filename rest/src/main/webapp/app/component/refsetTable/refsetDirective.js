@@ -2421,7 +2421,12 @@ tsApp
                       refsetService.addRefsetMember(member).then(
                       // Success
                       function(data) {
-                        $scope.added.push(conceptId);
+                    	// RTT-249 request that concepts not validated, not be added
+                    	if (data) {
+                          $scope.added.push(conceptId);
+                    	} else {
+                    	  $scope.invalid.push(conceptId);
+                    	}
                       },
                       // Error
                       function(data) {
