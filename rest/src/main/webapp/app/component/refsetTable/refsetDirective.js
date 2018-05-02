@@ -3176,6 +3176,10 @@ tsApp
                 $scope.project = project;
                 $scope.refset = refset;
                 $scope.newTerminology = refset.terminology;
+                $scope.membersInCommonStatusType = 'all';
+                $scope.validInclusionsStatusType = 'all';
+                $scope.stagedInclusionsStatusType = 'all';
+                $scope.oldRegularMembersStatusType = 'all';
                 $scope.membersInCommon = null;
                 $scope.pageSize = 5;
                 $scope.pageSizes = utilService.getPageSizes();
@@ -3187,7 +3191,9 @@ tsApp
                 $scope.newVersion = $scope.versions[0];
                 $scope.validVersion = null;
                 $scope.errors = [];
-                $scope.statusTypes = [ 'Active', 'Inactive' ];
+                $scope.statusTypes = [{"state":"all","name":"All"},
+                                      {"state":"active","name":"Active"},
+                                      {"state":"inactive","name":"Inactive"}]
                 $scope.pagedStagedInclusions = [];
                 $scope.paging['newRegularMembers'] = {
                   page : 1,
@@ -3299,6 +3305,7 @@ tsApp
                     .sort().reverse());
                   $scope.newVersion = $scope.versions[0];
                 };
+                
 
                 // Table sorting mechanism
                 $scope.setSortField = function(table, field, object) {
@@ -3395,11 +3402,14 @@ tsApp
                   };
 
                   var conceptActive;
-                  if ($scope.paging['oldRegularMembers'].typeFilter == 'Active') {
+                  if ($scope.oldRegularMembersStatusType == 'active') {
+                	$scope.paging['oldRegularMembers'].typeFilter = 'Active';
                     conceptActive = true;
-                  } else if ($scope.paging['oldRegularMembers'].typeFilter == 'Inactive') {
+                  } else if ($scope.oldRegularMembersStatusType == 'inactive') {
+                	$scope.paging['oldRegularMembers'].typeFilter = 'Inactive';
                     conceptActive = false;
                   } else {
+                	$scope.paging['oldRegularMembers'].typeFilter = ''
                     conceptActive = null;
                   }
 
@@ -3450,11 +3460,14 @@ tsApp
                   };
 
                   var conceptActive;
-                  if ($scope.paging['membersInCommon'].typeFilter == 'Active') {
+                  if ($scope.membersInCommonStatusType == 'active') {
+                	$scope.paging['membersInCommon'].typeFilter = 'Active';
                     conceptActive = true;
-                  } else if ($scope.paging['membersInCommon'].typeFilter == 'Inactive') {
+                  } else if ($scope.membersInCommonStatusType == 'inactive') {
+                	$scope.paging['membersInCommon'].typeFilter = 'Inactive';
                     conceptActive = false;
                   } else {
+                  	$scope.paging['membersInCommon'].typeFilter = '';
                     conceptActive = null;
                   }
 
@@ -3473,12 +3486,26 @@ tsApp
 
                 // Get paged staged inclusions (assume all are loaded)
                 $scope.getPagedStagedInclusions = function() {
+                	if ($scope.stagedInclusionsStatusType == 'active') {
+                        $scope.paging['stagedInclusions'].typeFilter = 'Active';
+                      } else if ($scope.stagedInclusionsStatusType == 'inactive') {
+                        $scope.paging['stagedInclusions'].typeFilter = 'Inactive';
+                      } else {
+                    	$scope.paging['stagedInclusions'].typeFilter = ''  
+                      }
                   $scope.pagedStagedInclusions = utilService.getPagedArray($scope.stagedInclusions,
                     $scope.paging['stagedInclusions'], $scope.pageSize);
                 };
 
                 // Get paged valid inclusions (assume all are loaded)
                 $scope.getPagedValidInclusions = function() {
+                  if ($scope.validInclusionsStatusType == 'active') {
+                    $scope.paging['validInclusions'].typeFilter = 'Active';
+                  } else if ($scope.validInclusionsStatusType == 'inactive') {
+                    $scope.paging['validInclusions'].typeFilter = 'Inactive';
+                  } else {
+                	$scope.paging['validInclusions'].typeFilter = '';  
+                  }
                   $scope.pagedValidInclusions = utilService.getPagedArray($scope.validInclusions,
                     $scope.paging['validInclusions'], $scope.pageSize);
                 };
