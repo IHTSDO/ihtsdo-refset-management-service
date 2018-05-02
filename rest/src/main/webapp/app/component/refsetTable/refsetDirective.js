@@ -3731,11 +3731,13 @@ tsApp
                         $scope.concepts = data.concepts;
 
                         // if no replacements, just add the inclusion
-                        if ($scope.concepts.length == 0
+                        /*if ($scope.concepts.length == 0
                         // the second clause here is because intensional
                         // refsets never have inactive members in common
                         && $scope.stagedRefset.type == 'INTENSIONAL') {
-                          $scope.addRefsetInclusion($scope.stagedRefset, member, staged);
+                          $scope.addRefsetInclusion($scope.stagedRefset, member, staged);*/
+                        if ($scope.concepts.length == 0) {
+                        	window.alert('There are no replacement concepts available.');
                         } else {
                           $scope.openReplacementConceptsModal(member, staged, $scope.concepts,
                             $scope.reportToken);
@@ -4018,6 +4020,10 @@ tsApp
                         handleError($scope.errors, data);
                       });
 
+                  $scope.getLength = function(obj) {
+                	    return Object.keys(obj).length;
+                	}
+                  
                   // Add button
                   $scope.submitAdd = function() {
                     // calculate total number of replacement options

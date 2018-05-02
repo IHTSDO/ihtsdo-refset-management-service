@@ -84,7 +84,7 @@
 </div>
 
 <div class="modal-footer">
-  <button class="btn btn-xs btn-primary" ng-disabled="selection.ids.length == 1"
+  <button class="btn btn-xs btn-primary" ng-disabled="getLength(selection.ids) < 2"
     ng-click="submitAdd()">Submit</button>
   <button class="btn btn-xs btn-warning" ng-click="cancel()">Cancel</button>
 </div>
