@@ -630,7 +630,8 @@ tsApp
               // Selects a member (setting $scope.selected.member)
               $scope.selectMember = function(member) {
                 $scope.selected.member = member;
-                // Set the concept for display in concept-info
+                // Refresh the concept for display in concept-info
+                $scope.selected.concept = null;
                 $scope.selected.concept = {
                   terminologyId : member.conceptId,
                   terminology : member.terminology,
@@ -711,6 +712,13 @@ tsApp
               $scope.addRefsetExclusion = function(refset, member) {
                 refsetService.addRefsetExclusion(refset, member.conceptId, false).then(function() {
                   $scope.handleWorkflow(refset);
+                  // refresh Concept Details panel
+                  $scope.selected.concept = null;
+                  $scope.selected.concept = {
+                    terminologyId : member.conceptId,
+                    terminology : member.terminology,
+                    version : member.version
+                  };
                 });
 
               };
@@ -719,6 +727,13 @@ tsApp
               $scope.removeRefsetExclusion = function(refset, member) {
                 refsetService.removeRefsetExclusion(member.id).then(function() {
                   $scope.handleWorkflow(refset);
+                  // refresh Concept Details panel
+                  $scope.selected.concept = null;
+                  $scope.selected.concept = {
+                    terminologyId : member.conceptId,
+                    terminology : member.terminology,
+                    version : member.version
+                  };
                 });
 
               };
