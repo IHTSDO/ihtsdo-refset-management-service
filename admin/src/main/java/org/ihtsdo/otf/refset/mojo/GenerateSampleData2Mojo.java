@@ -759,7 +759,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
     info.setReleaseBeginDate(new Date());
     info.setReleaseFinishDate(new Date());
     info.setTerminology("en-edition");
-    info.setVersion("20150131");
+    info.setVersion("20170131");
     info.setPlanned(false);
     // Need to use Jpa because rest service doesn't have "add release info"
     ReleaseService service = new ReleaseServiceJpa();
@@ -850,9 +850,9 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
     refset.setInPublicationProcess(false);
     refset.setTerminology("en-edition");
     refset.setTerminologyId(refsetId);
-    refset.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse("20150131"));
+    refset.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse("20170131"));
     // This is an opportunity to use "branch"
-    refset.setVersion("20150131");
+    refset.setVersion("20170131");
     refset.setWorkflowStatus(WorkflowStatus.PUBLISHED);
     if (type == Refset.Type.EXTERNAL) {
       refset.setExternalUrl("http://www.example.com/some/other/refset.txt");
@@ -884,23 +884,23 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
       refsetService = new RefsetServiceRestImpl();
       InputStream in = new FileInputStream(
           new File("../config/src/main/resources/data/refset" + num + ""
-              + "/der2_Refset_SimpleSnapshot_" + edition + "_20150131.txt"));
+              + "/der2_Refset_SimpleSnapshot_" + edition + "_20170131.txt"));
       refsetService.finishImportMembers(null, in, refset.getId(), "DEFAULT",
           auth.getAuthToken());
       in.close();
     }
 
     // fake some refset release info
-    ReleaseInfo refsetReleaseInfo = makeReleaseInfo("20150731", refset);
+    ReleaseInfo refsetReleaseInfo = makeReleaseInfo("20170731", refset);
     if (type == Refset.Type.EXTENSIONAL) {
       makeReleaseArtifact(
-          "der2_Refset_SimpleSnapshot_" + edition + "_20150131.txt",
+          "der2_Refset_SimpleSnapshot_" + edition + "_20170131.txt",
           refsetReleaseInfo, "../config/src/main/resources/data/refset" + num
-              + "/der2_Refset_SimpleSnapshot_" + edition + "_20150131.txt");
+              + "/der2_Refset_SimpleSnapshot_" + edition + "_20170131.txt");
       makeReleaseArtifact(
-          "der2_Refset_SimpleDelta_" + edition + "_20150131.txt",
+          "der2_Refset_SimpleDelta_" + edition + "_20170131.txt",
           refsetReleaseInfo, "../config/src/main/resources/data/refset" + num
-              + "/der2_Refset_SimpleSnapshot_" + edition + "_20150131.txt");
+              + "/der2_Refset_SimpleSnapshot_" + edition + "_20170131.txt");
     }
 
     if (assignNames) {
@@ -949,8 +949,8 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
     refset.setTerminology("en-edition");
     refset.setTerminologyId(refsetId);
     // This is an opportunity to use "branch"
-    refset.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse("20150131"));
-    refset.setVersion("20150131");
+    refset.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse("20170131"));
+    refset.setVersion("20170131");
     refset.setWorkflowStatus(WorkflowStatus.PUBLISHED);
     refset.setLocalSet(false);
     RefsetServiceRest refsetService = new RefsetServiceRestImpl();
@@ -976,20 +976,20 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
     refsetService = new RefsetServiceRestImpl();
     InputStream in = new FileInputStream(
         new File("../config/src/main/resources/data/translation" + num + ""
-            + "/der2_Refset_SimpleSnapshot_" + edition + "_20150131.txt"));
+            + "/der2_Refset_SimpleSnapshot_" + edition + "_20170131.txt"));
     refsetService.finishImportMembers(null, in, refset.getId(), "DEFAULT",
         auth.getAuthToken());
     in.close();
 
     // refset release info
-    ReleaseInfo info = makeReleaseInfo("20150731", refset);
+    ReleaseInfo info = makeReleaseInfo("20170731", refset);
     makeReleaseArtifact(
-        "der2_Refset_SimpleSnapshot_" + edition + "_20150131.txt", info,
+        "der2_Refset_SimpleSnapshot_" + edition + "_20170131.txt", info,
         "../config/src/main/resources/data/translation" + num
-            + "/der2_Refset_SimpleSnapshot_" + edition + "_20150131.txt");
-    makeReleaseArtifact("der2_Refset_SimpleDelta_" + edition + "_20150131.txt",
+            + "/der2_Refset_SimpleSnapshot_" + edition + "_20170131.txt");
+    makeReleaseArtifact("der2_Refset_SimpleDelta_" + edition + "_20170131.txt",
         info, "../config/src/main/resources/data/translation" + num
-            + "/der2_Refset_SimpleSnapshot_" + edition + "_20150131.txt");
+            + "/der2_Refset_SimpleSnapshot_" + edition + "_20170131.txt");
 
     if (assignNames) {
       // Identify new refsets to ensure that lookupName process completes
@@ -1032,7 +1032,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
     translation.setVersion(refset.getVersion());
     translation.setTerminologyId(terminologyId);
     translation.setWorkflowStatus(WorkflowStatus.PUBLISHED);
-    translation.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse("20150131"));
+    translation.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse("20170131"));
     TranslationServiceRest translationService =
         new TranslationServiceRestImpl();
     ValidationServiceRest validation = new ValidationServiceRestImpl();
@@ -1063,18 +1063,18 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
     in.close();
 
     // refset release info
-    ReleaseInfo info = makeReleaseInfo("20150731", translation);
-    makeReleaseArtifact("SnomedCT_" + edition + "_20150131.zip", info,
+    ReleaseInfo info = makeReleaseInfo("20170731", translation);
+    makeReleaseArtifact("SnomedCT_" + edition + "_20170131.zip", info,
         "../config/src/main/resources/data/translation" + num
             + "/translation.zip");
     makeReleaseArtifact(
-        "sct2_Description_Snapshot_" + edition + "_20150131.txt", info,
+        "sct2_Description_Snapshot_" + edition + "_20170131.txt", info,
         "../config/src/main/resources/data/translation" + num
-            + "/sct2_Description_Snapshot_" + edition + "_20150131.txt");
+            + "/sct2_Description_Snapshot_" + edition + "_20170131.txt");
     makeReleaseArtifact(
-        "der2_cRefset_LanguageSnapshot_" + edition + "_20150131.txt", info,
+        "der2_cRefset_LanguageSnapshot_" + edition + "_20170131.txt", info,
         "../config/src/main/resources/data/translation" + num
-            + "/der2_cRefset_LanguageSnapshot_" + edition + "_20150131.txt");
+            + "/der2_cRefset_LanguageSnapshot_" + edition + "_20170131.txt");
 
     if (assignNames) {
       // Identify new translations to ensure that lookupConceptName process
@@ -1122,7 +1122,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
   @SuppressWarnings("static-method")
   public Refset migrate(Refset refset, User auth) throws Exception {
     RefsetServiceRest refsetService = new RefsetServiceRestImpl();
-    refsetService.beginMigration(refset.getId(), "en-edition", "20150731",
+    refsetService.beginMigration(refset.getId(), "en-edition", "20170731",
         auth.getAuthToken());
     refsetService = new RefsetServiceRestImpl();
     refsetService.finishMigration(refset.getId(), auth.getAuthToken());

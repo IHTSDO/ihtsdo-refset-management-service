@@ -21,8 +21,10 @@ package org.ihtsdo.otf.refset.mojo;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import java.util.UUID;
 
 import org.apache.log4j.Logger;
@@ -34,20 +36,26 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
+import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.ProjectList;
+import org.ihtsdo.otf.refset.jpa.services.RefsetServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.TranslationServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.WorkflowServiceJpa;
+import org.ihtsdo.otf.refset.jpa.services.rest.RefsetServiceRest;
 import org.ihtsdo.otf.refset.rest.impl.ProjectServiceRestImpl;
+import org.ihtsdo.otf.refset.rest.impl.RefsetServiceRestImpl;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.rf2.Description;
 import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
+import org.ihtsdo.otf.refset.services.RefsetService;
 import org.ihtsdo.otf.refset.services.SecurityService;
 import org.ihtsdo.otf.refset.services.TranslationService;
 import org.ihtsdo.otf.refset.services.WorkflowService;
+import org.ihtsdo.otf.refset.services.handlers.IdentifierAssignmentHandler;
 import org.ihtsdo.otf.refset.workflow.TrackingRecord;
 import org.ihtsdo.otf.refset.workflow.TrackingRecordJpa;
 import org.ihtsdo.otf.refset.workflow.TrackingRecordList;
@@ -92,6 +100,7 @@ public class PatchDataMojo extends AbstractMojo {
 
       final WorkflowService workflowService = new WorkflowServiceJpa();
       final TranslationService translationService = new TranslationServiceJpa();
+      final RefsetService refsetService = new RefsetServiceJpa();
 
       // Patch 1000001
       // Set project handler key/url for all projects
@@ -290,8 +299,7 @@ public class PatchDataMojo extends AbstractMojo {
 				}
 				translationService.commit();
 			}
-      
-			
+
 			// Patch 20171113
 			// refset member ids set to referencedComponentIds instead of UUIDs
 			// when adding subtrees
@@ -327,8 +335,57 @@ public class PatchDataMojo extends AbstractMojo {
 				translationService.commit();
 			}
 		
+			// Patch 20180316
+			// remove list of concepts from Starter Set translations
+			if ("20180316".compareTo(start) >= 0 && "20180316".compareTo(end) <= 0) {
+				getLog().info("Processing patch 20180316 - *Remove translation concepts that were removed from corresponding refset"); // Patch
+				
+				String[] translationConceptsToRemoveArray = new String[] { "95801002", "91588005", "81877007", "81371004",
+						"8137003", "81102000", "77299006", "73879007", "72298008", "69124005", "68525005", "67415000",
+						"66064007", "64756007", "6408001", "60782007", "58850003", "50845008", "50548001", "5015009",
+						"500000", "4946002", "47268002", "441702008", "439575008", "430950005", "430949005", "4296008",
+						"429275000", "428392002", "427354000", "426041005", "424989000", "421707005", "421668005",
+						"419769007", "419686005", "419258005", "417130004", "410567004", "40913006", "402121009",
+						"40129004", "401123009", "400192002", "399625000", "398175007", "397683000", "390845001",
+						"37757003", "371330000", "371093006", "367522007", "35731002", "34140002", "32935005",
+						"3226008", "31829008", "312403005", "30961001", "308551004", "304388009", "30211000119106",
+						"281657000", "276789009", "269813009", "268808004", "268465005", "268300003", "267796002",
+						"267129008", "267094008", "267052005", "266364000", "262951009", "26174007", "239148005",
+						"238402004", "236704009", "236425005", "23346002", "22913005", "220000", "211964006",
+						"208647006", "201836008", "200627004", "199516000", "195747001", "192839001", "192000006",
+						"190784001", "190392008", "182782007", "171073000", "169851005", "169850006", "16863000",
+						"162249002", "161684005", "161612000", "161591004", "161590003", "15387003", "1508000",
+						"128079007", "11991005", "119424003", "119415007", "111726004", "111181004", "108267006",
+						"106130002", "105592009", "102602003" };
+				Set<String> translationConceptsToRemove = new HashSet<String>(Arrays.asList(translationConceptsToRemoveArray));
+				String refsetId = "733876003";  // Starter set refset
+				translationService.setTransactionPerOperation(true);
+				getLog().info("#translations:" + translationService.getTranslations().getTotalCount());
+				for (Translation translation : translationService.getTranslations().getObjects()) {
+					getLog().info("refset tid:" + translation.getRefset().getTerminologyId());
+					if (!translation.getRefset().getTerminologyId().equals(refsetId)) {
+						continue;
+					}
+					ConceptList conceptList = translationService.findConceptsForTranslation(translation.getId(), "", null);
+					getLog().info("conceptList size:" + conceptList.getTotalCount());
+					int ct = 1; 
+					for (Concept concept: conceptList.getObjects()) {
+						if (translationConceptsToRemove.contains(concept.getTerminologyId()) ) {
+							try {
+								translationService.setTransactionPerOperation(true);
+								
+							    translationService.removeConcept(concept.getId(), true);
+							    getLog().info("Removing translation concept: " + ct++ + " " + concept.toString()); 
+							} catch (Exception e) {
+								getLog().info("Unable to remove concept: " + concept.toString());
+							}
+						}
+
+					}
+
+				}
+			}
 			
-	
       // Reindex
       getLog().info("  Reindex");
       // login as "admin", use token
