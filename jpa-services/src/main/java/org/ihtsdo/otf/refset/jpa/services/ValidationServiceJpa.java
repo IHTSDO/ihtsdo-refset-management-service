@@ -133,8 +133,12 @@ public class ValidationServiceJpa extends RootServiceJpa implements
       for (DefinitionClause definition : refset.getDefinitionClauses()) {
         int ct = service.countExpression(project, refset.getTerminology(), 
     		refset.getVersion(), definition.getValue());
-        if (ct > 20000) {
-    	  result.addWarning("Definition clause " + definition.getValue() + " resolves to more than 20000 results: " + ct);
+        if (ct > 40000) {
+          result.addError("Definition clause " + definition.getValue() + " resolves to more than 40000 results: " + 
+      			  " This tool cannot manage refsets of that size reliably.  Please revise your definition clause.");
+        } else if (ct > 20000) {
+    	  result.addWarning("Definition clause " + definition.getValue() + " resolves to more than 20000 results: " + 
+    			  " Continuing with " + ct + " members may make the user experience inconsistent or unusable.");
         }
       }
     }

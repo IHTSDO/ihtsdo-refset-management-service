@@ -1239,9 +1239,13 @@ tsApp
                           // Success - count expression
                           function(data) {
                             var count = data;
-                            if (count >= 20000) {
+                            if (count >= 40000) { 
+                              $scope.errors[0] = 'Submitted definition clause is invalid.  Definition clause resolves to '
+                                + count + ' members.  Refsets of this size are not allowed as they can lead to an inconsistent user experience.';
+                              return;
+                            } else if (count >= 20000) {
                               $scope.warnings[$scope.newClauses[i].value] = 'Definition clause resolves to '
-                                + count + ' members.';
+                                + count + ' members.  Refsets of this size are discouraged and can lead to an inconsistent user experience.';
                               $scope.warningFlag = true;
                             }
                           },
@@ -1291,9 +1295,13 @@ tsApp
                               // Success - count expression
                               function(data) {
                                 var count = data;
-                                if (count >= 20000) {
+                                if (count >= 40000) {
+                                	 $scope.errors[0] = 'Submitted definition clause is invalid.  Definition clause resolves to '
+                                     + count + ' members.  Refsets of this size are not allowed as they can lead to an inconsistent user experience.';
+                                     return;
+                                } else if (count >= 20000) {
                                   $scope.warnings[$scope.newClauses[i].value] = 'Definition clause resolves to '
-                                    + count + ' members.';
+                                    + count + ' members.  Refsets of this size are discouraged and can lead to an inconsistent user experience.';
                                   $scope.warningFlag = true;
                                 }
                               },
@@ -1314,6 +1322,11 @@ tsApp
 
                 // Save refset
                 $scope.save = function(refset) {
+                  if ($scope.errors.length > 0) { 
+                	  $uibModalInstance.close(refset);
+                	  handleError($scope.errors, $scope.errors[0]);
+                	  return;
+                  }
                   refset.definitionClauses = $scope.newClauses;
                   $scope.warnings = [];
                   refsetService.updateRefset(refset).then(
