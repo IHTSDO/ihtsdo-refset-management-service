@@ -310,7 +310,11 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
         + URLEncoder.encode(expr, "UTF-8").replaceAll(" ", "%20") + "&limit="
         + Math.min(initialMaxLimit, localPfs.getMaxResults()) + "&offset="
         + localPfs.getStartIndex() + "&expand=pt()");
-
+    Logger.getLogger(getClass()).info(  url + "/" + version + "/concepts?escg="
+        + URLEncoder.encode(expr, "UTF-8").replaceAll(" ", "%20") + "&limit="
+        + Math.min(initialMaxLimit, localPfs.getMaxResults()) + "&offset="
+        + localPfs.getStartIndex() + "&expand=pt()");
+    
     Response response =
         target.request(accept).header("Authorization", authHeader)
             .header("Accept-Language", getAcceptLanguage(terminology, version))
@@ -729,6 +733,10 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     }
     ConceptList conceptList =
         resolveExpression(terminologyId, terminology, version, null);
+    if (conceptList == null || conceptList.getObjects() == null ||
+    		conceptList.getObjects().size() == 0){
+    	return null;
+    }
     return conceptList.getObjects().get(0);
   }
 
