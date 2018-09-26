@@ -1852,7 +1852,7 @@ tsApp
                 $scope.importFinished = false;
                 if ($scope.query || $scope.pfs) {
                   $scope.warnings
-                    .push("Export is based on current search criteria and may not include all members.");
+                    .push(operation + " is based on current search criteria and may not include all members.");
                 }
                 // Handle export
                 $scope.export = function(file) {
