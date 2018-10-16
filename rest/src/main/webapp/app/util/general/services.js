@@ -449,9 +449,9 @@ tsApp
           for (var i = 0; i < words.length; i++) {
             for (var j = i + 1; j <= words.length; j++) {
               var phrase = words.slice(i, j).join(' ');
-              // a phrase must be more than 3 chars and no start/end words that are
+              // a phrase have at least 5 chars and no start/end words that are
               // purely punctuation
-              if (phrase.length > 3 && words[i].match(/.*[A-Za-z0-9].*/)
+              if (phrase.length > 5 && words[i].match(/.*[A-Za-z0-9].*/)
                 && words[j - 1].match(/.*[A-Za-z0-9].*/)) {
                 phrases.push(phrase.toLowerCase());
               }
