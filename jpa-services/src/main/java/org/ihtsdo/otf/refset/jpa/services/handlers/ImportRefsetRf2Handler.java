@@ -127,11 +127,17 @@ public class ImportRefsetRf2Handler implements ImportRefsetHandler {
         setCommonFields(member, refset);
         // save original ids if refset matches
         if (refset.getTerminologyId().equals(fields[4])) {
-          member.setTerminologyId(fields[0]);
+          member.setTerminologyId(fields[0].trim());
         }
         member.setConceptActive(true);
         member.setRefset(refset);
-        member.setConceptId(fields[5]);
+        String conceptId = fields[5].trim();
+        if (!conceptId.equals(fields[5])) {
+        	pbr.close();
+        	throw new LocalException("Unexpected white space padding the concept id *"
+                + fields[5] + "*");
+        }
+        member.setConceptId(conceptId);
         if (!fields[1].equals("")) {
           try {
             member.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse(fields[1]));

@@ -113,7 +113,13 @@ public class ImportRefsetRf1Handler implements ImportRefsetHandler {
         setCommonFields(member, refset);
         member.setConceptActive(true);
         member.setRefset(refset);
-        member.setConceptId(fields[1]);
+        String conceptId = fields[1].trim();
+        if (!conceptId.equals(fields[1])) {
+        	pbr.close();
+        	throw new LocalException("Unexpected white space padding the concept id *"
+                + fields[1] + "*");
+        }
+        member.setConceptId(conceptId);
         member.setEffectiveTime(null);
 
         // Add member
