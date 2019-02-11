@@ -3366,7 +3366,7 @@ tsApp
                 };
 
                 $scope.exportDiffReport = function() {
-                  refsetService.exportDiffReport('migration', $scope.reportToken, $scope.refset);
+                  refsetService.exportDiffReport('migration', $scope.reportToken, $scope.refset, $scope.newTerminology, $scope.newVersion);
                 }
 
                 $scope.testTerminologyVersion = function() {
