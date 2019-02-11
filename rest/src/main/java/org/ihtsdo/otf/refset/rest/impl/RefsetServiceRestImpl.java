@@ -1080,6 +1080,10 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         sb = appendDiffReportMember(sb, member);
       }
 
+      // Replacement Concepts
+      StringBuilder replacementConceptsSb = new StringBuilder();
+      Map<String, Concept> reasonMap = new HashMap<>();
+      
       // Old regular members
       sb.append("\r\n").append("Old Members").append("\r\n");
       if (report.getOldRegularMembers().size() > 0) {
@@ -1090,6 +1094,24 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       for (ConceptRefsetMember member : report.getOldRegularMembers()) {
         Logger.getLogger(getClass()).debug("  member = " + member);
         sb = appendDiffReportMember(sb, member);
+        
+        if (!member.isConceptActive()) {
+            ConceptList conceptList = refsetService.getTerminologyHandler(member.getRefset().getProject(), getHeaders(headers))
+              .getReplacementConcepts(member.getConceptId(), migrationTerminology, migrationVersion);
+            for (Concept c : conceptList.getObjects()) {
+          	  replacementConceptsSb = appendReplacementConceptInfo(replacementConceptsSb, member, c);
+  			  Concept reasonConcept = null;
+  			  if (reasonMap.containsKey(c.getDefinitionStatusId())) {
+  				reasonConcept = reasonMap.get(c.getDefinitionStatusId());
+  			  } else {
+  			    reasonConcept = refsetService.getTerminologyHandler(
+  			      member.getRefset().getProject(), getHeaders(headers)).getConcept(
+  				  c.getDefinitionStatusId(), migrationTerminology, migrationVersion);
+  			    reasonMap.put(c.getDefinitionStatusId(), reasonConcept);
+  			  }
+  			  replacementConceptsSb.append(reasonConcept.getName()).append("\r\n");
+            }
+          }
       }
 
       if (report.getNewRefset().getType() == Type.INTENSIONAL) {
@@ -1164,11 +1186,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         }
       }
 
-      // Members in common
-      sb.append("\r\n").append("Replacement Concepts").append("\r\n");
-      sb = appendReplacementConceptReportHeader(sb);
+      // Members in common & Replacement Concepts
+      
       StringBuilder membersInCommonSb = new StringBuilder();
-      Map<String, Concept> reasonMap = new HashMap<>();
       for (ConceptRefsetMember member : membersInCommonMap.get(reportToken)) {
         Logger.getLogger(getClass()).debug("  member = " + member);
         membersInCommonSb = appendDiffReportMember(membersInCommonSb, member);
@@ -1177,7 +1197,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
           ConceptList conceptList = refsetService.getTerminologyHandler(member.getRefset().getProject(), getHeaders(headers))
             .getReplacementConcepts(member.getConceptId(), migrationTerminology, migrationVersion);
           for (Concept c : conceptList.getObjects()) {
-        	  sb = appendReplacementConceptInfo(sb, member, c);
+        	  replacementConceptsSb = appendReplacementConceptInfo(replacementConceptsSb, member, c);
 			  Concept reasonConcept = null;
 			  if (reasonMap.containsKey(c.getDefinitionStatusId())) {
 				reasonConcept = reasonMap.get(c.getDefinitionStatusId());
@@ -1187,12 +1207,19 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
 				  c.getDefinitionStatusId(), migrationTerminology, migrationVersion);
 			    reasonMap.put(c.getDefinitionStatusId(), reasonConcept);
 			  }
-              sb.append(reasonConcept.getName()).append("\r\n");
+			  replacementConceptsSb.append(reasonConcept.getName()).append("\r\n");
           }
         }
       }
-
-      // Replacement Concepts
+      
+      sb.append("\r\n").append("Replacement Concepts").append("\r\n");
+      if (replacementConceptsSb.length() > 0) {
+    	  sb = appendReplacementConceptReportHeader(sb);
+          sb.append(replacementConceptsSb);
+      } else {
+          sb = sb.append("n/a").append("\r\n");
+      }
+      
       sb.append("\r\n").append("Members in Common").append("\r\n");
       sb = appendDiffReportHeader(sb);
       sb.append(membersInCommonSb);
