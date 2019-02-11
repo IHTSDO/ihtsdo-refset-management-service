@@ -1044,11 +1044,13 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
   @ApiOperation(value = "Export diff report", notes = "Exports the report during migration of a refset", response = InputStream.class)
   public InputStream exportDiffReport(
     @ApiParam(value = "Report token, (UUID format)", required = true) @QueryParam("reportToken") String reportToken,
+    @ApiParam(value = "Terminology", required = false) @QueryParam("terminology") String migrationTerminology,
+    @ApiParam(value = "Version", required = false) @QueryParam("version") String migrationVersion,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
     Logger.getLogger(getClass())
-        .info("RESTful call GET (Refset): /export/report " + reportToken);
+        .info("RESTful call GET (Refset): /export/report " + reportToken + " " + migrationTerminology + " " + migrationVersion);
 
     final RefsetService refsetService =
         new RefsetServiceJpa(getHeaders(headers));
@@ -1163,13 +1165,38 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       }
 
       // Members in common
-      sb.append("\r\n").append("Members in Common").append("\r\n");
-      sb = appendDiffReportHeader(sb);
+      sb.append("\r\n").append("Replacement Concepts").append("\r\n");
+      sb = appendReplacementConceptReportHeader(sb);
+      StringBuilder membersInCommonSb = new StringBuilder();
+      Map<String, Concept> reasonMap = new HashMap<>();
       for (ConceptRefsetMember member : membersInCommonMap.get(reportToken)) {
         Logger.getLogger(getClass()).debug("  member = " + member);
-        sb = appendDiffReportMember(sb, member);
+        membersInCommonSb = appendDiffReportMember(membersInCommonSb, member);
+        
+        if (!member.isConceptActive()) {
+          ConceptList conceptList = refsetService.getTerminologyHandler(member.getRefset().getProject(), getHeaders(headers))
+            .getReplacementConcepts(member.getConceptId(), migrationTerminology, migrationVersion);
+          for (Concept c : conceptList.getObjects()) {
+        	  sb = appendReplacementConceptInfo(sb, member, c);
+			  Concept reasonConcept = null;
+			  if (reasonMap.containsKey(c.getDefinitionStatusId())) {
+				reasonConcept = reasonMap.get(c.getDefinitionStatusId());
+			  } else {
+			    reasonConcept = refsetService.getTerminologyHandler(
+			      member.getRefset().getProject(), getHeaders(headers)).getConcept(
+				  c.getDefinitionStatusId(), migrationTerminology, migrationVersion);
+			    reasonMap.put(c.getDefinitionStatusId(), reasonConcept);
+			  }
+              sb.append(reasonConcept.getName()).append("\r\n");
+          }
+        }
       }
 
+      // Replacement Concepts
+      sb.append("\r\n").append("Members in Common").append("\r\n");
+      sb = appendDiffReportHeader(sb);
+      sb.append(membersInCommonSb);
+      
       return new ByteArrayInputStream(sb.toString().getBytes("UTF-8"));
 
     } catch (Exception e) {
@@ -1199,6 +1226,16 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
     sb.append("\r\n");
     return sb;
   }
+  
+	private StringBuilder appendReplacementConceptReportHeader(StringBuilder sb) {
+		sb.append("concept id").append("\t");
+		sb.append("concept fsn").append("\t");
+		sb.append("replacement id").append("\t");
+		sb.append("replacement fsn").append("\t");
+		sb.append("reason").append("\t");
+		sb.append("\r\n");
+		return sb;
+	}
 
   /**
    * Append diff report member.
@@ -1225,6 +1262,19 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
     sb.append("\r\n");
     return sb;
   }
+  
+	private StringBuilder appendReplacementConceptInfo(StringBuilder sb, ConceptRefsetMember member,
+			Concept c) {
+		Logger.getLogger(getClass()).debug("  member = " + member);
+		
+		sb.append(member.getConceptId()).append("\t");
+		sb.append(member.getConceptName()).append("\t");
+		sb.append(c.getTerminologyId()).append("\t");
+		sb.append(c.getName()).append("\t");
+		System.out.println(" Replacement for " + member.getConceptId() + " " + member.getConceptName() + " " +
+  			  c.getTerminologyId() + " " + c.getName() + " " + c.getDefinitionStatusId() + " " );
+		return sb;
+	}
 
   @Override
   @PUT
