@@ -1290,9 +1290,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
 			  c.getDefinitionStatusId(), migrationTerminology, migrationVersion);
 		    reasonMap.put(c.getDefinitionStatusId(), reasonConcept);
 		  }
-		sb.append(reasonConcept.getName()).append("\r\n");
+		sb.append(reasonConcept.getName()).append("\t");
 		sb.append(c.getTerminologyId()).append("\t");
-		sb.append(c.getName()).append("\t");
+		sb.append(c.getName()).append("\r\n");
 		
 		return sb;
 	}
