@@ -124,6 +124,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
   private static Map<String, MemberDiffReport> memberDiffReportMap =
       new HashMap<>();
 
+
+  private Map<String, Concept> reasonMap = new HashMap<>();
+  
   /**
    * Instantiates an empty {@link RefsetServiceRestImpl}.
    *
@@ -1082,7 +1085,6 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
 
       // Replacement Concepts
       StringBuilder replacementConceptsSb = new StringBuilder();
-      Map<String, Concept> reasonMap = new HashMap<>();
       
       // Old regular members
       sb.append("\r\n").append("Old Members").append("\r\n");
@@ -1099,17 +1101,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
             ConceptList conceptList = refsetService.getTerminologyHandler(member.getRefset().getProject(), getHeaders(headers))
               .getReplacementConcepts(member.getConceptId(), migrationTerminology, migrationVersion);
             for (Concept c : conceptList.getObjects()) {
-          	  replacementConceptsSb = appendReplacementConceptInfo(replacementConceptsSb, member, c);
-  			  Concept reasonConcept = null;
-  			  if (reasonMap.containsKey(c.getDefinitionStatusId())) {
-  				reasonConcept = reasonMap.get(c.getDefinitionStatusId());
-  			  } else {
-  			    reasonConcept = refsetService.getTerminologyHandler(
-  			      member.getRefset().getProject(), getHeaders(headers)).getConcept(
-  				  c.getDefinitionStatusId(), migrationTerminology, migrationVersion);
-  			    reasonMap.put(c.getDefinitionStatusId(), reasonConcept);
-  			  }
-  			  replacementConceptsSb.append(reasonConcept.getName()).append("\r\n");
+          	  replacementConceptsSb = appendReplacementConceptInfo(replacementConceptsSb, member, c,
+          			  refsetService, migrationTerminology, migrationVersion);
             }
           }
       }
@@ -1197,17 +1190,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
           ConceptList conceptList = refsetService.getTerminologyHandler(member.getRefset().getProject(), getHeaders(headers))
             .getReplacementConcepts(member.getConceptId(), migrationTerminology, migrationVersion);
           for (Concept c : conceptList.getObjects()) {
-        	  replacementConceptsSb = appendReplacementConceptInfo(replacementConceptsSb, member, c);
-			  Concept reasonConcept = null;
-			  if (reasonMap.containsKey(c.getDefinitionStatusId())) {
-				reasonConcept = reasonMap.get(c.getDefinitionStatusId());
-			  } else {
-			    reasonConcept = refsetService.getTerminologyHandler(
-			      member.getRefset().getProject(), getHeaders(headers)).getConcept(
-				  c.getDefinitionStatusId(), migrationTerminology, migrationVersion);
-			    reasonMap.put(c.getDefinitionStatusId(), reasonConcept);
-			  }
-			  replacementConceptsSb.append(reasonConcept.getName()).append("\r\n");
+        	  replacementConceptsSb = appendReplacementConceptInfo(replacementConceptsSb, member, c,
+        			  refsetService, migrationTerminology, migrationVersion);
           }
         }
       }
@@ -1255,11 +1239,11 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
   }
   
 	private StringBuilder appendReplacementConceptReportHeader(StringBuilder sb) {
-		sb.append("concept id").append("\t");
-		sb.append("concept fsn").append("\t");
-		sb.append("replacement id").append("\t");
-		sb.append("replacement fsn").append("\t");
-		sb.append("reason").append("\t");
+		sb.append("Inactive ConceptID").append("\t");
+		sb.append("Inactive Concept FSN").append("\t");
+		sb.append("Reason").append("\t");
+		sb.append("Suggested Replacement ConceptID(s)").append("\t");
+		sb.append("Suggested Replacement FSN(s)").append("\t");
 		sb.append("\r\n");
 		return sb;
 	}
@@ -1291,15 +1275,25 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
   }
   
 	private StringBuilder appendReplacementConceptInfo(StringBuilder sb, ConceptRefsetMember member,
-			Concept c) {
-		Logger.getLogger(getClass()).debug("  member = " + member);
+			Concept c, RefsetService refsetService, String migrationTerminology, String migrationVersion) 
+			throws Exception {
 		
 		sb.append(member.getConceptId()).append("\t");
 		sb.append(member.getConceptName()).append("\t");
+		// given the reason code, look up the reason's name
+		Concept reasonConcept = null;
+		  if (reasonMap.containsKey(c.getDefinitionStatusId())) {
+			reasonConcept = reasonMap.get(c.getDefinitionStatusId());
+		  } else {
+		    reasonConcept = refsetService.getTerminologyHandler(
+		      member.getRefset().getProject(), getHeaders(headers)).getConcept(
+			  c.getDefinitionStatusId(), migrationTerminology, migrationVersion);
+		    reasonMap.put(c.getDefinitionStatusId(), reasonConcept);
+		  }
+		sb.append(reasonConcept.getName()).append("\r\n");
 		sb.append(c.getTerminologyId()).append("\t");
 		sb.append(c.getName()).append("\t");
-		System.out.println(" Replacement for " + member.getConceptId() + " " + member.getConceptName() + " " +
-  			  c.getTerminologyId() + " " + c.getName() + " " + c.getDefinitionStatusId() + " " );
+		
 		return sb;
 	}
 
