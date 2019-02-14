@@ -1097,7 +1097,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         Logger.getLogger(getClass()).debug("  member = " + member);
         sb = appendDiffReportMember(sb, member);
         
-        if (!member.isConceptActive()) {
+        if (!member.isConceptActive() && report.getNewRefset().getType() == Type.INTENSIONAL) {
             ConceptList conceptList = refsetService.getTerminologyHandler(member.getRefset().getProject(), getHeaders(headers))
               .getReplacementConcepts(member.getConceptId(), migrationTerminology, migrationVersion);
             for (Concept c : conceptList.getObjects()) {
