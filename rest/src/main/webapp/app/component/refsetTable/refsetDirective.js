@@ -3105,6 +3105,12 @@ tsApp
                   // Success
                   function(data) {
                     $scope.searchResults = data.concepts;
+                    // if using the SnowOwl terminology handler, we no longer have the offset parameter
+                    // so we are faking the paging here with a max of 100 results returned for each request
+                    if ($scope.searchResults.length > $scope.pageSize) {
+                    	startIndex = ($scope.paging['search'].page - 1) * $scope.pageSize;
+                    	$scope.searchResults = data.concepts.slice(startIndex, startIndex + $scope.pageSize);
+                    }
                     $scope.searchResults.totalCount = data.totalCount;
                     $scope.getMemberTypes();
                     if (data.concepts.length > 0) {

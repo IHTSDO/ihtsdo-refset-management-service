@@ -1196,7 +1196,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         }
       }
       
-      sb.append("\r\n").append("Replacement Concepts").append("\r\n");
+      sb.append("\r\n").append("Inactive Concepts with their suggested Replacement Concepts").append("\r\n");
       if (replacementConceptsSb.length() > 0) {
     	  sb = appendReplacementConceptReportHeader(sb);
           sb.append(replacementConceptsSb);
