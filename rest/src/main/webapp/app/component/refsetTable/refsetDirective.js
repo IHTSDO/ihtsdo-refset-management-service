@@ -615,6 +615,8 @@ tsApp
               // Looks up current release info and members.
               $scope.selectRefset = function(refset) {
                 $scope.selected.refset = refset;
+                // remove stale selected concept to clear Concept Details pane
+                $scope.selected.concept = null;
                 $scope.selected.terminology = refset.terminology;
                 $scope.selected.version = refset.version;
                 $scope.getRefsetReleaseInfo(refset);
