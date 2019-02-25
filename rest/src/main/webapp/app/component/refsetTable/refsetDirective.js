@@ -615,6 +615,8 @@ tsApp
               // Looks up current release info and members.
               $scope.selectRefset = function(refset) {
                 $scope.selected.refset = refset;
+                // remove stale selected concept to clear Concept Details pane
+                $scope.selected.concept = null;
                 $scope.selected.terminology = refset.terminology;
                 $scope.selected.version = refset.version;
                 $scope.getRefsetReleaseInfo(refset);
@@ -630,7 +632,8 @@ tsApp
               // Selects a member (setting $scope.selected.member)
               $scope.selectMember = function(member) {
                 $scope.selected.member = member;
-                // Set the concept for display in concept-info
+                // Refresh the concept for display in concept-info
+                $scope.selected.concept = null;
                 $scope.selected.concept = {
                   terminologyId : member.conceptId,
                   terminology : member.terminology,
@@ -711,6 +714,13 @@ tsApp
               $scope.addRefsetExclusion = function(refset, member) {
                 refsetService.addRefsetExclusion(refset, member.conceptId, false).then(function() {
                   $scope.handleWorkflow(refset);
+                  // refresh Concept Details panel
+                  $scope.selected.concept = null;
+                  $scope.selected.concept = {
+                    terminologyId : member.conceptId,
+                    terminology : member.terminology,
+                    version : member.version
+                  };
                 });
 
               };
@@ -719,6 +729,13 @@ tsApp
               $scope.removeRefsetExclusion = function(refset, member) {
                 refsetService.removeRefsetExclusion(member.id).then(function() {
                   $scope.handleWorkflow(refset);
+                  // refresh Concept Details panel
+                  $scope.selected.concept = null;
+                  $scope.selected.concept = {
+                    terminologyId : member.conceptId,
+                    terminology : member.terminology,
+                    version : member.version
+                  };
                 });
 
               };
@@ -1224,9 +1241,13 @@ tsApp
                           // Success - count expression
                           function(data) {
                             var count = data;
-                            if (count >= 20000) {
+                            if (count >= 40000) { 
+                              $scope.errors[0] = 'Submitted definition clause is invalid.  Definition clause resolves to '
+                                + count + ' members.  Refsets of this size are not allowed as they can lead to an inconsistent user experience.';
+                              return;
+                            } else if (count >= 20000) {
                               $scope.warnings[$scope.newClauses[i].value] = 'Definition clause resolves to '
-                                + count + ' members.';
+                                + count + ' members.  Refsets of this size are discouraged and can lead to an inconsistent user experience.';
                               $scope.warningFlag = true;
                             }
                           },
@@ -1276,9 +1297,13 @@ tsApp
                               // Success - count expression
                               function(data) {
                                 var count = data;
-                                if (count >= 20000) {
+                                if (count >= 40000) {
+                                	 $scope.errors[0] = 'Submitted definition clause is invalid.  Definition clause resolves to '
+                                     + count + ' members.  Refsets of this size are not allowed as they can lead to an inconsistent user experience.';
+                                     return;
+                                } else if (count >= 20000) {
                                   $scope.warnings[$scope.newClauses[i].value] = 'Definition clause resolves to '
-                                    + count + ' members.';
+                                    + count + ' members.  Refsets of this size are discouraged and can lead to an inconsistent user experience.';
                                   $scope.warningFlag = true;
                                 }
                               },
@@ -1299,6 +1324,11 @@ tsApp
 
                 // Save refset
                 $scope.save = function(refset) {
+                  if ($scope.errors.length > 0) { 
+                	  $uibModalInstance.close(refset);
+                	  handleError($scope.errors, $scope.errors[0]);
+                	  return;
+                  }
                   refset.definitionClauses = $scope.newClauses;
                   $scope.warnings = [];
                   refsetService.updateRefset(refset).then(
@@ -1755,9 +1785,9 @@ tsApp
                     },
                     ioHandlers : function() {
                       if (loperation == 'Import') {
-                        return $scope.metadata.importHandlers;
+                        return $scope.metadata.refsetImportHandlers;
                       } else {
-                        return $scope.metadata.exportHandlers;
+                        return $scope.metadata.refsetExportHandlers;
                       }
                     },
                     query : function() {
@@ -1824,7 +1854,7 @@ tsApp
                 $scope.importFinished = false;
                 if ($scope.query || $scope.pfs) {
                   $scope.warnings
-                    .push("Export is based on current search criteria and may not include all members.");
+                    .push(operation + " is based on current search criteria and may not include all members.");
                 }
                 // Handle export
                 $scope.export = function(file) {
@@ -1940,7 +1970,7 @@ tsApp
                       return lrefset;
                     },
                     ioHandlers : function() {
-                      return $scope.metadata.exportHandlers;
+                      return $scope.metadata.refsetExportHandlers;
                     },
                     utilService : function() {
                       return utilService;
@@ -2421,7 +2451,12 @@ tsApp
                       refsetService.addRefsetMember(member).then(
                       // Success
                       function(data) {
-                        $scope.added.push(conceptId);
+                    	// RTT-249 request that concepts not validated, not be added
+                    	if (data) {
+                          $scope.added.push(conceptId);
+                    	} else {
+                    	  $scope.invalid.push(conceptId);
+                    	}
                       },
                       // Error
                       function(data) {
@@ -3072,6 +3107,12 @@ tsApp
                   // Success
                   function(data) {
                     $scope.searchResults = data.concepts;
+                    // if using the SnowOwl terminology handler, we no longer have the offset parameter
+                    // so we are faking the paging here with a max of 100 results returned for each request
+                    if ($scope.searchResults.length > $scope.pageSize) {
+                    	startIndex = ($scope.paging['search'].page - 1) * $scope.pageSize;
+                    	$scope.searchResults = data.concepts.slice(startIndex, startIndex + $scope.pageSize);
+                    }
                     $scope.searchResults.totalCount = data.totalCount;
                     $scope.getMemberTypes();
                     if (data.concepts.length > 0) {
@@ -3171,6 +3212,10 @@ tsApp
                 $scope.project = project;
                 $scope.refset = refset;
                 $scope.newTerminology = refset.terminology;
+                $scope.membersInCommonStatusType = 'all';
+                $scope.validInclusionsStatusType = 'all';
+                $scope.stagedInclusionsStatusType = 'all';
+                $scope.oldRegularMembersStatusType = 'all';
                 $scope.membersInCommon = null;
                 $scope.pageSize = 5;
                 $scope.pageSizes = utilService.getPageSizes();
@@ -3182,7 +3227,9 @@ tsApp
                 $scope.newVersion = $scope.versions[0];
                 $scope.validVersion = null;
                 $scope.errors = [];
-                $scope.statusTypes = [ 'Active', 'Inactive' ];
+                $scope.statusTypes = [{"state":"all","name":"All"},
+                                      {"state":"active","name":"Active"},
+                                      {"state":"inactive","name":"Inactive"}]
                 $scope.pagedStagedInclusions = [];
                 $scope.paging['newRegularMembers'] = {
                   page : 1,
@@ -3294,6 +3341,7 @@ tsApp
                     .sort().reverse());
                   $scope.newVersion = $scope.versions[0];
                 };
+                
 
                 // Table sorting mechanism
                 $scope.setSortField = function(table, field, object) {
@@ -3326,7 +3374,7 @@ tsApp
                 };
 
                 $scope.exportDiffReport = function() {
-                  refsetService.exportDiffReport('migration', $scope.reportToken, $scope.refset);
+                  refsetService.exportDiffReport('migration', $scope.reportToken, $scope.refset, $scope.newTerminology, $scope.newVersion);
                 }
 
                 $scope.testTerminologyVersion = function() {
@@ -3390,11 +3438,14 @@ tsApp
                   };
 
                   var conceptActive;
-                  if ($scope.paging['oldRegularMembers'].typeFilter == 'Active') {
+                  if ($scope.oldRegularMembersStatusType == 'active') {
+                	$scope.paging['oldRegularMembers'].typeFilter = 'Active';
                     conceptActive = true;
-                  } else if ($scope.paging['oldRegularMembers'].typeFilter == 'Inactive') {
+                  } else if ($scope.oldRegularMembersStatusType == 'inactive') {
+                	$scope.paging['oldRegularMembers'].typeFilter = 'Inactive';
                     conceptActive = false;
                   } else {
+                	$scope.paging['oldRegularMembers'].typeFilter = ''
                     conceptActive = null;
                   }
 
@@ -3445,11 +3496,14 @@ tsApp
                   };
 
                   var conceptActive;
-                  if ($scope.paging['membersInCommon'].typeFilter == 'Active') {
+                  if ($scope.membersInCommonStatusType == 'active') {
+                	$scope.paging['membersInCommon'].typeFilter = 'Active';
                     conceptActive = true;
-                  } else if ($scope.paging['membersInCommon'].typeFilter == 'Inactive') {
+                  } else if ($scope.membersInCommonStatusType == 'inactive') {
+                	$scope.paging['membersInCommon'].typeFilter = 'Inactive';
                     conceptActive = false;
                   } else {
+                  	$scope.paging['membersInCommon'].typeFilter = '';
                     conceptActive = null;
                   }
 
@@ -3468,12 +3522,26 @@ tsApp
 
                 // Get paged staged inclusions (assume all are loaded)
                 $scope.getPagedStagedInclusions = function() {
+                	if ($scope.stagedInclusionsStatusType == 'active') {
+                        $scope.paging['stagedInclusions'].typeFilter = 'Active';
+                      } else if ($scope.stagedInclusionsStatusType == 'inactive') {
+                        $scope.paging['stagedInclusions'].typeFilter = 'Inactive';
+                      } else {
+                    	$scope.paging['stagedInclusions'].typeFilter = ''  
+                      }
                   $scope.pagedStagedInclusions = utilService.getPagedArray($scope.stagedInclusions,
                     $scope.paging['stagedInclusions'], $scope.pageSize);
                 };
 
                 // Get paged valid inclusions (assume all are loaded)
                 $scope.getPagedValidInclusions = function() {
+                  if ($scope.validInclusionsStatusType == 'active') {
+                    $scope.paging['validInclusions'].typeFilter = 'Active';
+                  } else if ($scope.validInclusionsStatusType == 'inactive') {
+                    $scope.paging['validInclusions'].typeFilter = 'Inactive';
+                  } else {
+                	$scope.paging['validInclusions'].typeFilter = '';  
+                  }
                   $scope.pagedValidInclusions = utilService.getPagedArray($scope.validInclusions,
                     $scope.paging['validInclusions'], $scope.pageSize);
                 };
@@ -3699,11 +3767,13 @@ tsApp
                         $scope.concepts = data.concepts;
 
                         // if no replacements, just add the inclusion
-                        if ($scope.concepts.length == 0
+                        /*if ($scope.concepts.length == 0
                         // the second clause here is because intensional
                         // refsets never have inactive members in common
                         && $scope.stagedRefset.type == 'INTENSIONAL') {
-                          $scope.addRefsetInclusion($scope.stagedRefset, member, staged);
+                          $scope.addRefsetInclusion($scope.stagedRefset, member, staged);*/
+                        if ($scope.concepts.length == 0) {
+                        	window.alert('There are no replacement concepts available.');
                         } else {
                           $scope.openReplacementConceptsModal(member, staged, $scope.concepts,
                             $scope.reportToken);
@@ -3986,6 +4056,10 @@ tsApp
                         handleError($scope.errors, data);
                       });
 
+                  $scope.getLength = function(obj) {
+                	    return Object.keys(obj).length;
+                	}
+                  
                   // Add button
                   $scope.submitAdd = function() {
                     // calculate total number of replacement options

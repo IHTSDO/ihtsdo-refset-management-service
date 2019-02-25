@@ -903,12 +903,13 @@ tsApp.service('refsetService', [
       });
     };
     
-    this.exportDiffReport = function(action, reportToken, refset) {
+    this.exportDiffReport = function(action, reportToken, refset, migrationTerminology, migrationVersion) {
       console.debug('exportDiffReport');
       var deferred = $q.defer();
       gpService.increment();
       $http.get(
-        refsetUrl + 'export/report?reportToken=' + reportToken).then(
+        refsetUrl + 'export/report?reportToken=' + reportToken + '&terminology=' + migrationTerminology
+        + '&version=' + migrationVersion).then(
       // Success
       function(response) {
         var blob = new Blob([ response.data ], {

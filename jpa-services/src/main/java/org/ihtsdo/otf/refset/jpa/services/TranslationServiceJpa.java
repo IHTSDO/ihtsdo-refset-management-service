@@ -1123,16 +1123,32 @@ public class TranslationServiceJpa extends RefsetServiceJpa
 
   /* see superclass */
   @Override
-  public ReleaseInfo getCurrentTranslationReleaseInfo(String terminologyId,
+  public ReleaseInfo getCurrentTranslationReleaseInfo(Translation translation,
     Long projectId) throws Exception {
     Logger.getLogger(getClass())
         .debug("Release Service - get current release info for translation"
-            + terminologyId + ", " + projectId);
+            + translation + ", " + projectId);
 
     // Get all release info for this terminologyId and projectId
-    final List<ReleaseInfo> results =
+    /*final List<ReleaseInfo> results =
         findTranslationReleasesForQuery(null, "translationTerminologyId:"
-            + terminologyId + " AND projectId:" + projectId, null).getObjects();
+            + translation.getTerminologyId() + " AND projectId:" + projectId, null).getObjects();
+    */
+    List<ReleaseInfo> results;
+    try {
+        javax.persistence.Query query =
+            manager.createQuery("select a from ReleaseInfoJpa a, TranslationJpa b "
+                + " where b.name = :translationName and a.translation = b"
+                + " and b.project.id = :projectId and b.terminologyId = :terminologyId");
+        //query.setParameter("terminologyId", translation.getTerminologyId());
+        query.setParameter("translationName", translation.getName());
+        query.setParameter("projectId", projectId);
+        query.setParameter("terminologyId", translation.getTerminologyId());
+        Logger.getLogger(getClass()).info("query*=" + query);
+        results = (List<ReleaseInfo>) query.getResultList();
+      } catch (NoResultException e) {
+        return null;
+      }
 
     // Reverse sort releases by date
     Collections.sort(results, new Comparator<ReleaseInfo>() {

@@ -1199,8 +1199,8 @@ tsApp
                           $scope.warnings = [];
                         }
 
-                        if (!translation.name || !translation.description || !translation.language) {
-                          $scope.errors[0] = "Translation name, description, and language must not be empty.";
+                        if (!translation.name || !translation.description || !translation.language || !translation.moduleId) {
+                          $scope.errors[0] = "Translation name, description, module id and language must not be empty.";
                           return;
                         }
                         if (!translation.refsetId) {
@@ -1919,9 +1919,9 @@ tsApp
                     },
                     ioHandlers : function() {
                       if (loperation == 'Import') {
-                        return $scope.metadata.importHandlers;
+                        return $scope.metadata.translationImportHandlers;
                       } else {
-                        return $scope.metadata.exportHandlers;
+                        return $scope.metadata.translationExportHandlers;
                       }
                     },
                     query : function() {
@@ -1972,7 +1972,7 @@ tsApp
                 $scope.importFinished = false;
                 if (type == 'Translation' && ($scope.query || $scope.pfs)) {
                   $scope.warnings
-                    .push("Export is based on current search criteria and may not include all concepts.");
+                    .push(operation + " is based on current search criteria and may not include all concepts.");
                 }
 
                 // Handle export
@@ -2191,7 +2191,7 @@ tsApp
                       return ltranslation;
                     },
                     ioHandlers : function() {
-                      return $scope.metadata.exportHandlers;
+                      return $scope.metadata.translationExportHandlers;
                     },
                     utilService : function() {
                       return utilService;

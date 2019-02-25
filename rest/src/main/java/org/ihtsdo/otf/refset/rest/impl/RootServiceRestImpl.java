@@ -244,7 +244,8 @@ public class RootServiceRestImpl {
         return map;
       } else {
         Logger.getLogger(getClass())
-            .warn("UNEXPECTED number of Cookie headers = " + cookies.size());
+            .warn("UNEXPECTED number of Cookie headers = " + cookies != null ? 
+            		cookies.size() : "null");
       }
     }
     // else {

@@ -26,7 +26,7 @@
             <br />
           </span>
           <span ng-show="refset">
-            {{refset.moduleId}}
+            {{translation.moduleId}}
             <span flag-icon obj="translation"></span>
             {{refset.organization}}
           </span>
@@ -57,13 +57,17 @@
           <div languages translation="translation"></div>
         </td>
       </tr>
-      <tr>
+      <tr ng-show="!refset.localSet">
         <td>
           <b>Module Id</b>
         </td>
         <td>
-          {{translation.moduleId}}
-          <span flag-icon obj="translation"></span>
+          <input style="width: 252px" ng-model="translation.moduleId"
+             placeholder="e.g. 900000000000207008" />         
+          <button class="btn btn-xs btn-warning" ng-show="translation.moduleId"
+            ng-click="translation.moduleId=''">Clear</button>
+          &nbsp;&nbsp;
+          <span flag-icon obj="refset"></span>
         </td>
       </tr>
       <tr>

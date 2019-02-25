@@ -10,8 +10,9 @@ tsApp.controller('DirectoryCtrl',
     'projectService',
     'refsetService',
     'workflowService',
+    'translationService',
     function($scope, $http, $routeParams, tabService, utilService, securityService, projectService,
-      refsetService, workflowService) {
+      refsetService, workflowService, translationService) {
       console.debug('configure DirectoryCtrl');
 
       // Clear error
@@ -153,10 +154,16 @@ tsApp.controller('DirectoryCtrl',
       // Get $scope.metadata.{import,export}Handlers
       $scope.getIOHandlers = function() {
         refsetService.getImportRefsetHandlers().then(function(data) {
-          $scope.metadata.importHandlers = data.handlers;
+          $scope.metadata.refsetImportHandlers = data.handlers;
         });
         refsetService.getExportRefsetHandlers().then(function(data) {
-          $scope.metadata.exportHandlers = data.handlers;
+          $scope.metadata.refsetExportHandlers = data.handlers;
+        });
+        translationService.getImportTranslationHandlers().then(function(data) {
+            $scope.metadata.translationImportHandlers = data.handlers;
+        });
+        translationService.getExportTranslationHandlers().then(function(data) {
+            $scope.metadata.translationExportHandlers = data.handlers;
         });
       };
 

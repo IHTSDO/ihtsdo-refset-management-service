@@ -831,7 +831,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl
       }
 
       ReleaseInfo info = translationService.getCurrentTranslationReleaseInfo(
-          translation.getTerminologyId(), translation.getProject().getId());
+          translation, translation.getProject().getId());
 
       if (info != null) {
         translationService.handleLazyInit(info);

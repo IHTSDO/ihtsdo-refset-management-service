@@ -20,7 +20,7 @@
     </uib-accordion-heading>
     <div class="col-md-12 col-xs-12">
       <h4>
-        <span style="float: right;" ng-show="user.applicationRole == 'ADMIN'">
+        <span style="float: right;" ng-show="user.applicationRole == 'ADMIN' || user.applicationRole == 'USER'">
           <button ng-click="openAddProjectModal()" title="Add project"
             class="btn btn-xs btn-primary">Add Project</button>
         </span>

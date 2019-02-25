@@ -150,18 +150,15 @@
                   ng-click="setSortField('membersInCommon','conceptId', null)">
                   Id</span> <span
                   ng-bind="getSortIndicator('membersInCommon','conceptId',null)"></span></th>
-              <th class="col-md-7 col-xs-7"><span
+              <th class="col-md-6 col-xs-6"><span
                   ng-click="setSortField('membersInCommon','conceptName', null)">
                   Name</span> <span
                   ng-bind="getSortIndicator('membersInCommon','conceptName',null)"></span></th>
-              <th class="col-md-1 col-xs-1"
-                ng-show="refset.type == 'EXTENSIONAL'"><select
-                title="Filter by status" style="width: 20px;"
-                ng-model="paging['membersInCommon'].typeFilter"
-                ng-options="item for item in statusTypes"
-                ng-change="findMembersInCommon()">
-                  <option value="">All</option>
-              </select></th>
+              <th class="col-md-2 col-xs-2"
+                ng-show="refset.type == 'EXTENSIONAL'">
+                <select ng-model="membersInCommonStatusType" ng-change="findMembersInCommon()"
+                ng-options="item.state as item.name for item in statusTypes"></select>            
+          	  </th>
             </tr>
           </thead>
           <tbody>
@@ -325,13 +322,9 @@
                       ng-click="setSortField('validInclusions','conceptName', null)">
                       Name</span> <span
                       ng-bind="getSortIndicator('validInclusions','conceptName',null)"></span></th>
-                  <th class="col-md-1 col-xs-1"><select
-                    title="Filter by status" style="width: 20px;"
-                    ng-model="paging['validInclusions'].typeFilter"
-                    ng-options="item for item in statusTypes"
-                    ng-change="getPagedValidInclusions()">
-                      <option value="">All</option>
-                  </select></th>
+                  <th class="col-md-1 col-xs-1">
+                    <select ng-model="validInclusionsStatusType" ng-change="getPagedValidInclusions()"
+              			ng-options="item.state as item.name for item in statusTypes"></select></th>
                 </tr>
               </thead>
               <tbody>
@@ -399,13 +392,9 @@
                       ng-click="setSortField('stagedInclusions','conceptName', null)">
                       Name</span> <span
                       ng-bind="getSortIndicator('stagedInclusions','conceptName',null)"></span></th>
-                  <th class="col-md-1 col-xs-1"><select
-                    title="Filter by status" style="width: 20px;"
-                    ng-model="paging['stagedInclusions'].typeFilter"
-                    ng-options="item for item in statusTypes"
-                    ng-change="getPagedStagedInclusions()">
-                      <option value="">All</option>
-                  </select></th>
+                  <th class="col-md-1 col-xs-1">
+                    <select ng-model="stagedInclusionsStatusType" ng-change="getPagedStagedInclusions()"
+              		ng-options="item.state as item.name for item in statusTypes"></select></th>
                 </tr>
               </thead>
               <tbody>
@@ -620,13 +609,9 @@
                   ng-click="setSortField('oldRegularMembers','conceptName', null)">
                   Name</span> <span
                   ng-bind="getSortIndicator('oldRegularMembers','conceptName',null)"></span></th>
-              <th class="col-md-1 col-xs-1"><select
-                title="Filter by status" style="width: 20px;"
-                ng-model="paging['oldRegularMembers'].typeFilter"
-                ng-options="item for item in statusTypes"
-                ng-change="getOldRegularMembers()">
-                  <option value="">All</option>
-              </select></th>
+              <th class="col-md-1 col-xs-1">
+              		<select ng-model="oldRegularMembersStatusType" ng-change="getOldRegularMembers()"
+              ng-options="item.state as item.name for item in statusTypes"></select></th>
             </tr>
           </thead>
           <tbody>
