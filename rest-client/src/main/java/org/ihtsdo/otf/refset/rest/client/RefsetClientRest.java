@@ -1480,14 +1480,16 @@ public class RefsetClientRest extends RootClientRest
 
   /* see superclass */
   @Override
-  public InputStream exportDiffReport(String reportToken, String authToken)
+  public InputStream exportDiffReport(String reportToken, String terminology, 
+		  String version,String authToken)
     throws Exception {
     Logger.getLogger(getClass())
         .debug("Refset Client - export diff report - " + reportToken);
 
     Client client = ClientBuilder.newClient();
     WebTarget target = client.target(config.getProperty("base.url")
-        + "/refset/export/report" + "?reportToken=" + reportToken);
+        + "/refset/export/report" + "?reportToken=" + reportToken + 
+        "&terminology=" + terminology + "&version=" + version);
     Response response = target.request(MediaType.APPLICATION_OCTET_STREAM)
         .header("Authorization", authToken).get();
 

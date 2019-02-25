@@ -1972,7 +1972,7 @@ tsApp
                 $scope.importFinished = false;
                 if (type == 'Translation' && ($scope.query || $scope.pfs)) {
                   $scope.warnings
-                    .push("Export is based on current search criteria and may not include all concepts.");
+                    .push(operation + " is based on current search criteria and may not include all concepts.");
                 }
 
                 // Handle export

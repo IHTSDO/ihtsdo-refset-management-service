@@ -615,6 +615,8 @@ tsApp
               // Looks up current release info and members.
               $scope.selectRefset = function(refset) {
                 $scope.selected.refset = refset;
+                // remove stale selected concept to clear Concept Details pane
+                $scope.selected.concept = null;
                 $scope.selected.terminology = refset.terminology;
                 $scope.selected.version = refset.version;
                 $scope.getRefsetReleaseInfo(refset);
@@ -1852,7 +1854,7 @@ tsApp
                 $scope.importFinished = false;
                 if ($scope.query || $scope.pfs) {
                   $scope.warnings
-                    .push("Export is based on current search criteria and may not include all members.");
+                    .push(operation + " is based on current search criteria and may not include all members.");
                 }
                 // Handle export
                 $scope.export = function(file) {
@@ -3105,6 +3107,12 @@ tsApp
                   // Success
                   function(data) {
                     $scope.searchResults = data.concepts;
+                    // if using the SnowOwl terminology handler, we no longer have the offset parameter
+                    // so we are faking the paging here with a max of 100 results returned for each request
+                    if ($scope.searchResults.length > $scope.pageSize) {
+                    	startIndex = ($scope.paging['search'].page - 1) * $scope.pageSize;
+                    	$scope.searchResults = data.concepts.slice(startIndex, startIndex + $scope.pageSize);
+                    }
                     $scope.searchResults.totalCount = data.totalCount;
                     $scope.getMemberTypes();
                     if (data.concepts.length > 0) {
@@ -3366,7 +3374,7 @@ tsApp
                 };
 
                 $scope.exportDiffReport = function() {
-                  refsetService.exportDiffReport('migration', $scope.reportToken, $scope.refset);
+                  refsetService.exportDiffReport('migration', $scope.reportToken, $scope.refset, $scope.newTerminology, $scope.newVersion);
                 }
 
                 $scope.testTerminologyVersion = function() {
