@@ -643,11 +643,13 @@ public interface RefsetServiceRest {
    * Export diff report.
    *
    * @param reportToken the report token
+   * @param terminology the terminology
+   * @param version the version
    * @param authToken the auth token
    * @return the input stream
    * @throws Exception the exception
    */
-  public InputStream exportDiffReport(String reportToken, String authToken)
+  public InputStream exportDiffReport(String reportToken, String terminology, String version, String authToken)
     throws Exception;
 
   /**

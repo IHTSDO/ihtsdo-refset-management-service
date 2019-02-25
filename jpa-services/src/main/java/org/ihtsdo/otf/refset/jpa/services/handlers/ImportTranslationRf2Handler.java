@@ -150,7 +150,7 @@ public class ImportTranslationRf2Handler implements ImportTranslationHandler {
               throw new LocalException(
                   "Unexpected field count in descriptions file.");
             }
-            if (!fields[0].equals(id)) {
+            if (!fields[0].endsWith(id)) {
 
               // Skip inactive descriptions
               if (fields[2].equals("0")) {
@@ -227,7 +227,7 @@ public class ImportTranslationRf2Handler implements ImportTranslationHandler {
                   "Unexpected field count in language file.");
             }
 
-            if (!fields[0].equals(id)) { // header
+            if (!fields[0].endsWith(id)) { // header
 
               // Skip inactive language entries
               if (fields[2].equals("0")) {
@@ -243,10 +243,12 @@ public class ImportTranslationRf2Handler implements ImportTranslationHandler {
               } else {
                 member.setTerminologyId(fields[0]);
               }
+              
               if (!fields[1].equals("")) {
                 member.setEffectiveTime(
                     ConfigUtility.DATE_FORMAT.parse(fields[1]));
               }
+              
 
               // Set from the translation refset
               member.setRefsetId(translation.getRefset().getTerminologyId());
