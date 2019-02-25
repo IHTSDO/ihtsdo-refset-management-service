@@ -124,6 +124,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
   private static Map<String, MemberDiffReport> memberDiffReportMap =
       new HashMap<>();
 
+
+  private Map<String, Concept> reasonMap = new HashMap<>();
+  
   /**
    * Instantiates an empty {@link RefsetServiceRestImpl}.
    *
@@ -1043,11 +1046,13 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
   @ApiOperation(value = "Export diff report", notes = "Exports the report during migration of a refset", response = InputStream.class)
   public InputStream exportDiffReport(
     @ApiParam(value = "Report token, (UUID format)", required = true) @QueryParam("reportToken") String reportToken,
+    @ApiParam(value = "Terminology", required = false) @QueryParam("terminology") String migrationTerminology,
+    @ApiParam(value = "Version", required = false) @QueryParam("version") String migrationVersion,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
     Logger.getLogger(getClass())
-        .info("RESTful call GET (Refset): /export/report " + reportToken);
+        .info("RESTful call GET (Refset): /export/report " + reportToken + " " + migrationTerminology + " " + migrationVersion);
 
     final RefsetService refsetService =
         new RefsetServiceJpa(getHeaders(headers));
@@ -1077,6 +1082,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         sb = appendDiffReportMember(sb, member);
       }
 
+      // Replacement Concepts
+      StringBuilder replacementConceptsSb = new StringBuilder();
+      
       // Old regular members
       sb.append("\r\n").append("Old Members").append("\r\n");
       if (report.getOldRegularMembers().size() > 0) {
@@ -1087,6 +1095,15 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       for (ConceptRefsetMember member : report.getOldRegularMembers()) {
         Logger.getLogger(getClass()).debug("  member = " + member);
         sb = appendDiffReportMember(sb, member);
+        
+        if (!member.isConceptActive() && report.getNewRefset().getType() == Type.INTENSIONAL) {
+            ConceptList conceptList = refsetService.getTerminologyHandler(member.getRefset().getProject(), getHeaders(headers))
+              .getReplacementConcepts(member.getConceptId(), migrationTerminology, migrationVersion);
+            for (Concept c : conceptList.getObjects()) {
+          	  replacementConceptsSb = appendReplacementConceptInfo(replacementConceptsSb, member, c,
+          			  refsetService, migrationTerminology, migrationVersion);
+            }
+          }
       }
 
       if (report.getNewRefset().getType() == Type.INTENSIONAL) {
@@ -1161,14 +1178,35 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         }
       }
 
-      // Members in common
-      sb.append("\r\n").append("Members in Common").append("\r\n");
-      sb = appendDiffReportHeader(sb);
+      // Members in common & Replacement Concepts
+      
+      StringBuilder membersInCommonSb = new StringBuilder();
       for (ConceptRefsetMember member : membersInCommonMap.get(reportToken)) {
         Logger.getLogger(getClass()).debug("  member = " + member);
-        sb = appendDiffReportMember(sb, member);
+        membersInCommonSb = appendDiffReportMember(membersInCommonSb, member);
+        
+        if (!member.isConceptActive()) {
+          ConceptList conceptList = refsetService.getTerminologyHandler(member.getRefset().getProject(), getHeaders(headers))
+            .getReplacementConcepts(member.getConceptId(), migrationTerminology, migrationVersion);
+          for (Concept c : conceptList.getObjects()) {
+        	  replacementConceptsSb = appendReplacementConceptInfo(replacementConceptsSb, member, c,
+        			  refsetService, migrationTerminology, migrationVersion);
+          }
+        }
       }
-
+      
+      sb.append("\r\n").append("Inactive Concepts with their suggested Replacement Concepts").append("\r\n");
+      if (replacementConceptsSb.length() > 0) {
+    	  sb = appendReplacementConceptReportHeader(sb);
+          sb.append(replacementConceptsSb);
+      } else {
+          sb = sb.append("n/a").append("\r\n");
+      }
+      
+      sb.append("\r\n").append("Members in Common").append("\r\n");
+      sb = appendDiffReportHeader(sb);
+      sb.append(membersInCommonSb);
+      
       return new ByteArrayInputStream(sb.toString().getBytes("UTF-8"));
 
     } catch (Exception e) {
@@ -1198,6 +1236,16 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
     sb.append("\r\n");
     return sb;
   }
+  
+	private StringBuilder appendReplacementConceptReportHeader(StringBuilder sb) {
+		sb.append("Inactive ConceptID").append("\t");
+		sb.append("Inactive Concept FSN").append("\t");
+		sb.append("Reason").append("\t");
+		sb.append("Suggested Replacement ConceptID(s)").append("\t");
+		sb.append("Suggested Replacement FSN(s)").append("\t");
+		sb.append("\r\n");
+		return sb;
+	}
 
   /**
    * Append diff report member.
@@ -1224,6 +1272,29 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
     sb.append("\r\n");
     return sb;
   }
+  
+	private StringBuilder appendReplacementConceptInfo(StringBuilder sb, ConceptRefsetMember member,
+			Concept c, RefsetService refsetService, String migrationTerminology, String migrationVersion) 
+			throws Exception {
+		
+		sb.append(member.getConceptId()).append("\t");
+		sb.append(member.getConceptName()).append("\t");
+		// given the reason code, look up the reason's name
+		Concept reasonConcept = null;
+		  if (reasonMap.containsKey(c.getDefinitionStatusId())) {
+			reasonConcept = reasonMap.get(c.getDefinitionStatusId());
+		  } else {
+		    reasonConcept = refsetService.getTerminologyHandler(
+		      member.getRefset().getProject(), getHeaders(headers)).getConcept(
+			  c.getDefinitionStatusId(), migrationTerminology, migrationVersion);
+		    reasonMap.put(c.getDefinitionStatusId(), reasonConcept);
+		  }
+		sb.append(reasonConcept.getName()).append("\t");
+		sb.append(c.getTerminologyId()).append("\t");
+		sb.append(c.getName()).append("\r\n");
+		
+		return sb;
+	}
 
   @Override
   @PUT
@@ -1267,7 +1338,12 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
           member.setConceptName(concept.getName());
           member.setConceptActive(concept.isActive());
         } else {
-          member.setConceptName(TerminologyHandler.UNABLE_TO_DETERMINE_NAME);
+          // RTT-249 request that concepts not validated, not be added
+          //member.setConceptName(TerminologyHandler.UNABLE_TO_DETERMINE_NAME);
+          addLogEntry(refsetService, userName, "ADD member failed lookup",
+        	          refset.getProject().getId(), refset.getId(),
+        	          refset.getTerminologyId() + " = " + member.getConceptId());	
+          return null;
         }
       }
 

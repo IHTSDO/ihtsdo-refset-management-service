@@ -215,10 +215,10 @@ tsApp
         // Get $scope.metadata.{import,export}Handlers
         $scope.getIOHandlers = function() {
           translationService.getImportTranslationHandlers().then(function(data) {
-            $scope.metadata.importHandlers = data.handlers;
+            $scope.metadata.translationImportHandlers = data.handlers;
           });
           translationService.getExportTranslationHandlers().then(function(data) {
-            $scope.metadata.exportHandlers = data.handlers;
+            $scope.metadata.translationExportHandlers = data.handlers;
           });
         };
 

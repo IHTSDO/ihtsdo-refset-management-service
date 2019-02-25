@@ -177,7 +177,7 @@ public class PerformTranslationBetaAlgorithm extends TranslationServiceJpa
 
     // Generate the delta release artifact and add it
     releaseInfo = getCurrentTranslationReleaseInfo(
-        translation.getTerminologyId(), translation.getProject().getId());
+        translation, translation.getProject().getId());
 
     if (releaseInfo != null) {
       Logger.getLogger(getClass())
