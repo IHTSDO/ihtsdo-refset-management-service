@@ -33,6 +33,10 @@ public class ValidationServiceJpa extends RootServiceJpa implements
 
   /** The config properties. */
   protected static Properties config = null;
+  
+
+  /** The headers. */
+  public Map<String, String> headers;
 
   /** The validation handlers. */
   protected static Map<String, ValidationCheck> validationHandlersMap = null;
