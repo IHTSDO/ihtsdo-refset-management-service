@@ -3,12 +3,16 @@
  */
 package org.ihtsdo.otf.refset.rest.impl;
 
+import java.util.Map;
+
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 
 import org.apache.log4j.Logger;
@@ -61,6 +65,10 @@ public class ValidationServiceRestImpl extends RootServiceRestImpl implements
 
   /** The security service. */
   private SecurityService securityService;
+  
+  /** Security context */
+  @Context
+  HttpHeaders headers;
 
   /**
    * Instantiates an empty {@link ValidationServiceRestImpl}.
@@ -117,7 +125,7 @@ public class ValidationServiceRestImpl extends RootServiceRestImpl implements
     Logger.getLogger(getClass()).info(
         "RESTful call POST (Validation): /refset " + refset + "/" + projectId);
     final ValidationService validationService = new ValidationServiceJpa();
-    final RefsetService refsetService = new RefsetServiceJpa();
+    final RefsetService refsetService = new RefsetServiceJpa(getHeaders(headers));
 
     try {
       authorizeProject(refsetService, refset.getProjectId(), securityService,
