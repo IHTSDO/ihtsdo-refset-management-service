@@ -1339,12 +1339,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
           member.setConceptName(concept.getName());
           member.setConceptActive(concept.isActive());
         } else {
-          // RTT-249 request that concepts not validated, not be added
-          //member.setConceptName(TerminologyHandler.UNABLE_TO_DETERMINE_NAME);
-          addLogEntry(refsetService, userName, "ADD member failed lookup",
-        	          refset.getProject().getId(), refset.getId(),
-        	          refset.getTerminologyId() + " = " + member.getConceptId());	
-          return null;
+          member.setConceptName(TerminologyHandler.UNABLE_TO_DETERMINE_NAME);
         }
       }
 
