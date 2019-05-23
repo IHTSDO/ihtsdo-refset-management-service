@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.ihtsdo.otf.refset</groupId>
     <artifactId>refset-parent</artifactId>
-    <version>1.1.4_b</version>
+    <version>1.1.5</version>
     <relativePath>../parent</relativePath>
   </parent>
 

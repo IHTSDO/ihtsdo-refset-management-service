@@ -1214,6 +1214,26 @@ tsApp.service('translationService', [
       return deferred.promise;
     };
 
+    // update the concept name from term server lookup for single concept
+    this.updateConceptName = function(translationId, conceptId) {
+      console.debug('updateConceptName');
+      var deferred = $q.defer();
+
+      // get translation revision
+      $http.get(translationUrl + 'lookup/name?translationId=' + translationId + '&conceptId=' + conceptId ).then(
+      // success
+      function(response) {
+        console.debug('  updated concept name = ', response.data);
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    };
+    
     // get the available language description types
     this.getLanguageDescriptionTypes = function(projectId) {
       console.debug('getLanguageDescriptionTypes', projectId);

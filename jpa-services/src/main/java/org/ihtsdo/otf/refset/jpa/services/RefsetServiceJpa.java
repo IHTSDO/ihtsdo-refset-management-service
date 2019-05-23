@@ -45,6 +45,7 @@ import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetNoteJpa;
 import org.ihtsdo.otf.refset.jpa.ReleaseInfoJpa;
 import org.ihtsdo.otf.refset.jpa.StagedRefsetChangeJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.ConceptListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptRefsetMemberListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.IoHandlerInfoListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.RefsetListJpa;
@@ -1214,26 +1215,27 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
         existingMembers.put(member.getConceptId(), member);
       }
     }
+    ConceptList resolvedFromExpression = null;
     final String definition = refset.computeDefinition(null, null);
     if (definition.equals("")) {
-      return;
-    }
-    ConceptList resolvedFromExpression = null;
-    try {
-      final Project project = this.getProject(refset.getProject().getId());
-      resolvedFromExpression =
+      resolvedFromExpression = new ConceptListJpa();
+    } else {
+      try {
+        final Project project = this.getProject(refset.getProject().getId());
+        resolvedFromExpression =
           getTerminologyHandler(project, headers).resolveExpression(definition,
               refset.getTerminology(), refset.getVersion(), null);
 
-      // Save concepts
-      for (final Concept concept : resolvedFromExpression.getObjects()) {
+        // Save concepts
+        for (final Concept concept : resolvedFromExpression.getObjects()) {
         resolvedConcepts.add(concept.getTerminologyId());
-      }
-    } catch (Exception e) {
-      throw new LocalException(
+        }
+      } catch (Exception e) {
+        throw new LocalException(
           "Unable to resolve refset definition, the expression could not be resolved - "
               + definition,
           e);
+      }
     }
 
     // Anything that was an explicit inclusion that is now resolved by the

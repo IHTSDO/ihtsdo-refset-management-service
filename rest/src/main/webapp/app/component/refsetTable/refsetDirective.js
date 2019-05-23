@@ -1335,6 +1335,7 @@ tsApp
                   // Success - add refset
                   function(data) {
                     $uibModalInstance.close(refset);
+                    $scope.selected.concept = null;
                   },
                   // Error - add refset
                   function(data) {
