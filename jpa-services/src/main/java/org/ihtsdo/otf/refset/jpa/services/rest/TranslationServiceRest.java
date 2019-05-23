@@ -634,4 +634,20 @@ public interface TranslationServiceRest {
   public KeyValuePairList getFieldFilters(Long projectId, String workflowStatus,
     String authToken) throws Exception;
 
+
+	/**
+	 * Update concept name.
+	 *
+	 * @param translationId
+	 *            the translation id
+	 * @param conceptId
+	 *            the concept id
+	 * @param authToken
+	 *            the auth token
+	 * @return the concept
+	 * @throws Exception
+	 *             the exception
+	 */
+	public Concept updateConceptName(Long translationId, String conceptId, String authToken) throws Exception;
+
 }
