@@ -199,6 +199,21 @@ tsApp.controller('EditConceptModalCtrl', [
       $scope.displayControls = !$scope.displayControls;
     };
 
+    // Need both a $scope version and a non one for modals.
+    $scope.updateConceptName = function(translation, conceptId) {
+      updateConceptName(translation, conceptId);
+    };
+
+    // Update concept name from term server
+    function updateConceptName(translation, conceptId) {
+      console.debug("update concept name");
+      translationService.updateConceptName(translation.id, conceptId).then(
+      // Success
+      function(data) {
+    	  $scope.conceptTranslated.name= data.name;
+      });
+    }
+    
     // Table sorting
 
     $scope.setSortField = function(field, object) {
