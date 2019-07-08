@@ -769,6 +769,35 @@ public class RefsetClientRest extends RootClientRest
     return (ValidationResultJpa) ConfigUtility.getGraphForString(resultString,
         ValidationResultJpa.class);
   }
+  
+
+  /* see superclass */
+  @Override
+  public ValidationResult beginImportMembers(Long refsetId,
+    String ioHandlerInfoId, String[] conceptIds, String authToken) throws Exception {
+    Logger.getLogger(getClass()).debug("Refset Client - begin import members");
+    validateNotEmpty(refsetId, "refsetId");
+    validateNotEmpty(ioHandlerInfoId, "ioHandlerInfoId");
+
+    Client client = ClientBuilder.newClient();
+
+    WebTarget target =
+        client.target(config.getProperty("base.url") + "/refset/import/begin"
+            + "?refsetId=" + refsetId + "&handlerId=" + ioHandlerInfoId);
+
+    Response response = target.request(MediaType.APPLICATION_XML)
+        .header("Authorization", authToken).get();
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+    // converting to object
+    return (ValidationResultJpa) ConfigUtility.getGraphForString(resultString,
+        ValidationResultJpa.class);
+  }
 
   /* see superclass */
   @Override
@@ -1490,6 +1519,28 @@ public class RefsetClientRest extends RootClientRest
     WebTarget target = client.target(config.getProperty("base.url")
         + "/refset/export/report" + "?reportToken=" + reportToken + 
         "&terminology=" + terminology + "&version=" + version);
+    Response response = target.request(MediaType.APPLICATION_OCTET_STREAM)
+        .header("Authorization", authToken).get();
+
+    InputStream in = response.readEntity(InputStream.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+    return in;
+  }
+  
+  /* see superclass */
+  @Override
+  public InputStream exportResfetDuplicatesReport(Long refsetId, String ioHandlerInfoId, String[] conceptIts,
+      String authToken)
+    throws Exception {
+
+    Client client = ClientBuilder.newClient();
+    WebTarget target = client.target(config.getProperty("base.url") + "/refset/export/report" + "?reportToken="
+        + "FIX" + "&terminology=" + "FIX" + "&version=" + "FIX");
+    
     Response response = target.request(MediaType.APPLICATION_OCTET_STREAM)
         .header("Authorization", authToken).get();
 
