@@ -385,7 +385,66 @@ public class PatchDataMojo extends AbstractMojo {
 
 				}
 			}
-			
+			// Patch 20190708
+			// Update browser url to snowstorm and update refset and terminology
+			// versions
+			// to snowstorm version formating
+			if ("20190708".compareTo(start) >= 0 && "20190708".compareTo(end) <= 0) {
+				getLog().info("Processing patch 20190708 - Updating browser to snowstorm APIs"); // Patch
+				int ct = 0;
+				translationService.setTransactionPerOperation(false);
+				translationService.beginTransaction();
+				for (Project prj : translationService.getProjects().getObjects()) {
+					Project project = translationService.getProject(prj.getId());
+					if (project.getTerminologyHandlerKey().equals("BROWSER")) {
+						ct++;
+						project.setTerminologyHandlerUrl("http://member-release-browser.ihtsdotools.org/snowstorm/snomed-ct/v2");
+						project.setTerminology("SNOMEDCT");
+						translationService.updateProject(project);
+
+						if (ct % 100 == 0) {
+							getLog().info("projects updated  ct = " + ct);
+							translationService.commitClearBegin();
+						}
+					}
+				}
+				getLog().info("projects updated final ct = " + ct);
+				ct = 0;
+				for (Translation trans : translationService.getTranslations().getObjects()) {
+					Translation translation = translationService.getTranslation(trans.getId());
+					if (translation.getVersion().length() == 8) {
+						ct++;
+						String old_version = translation.getVersion();
+						translation.setVersion(old_version.substring(0, 4) + "-" + old_version.substring(4, 6) + "-"
+								+ old_version.substring(6, 8));
+						translationService.updateTranslation(translation);
+
+						if (ct % 100 == 0) {
+							getLog().info("translations updated  ct = " + ct);
+							translationService.commitClearBegin();
+						}
+					}
+				}
+				getLog().info("translations updated final ct = " + ct);
+				ct = 0;
+				for (Refset ref : translationService.getRefsets().getObjects()) {
+					Refset refset = translationService.getRefset(ref.getId());
+					if (refset.getVersion().length() == 8) {
+						ct++;
+						String old_version = refset.getVersion();
+						refset.setVersion(old_version.substring(0, 4) + "-" + old_version.substring(4, 6) + "-"
+								+ old_version.substring(6, 8));
+						translationService.updateRefset(refset);
+
+						if (ct % 100 == 0) {
+							getLog().info("refsets updated ct = " + ct);
+							translationService.commitClearBegin();
+						}
+					}
+				}
+				getLog().info("refsets updated final ct = " + ct);
+				translationService.commit();
+			}			
       // Reindex
       getLog().info("  Reindex");
       // login as "admin", use token
