@@ -938,11 +938,11 @@ tsApp.service('refsetService', [
     };
 
     // Begin import members - if validation is result, OK to proceed.
-    this.beginImportMembers = function(refsetId, handlerId) {
+    this.beginImportMembers = function(refsetId, handlerId, conceptIds) {
       console.debug('begin import members');
       var deferred = $q.defer();
       gpService.increment();
-      $http.get(refsetUrl + 'import/begin?refsetId=' + refsetId + '&handlerId=' + handlerId).then(
+      $http.post(refsetUrl + 'import/begin?refsetId=' + refsetId + '&handlerId=' + handlerId, conceptIds).then(
       // success
       function(response) {
         console.debug('  validation result = ', response.data);
@@ -957,6 +957,36 @@ tsApp.service('refsetService', [
       });
       return deferred.promise;
     };
+       
+    this.exportDuplicateMembers = function(refset, handler, conceptIds) {
+        console.debug('exportDuplicateMembers');
+        gpService.increment();
+        $http.post(
+          refsetUrl + '/export/report/duplicates?refsetId=' + refset.id + '&handlerId=' + handler.id, conceptIds).then(
+        // Success
+        function(response) {
+          var blob = new Blob([ response.data ], {
+            type : ''
+          });
+
+          // fake a file URL and download it
+          var fileURL = URL.createObjectURL(blob);
+          var a = document.createElement('a');
+          a.href = fileURL;
+          a.target = '_blank';
+          a.download = 'duplicates_' + utilService.toCamelCase(refset.name) + refset.terminologyId +
+          '_' + utilService.yyyymmdd(new Date()) + handler.fileTypeFilter;
+          document.body.appendChild(a);
+          gpService.decrement();
+          a.click();
+
+        },
+        // Error
+        function(response) {
+          utilService.handleError(response);
+          gpService.decrement();
+        });
+      };
 
     // Cancel import members
     this.cancelImportMembers = function(refsetId) {

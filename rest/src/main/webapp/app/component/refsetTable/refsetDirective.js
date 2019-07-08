@@ -59,6 +59,8 @@ tsApp
               $scope.showLatest = true;
               $scope.withNotesOnly = false;
               $scope.filters = [];
+              $scope.showDuplicatesExport = false;
+              $scope.conceptIds = [];
 
               // Page metadata
               var memberTypes = [ 'Member', 'Exclusion', 'Inclusion', 'Active', 'Inactive',
@@ -959,7 +961,7 @@ tsApp
                 return workflowService.refsetGetRole(action, $scope.projects.role,
                   refset.workflowStatus, $scope.metadata.workflowConfig);
               }
-
+              
               $scope.showDelta = function(refset) {
                 releaseService.findCurrentRefsetReleaseInfo(refset.id).then(
                   function(data) {
@@ -1812,7 +1814,7 @@ tsApp
                   }
                 });
               };
-
+              
               // Import/Export controller
               var ImportExportModalCtrl = function($scope, $uibModalInstance, refset, metadata,
                 operation, type, ioHandlers, query, pfs) {
@@ -1859,16 +1861,25 @@ tsApp
                 }
                 // Handle export
                 $scope.export = function(file) {
-                  if (type == 'Definition') {
+                  if (type === 'Definition') {
                     refsetService.exportDefinition($scope.refset, $scope.selectedIoHandler);
                   }
-                  if (type == 'Refset Members') {
+                  if (type === 'Refset Members') {
                     refsetService.exportMembers($scope.refset, $scope.selectedIoHandler,
                       $scope.query, $scope.pfs);
                   }
                   $uibModalInstance.close(refset);
                 };
-
+                
+                $scope.exportDuplicateMembers = function(file) {
+                  if (type === 'Refset Members') {
+                    //GET concept Ids from file
+                    refsetService.exportDuplicateMembers($scope.refset, $scope.selectedIoHandler, $scope.conceptIds);
+                  }
+                  $uibModalInstance.close(refset);
+                }
+                
+                
                 // Handle import
                 $scope.import = function(file) {
 
@@ -1885,8 +1896,23 @@ tsApp
                     });
                   }
 
-                  if (type == 'Refset Members') {
-                    refsetService.beginImportMembers($scope.refset.id, $scope.selectedIoHandler.id)
+                  if (type === 'Refset Members') {
+                    
+                    var conceptIds = [];
+                    var reader = new FileReader();
+                    reader.onload = function(progressEvent) {
+                      var lines = this.result.split(/\r\n|\n/);
+                      for(var i = 1; i < lines.length; i++){
+                        //console.log("    LINE: ", lines[i]);
+                        if (lines[i] !== "") {
+                          var fields = lines[i].split(/\t/);
+                          //console.log("    CONCEPT: ", fields[5]);
+                          conceptIds.push(fields[5]);
+                        }
+                        $scope.conceptIds = conceptIds;
+                      }
+                      
+                      refsetService.beginImportMembers($scope.refset.id, $scope.selectedIoHandler.id, $scope.conceptIds)
                       .then(
 
                         // Success
@@ -1894,9 +1920,11 @@ tsApp
                           $scope.importStarted = true;
                           // data is a validation result, check for errors
                           if (data.errors.length > 0) {
-                            $scope.errors = data.errors;
+                          if (data.errors.includes("Refset contains duplicate members.")) {
+                            $scope.showDuplicatesExport = true;
+                          } 
+                            $scope.errors = data.errors;                           
                           } else {
-
                             // If there are no errors, finish import
                             refsetService.finishImportMembers($scope.refset.id,
                               $scope.selectedIoHandler.id, file).then(
@@ -1919,6 +1947,8 @@ tsApp
                         function(data) {
                           handleError($scope.errors, data);
                         });
+                    }
+                    reader.readAsText(file, "UTF-8");
                   }
                 };
 
@@ -1957,6 +1987,13 @@ tsApp
                   // close the dialog and reload refsets
                   $uibModalInstance.close(refset);
                 };
+              };
+              
+              $scope.openImportExportModalXXX = function(lrefset, loperation, ltype) {
+            	console.debug("HERE ");
+            	console.debug("lrefset ", lrefset);
+            	console.debug("loperation ", loperation);
+            	console.debug("ltype ", ltype);
               };
 
               // Release Process modal

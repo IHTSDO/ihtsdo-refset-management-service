@@ -283,6 +283,20 @@ public interface RefsetServiceRest {
     String ioHandlerInfoId, String authToken) throws Exception;
 
   /**
+   * Begin import.
+   *
+   * @param refsetId the refset id
+   * @param ioHandlerInfoId the io handler info id
+   * @param conceptIds list of concept ids to import
+   * @param authToken the auth token
+   * @return the member diff report
+   * @throws Exception the exception
+   */
+  public ValidationResult beginImportMembers(Long refsetId,
+    String ioHandlerInfoId, String[] conceptIds, String authToken) throws Exception;
+  
+  
+  /**
    * Resume import. - recomputes begin and produces same result without actually
    * importing anything.
    *
@@ -651,6 +665,16 @@ public interface RefsetServiceRest {
    */
   public InputStream exportDiffReport(String reportToken, String terminology, String version, String authToken)
     throws Exception;
+  
+  /**
+   * Export refset duplicates report.
+   *
+   * @param authToken the auth token
+   * @return the input stream
+   * @throws Exception the exception
+   */
+  public InputStream exportResfetDuplicatesReport(Long refsetId, String ioHandlerInfoId, String[] conceptIts,
+      String authToken) throws Exception;
 
   /**
    * Convert refset.
