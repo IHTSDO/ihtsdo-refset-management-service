@@ -1219,4 +1219,43 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     }
   }
 
+  @Override
+  public List<String> getBranches(String terminology, String version) throws Exception {
+	    Logger.getLogger(getClass())
+        .info("  get branches - " + url + ", " + terminology + ", " + version);
+    // Make a webservice call to SnowOwl to get branches
+    final Client client = ClientBuilder.newClient();
+
+    PfsParameter localPfs = new PfsParameterJpa();
+    localPfs.setStartIndex(0);
+    localPfs.setMaxResults(50);
+
+    WebTarget target = client.target(url + "/" + version + "/branches?" 
+        + "limit=" + localPfs.getMaxResults());
+
+    Response response =
+        target.request(accept).header("Authorization", authHeader)
+            .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
+            .header("Cookie", getCookieHeader()).get();
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+
+      throw new LocalException(
+          "Unexpected terminology server failure. Message = " + resultString);
+    }
+
+    ObjectMapper mapper = new ObjectMapper();
+    JsonNode doc = mapper.readTree(resultString);
+
+    List<String> branches = new ArrayList<>();
+    for (final JsonNode branchNode : doc.get("items")) {
+      String path = branchNode.get("path").asText();
+      branches.add(path);     
+    }
+
+    return branches;
+  }
+
 }
