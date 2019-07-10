@@ -215,10 +215,10 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
   /* see superclass */
   @Override
   @GET
-  @Path("/refsets/{projectid}")
+  @Path("/refsets/{projectId}")
   @ApiOperation(value = "Find refsets for project", notes = "Finds refsets for the specified project", response = RefsetListJpa.class)
   public RefsetList getRefsetsForProject(
-    @ApiParam(value = "Project id, e.g. 2", required = true) Long projectId,
+    @ApiParam(value = "Project id, e.g. 2", required = true) @PathParam("projectId") Long projectId,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass())
