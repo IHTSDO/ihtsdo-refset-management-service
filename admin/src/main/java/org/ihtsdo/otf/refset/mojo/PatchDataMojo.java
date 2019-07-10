@@ -448,7 +448,7 @@ public class PatchDataMojo extends AbstractMojo {
 				getLog().info("refsets updated final ct = " + ct);
 				translationService.commit();
 			}			
-      /*// Reindex
+      // Reindex
       getLog().info("  Reindex");
       // login as "admin", use token
       final Properties properties = ConfigUtility.getConfigProperties();
@@ -457,7 +457,7 @@ public class PatchDataMojo extends AbstractMojo {
           securityService.authenticate(properties.getProperty("admin.user"),
               properties.getProperty("admin.password")).getAuthToken();
       ProjectServiceRestImpl contentService = new ProjectServiceRestImpl();
-      contentService.luceneReindex(null, authToken);*/
+      contentService.luceneReindex(null, authToken);
 
       workflowService.close();
       translationService.close();
