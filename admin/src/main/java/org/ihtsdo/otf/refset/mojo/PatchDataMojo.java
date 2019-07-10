@@ -396,10 +396,11 @@ public class PatchDataMojo extends AbstractMojo {
 				translationService.beginTransaction();
 				for (Project prj : translationService.getProjects().getObjects()) {
 					Project project = translationService.getProject(prj.getId());
-					if (project.getTerminologyHandlerKey().equals("BROWSER")) {
+					if (project.getId() == 1L && project.getTerminologyHandlerKey().equals("BROWSER")) {
 						ct++;
 						project.setTerminologyHandlerUrl("http://member-release-browser.ihtsdotools.org/snowstorm/snomed-ct/v2");
 						project.setTerminology("SNOMEDCT");
+						project.setTerminologyHandlerKey("SNOWSTORM");
 						translationService.updateProject(project);
 
 						if (ct % 100 == 0) {
@@ -412,11 +413,12 @@ public class PatchDataMojo extends AbstractMojo {
 				ct = 0;
 				for (Translation trans : translationService.getTranslations().getObjects()) {
 					Translation translation = translationService.getTranslation(trans.getId());
-					if (translation.getVersion().length() == 8) {
+					if (translation.getProject().getId() == 1L && translation.getVersion().length() == 8) {
 						ct++;
 						String old_version = translation.getVersion();
 						translation.setVersion(old_version.substring(0, 4) + "-" + old_version.substring(4, 6) + "-"
 								+ old_version.substring(6, 8));
+						translation.setTerminology("SNOMEDCT");
 						translationService.updateTranslation(translation);
 
 						if (ct % 100 == 0) {
@@ -429,11 +431,12 @@ public class PatchDataMojo extends AbstractMojo {
 				ct = 0;
 				for (Refset ref : translationService.getRefsets().getObjects()) {
 					Refset refset = translationService.getRefset(ref.getId());
-					if (refset.getVersion().length() == 8) {
+					if (refset.getProject().getId() == 1L && refset.getVersion().length() == 8) {
 						ct++;
 						String old_version = refset.getVersion();
 						refset.setVersion(old_version.substring(0, 4) + "-" + old_version.substring(4, 6) + "-"
 								+ old_version.substring(6, 8));
+						refset.setTerminology("SNOMEDCT");
 						translationService.updateRefset(refset);
 
 						if (ct % 100 == 0) {
@@ -445,7 +448,7 @@ public class PatchDataMojo extends AbstractMojo {
 				getLog().info("refsets updated final ct = " + ct);
 				translationService.commit();
 			}			
-      // Reindex
+      /*// Reindex
       getLog().info("  Reindex");
       // login as "admin", use token
       final Properties properties = ConfigUtility.getConfigProperties();
@@ -454,7 +457,7 @@ public class PatchDataMojo extends AbstractMojo {
           securityService.authenticate(properties.getProperty("admin.user"),
               properties.getProperty("admin.password")).getAuthToken();
       ProjectServiceRestImpl contentService = new ProjectServiceRestImpl();
-      contentService.luceneReindex(null, authToken);
+      contentService.luceneReindex(null, authToken);*/
 
       workflowService.close();
       translationService.close();
