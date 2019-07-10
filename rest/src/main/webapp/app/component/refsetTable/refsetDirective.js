@@ -1764,6 +1764,203 @@ tsApp
                 };
 
               };
+              
+              $scope.openImportFromExistingProjectsModal = function() {
+                console.debug('openImportFromExistingProjectsModal ');
+
+                var modalInstance = $uibModal.open({
+                  templateUrl : 'app/component/refsetTable/importFromExistingProjects.html',
+                  controller : ImportFromExistingProjectsCtrl,
+                  backdrop : 'static',
+                  resolve : {
+                    refset : function() {
+                      return $scope.selected.refset;
+                    }
+                  }
+                });
+
+                modalInstance.result.then(
+                // Success
+                function(data) {
+                  $scope.handleWorkflow(data);
+                });
+              };
+              
+              // Add Refset Member List controller
+              var ImportFromExistingProjectsCtrl = function($scope, $uibModalInstance, utilService, refset, refsetService) {
+                console.debug('Entered add refset member list modal control', utilService, refset, refsetService);
+                
+                $scope.refsetMemberList = [];
+                $scope.refset = refset;
+                $scope.added = [];
+                $scope.exists = [];
+                $scope.invalid = [];
+                $scope.refsets = [];
+                $scope.includeRefsets = [];
+                $scope.errors = [];
+                $scope.warnings = [];
+                $scope.comments = [];               
+                
+                refsetService.getRefsetsForProject($scope.refset.projectId).then(
+                    // Success
+                    function(data) {
+                      if (data.refsets.length > 0) {
+                        $scope.refsets = data.refsets;
+                        //remove current refset
+                        $scope.refsets = $scope.refsets.filter(r => r.id !== $scope.refset.id);
+                      } else {
+                        console.info("None returned");
+                      }
+                    },
+                    // Error
+                    function(data) {
+                      handleError($scope.errors, data);
+                    }
+                );
+                
+                // Add members in the list
+                $scope.includeRefset = function() {
+                  console.debug("Include refset", $scope.selectedRefset.id);
+                  $scope.refsets = $scope.refsets.filter(r => r.id !== $scope.selectedRefset.id);
+                  $scope.includeRefsets.push($scope.selectedRefset);
+                  console.debug("Include refsets:", $scope.includeRefsets);
+                  
+                  // initialize
+                  var pfs = {
+                    startIndex : 0
+                  };
+                  
+                  //get members for refset (refsetId, query, pfs, translated)
+                  refsetService.findRefsetMembersForQuery($scope.selectedRefset.id, '', pfs).then(
+                      function(data) {
+                        if (data.members.length > 0 ) {
+                          console.debug("contains", data.members);
+                          angular.forEach(data.members, function(member) {
+                            var exists = $scope.refsetMemberList.filter(m => m.conceptId === member.conceptId);
+                            if (exists.length === 0 ) {
+                              $scope.refsetMemberList.push(member);
+                            } else {
+                              $scope.exists.push(member);
+                            }
+                          });
+                        }
+                      }
+                  );
+                };
+                
+                // remove from list and add to select.
+                $scope.removeRefset = function(refset) {
+                  console.debug("Remove refset", refset.id, refset.name);
+                  $scope.includeRefsets = $scope.includeRefsets.filter(r => r.id !== refset.id);
+                  $scope.refsetMemberList = $scope.refsetMemberList.filter(r => r.refsetId !== refset.id);
+                  $scope.exists = $scope.exists.filter(r => r.refsetId !== refset.id);
+                  $scope.refsets.push(refset);
+                };
+                
+                $scope.clear = function() {
+                  console.debug("Clear refsets");
+                  angular.forEach($scope.includeRefsets, function(refset) {
+                    $scope.refsets.push(refset);
+                  });
+                  $scope.includeRefsets = [];
+                  $scope.exists = [];
+                };
+                
+                $scope.importMembers = function (){
+                  var response = $window.confirm('All members of Refset ' + $scope.refset.name 
+                      + ' will be removed before adding new members, are you sure you want to proceed?')
+                  if ($scope.refsetMemberList.length > 0 && response) {
+                    console.debug("Remove members", $scope.refset.name);
+                    console.debug("Import members", $scope.refsetMemberList.length);                    
+                    refsetService.removeAllRefsetMembers(refset.id).then(function(data) {
+                      refsetService.fireRefsetChanged(refset);
+                      angular.forEach($scope.refsetMemberList, function(member) {
+                        includeMember($scope.refset, member);
+                      });
+                    });
+                  }
+                };
+
+                // find member and add if not exists
+                function includeMember(refset, member) {
+                  console.debug("add member", refset, member);
+                  // check that concept id is only digits before proceeding
+                  var reg = /^\d+$/;
+                  if (!reg.test(member.conceptId)) {
+                    console.debug("invalid member", member);
+                    $scope.invalid.push(member);
+                    return;
+                  }
+                  refsetService.findRefsetMembersForQuery(refset.id, 'conceptId:' + member.conceptId, {
+                    startIndex : 0,
+                    maxResults : 1
+                  }).then(
+                  // Success
+                  function(data) {
+                    if (data.members.length > 0) {
+                      //console.debug("refset already member", member);
+                      $scope.exists.push(member);
+                    } else {
+                      console.debug("adding member", member);
+                      var newMember = {
+                        active : true,
+                        conceptId : member.conceptId,
+                        memberType : 'MEMBER',
+                        moduleId : refset.moduleId,
+                        refsetId : refset.id
+                      };
+
+                      refsetService.addRefsetMember(newMember).then(
+                          // Success
+                          function(data) {
+                            $scope.added.push(member);
+                            console.debug("member added", member);
+                          },
+                          // Error
+                          function(data) {
+                            handleError($scope.errors, data);
+                          }
+                      );
+                    }
+                  },
+                  // Error
+                  function(data) {
+                    handleError($scope.errors, data);
+                  });
+
+                }
+
+                // Dismiss modal
+                $scope.close = function() {
+                  $uibModalInstance.close(refset);
+                };
+
+                // Dismiss modal
+                $scope.cancel = function() {
+                  $uibModalInstance.dismiss('cancel');
+                };
+                
+                $scope.downloadDuplicates = function() {
+                  console.debug("download duplicates");
+                  var filerows = "id\teffectiveTime\tactive\tmoduleId\trefsetId\treferencedComponentId\r\n";
+                  angular.forEach($scope.exists, function(member) {
+                    var row = "" + member.terminologyId 
+                      + "\t" + ((member.effectiveTime !== "null") ? utilService.toShortDate(member.effectiveTime) : "")  
+                      + "\t" + ((member.active === "true") ? "1" : "0") 
+                      + "\t" + ((member.moduleId !== "null") ? member.moduleId : "")  
+                      + "\t" + member.refsetId
+                      + "\t" + member.conceptId
+                      + "\r\n";
+                    filerows = filerows + row;
+                  });
+                  
+                  var blob = new Blob([filerows], { type: "text/plain;charset=utf-8;"});
+                  var downloadLink = document.createElement('a');
+                  downloadLink.setAttribute('download', 'duplicates.txt');
+                  downloadLink.setAttribute('href', window.URL.createObjectURL(blob));
+                  downloadLink.click();
+                }
+              };
 
               // Import/Export modal
               $scope.openImportExportModal = function(lrefset, loperation, ltype) {
@@ -1989,13 +2186,6 @@ tsApp
                 };
               };
               
-              $scope.openImportExportModalXXX = function(lrefset, loperation, ltype) {
-            	console.debug("HERE ");
-            	console.debug("lrefset ", lrefset);
-            	console.debug("loperation ", loperation);
-            	console.debug("ltype ", ltype);
-              };
-
               // Release Process modal
               $scope.openReleaseProcessModal = function(lrefset) {
                 console.debug('releaseProcessModal ', lrefset);
