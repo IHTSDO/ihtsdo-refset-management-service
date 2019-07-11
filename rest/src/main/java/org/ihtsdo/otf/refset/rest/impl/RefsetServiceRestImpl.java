@@ -1285,8 +1285,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
 			reasonConcept = reasonMap.get(c.getDefinitionStatusId());
 		  } else {
 		    reasonConcept = refsetService.getTerminologyHandler(
-		      member.getRefset().getProject(), getHeaders(headers)).getConcept(
-			  c.getDefinitionStatusId(), migrationTerminology, migrationVersion);
+		      member.getRefset().getProject(), getHeaders(headers)).findConceptsForQuery(
+			  c.getDefinitionStatusId().replace('_', ' ') + " association reference set", migrationTerminology, migrationVersion, null).getObjects().get(0);
 		    reasonMap.put(c.getDefinitionStatusId(), reasonConcept);
 		  }
 		sb.append(reasonConcept.getName()).append("\t");

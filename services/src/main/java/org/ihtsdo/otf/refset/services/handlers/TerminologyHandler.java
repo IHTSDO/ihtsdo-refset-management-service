@@ -243,6 +243,17 @@ public interface TerminologyHandler extends Configurable {
    */
   public List<String> getLanguages(String terminology, String version)
     throws Exception;
+  
+  /**
+   * Gets the branches.
+   *
+   * @param terminology the terminology
+   * @param version the version
+   * @return the branches
+   * @throws Exception the exception
+   */
+  public List<String> getBranches(String terminology, String version)
+		    throws Exception;
 
   /**
    * Translate.
