@@ -1185,4 +1185,11 @@ public class BrowserTerminologyHandler extends AbstractTerminologyHandler {
     }
   }
 
+@Override
+public List<String> getBranches(String terminology, String version) throws Exception {
+	// TODO Auto-generated method stub
+	return null;
 }
+
+}
+
