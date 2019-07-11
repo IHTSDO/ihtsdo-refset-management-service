@@ -205,19 +205,19 @@ public class DefaultValidationCheck extends AbstractValidationCheck {
     
     // The language should be a 2 letter code matching a language
     if (language == null || "".equals(language.trim())) {
-      result.addError("Translation language must be set");
+      result.addError("Translation language must be set.");
     } else {
       // validate 2
       if (language.trim().length() == 2) {
         //  The language should be a 2 letter code matching a language
         if (!language.toLowerCase().equals(language)) {
-          result.addError("Translation language must be lowercase");
+          result.addError("Translation language must be lowercase.");
         }
       }
       // validate > 2
       else {
         if (!language.contains("-")) {
-          result.addError("Translation language contain a dash (Ex. fr-CA) or exclude dialect (Ex. fr).");
+          result.addError("Translation language with dialect must contain a dash (Ex. fr-CA) or exclude dialect (Ex. fr).");
         }
         else {
           String[] tokens = language.split("-");
