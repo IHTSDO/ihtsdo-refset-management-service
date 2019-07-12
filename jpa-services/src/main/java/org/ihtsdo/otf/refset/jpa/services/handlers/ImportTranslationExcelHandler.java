@@ -145,11 +145,6 @@ public class ImportTranslationExcelHandler implements ImportTranslationHandler {
             isFirstRow = false;
             continue;
           }
-          else if ("0".equals(getCellValue(row, CONCEPT_ID))) {
-            inactiveDescriptionCt++;
-            continue;
-          }
-
 
           // Create description and populate from RF2
           final Description description = new DescriptionJpa();
@@ -160,9 +155,10 @@ public class ImportTranslationExcelHandler implements ImportTranslationHandler {
           // description.setTerminologyId(getCellValue(row, ???));
           description.setLanguageCode(getCellValue(row, LANGUAGE_CODE));
           description.setTypeId(getCellValue(row, TYPE));
-          description.setTerm(getCellValue(row, TRANSLATED_TERM));
           description.setCaseSignificanceId(getCellValue(row, CASE_SIGNIFIANCE));
 
+          
+          //TODO: review field assignments
           
           // Handle the concept the description is connected to
           Concept concept = null;
@@ -188,6 +184,8 @@ public class ImportTranslationExcelHandler implements ImportTranslationHandler {
 
         }
 
+        //TODO: The code below is similar to ImportTranslationRf2Handler.  Needs to be reviewed for relevance.
+        
         // Verify that data was found
         if (!descSeen || descriptions.isEmpty()) {
           throw new LocalException("Missing or empty description file.");
