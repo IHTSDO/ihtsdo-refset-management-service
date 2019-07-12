@@ -606,6 +606,10 @@
           <td>
             {{concept.name}}
             <span name-info name="concept.name"> </span>
+            <span
+              ng-repeat="desc in concept.descriptions | orderBy:'desc.term'">
+              <br /> &bull;&nbsp;{{desc.term}}
+            </span>
           </td>
           <td ng-show="projects.role != 'AUTHOR'">
             {{toDate(concept.lastModified)}}
@@ -685,7 +689,7 @@
         ng-click="paging['assigned'].filter = ''; getAssignedConcepts(selected.translation)"
         title="Click to clear filter text">Clear</button>
     </span>
-
+    
     <table ng-show="selected.translation" class="table">
       <thead>
         <tr>
@@ -735,7 +739,11 @@
           <td>
             {{record.concept.name}}
             <span name-info name="record.concept.name"> </span>
-          </td>
+            <span
+              ng-repeat="desc in record.concept.descriptions | orderBy:'desc.term'">
+              <br /> &bull;&nbsp;{{desc.term}}
+            </span>
+          </td>                
           <td>
             {{toDate(record.lastModified)}}
             <span ng-show="projects.role == 'ADMIN'">
