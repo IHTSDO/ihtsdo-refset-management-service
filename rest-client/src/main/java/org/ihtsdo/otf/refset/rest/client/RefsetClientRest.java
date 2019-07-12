@@ -329,6 +329,34 @@ public class RefsetClientRest extends RootClientRest
     return (ConceptRefsetMemberJpa) ConfigUtility
         .getGraphForString(resultString, ConceptRefsetMemberJpa.class);
   }
+  
+  /* see superclass */
+  @Override
+  public ConceptRefsetMemberList addRefsetMembers(ConceptRefsetMemberJpa[] members,
+    String authToken) throws Exception {
+    Logger.getLogger(getClass())
+        .debug("Refset Client - add refset members");
+
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url") + "/refset/members/add");
+
+    String memberString = ConfigUtility.getStringForGraph(
+        members == null ? new ConceptRefsetMemberJpa() : members);
+    Response response = target.request(MediaType.APPLICATION_XML)
+        .header("Authorization", authToken).put(Entity.xml(memberString));
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+
+    // converting to object
+    return (ConceptRefsetMemberList) ConfigUtility
+        .getGraphForString(resultString, ConceptRefsetMemberList.class);
+  }
 
   /* see superclass */
   @Override

@@ -1792,6 +1792,7 @@ tsApp
                 
                 $scope.refsetMemberList = [];
                 $scope.refset = refset;
+                $scope.save = [];
                 $scope.added = [];
                 $scope.exists = [];
                 $scope.invalid = [];
@@ -1849,12 +1850,26 @@ tsApp
                 };
                 
                 // remove from list and add to select.
+                // TODO: fix remove
                 $scope.removeRefset = function(refset) {
                   console.debug("Remove refset", refset.id, refset.name);
                   $scope.includeRefsets = $scope.includeRefsets.filter(r => r.id !== refset.id);
                   $scope.refsetMemberList = $scope.refsetMemberList.filter(r => r.refsetId !== refset.id);
                   $scope.exists = $scope.exists.filter(r => r.refsetId !== refset.id);
                   $scope.refsets.push(refset);
+                  
+                  console.debug("REMOVE ", 
+                      "refsetMemberList: ", $scope.refsetMemberList.length,
+                      "save: ", $scope.save.length,
+                      "added: ", $scope.added.length,
+                      "exists: ", $scope.exists.length,
+                      "invalid: ", $scope.invalid.length,
+                      // "refsets: ", $scope.refsets.length,
+                      "indcludeRefsets: ", $scope.includeRefsets.length,
+                      "errors: ", $scope.errors.length,
+                      "warnings: ", $scope.warnings.length,
+                      "comments: ", $scope.comments.length     
+                  );
                 };
                 
                 $scope.clear = function() {
@@ -1862,8 +1877,23 @@ tsApp
                   angular.forEach($scope.includeRefsets, function(refset) {
                     $scope.refsets.push(refset);
                   });
+                  $scope.refsetMemberList = [];
                   $scope.includeRefsets = [];
                   $scope.exists = [];
+                  
+                  console.debug("CLEAR ", 
+                      "refsetMemberList: ", $scope.refsetMemberList.length,
+                      "save: ", $scope.save.length,
+                      "added: ", $scope.added.length,
+                      "exists: ", $scope.exists.length,
+                      "invalid: ", $scope.invalid.length,
+                      // "refsets: ", $scope.refsets.length,
+                      "indcludeRefsets: ", $scope.includeRefsets.length,
+                      "errors: ", $scope.errors.length,
+                      "warnings: ", $scope.warnings.length,
+                      "comments: ", $scope.comments.length     
+                  );
+                  
                 };
                 
                 $scope.importMembers = function (){
@@ -1874,34 +1904,21 @@ tsApp
                     console.debug("Import members", $scope.refsetMemberList.length);                    
                     refsetService.removeAllRefsetMembers(refset.id).then(function(data) {
                       refsetService.fireRefsetChanged(refset);
-                      angular.forEach($scope.refsetMemberList, function(member) {
-                        includeMember($scope.refset, member);
-                      });
+                      includeMembers($scope.refset, $scope.refsetMemberList);
                     });
                   }
                 };
-
-                // find member and add if not exists
-                function includeMember(refset, member) {
-                  console.debug("add member", refset, member);
-                  // check that concept id is only digits before proceeding
-                  var reg = /^\d+$/;
-                  if (!reg.test(member.conceptId)) {
-                    console.debug("invalid member", member);
-                    $scope.invalid.push(member);
-                    return;
-                  }
-                  refsetService.findRefsetMembersForQuery(refset.id, 'conceptId:' + member.conceptId, {
-                    startIndex : 0,
-                    maxResults : 1
-                  }).then(
-                  // Success
-                  function(data) {
-                    if (data.members.length > 0) {
-                      //console.debug("refset already member", member);
-                      $scope.exists.push(member);
+                
+                function includeMembers(refset, members) {
+                  console.debug("add member");
+                  angular.forEach(members, function(member){
+                    // check that concept id is only digits before proceeding
+                    var reg = /^\d+$/;
+                    if (!reg.test(member.conceptId)) {
+                      console.debug("invalid member", member);
+                      $scope.invalid.push(member);
+                      return;
                     } else {
-                      console.debug("adding member", member);
                       var newMember = {
                         active : true,
                         conceptId : member.conceptId,
@@ -1909,26 +1926,72 @@ tsApp
                         moduleId : refset.moduleId,
                         refsetId : refset.id
                       };
-
-                      refsetService.addRefsetMember(newMember).then(
-                          // Success
-                          function(data) {
-                            $scope.added.push(member);
-                            console.debug("member added", member);
-                          },
-                          // Error
-                          function(data) {
-                            handleError($scope.errors, data);
-                          }
-                      );
-                    }
-                  },
-                  // Error
-                  function(data) {
-                    handleError($scope.errors, data);
+                      $scope.save.push(newMember);
+                    }                    
                   });
-
+                  refsetService.addRefsetMembers($scope.save).then(
+                    // Success
+                    function(data) {
+                      $scope.added = data;
+                      console.debug("members added ", data.length);
+                      $scope.save = [];  // clear
+                    },
+                    // Error
+                    function(data) {
+                      $scope.save = []; // clear
+                      handleError($scope.errors, data);
+                    }
+                  );
                 }
+
+//                // find member and add if not exists
+//                function includeMember(refset, member) {
+//                  console.debug("add member", refset, member);
+//                  // check that concept id is only digits before proceeding
+//                  var reg = /^\d+$/;
+//                  if (!reg.test(member.conceptId)) {
+//                    console.debug("invalid member", member);
+//                    $scope.invalid.push(member);
+//                    return;
+//                  }
+//                  refsetService.findRefsetMembersForQuery(refset.id, 'conceptId:' + member.conceptId, {
+//                    startIndex : 0,
+//                    maxResults : 1
+//                  }).then(
+//                  // Success
+//                  function(data) {
+//                    if (data.members.length > 0) {
+//                      //console.debug("refset already member", member);
+//                      $scope.exists.push(member);
+//                    } else {
+//                      console.debug("adding member", member);
+//                      var newMember = {
+//                        active : true,
+//                        conceptId : member.conceptId,
+//                        memberType : 'MEMBER',
+//                        moduleId : refset.moduleId,
+//                        refsetId : refset.id
+//                      };
+//
+//                      refsetService.addRefsetMember(newMember).then(
+//                          // Success
+//                          function(data) {
+//                            $scope.added.push(member);
+//                            console.debug("member added", member);
+//                          },
+//                          // Error
+//                          function(data) {
+//                            handleError($scope.errors, data);
+//                          }
+//                      );
+//                    }
+//                  },
+//                  // Error
+//                  function(data) {
+//                    handleError($scope.errors, data);
+//                  });
+//
+//                }
 
                 // Dismiss modal
                 $scope.close = function() {
@@ -1960,8 +2023,19 @@ tsApp
                   downloadLink.setAttribute('href', window.URL.createObjectURL(blob));
                   downloadLink.click();
                 }
-              };
-
+                
+                //NOT BEING CALLED FROM NG-OPTIONS
+                $scope.selectDisplay = function (refset) {
+                  var display = refset.name + ' - ' + refset.moduleId + ' - ' + refset.workflowStatus;
+                  if (refset.effectiveTime != null) {
+                    var d = utilService.toShortDate(new Date(refset.effectiveTime));
+                    return display + ' - ' + d;
+                  }
+                  return display
+                }
+                
+              }; //end 
+              
               // Import/Export modal
               $scope.openImportExportModal = function(lrefset, loperation, ltype) {
                 console.debug('exportModal ', lrefset);

@@ -188,6 +188,18 @@ public interface RefsetServiceRest {
    */
   public ConceptRefsetMember addRefsetMember(ConceptRefsetMemberJpa member,
     String authToken) throws Exception;
+  
+  
+  /**
+   * Adds the refset members.
+   *
+   * @param members the members
+   * @param authToken the auth token
+   * @return the concept refset members
+   * @throws Exception the exception
+   */
+  public ConceptRefsetMemberList addRefsetMembers(ConceptRefsetMemberJpa[] members,
+    String authToken) throws Exception;
 
   /**
    * Removes the refset member.

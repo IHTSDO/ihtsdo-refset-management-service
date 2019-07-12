@@ -13,7 +13,8 @@
     <table class="table">
       <tr>
         <td>
-          <select ng-model="selectedRefset" ng-change="changeRefset()" ng-options="item.name for item in refsets | orderBy : 'name'">
+          <select ng-model="selectedRefset" ng-change="changeRefset()" 
+            ng-options="selectDisplay(item) for item in refsets | orderBy : 'name'">
             <option value="" disabled selected>Select Refset</option>
           </select>
         </td>
@@ -24,7 +25,7 @@
       </tr>
       <tr ng-repeat="refset in includeRefsets">
         <td>
-          <div> {{refset.id}} - {{refset.name}}</div>
+          <div>{{selectDisplay(refset)}}</div>
         </td>
         <td>
           <i title="Remove" class="noul material-icons md-18" ng-click="removeRefset(refset)">delete</i>

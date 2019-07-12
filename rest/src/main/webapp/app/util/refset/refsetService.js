@@ -318,6 +318,28 @@ tsApp.service('refsetService', [
       });
       return deferred.promise;
     };
+    
+    // add refset member
+    this.addRefsetMembers = function(members) {
+      console.debug('addRefsetMembers');
+      var deferred = $q.defer();
+
+      gpService.increment();
+      $http.put(refsetUrl + 'members/add', members).then(
+      // success
+      function(response) {
+        console.debug('  refset members = ', response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    };
 
     // remove refset member
     this.removeRefsetMember = function(memberId) {
