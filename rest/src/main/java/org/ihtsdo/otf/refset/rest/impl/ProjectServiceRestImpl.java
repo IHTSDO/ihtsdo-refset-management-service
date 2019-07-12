@@ -651,7 +651,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
       authorizeApp(securityService, authToken, "get terminology editions",
           UserRole.VIEWER);
       if (project == null) {
-        throw new LocalException("Get modules requires a project");
+        throw new LocalException("Get editions requires a project");
       }
 
       final List<Terminology> editions =
@@ -662,7 +662,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
       list.setTotalCount(list.getCount());
       return list;
     } catch (Exception e) {
-      handleException(e, "trying to get all terminologies");
+      handleException(e, "trying to get all editions");
     } finally {
       projectService.close();
       securityService.close();
@@ -732,6 +732,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
       final TerminologyList list = new TerminologyListJpa();
       list.setObjects(versions);
       list.setTotalCount(list.getCount());
+
       return list;
 
     } catch (Exception e) {
