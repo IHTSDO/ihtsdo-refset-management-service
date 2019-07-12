@@ -87,6 +87,8 @@ import org.ihtsdo.otf.refset.services.handlers.TerminologyHandler;
 import org.ihtsdo.otf.refset.workflow.TrackingRecord;
 import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
@@ -1414,6 +1416,90 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       securityService.close();
     }
 
+  }
+  
+  @Override
+  @PUT
+  @Path("/members/add")
+  @ApiOperation(value = "Add new member", notes = "Adds the new member", response = ConceptRefsetMemberJpa.class)
+  public ConceptRefsetMemberList addRefsetMembers(
+      @ApiParam(value = "Member, e.g. newMember", required = true) ConceptRefsetMemberJpa[] members,
+      @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
+      throws Exception {
+
+    Logger.getLogger(getClass())
+        .info("RESTful call PUT (refset): /members/add " + members);
+
+    final ConceptRefsetMemberList refsetMemeberList = new ConceptRefsetMemberListJpa();
+
+    try (final RefsetService refsetService = new RefsetServiceJpa(
+        getHeaders(headers));) {
+
+      // use first to get refset id
+      final Refset refset = refsetService.getRefset(members[0].getRefsetId());
+
+      final ConceptRefsetMemberList refsetMemberList = refsetService
+          .findMembersForRefset(refset.getId(), "", null);
+      final List<ConceptRefsetMember> refsetMembers = refsetMemberList
+          .getObjects();
+
+      final String userName = authorizeProject(refsetService,
+          refset.getProject().getId(), securityService, authToken,
+          "add new member", UserRole.AUTHOR);
+      
+      for (final ConceptRefsetMemberJpa member : members) {
+
+        // Check if member already exists, then skip
+        ConceptRefsetMember memberExists = Iterables
+            .tryFind(refsetMembers, new Predicate<ConceptRefsetMember>() {
+              public boolean apply(ConceptRefsetMember m) {
+                return member.getConceptId().equals(m.getConceptId());
+              }
+            }).orNull();
+
+        if (memberExists != null) {
+          // Member already exists
+          Logger.getLogger(getClass())
+              .info("  member already exists = " + member.getConceptId());
+          refsetMemeberList.addObject(memberExists);
+
+        } else {
+
+          // Look up concept name and active
+          if (member.getConceptName() == null) {
+            final Concept concept = refsetService
+                .getTerminologyHandler(refset.getProject(), getHeaders(headers))
+                .getConcept(member.getConceptId(), refset.getTerminology(),
+                    refset.getVersion());
+            if (concept != null) {
+              member.setConceptName(concept.getName());
+              member.setConceptActive(concept.isActive());
+            } else {
+              member
+                  .setConceptName(TerminologyHandler.UNABLE_TO_DETERMINE_NAME);
+            }
+          }
+
+          member.setLastModifiedBy(userName);
+          ConceptRefsetMember newMember = refsetService.addMember(member);
+
+          addLogEntry(refsetService, userName, "ADD member",
+              refset.getProject().getId(), refset.getId(),
+              refset.getTerminologyId() + " = " + newMember.getConceptId() + " "
+                  + newMember.getConceptName());
+
+          refsetMemeberList.addObject(newMember);
+        }
+
+      }
+    } catch (Exception e) {
+      handleException(e, "trying to add new member ");
+      return null;
+    } finally {
+      securityService.close();
+    }
+
+    return refsetMemeberList;
   }
 
   /* see superclass */
