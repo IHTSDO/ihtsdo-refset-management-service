@@ -57,6 +57,8 @@ tsApp
               $scope.filters = [];
               $scope.showLatest = true;
               $scope.withNotesOnly = false;
+              $scope.actionStatuses = [ 'All', 'Ready to Finish', 'Ready for Publication' ];
+              $scope.actionStatus = 'All';
 
               // Used for project admin to know what users are assigned to
               // something.
@@ -378,10 +380,14 @@ tsApp
                   queryRestriction : null
                 };
 
+                if ($scope.projects.role != 'REVIEWER') {
+                  $scope.actionStatus = 'All';
+                }
+
                 if ($scope.projects.role != 'ADMIN') {
                   pfs.queryRestriction = $scope.paging['assigned'].filter;
                   workflowService.findAssignedConcepts($scope.projects.role, $scope.project.id,
-                    translation.id, $scope.user.userName, pfs).then(
+                    translation.id, $scope.user.userName, $scope.actionStatus, pfs).then(
                     // Success
                     function(data) {
                       translation.assigned = data.records;
@@ -394,7 +400,7 @@ tsApp
                 } else if ($scope.projects.role == 'ADMIN') {
                   pfs.queryRestriction = $scope.paging['assigned'].filter;
                   workflowService.findAssignedConcepts('ADMIN', $scope.project.id, translation.id,
-                    null, pfs).then(
+                    null, $scope.actionStatus, pfs).then(
                   // Success
                   function(data) {
                     translation.assigned = data.records;
@@ -546,7 +552,7 @@ tsApp
 
                 workflowService
                   .findAssignedConcepts('ADMIN', $scope.project.id, translation.id,
-                   null, {
+                   null, $scope.actionStatus, {
                       startIndex : 0,
                       maxResults : 1
                     })
@@ -649,7 +655,7 @@ tsApp
                 };
 
                 workflowService.findAssignedConcepts($scope.projects.role, $scope.project.id,
-                  $scope.selected.translation.id, userName, pfs).then(
+                  $scope.selected.translation.id, userName, $scope.actionStatus, pfs).then(
                   // Success
                   function(data) {
 
@@ -694,10 +700,10 @@ tsApp
                     : $scope.paging['assigned'].ascending,
                   queryRestriction : $scope.paging['assigned'].filter
                 };
-
+                
                 if ($scope.projects.role != 'ADMIN') {
                   workflowService.findAssignedConcepts($scope.projects.role, $scope.project.id,
-                    $scope.selected.translation.id, userName, pfs).then(
+                    $scope.selected.translation.id, userName, $scope.actionStatus, pfs).then(
                     // Success
                     function(data) {
 
@@ -754,7 +760,7 @@ tsApp
                 };
 
                 workflowService.findAssignedConcepts($scope.projects.role, $scope.project.id,
-                  $scope.selected.translation.id, $scope.user.userName, pfs).then(
+                  $scope.selected.translation.id, $scope.user.userName, $scope.actionStatus, pfs).then(
                   // Success
                   function(data) {
 
@@ -790,6 +796,14 @@ tsApp
                 );
 
               };
+              
+              // Defines what is listed in Reviewer's Assigned Concepts
+              $scope.filterActionStatus = function(actionStatus) {
+                $scope.actionStatus = actionStatus;
+                console.log("actionStatus", actionStatus);
+                $scope.getAssignedConcepts($scope.selected.translation);
+              };
+
               // Performs a workflow action
               $scope.performWorkflowAction = function(concept, action) {
 
