@@ -82,7 +82,8 @@ tsApp.service('workflowService', [
     };
 
     // Find assigned translation work
-    this.findAssignedConcepts = function(userRole, projectId, translationId, userName, pfs) {
+    this.findAssignedConcepts = function(userRole, projectId, translationId, userName,
+      actionStatus, pfs) {
       console.debug('findAssignedConcepts');
       var deferred = $q.defer();
 
@@ -90,8 +91,8 @@ tsApp.service('workflowService', [
       gpService.increment();
       $http.post(
         workflowUrl + 'translation/assigned?userRole=' + userRole + '&projectId=' + projectId
-          + '&translationId=' + translationId + (userName ? '&userName=' + userName : ''),
-        utilService.prepPfs(pfs)).then(
+          + '&translationId=' + translationId + (userName ? '&userName=' + userName : '')
+          + (actionStatus ? '&actionStatus=' + actionStatus : ''), utilService.prepPfs(pfs)).then(
       // success
       function(response) {
         console.debug('  work = ', response.data);

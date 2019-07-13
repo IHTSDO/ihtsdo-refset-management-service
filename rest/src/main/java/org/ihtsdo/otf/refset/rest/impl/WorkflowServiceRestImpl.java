@@ -246,12 +246,14 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl
     @ApiParam(value = "Project id, e.g. 5", required = false) @QueryParam("projectId") Long projectId,
     @ApiParam(value = "Translation id, e.g. 8", required = false) @QueryParam("translationId") Long translationId,
     @ApiParam(value = "User name, e.g. author1", required = true) @QueryParam("userName") String userName,
+    @ApiParam(value = "Workflow State, e.g. REVIEW_NEW", required = true) @QueryParam("actionStatus") String actionStatus,
     @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass())
         .info("RESTful POST call (Workflow): /translation/assigned " + userRole
-            + ", " + translationId + ", " + userName + ", " + pfs);
+            + ", " + translationId + ", " + userName + ", " + actionStatus
+            + ", " + pfs);
 
     final WorkflowService workflowService = new WorkflowServiceJpa();
     try {
@@ -265,7 +267,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl
       if (user != null) {
         securityService.handleLazyInit(user);
       }
-      
+
       // Get the project
       final Project project = workflowService.getProject(projectId);
 
@@ -275,7 +277,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl
       // Find assigned editing work
       final TrackingRecordList list =
           handler.findAssignedConcepts(UserRole.valueOf(userRole), translation,
-              userName, pfs, workflowService);
+              userName, actionStatus, pfs, workflowService);
 
       for (final TrackingRecord record : list.getObjects()) {
         handleLazyInit(record, workflowService);

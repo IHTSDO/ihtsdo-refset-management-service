@@ -761,8 +761,10 @@ public class SnomedWorkflowActionHandler extends DefaultWorkflowActionHandler {
 
     // Translation Author Options
     translationAllowedMap.put("ASSIGN" + "AUTHOR" + "NEW", true);
-    /*translationAllowedMap.put("ASSIGN" + "AUTHOR" + "READY_FOR_PUBLICATION",
-        true);*/
+    /*
+     * translationAllowedMap.put("ASSIGN" + "AUTHOR" + "READY_FOR_PUBLICATION",
+     * true);
+     */
     translationAllowedMap.put("UNASSIGN" + "AUTHOR" + "NEW", true);
     translationAllowedMap.put("UNASSIGN" + "AUTHOR" + "EDITING_IN_PROGRESS",
         true);
@@ -849,8 +851,9 @@ public class SnomedWorkflowActionHandler extends DefaultWorkflowActionHandler {
      * translationRoleMap.put("FEEDBACK" + "REVIEWER2" + "REVIEW_IN_PROGRESS",
      * "AUTHOR"); translationRoleMap.put("FEEDBACK" + "REVIEWER2" +
      * "REVIEW_DONE", "AUTHOR"); // TODO: REVIEWER2 goes to AUTHOR or REVIEWER?
-     */ // The correct unassign role is determined by performWorkflowAction based
-       // on
+     */ // The correct unassign role is determined by performWorkflowAction
+        // based
+        // on
     // the state of the record
     // SAVE n/a
 
@@ -895,8 +898,8 @@ public class SnomedWorkflowActionHandler extends DefaultWorkflowActionHandler {
   /* see superclass */
   @Override
   public TrackingRecordList findAssignedConcepts(UserRole userRole,
-    Translation translation, String userName, PfsParameter pfs,
-    WorkflowService service) throws Exception {
+    Translation translation, String userName, String actionStatus,
+    PfsParameter pfs, WorkflowService service) throws Exception {
 
     final long projectId = translation.getProject().getId();
     final long translationId = translation.getId();

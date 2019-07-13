@@ -712,7 +712,8 @@
                 Status</span>
               <span ng-bind="getSortIndicator('assigned','workflowStatus')"></span>
             </span></th>
-          <th class="col-md-2 col-xs-2">Actions<br /> <span
+
+          <th class="col-md-2 col-xs-2">Actions &emsp;<span
               class="nobreak">
               <!--  Unassign all -->
               <i ng-show="selected.translation.assigned.totalCount > 0"
@@ -727,6 +728,14 @@
                 ng-show="selected.translation.assigned.totalCount > 0 && projects.role != 'ADMIN' && projects.role != 'AUTHOR'"
                 ng-click="publishAll(user.userName)" title="Publish all"
                 class="noul material-icons md-18">open_in_new</i>
+            </span>
+            <span ng-show="projects.role == 'REVIEWER'">
+            <br>
+              <select align="center" tooltip-placement="top" uib-tooltip="Action Status"
+                ng-init="actionStatus" ng-model="actionStatus"
+                ng-change="filterActionStatus(actionStatus)"
+                ng-options="item as item for item in actionStatuses">
+              </select>
             </span>
           </th>
 
