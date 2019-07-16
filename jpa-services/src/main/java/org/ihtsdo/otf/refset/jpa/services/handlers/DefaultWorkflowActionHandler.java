@@ -1426,9 +1426,9 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
       query = "projectId:" + projectId + " AND " + "reviewers:" + userName
           + " AND translationId:" + translationId + " AND forReview:true";
       if (actionStatus != null && !actionStatus.equals("All")) {
-        if (actionStatus.equals("Ready to Finish")) {
+        if (actionStatus.equals("Ready for Publication")) {
           query += " AND " + "workflowStatus:REVIEW_DONE";
-        } else if (actionStatus.equals("Ready for Publication")) {
+        } else if (actionStatus.equals("Ready to Finish")) {
           query += " AND " + "(workflowStatus:REVIEW_NEW" + " OR "
               + "workflowStatus:REVIEW_IN_PROGRESS)";
         } else {
