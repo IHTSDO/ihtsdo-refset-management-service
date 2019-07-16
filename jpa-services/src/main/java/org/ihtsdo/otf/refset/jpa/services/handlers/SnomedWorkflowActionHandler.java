@@ -915,9 +915,31 @@ public class SnomedWorkflowActionHandler extends DefaultWorkflowActionHandler {
           + " AND NOT reviewersOrder:2* " + " AND translationId:"
           + translationId
           + " AND forReview:true AND NOT workflowStatus:REVIEW_DONE";
+      if (actionStatus != null && !actionStatus.equals("All")) {
+          if (actionStatus.equals("Ready for Publication")) {
+            query += " AND " + "workflowStatus:REVIEW_DONE";
+          } else if (actionStatus.equals("Ready to Finish")) {
+            query += " AND " + "(workflowStatus:REVIEW_NEW" + " OR "
+                + "workflowStatus:REVIEW_IN_PROGRESS)";
+          } else {
+            throw new Exception(
+                "Unsupported ActionStatus requested: " + actionStatus);
+          }
+        }
     } else if (userRole == UserRole.REVIEWER2) {
       query = "projectId:" + projectId + " AND " + "reviewersOrder:2" + userName
           + " AND translationId:" + translationId + " AND forReview:true";
+      if (actionStatus != null && !actionStatus.equals("All")) {
+          if (actionStatus.equals("Ready for Publication")) {
+            query += " AND " + "workflowStatus:REVIEW_DONE";
+          } else if (actionStatus.equals("Ready to Finish")) {
+            query += " AND " + "(workflowStatus:REVIEW_NEW" + " OR "
+                + "workflowStatus:REVIEW_IN_PROGRESS)";
+          } else {
+            throw new Exception(
+                "Unsupported ActionStatus requested: " + actionStatus);
+          }
+        }
     } else if (userRole == UserRole.ADMIN) {
       query = "projectId:" + projectId + " AND translationId:" + translationId
           + " AND (forAuthoring:true OR forReview:true)";

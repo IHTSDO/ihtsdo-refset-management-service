@@ -363,7 +363,8 @@ tsApp
               };
 
               // Get $scope.selected.translation.assigned
-              // If nextIndex is set, we need to open the edit concept modal for
+              // If nextIndex is set, we need to open the edit concept modal
+				// for
               // that entry
               $scope.getAssignedConcepts = function(translation, nextIndex) {
                 if (!$scope.projects.role) {
@@ -380,7 +381,7 @@ tsApp
                   queryRestriction : null
                 };
 
-                if ($scope.projects.role != 'REVIEWER') {
+                if (($scope.project.workflowPath != 'SNOMED' && $scope.projects.role != 'REVIEWER') || ($scope.project.workflowPath == 'SNOMED'  && $scope.projects.role != 'REVIEWER2')) {
                   $scope.actionStatus = 'All';
                 }
 
@@ -1432,7 +1433,8 @@ tsApp
                 $scope.errors = [];
                 $scope.feedbackRoleOptions = [];
 
-                // if feedback assignment, only options are users that were authors or reviewers
+                // if feedback assignment, only options are users that were
+				// authors or reviewers
                 if (action == 'FEEDBACK') {
                   var previousUsers = [];
                   $scope.role = 'AUTHOR';
@@ -1637,7 +1639,8 @@ tsApp
 
                   // Perform the same search as the current concept id list
                   // and make sure it still matches (otherwise someone else
-                  // may have assigned off this list first). If successful, send
+                  // may have assigned off this list first). If successful,
+					// send
                   // the request
                   var pfs = null;
                   if (type == 'Available') {
@@ -1878,8 +1881,10 @@ tsApp
                     var searchAgain = false;
                     var nextIndex = index;
                     if (action === 'FINISH' || action === 'SAVE') {
-                      // search again if we are at the end of the current search
-                      // results, but not at the end of the total search results
+                      // search again if we are at the end of the current
+						// search
+                      // results, but not at the end of the total search
+						// results
                       if ((index + 1) == $scope.selected.translation.assigned.length
                         && ((($scope.paging['assigned'].page - 1) * $scope.paging['assigned'].pageSize) + index + 1) 
                         < $scope.selected.translation.assigned.totalCount) {
