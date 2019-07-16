@@ -729,7 +729,7 @@
                 ng-click="publishAll(user.userName)" title="Publish all"
                 class="noul material-icons md-18">open_in_new</i>
             </span>
-            <span ng-show="projects.role == 'REVIEWER'">
+            <span ng-show="(project.workflowPath != 'SNOMED' && projects.role == 'REVIEWER') || (project.workflowPath == 'SNOMED'  && projects.role == 'REVIEWER2')">
             <br>
               <select align="center" tooltip-placement="top" uib-tooltip="Action Status"
                 ng-init="actionStatus" ng-model="actionStatus"
