@@ -2257,7 +2257,7 @@ tsApp
                 $scope.beginTranslationRelease = function(translation) {
 
                   releaseService.beginTranslationRelease(translation.id,
-                    utilService.toSimpleDate(translation.effectiveTime)).then(
+                    utilService.toWCISimpleDate(translation.effectiveTime)).then(
                   // Success
                   function(data) {
                     $scope.releaseInfo = data;

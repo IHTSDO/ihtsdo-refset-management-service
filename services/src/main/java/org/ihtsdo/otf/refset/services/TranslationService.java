@@ -584,4 +584,15 @@ public interface TranslationService extends RefsetService {
   public Map<String, String> getStandardCaseSensitivityTypes(String terminology)
     throws Exception;
 
+
+  /**
+   * Update concept name.
+   *
+   * @param translation the translation
+   * @param conceptId the concept id
+ * @return 
+   * @throws Exception the exception
+   */
+  public Concept updateConceptName(Translation translation, String conceptId) throws Exception;
+
 }

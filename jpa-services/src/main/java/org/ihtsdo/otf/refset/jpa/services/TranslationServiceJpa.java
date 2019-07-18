@@ -1422,6 +1422,27 @@ public class TranslationServiceJpa extends RefsetServiceJpa
     return concept.getName();
   }
 
+  @Override
+  public Concept updateConceptName(Translation translation, String conceptId) throws Exception {
+      final String terminology = translation.getTerminology();
+      final String version = translation.getRefset().getVersion();
+
+      Concept concept = this.getConcept(conceptId, translation.getId());
+      
+      // Get concept from Term Server
+        final Concept fullConcept =
+            getTerminologyHandler(translation.getProject(), headers)
+                .getConcept(concept.getTerminologyId(), terminology, version);
+        
+        if (!concept.getName().equals(fullConcept.getName())) {
+        	concept.setName(fullConcept.getName());
+        	this.updateHasLastModified(concept);
+        }
+
+        return concept;
+  }
+  
+  
   /* see superclass */
   @Override
   public List<LanguageDescriptionType> resolveLanguageDescriptionTypes(

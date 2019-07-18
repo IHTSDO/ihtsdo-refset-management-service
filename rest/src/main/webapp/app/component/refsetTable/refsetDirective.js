@@ -1335,6 +1335,7 @@ tsApp
                   // Success - add refset
                   function(data) {
                     $uibModalInstance.close(refset);
+                    $scope.selected.concept = null;
                   },
                   // Error - add refset
                   function(data) {
@@ -2451,12 +2452,7 @@ tsApp
                       refsetService.addRefsetMember(member).then(
                       // Success
                       function(data) {
-                    	// RTT-249 request that concepts not validated, not be added
-                    	if (data) {
-                          $scope.added.push(conceptId);
-                    	} else {
-                    	  $scope.invalid.push(conceptId);
-                    	}
+                        $scope.added.push(conceptId);
                       },
                       // Error
                       function(data) {
@@ -2605,7 +2601,7 @@ tsApp
                 };
                 $scope.refset = {
                   workflowPath : metadata.workflowPaths[0],
-                  version : $scope.versions[0],
+                  version : null,
                   namespace : $scope.project.namespace,
                   moduleId : $scope.project.moduleId,
                   organization : $scope.project.organization,
@@ -2855,8 +2851,7 @@ tsApp
                   $scope.refset.version = $scope.versions[0];
                   $scope.getModules();
                 };
-                // Init terminology/version
-                $scope.terminologySelected($scope.refset.terminology);
+                
 
                 // Handle version selected
                 $scope.versionSelected = function(version) {
@@ -3224,7 +3219,7 @@ tsApp
                 $scope.terminologies = [];
                 $scope.versions = angular.copy($scope.metadata.versions[$scope.newTerminology]
                   .sort().reverse());
-                $scope.newVersion = $scope.versions[0];
+                $scope.newVersion = null;
                 $scope.validVersion = null;
                 $scope.errors = [];
                 $scope.statusTypes = [{"state":"all","name":"All"},
