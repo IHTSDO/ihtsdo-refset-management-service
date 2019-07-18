@@ -1,6 +1,8 @@
 <div class="modal-header">
   <h4 style="display: inline">Edit Concept
     {{conceptTranslated.terminologyId}} {{conceptTranslated.name}}</h4>
+    <i ng-click="updateConceptName(translation, conceptTranslated.terminologyId)"
+           ng-show="conceptTranslated.name=='unable to determine name'" title="Update Concept Name" class="noul material-icons md-18">cached</i>
   <span style="float: right">
     <i title="Close" class="noul glyphicon glyphicon-remove" ng-click="close()">
     </i>

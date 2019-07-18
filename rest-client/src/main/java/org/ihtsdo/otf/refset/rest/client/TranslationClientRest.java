@@ -1473,4 +1473,10 @@ public class TranslationClientRest extends RootClientRest
     return (KeyValuePairList) ConfigUtility.getGraphForString(resultString,
         KeyValuePairList.class);
   }
+
+  @Override
+  public Concept updateConceptName(Long translationId, String conceptId, String authToken) throws Exception {
+	// TODO Auto-generated method stub
+	return null;
+  }
 }
