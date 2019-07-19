@@ -77,6 +77,7 @@ import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
 import org.ihtsdo.otf.refset.services.RefsetService;
 import org.ihtsdo.otf.refset.services.ReleaseService;
+import org.ihtsdo.otf.refset.services.RootService;
 import org.ihtsdo.otf.refset.services.SecurityService;
 import org.ihtsdo.otf.refset.services.TranslationService;
 import org.ihtsdo.otf.refset.services.WorkflowService;
@@ -1430,17 +1431,23 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
     Logger.getLogger(getClass())
         .info("RESTful call PUT (refset): /members/add " + members);
 
-    final ConceptRefsetMemberList refsetMemeberList = new ConceptRefsetMemberListJpa();
-
+    final ConceptRefsetMemberList postAdditionsRefsetMemberList = new ConceptRefsetMemberListJpa();
+    Refset refset = null;
+    int addCount = 0;
+    
     try (final RefsetService refsetService = new RefsetServiceJpa(
         getHeaders(headers));) {
 
+    	//Configure transaction scope
+        refsetService.setTransactionPerOperation(false);
+        refsetService.beginTransaction();
+    	
       // use first to get refset id
-      final Refset refset = refsetService.getRefset(members[0].getRefsetId());
+      refset = refsetService.getRefset(members[0].getRefsetId());
 
-      final ConceptRefsetMemberList refsetMemberList = refsetService
+      final ConceptRefsetMemberList preAdditionsRefsetMemberList = refsetService
           .findMembersForRefset(refset.getId(), "", null);
-      final List<ConceptRefsetMember> refsetMembers = refsetMemberList
+      final List<ConceptRefsetMember> preAdditionsRefsetMembers = preAdditionsRefsetMemberList
           .getObjects();
 
       final String userName = authorizeProject(refsetService,
@@ -1451,7 +1458,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
 
         // Check if member already exists, then skip
         ConceptRefsetMember memberExists = Iterables
-            .tryFind(refsetMembers, new Predicate<ConceptRefsetMember>() {
+            .tryFind(preAdditionsRefsetMembers, new Predicate<ConceptRefsetMember>() {
               public boolean apply(ConceptRefsetMember m) {
                 return member.getConceptId().equals(m.getConceptId());
               }
@@ -1461,37 +1468,39 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
           // Member already exists
           Logger.getLogger(getClass())
               .info("  member already exists = " + member.getConceptId());
-          refsetMemeberList.addObject(memberExists);
+          postAdditionsRefsetMemberList.addObject(memberExists);
 
         } else {
 
-          // Look up concept name and active
-          if (member.getConceptName() == null) {
-            final Concept concept = refsetService
-                .getTerminologyHandler(refset.getProject(), getHeaders(headers))
-                .getConcept(member.getConceptId(), refset.getTerminology(),
-                    refset.getVersion());
-            if (concept != null) {
-              member.setConceptName(concept.getName());
-              member.setConceptActive(concept.isActive());
-            } else {
-              member
-                  .setConceptName(TerminologyHandler.UNABLE_TO_DETERMINE_NAME);
-            }
-          }
+          // concept name lookup will happen after the members are all added
+          member.setConceptName(TerminologyHandler.UNABLE_TO_DETERMINE_NAME);
 
           member.setLastModifiedBy(userName);
           ConceptRefsetMember newMember = refsetService.addMember(member);
+          addCount++;
 
           addLogEntry(refsetService, userName, "ADD member",
               refset.getProject().getId(), refset.getId(),
               refset.getTerminologyId() + " = " + newMember.getConceptId() + " "
                   + newMember.getConceptName());
 
-          refsetMemeberList.addObject(newMember);
+          postAdditionsRefsetMemberList.addObject(newMember);
+          if(addCount % RootService.commitCt == 0){
+        	  refsetService.commitClearBegin();
+          }
         }
 
       }
+      
+      refsetService.commit();
+      
+      // With contents committed, can now lookup Names/Statuses of members
+      if (ConfigUtility.isAssignNames()) {
+        // Lookup member names should always happen after commit
+        refsetService.lookupMemberNames(refset.getId(), "adding refset members",
+            ConfigUtility.isBackgroundLookup());
+      }
+      
     } catch (Exception e) {
       handleException(e, "trying to add new member ");
       return null;
@@ -1499,7 +1508,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       securityService.close();
     }
 
-    return refsetMemeberList;
+    return postAdditionsRefsetMemberList;
   }
 
   /* see superclass */
@@ -1555,6 +1564,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
 
     final RefsetService refsetService =
         new RefsetServiceJpa(getHeaders(headers));
+    int removeCount = 0;
     try {
       final Refset refset = refsetService.getRefset(refsetId);
       final String userName = authorizeProject(refsetService,
@@ -1565,6 +1575,12 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       for (final ConceptRefsetMember member : refsetService
           .findMembersForRefset(refsetId, "", null).getObjects()) {
         refsetService.removeMember(member.getId());
+        removeCount++;
+        
+        if(removeCount % RootService.commitCt == 0){
+        	refsetService.commitClearBegin();
+        }
+        
       }
       addLogEntry(refsetService, userName, "REMOVE all members",
           refset.getProject().getId(), refsetId, refset.getTerminologyId());
