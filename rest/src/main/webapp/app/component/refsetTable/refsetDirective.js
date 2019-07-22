@@ -1932,8 +1932,9 @@ tsApp
                   refsetService.addRefsetMembers($scope.save).then(
                     // Success
                     function(data) {
-                      $scope.added = data;
-                      console.debug("members added ", data.length);
+                      $scope.added = data.members;
+                      console
+                      console.debug("members added ", data.members.length);
                       $scope.save = [];  // clear
                     },
                     // Error
