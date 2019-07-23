@@ -5,8 +5,8 @@ package org.ihtsdo.otf.refset.jpa.services.handlers;
 
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -17,6 +17,7 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.apache.poi.ss.util.NumberToTextConverter;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.ValidationResult;
@@ -112,13 +113,9 @@ public class ImportTranslationExcelHandler implements ImportTranslationHandler {
 
     /** The language entries. */
     Map<String, LanguageRefsetMember> descLangMap = new HashMap<>();
+  
 
-    /** The desc seen. */
-    boolean descSeen = false;
-
-    /** The lang seen. */
-    boolean langSeen = false;
-
+    
     final Map<String, Concept> conceptCache = new HashMap<>();
     // Handle the input stream as an input stream
     try (final Workbook workbook = WorkbookFactory.create(content);) {
@@ -129,9 +126,6 @@ public class ImportTranslationExcelHandler implements ImportTranslationHandler {
 
       // expecting only one workbook in file with translations.
       final Sheet sheet = workbook.getSheetAt(0);
-
-      int inactiveDescriptionCt = 0;
-      int inactiveMemberCt = 0;
 
       try (final RefsetService service = new RefsetServiceJpa();) {
 
@@ -145,6 +139,16 @@ public class ImportTranslationExcelHandler implements ImportTranslationHandler {
             isFirstRow = false;
             continue;
           }
+          
+          // file format
+          // 1. Concept Id - CONCEPT_ID - 
+          // 2. GB/US FSN Term - FSN_TERM - 
+          // 3. Translated Term - TRANSLATED_TERM - 
+          // 4. Language Code - LANGUAGE_CODE - 
+          // 5. Case Signifiance - CASE_SIGNIFIANCE - used 
+          // 6. Type - TYPE - used
+          // 7. Language reference set - LANGUAGE_REFERENCE_SET - NOT used 
+          // 8. Acceptability - ACCEPTABILITY - NOT used
 
           // Create description and populate from RF2
           final Description description = new DescriptionJpa();
@@ -152,71 +156,42 @@ public class ImportTranslationExcelHandler implements ImportTranslationHandler {
           setCommonFields(description, translation.getRefset());
           // FSN Term
           description.setTerm(getCellValue(row, TRANSLATED_TERM));
-          // description.setTerminologyId(getCellValue(row, ???));
+          description.setTerminologyId(null);
           description.setLanguageCode(getCellValue(row, LANGUAGE_CODE));
           description.setTypeId(getCellValue(row, TYPE));
           description.setCaseSignificanceId(getCellValue(row, CASE_SIGNIFIANCE));
+          description.setEffectiveTime(new Date());
 
-          
-          //TODO: review field assignments
-          
           // Handle the concept the description is connected to
+          final String conceptId = getCellValue(row, CONCEPT_ID);
           Concept concept = null;
-          if (!conceptCache.containsKey(getCellValue(row, CONCEPT_ID))) {
-            conceptCache.put(getCellValue(row, CONCEPT_ID), new ConceptJpa());
+          if (!conceptCache.containsKey(conceptId)) {
+            conceptCache.put(conceptId, new ConceptJpa());
           }
-          concept = conceptCache.get(getCellValue(row, CONCEPT_ID));
+          concept = conceptCache.get(conceptId);
           setCommonFields(concept, translation.getRefset());
-          if (!"".equals(getCellValue(row, CONCEPT_ID))) {
-            concept.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse(getCellValue(row, CONCEPT_ID)));
-          }
-          concept.setTerminologyId(getCellValue(row, CONCEPT_ID));
+          // not in file. set to current
+          concept.setEffectiveTime(new Date());
+          concept.setName(getCellValue(row, FSN_TERM));
+          concept.setTerminologyId(conceptId);
           concept.setDefinitionStatusId("unknown");
           concept.setTranslation(translation);
           concept.getDescriptions().add(description);
           description.setConcept(concept);
 
           // Cache the description for lookup by the language reset member
-          descriptions.put(getCellValue(row, CONCEPT_ID), description);
+          descriptions.put(conceptId, description);
 
-          Logger.getLogger(getClass()).debug("  description = " + getCellValue(row, CONCEPT_ID) + ", "
+          Logger.getLogger(getClass()).debug("  description = " + conceptId + ", "
               + description.getTerminologyId() + ", " + description.getTerm());
 
         }
 
-        //TODO: The code below is similar to ImportTranslationRf2Handler.  Needs to be reviewed for relevance.
-        
-        // Verify that data was found
-        if (!descSeen || descriptions.isEmpty()) {
-          throw new LocalException("Missing or empty description file.");
-        }
-        if (!langSeen) {
-          throw new LocalException("Missing or empty language file.");
-        }
-
-        final int langCt = descLangMap.size();
-
-        // Connect descriptions and language refset member objects
-        for (final String key : new HashSet<>(descriptions.keySet())) {
-          final Description description = descriptions.get(key);
-          // Connect language and description
-          final LanguageRefsetMember member = descLangMap.get(key);
-          if (member != null) {
-            member.setDescriptionId(description.getTerminologyId());
-            description.getLanguageRefsetMembers().add(member);
-            descLangMap.remove(description.getTerminologyId());
-          }
-
-          else {
-            throw new LocalException(
-                "Unexpected description without language - " + key + ", " + description.getTerminologyId());
-          }
-        }
 
         // Assign identifiers if descriptions have "TMP-" ids
         final IdentifierAssignmentHandler handler = service.getIdentifierAssignmentHandler(ConfigUtility.DEFAULT);
         for (final Description description : descriptions.values()) {
-          if (description.getTerminologyId().startsWith("TMP-")) {
+          if (description.getTerminologyId() == null || description.getTerminologyId().startsWith("TMP-")) {
             description.setTerminologyId("");
             description.setTerminologyId(handler.getTerminologyId(description));
             for (final LanguageRefsetMember member : description.getLanguageRefsetMembers()) {
@@ -224,26 +199,8 @@ public class ImportTranslationExcelHandler implements ImportTranslationHandler {
             }
           }
         }
-        // If any references are left in descLangMap, we've got a language
-        // without
-        // a
-        // desc
-        if (!descLangMap.isEmpty()) {
-          validationResult.addError(descLangMap.size() + " language refset members without matching descriptions.");
-        }
-        validationResult.addComment(descriptions.size() + " descriptions successfully loaded.");
-        validationResult.addComment(langCt + " language refset members successfully loaded.");
 
-        if (inactiveDescriptionCt == 1) {
-          validationResult.addWarning("1 inactive description not loaded.");
-        } else if (inactiveDescriptionCt != 0) {
-          validationResult.addWarning(inactiveMemberCt + " inactive descriptions not loaded.");
-        }
-        if (inactiveMemberCt == 1) {
-          validationResult.addWarning("1 inactive member not loaded.");
-        } else if (inactiveMemberCt != 0) {
-          validationResult.addWarning(inactiveMemberCt + " inactive members not loaded.");
-        }
+        validationResult.addComment(descriptions.size() + " descriptions successfully loaded.");
 
       } catch (Exception e) {
         Logger.getLogger(getClass()).error("", e);
@@ -289,7 +246,7 @@ public class ImportTranslationExcelHandler implements ImportTranslationHandler {
     if (row.getCell(cellIndex).getCellType() == CellType.STRING) {
       value = row.getCell(cellIndex).getStringCellValue();
     } else if (row.getCell(cellIndex).getCellType() == CellType.NUMERIC) {
-      value = String.valueOf(row.getCell(cellIndex).getNumericCellValue());
+      value = NumberToTextConverter.toText(row.getCell(cellIndex).getNumericCellValue());
     }
     return value;
   }
