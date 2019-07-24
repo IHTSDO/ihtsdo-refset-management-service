@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.UUID;
 
 import org.apache.log4j.Logger;
 import org.apache.poi.ss.usermodel.CellType;
@@ -31,6 +32,7 @@ import org.ihtsdo.otf.refset.rf2.Description;
 import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.DescriptionJpa;
+import org.ihtsdo.otf.refset.rf2.jpa.LanguageRefsetMemberJpa;
 import org.ihtsdo.otf.refset.services.RefsetService;
 import org.ihtsdo.otf.refset.services.handlers.IdentifierAssignmentHandler;
 import org.ihtsdo.otf.refset.services.handlers.ImportTranslationHandler;
@@ -148,7 +150,7 @@ public class ImportTranslationExcelHandler implements ImportTranslationHandler {
           // 5. Case Signifiance - CASE_SIGNIFIANCE - used 
           // 6. Type - TYPE - used
           // 7. Language reference set - LANGUAGE_REFERENCE_SET - NOT used 
-          // 8. Acceptability - ACCEPTABILITY - NOT used
+          // 8. Acceptability - ACCEPTABILITY - used
 
           // Create description and populate from RF2
           final Description description = new DescriptionJpa();
@@ -185,18 +187,30 @@ public class ImportTranslationExcelHandler implements ImportTranslationHandler {
           Logger.getLogger(getClass()).debug("  description = " + conceptId + ", "
               + description.getTerminologyId() + ", " + description.getTerm());
 
+          // Create and configure the member
+          final LanguageRefsetMember member = new LanguageRefsetMemberJpa();
+          setCommonFields(member, translation.getRefset());
+            member.setTerminologyId(UUID.randomUUID().toString());
+            member.setEffectiveTime(new Date());
+          
+          // Set from the translation refset
+          member.setRefsetId(translation.getRefset().getTerminologyId());
+
+          // Language unique attributes
+          member.setAcceptabilityId(getCellValue(row, ACCEPTABILITY));   
+          
+          // Connect description and language refset member object
+          member.setDescriptionId(description.getTerminologyId());
+          description.getLanguageRefsetMembers().add(member);
         }
 
 
-        // Assign identifiers if descriptions have "TMP-" ids
+        // Assign identifiers
         final IdentifierAssignmentHandler handler = service.getIdentifierAssignmentHandler(ConfigUtility.DEFAULT);
         for (final Description description : descriptions.values()) {
           if (description.getTerminologyId() == null || description.getTerminologyId().startsWith("TMP-")) {
             description.setTerminologyId("");
             description.setTerminologyId(handler.getTerminologyId(description));
-            for (final LanguageRefsetMember member : description.getLanguageRefsetMembers()) {
-              member.setDescriptionId(description.getTerminologyId());
-            }
           }
         }
 
