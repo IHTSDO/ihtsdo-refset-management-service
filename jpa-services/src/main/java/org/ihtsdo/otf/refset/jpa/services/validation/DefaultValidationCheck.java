@@ -219,6 +219,9 @@ public class DefaultValidationCheck extends AbstractValidationCheck {
         if (!language.contains("-")) {
           result.addError("Translation language with dialect must contain a dash (Ex. fr-CA) or exclude dialect (Ex. fr).");
         }
+        else if (language.trim().length() == 3){
+        	result.addError("language codes with a dash must be followed by a dialect code.");
+        }
         else {
           String[] tokens = language.split("-");
 
@@ -226,7 +229,12 @@ public class DefaultValidationCheck extends AbstractValidationCheck {
             result.addError("" + tokens[0] + " is not a valid language code.");
           }
           if (!isoCountries.contains(tokens[1])) {
-            result.addError("" + tokens[1] + " is not a valid dialect code.");
+        	  if (!tokens[1].toUpperCase().equals(tokens[1])){
+                  result.addError("" + tokens[1] + " is not valid - dialect codes must be upper-case.");        		  
+        	  }
+        	  else{
+        		  result.addError("" + tokens[1] + " is not a valid dialect code.");
+        	  }
           }
         }        
       }
