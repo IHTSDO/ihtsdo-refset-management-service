@@ -1344,7 +1344,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa
             // Get concepts from Term Server based on list
             final ConceptList cons =
                 getTerminologyHandler(translation.getProject(), headers)
-                    .getConcepts(termIds, terminology, version);
+                    .getConcepts(termIds, terminology, version, false);
 
             // IF the number of concepts returned doesn't match
             // the size of termIds, there was a problem

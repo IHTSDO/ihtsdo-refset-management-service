@@ -259,10 +259,8 @@ public class BrowserTerminologyHandler extends AbstractTerminologyHandler {
     ConceptList conceptList = new ConceptListJpa();
 
     for (final JsonNode membership : doc.get("memberships")) {
-      if (membership == null || 
-    	  membership.get("type") == null || 
-    	  !membership.get("type").asText().equals("ASSOCIATION")
-    	  ) {
+      if (membership == null || membership.get("type") == null
+          || !membership.get("type").asText().equals("ASSOCIATION")) {
         continue;
       }
       final Concept concept = new ConceptJpa();
@@ -292,7 +290,7 @@ public class BrowserTerminologyHandler extends AbstractTerminologyHandler {
   /* see superclass */
   @Override
   public ConceptList resolveExpression(String expr, String terminology,
-    String version, PfsParameter pfs) throws Exception {
+    String version, PfsParameter pfs, boolean descriptions) throws Exception {
     Logger.getLogger(getClass()).debug("  resolve expression - " + terminology
         + ", " + version + ", " + expr + ", " + pfs);
     final Client client = ClientBuilder.newClient();
@@ -840,7 +838,7 @@ public class BrowserTerminologyHandler extends AbstractTerminologyHandler {
   /* see superclass */
   @Override
   public ConceptList getConcepts(List<String> terminologyIds,
-    String terminology, String version) throws Exception {
+    String terminology, String version, boolean descriptions) throws Exception {
 
     final StringBuilder query = new StringBuilder();
     for (final String terminologyId : terminologyIds) {
@@ -853,7 +851,8 @@ public class BrowserTerminologyHandler extends AbstractTerminologyHandler {
       }
     }
 
-    return resolveExpression(query.toString(), terminology, version, null);
+    return resolveExpression(query.toString(), terminology, version, null,
+        descriptions);
   }
 
   /* see superclass */
@@ -976,7 +975,7 @@ public class BrowserTerminologyHandler extends AbstractTerminologyHandler {
     if (query != null && !query.isEmpty()) {
       List<Concept> list = resolveExpression(
           "<< 900000000000496009 | Simple map type reference set  |",
-          terminology, version, pfs).getObjects();
+          terminology, version, pfs, false).getObjects();
 
       final RootServiceJpa service = new RootServiceJpa() {
         // n/a
@@ -992,7 +991,7 @@ public class BrowserTerminologyHandler extends AbstractTerminologyHandler {
     } else {
       return resolveExpression(
           "< 900000000000496009 | Simple map type reference set  |",
-          terminology, version, pfs);
+          terminology, version, pfs, false);
     }
   }
 
@@ -1002,7 +1001,7 @@ public class BrowserTerminologyHandler extends AbstractTerminologyHandler {
     throws Exception {
     return resolveExpression(
         "< 900000000000443000 | Module (core metadata concept) |", terminology,
-        version, null).getObjects();
+        version, null, false).getObjects();
   }
 
   /* see superclass */
@@ -1183,6 +1182,12 @@ public class BrowserTerminologyHandler extends AbstractTerminologyHandler {
       tvLanguageMap.put(terminology + version, languages);
       return languages;
     }
+  }
+
+  @Override
+  public List<String> getRequiredLanguageRefsets(String terminology,
+    String version) throws Exception {
+    return new ArrayList<>();
   }
 
 }
