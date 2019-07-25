@@ -21,6 +21,7 @@ import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefsetMember;
 import org.ihtsdo.otf.refset.services.handlers.ExportRefsetHandler;
 import org.ihtsdo.otf.refset.services.handlers.ImportRefsetHandler;
 
+// TODO: Auto-generated Javadoc
 /**
  * Generically represents a service for accessing {@link Refset} information.
  */
@@ -293,10 +294,11 @@ public interface RefsetService extends ReleaseService {
    * @param refsetId the refset
    * @param label the label
    * @param background the background
+   * @param languagePriorities the language priorities
    * @throws Exception the exception
    */
-  public void lookupMemberNames(Long refsetId, String label, boolean background)
-    throws Exception;
+  public void lookupMemberNames(Long refsetId, String label, boolean background,
+    List<String> languagePriorities) throws Exception;
 
   /**
    * Perform member lookup names for a known list of members. This is to support
