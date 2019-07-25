@@ -1,0 +1,83 @@
+<div class="modal-header">
+  <h4 style="display: inline">Start Preferred Name Lookup</h4>
+  <span style="float: right">
+    <i class="noul glyphicon glyphicon-remove"
+      ng-click="cancel()"></i>
+  </span>
+</div>
+
+<div class="modal-body">
+  <div>
+    <table class="table">
+      <tr  ng-show="requiredLanguages.length > 0">
+        <td>Default language is English.  Other language(s) can be selected to have precedence.</td><td></td>
+      </tr>
+      <tr  ng-show="requiredLanguages.length == 0">
+        <td>Only available language is English.  </td><td></td>
+      </tr>
+      <tr ng-show="requiredLanguages.length > 0">
+        <td>
+          <b>Preferred Language #1</b>
+        </td>
+        <td>
+          <select ng-model="languagePriorities[0]"            
+            ng-options="item as item for item in requiredLanguages"></select>          
+        </td>
+      </tr>
+      <tr ng-show="requiredLanguages.length > 1">
+        <td>
+          <b>Preferred Language #2</b>
+        </td>
+        <td>
+          <select ng-model="languagePriorities[1]"           
+            ng-options="item as item for item in requiredLanguages"></select>
+        </td>
+      </tr>
+
+      <tr ng-show="warnings.length > 0">
+        <td>&nbsp;</td>
+        <td>
+          <div class="alert alert-warning" ng-repeat="warning in warnings">
+            {{warning}}</div>
+        </td>
+      </tr>
+
+      <!-- Errors and warnings-->
+      <tr
+        ng-show="errors.length == 1 || (errors.length == 2 && errors[1].length>100)">
+        <td colspan="2">
+          <div class="alert alert-danger alert-error">
+            {{errors[0]}}
+            <div style="display: inline; float: right;">
+              <i ng-show="errors[1]"
+                title="{{error.expand ? 'Show' : 'Hide'}} long error"
+                class="noul material-icons md-18"
+                ng-click="error.expand = !error.expand;">attach_file</i>
+            </div>
+            <p ng-show="errors[1] && error.expand">
+              <br />{{errors[1]}}
+            </p>
+          </div>
+        </td>
+      </tr>
+      <tr
+        ng-show="errors.length>2 || (errors.length == 2 && errors[1].length<101)">
+        <td colspan="2">
+          <div class="alert alert-danger alert-error"
+            ng-repeat="error in errors">{{error}}</div>
+        </td>
+      </tr>
+      <tr class="alert alert-warning" ng-repeat="warning in warnings">
+        <td colspan="2">
+          <div class="alert alert-warning" ng-repeat="warning in warnings">{{warning}}</div>
+        </td>
+      </tr>
+
+    </table>
+  </div>
+
+  <div class="modal-footer">
+    <button class="btn btn-xs btn-primary" ng-click="startLookup();">Start Lookup</button>
+    <button class="btn btn-xs btn-warning" ng-click="cancel()">Cancel</button>
+  </div>
+</div>
