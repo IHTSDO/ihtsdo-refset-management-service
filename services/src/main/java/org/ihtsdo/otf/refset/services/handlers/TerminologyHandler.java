@@ -6,11 +6,14 @@ package org.ihtsdo.otf.refset.services.handlers;
 import java.util.List;
 import java.util.Map;
 
+import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Terminology;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
+import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.helpers.Configurable;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.rf2.Concept;
+import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -253,4 +256,54 @@ public interface TerminologyHandler extends Configurable {
    * @throws Exception the exception
    */
   public String translate(String text, String langauge) throws Exception;
+
+  /**
+   * Gets the refset members.
+   *
+   * @param terminologyId the terminology id
+   * @param terminology the terminology
+   * @param version the version
+   * @return the refset members
+   * @throws Exception the exception
+   */
+  public ConceptRefsetMemberList getRefsetMembers(Refset refset,
+    String terminology, String version) throws Exception;
+
+  /**
+   * Gets the refset.
+   *
+   * @param terminologyId the terminology id
+   * @param terminology the terminology
+   * @param version the version
+   * @return the refset
+   * @throws Exception the exception
+   */
+  public Refset getRefset(String terminologyId, String terminology,
+    String version) throws Exception;
+
+  /**
+   * Creates the refset concept.
+   *
+   * @param refset the refset
+   * @param terminology the terminology
+   * @param version the version
+   * @return the conceptId
+   * @throws Exception the exception
+   */
+  public String createRefsetConcept(Refset refset, String terminology,
+    String version) throws Exception;
+
+  /**
+   * Adds the refset member.
+   *
+   * @param member the member
+   * @param refsetId the refset id
+   * @param terminology the terminology
+   * @param version the version
+   * @return the string
+   * @throws Exception the exception
+   */
+  public String addRefsetMember(ConceptRefsetMember member, String refsetId,
+    String terminology, String version) throws Exception;
+
 }

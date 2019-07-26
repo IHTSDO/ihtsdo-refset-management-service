@@ -24,8 +24,10 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status.Family;
 
 import org.apache.log4j.Logger;
+import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Terminology;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
+import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
@@ -34,6 +36,7 @@ import org.ihtsdo.otf.refset.jpa.helpers.ConceptListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.services.RootServiceJpa;
 import org.ihtsdo.otf.refset.rf2.Concept;
+import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.rf2.Description;
 import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
 import org.ihtsdo.otf.refset.rf2.Relationship;
@@ -259,10 +262,8 @@ public class BrowserTerminologyHandler extends AbstractTerminologyHandler {
     ConceptList conceptList = new ConceptListJpa();
 
     for (final JsonNode membership : doc.get("memberships")) {
-      if (membership == null || 
-    	  membership.get("type") == null || 
-    	  !membership.get("type").asText().equals("ASSOCIATION")
-    	  ) {
+      if (membership == null || membership.get("type") == null
+          || !membership.get("type").asText().equals("ASSOCIATION")) {
         continue;
       }
       final Concept concept = new ConceptJpa();
@@ -1183,6 +1184,34 @@ public class BrowserTerminologyHandler extends AbstractTerminologyHandler {
       tvLanguageMap.put(terminology + version, languages);
       return languages;
     }
+  }
+
+  @Override
+  public ConceptRefsetMemberList getRefsetMembers(Refset refset,
+    String terminology, String version) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public Refset getRefset(String terminologyId, String terminology,
+    String version) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public String createRefsetConcept(Refset refset, String terminology,
+    String version) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public String addRefsetMember(ConceptRefsetMember member, String refsetId,
+    String terminology, String version) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
   }
 
 }
