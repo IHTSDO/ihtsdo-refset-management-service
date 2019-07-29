@@ -1,9 +1,10 @@
-/**
- * Copyright 2015 West Coast Informatics, LLC
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.jpa.services;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -38,7 +39,6 @@ import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.RefsetList;
 import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
-import org.ihtsdo.otf.refset.helpers.TranslationList;
 import org.ihtsdo.otf.refset.jpa.ConceptRefsetMemberNoteJpa;
 import org.ihtsdo.otf.refset.jpa.IoHandlerInfoJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
@@ -50,9 +50,9 @@ import org.ihtsdo.otf.refset.jpa.helpers.ConceptRefsetMemberListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.IoHandlerInfoListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.RefsetListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ReleaseInfoListJpa;
-import org.ihtsdo.otf.refset.jpa.helpers.TranslationListJpa;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
+import org.ihtsdo.otf.refset.rf2.Description;
 import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.RefsetDescriptorRefsetMemberJpa;
@@ -628,7 +628,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
   @Override
   public void handleLazyInit(ConceptRefsetMember member) {
     member.getNotes().size();
-
+    member.getSynonyms().size();
   }
 
   /* see superclass */
@@ -763,6 +763,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
         member.setId(null);
         // Clear notes
         member.getNotes().clear();
+        member.getSynonyms().clear();
         if (member.getEffectiveTime() == null)
           member.setEffectiveTime(effectiveTime);
         refsetCopy.getMembers().add(member);
@@ -1107,6 +1108,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
                     .getMember(memberMap.get(con.getTerminologyId()).getId());
                 member.setConceptName(con.getName());
                 member.setConceptActive(con.isActive());
+                populateMemberSynonyms(member, con, refset);
                 refsetService.updateMember(member);
 
               }
@@ -1117,6 +1119,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
                     memberMap.get(con.getTerminologyId());
                 member.setConceptName(con.getName());
                 member.setConceptActive(con.isActive());
+                populateMemberSynonyms(member, con, refset);
               }
             }
 
@@ -1129,6 +1132,8 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
                     refsetService.getMember(memberMap.get(termId).getId());
                 member.setConceptName(
                     TerminologyHandler.UNABLE_TO_DETERMINE_NAME);
+                member.setSynonyms(
+                    Arrays.asList(TerminologyHandler.UNABLE_TO_DETERMINE_NAME));
                 refsetService.updateMember(member);
 
               }
@@ -1138,6 +1143,8 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
                 final ConceptRefsetMember member = memberMap.get(termId);
                 member.setConceptName(
                     TerminologyHandler.UNABLE_TO_DETERMINE_NAME);
+                member.setSynonyms(
+                    Arrays.asList(TerminologyHandler.UNABLE_TO_DETERMINE_NAME));
               }
             }
 
@@ -1228,13 +1235,13 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
 
         // Save concepts
         for (final Concept concept : resolvedFromExpression.getObjects()) {
-        resolvedConcepts.add(concept.getTerminologyId());
+          resolvedConcepts.add(concept.getTerminologyId());
         }
       } catch (Exception e) {
         throw new LocalException(
-          "Unable to resolve refset definition, the expression could not be resolved - "
-              + definition,
-          e);
+            "Unable to resolve refset definition, the expression could not be resolved - "
+                + definition,
+            e);
       }
     }
 
@@ -1282,6 +1289,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
         member.setPublished(concept.isPublished());
         member.setConceptId(concept.getTerminologyId());
         member.setConceptName(concept.getName());
+        populateMemberSynonyms(member, concept, refset);
         member.setMemberType(Refset.MemberType.MEMBER);
         member.setModuleId(concept.getModuleId());
         member.setRefset(refset);
@@ -1591,6 +1599,29 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
       return refsetList;
     } catch (NoResultException e) {
       return null;
+    }
+  }
+
+  /* see superclass */
+  public void populateMemberSynonyms(ConceptRefsetMember member,
+    Concept concept, Refset refset) throws Exception {
+    member.setSynonyms(new ArrayList<String>());
+
+    for (Description d : concept.getDescriptions()) {
+      if (!member.getConceptName().equals(d.getTerm())) {
+        member.getSynonyms().add(d.getTerm());
+      }
+    }
+
+    if (member.getSynonyms().isEmpty()) {
+      final Concept fullCon = getTerminologyHandler(refset.getProject(), null)
+          .getFullConcept(concept.getTerminologyId(), refset.getTerminology(),
+              refset.getVersion());
+      for (Description d : fullCon.getDescriptions()) {
+        if (!member.getConceptName().equals(d.getTerm())) {
+          member.getSynonyms().add(d.getTerm());
+        }
+      }
     }
   }
 

@@ -1,5 +1,5 @@
-/**
- * Copyright 2015 West Coast Informatics, LLC
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 /**
  * Copyright (c) 2012 International Health Terminology Standards Development
@@ -21,8 +21,10 @@ package org.ihtsdo.otf.refset.mojo;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
@@ -44,9 +46,7 @@ import org.ihtsdo.otf.refset.jpa.services.RefsetServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.TranslationServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.WorkflowServiceJpa;
-import org.ihtsdo.otf.refset.jpa.services.rest.RefsetServiceRest;
 import org.ihtsdo.otf.refset.rest.impl.ProjectServiceRestImpl;
-import org.ihtsdo.otf.refset.rest.impl.RefsetServiceRestImpl;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.rf2.Description;
@@ -55,7 +55,7 @@ import org.ihtsdo.otf.refset.services.RefsetService;
 import org.ihtsdo.otf.refset.services.SecurityService;
 import org.ihtsdo.otf.refset.services.TranslationService;
 import org.ihtsdo.otf.refset.services.WorkflowService;
-import org.ihtsdo.otf.refset.services.handlers.IdentifierAssignmentHandler;
+import org.ihtsdo.otf.refset.services.handlers.TerminologyHandler;
 import org.ihtsdo.otf.refset.workflow.TrackingRecord;
 import org.ihtsdo.otf.refset.workflow.TrackingRecordJpa;
 import org.ihtsdo.otf.refset.workflow.TrackingRecordList;
@@ -98,6 +98,7 @@ public class PatchDataMojo extends AbstractMojo {
       getLog().info("  start = " + start);
       getLog().info("  end = " + end);
 
+      boolean reindex = true;
       final WorkflowService workflowService = new WorkflowServiceJpa();
       final TranslationService translationService = new TranslationServiceJpa();
       final RefsetService refsetService = new RefsetServiceJpa();
@@ -448,7 +449,52 @@ public class PatchDataMojo extends AbstractMojo {
 				getLog().info("refsets updated final ct = " + ct);
 				translationService.commit();
 			}			
+
+      if ((start != null && start.equals("AddConceptRefsetMemberJpaSynonyms"))
+          || (end != null && end.equals("AddConceptRefsetMemberJpaSynonyms"))) {
+        // identify projects via find operation
+        getLog()
+            .info("  Identify projects using findProjectsForQuery(null, null)");
+
+        Set<Long> uniqueProjects = new HashSet<>();
+        Map<String, Map<String, List<String>>> conceptSynonymsMap =
+            new HashMap<>();
+
+        refsetService.setTransactionPerOperation(false);
+        refsetService.beginTransaction();
+        for (final Project project : workflowService
+            .findProjectsForQuery(null, null).getObjects()) {
+          if (!uniqueProjects.contains(project.getId())) {
+            getLog()
+                .info("About to start updating project: " + project.getName());
+            uniqueProjects.add(project.getId());
+            addSynonyms(project, conceptSynonymsMap, refsetService);
+            getLog().info(" Completed project: " + project.getName());
+          }
+        }
+
+        // identify projects via get operation
+        getLog().info("  Identify projects using getProjects()");
+        final ProjectList list = workflowService.getProjects();
+        for (final Project project : list.getObjects()) {
+          if (!uniqueProjects.contains(project.getId())) {
+            getLog().info("Via getProjects, about to start updating project: "
+                + project.getName());
+
+            uniqueProjects.add(project.getId());
+            addSynonyms(project, conceptSynonymsMap, refsetService);
+
+            getLog().info(" Completed project: " + project.getName());
+          }
+        }
+
+        getLog().info("Completed operation across all project-refset pairs");
+        refsetService.commit();
+        reindex = false;
+      }
+
       // Reindex
+      if (reindex) {
       getLog().info("  Reindex");
       // login as "admin", use token
       final Properties properties = ConfigUtility.getConfigProperties();
@@ -458,6 +504,7 @@ public class PatchDataMojo extends AbstractMojo {
               properties.getProperty("admin.password")).getAuthToken();
       ProjectServiceRestImpl contentService = new ProjectServiceRestImpl();
       contentService.luceneReindex(null, authToken);
+      }
 
       workflowService.close();
       translationService.close();
@@ -468,4 +515,105 @@ public class PatchDataMojo extends AbstractMojo {
     }
   }
 
+  /*-
+   *
+   * Adds the synonyms IFF they are:
+   *  - Active
+   *  - Not Definition Type of Descriptions
+   *  - Not identical to the ConceptName field
+   *  - Length is less than or equal to 256 characters
+   *
+   * @param project the project
+   * @param conceptSynonymsMap the concept synonyms
+   * @param refsetService the refset service
+   * @throws Exception the exception
+   */
+  private void addSynonyms(Project project,
+    Map<String, Map<String, List<String>>> conceptSynonymsMap,
+    RefsetService refsetService) throws Exception {
+    TerminologyHandler termHandler =
+        refsetService.getTerminologyHandler(project, null);
+
+    for (Refset refset : project.getRefsets()) {
+      getLog().info("Working on members in refset (" + refset.getId() + "): "
+          + refset.getName() + " with " + refset.getMembers().size()
+          + " members");
+
+      int count = 0;
+      for (ConceptRefsetMember member : refset.getMembers()) {
+        String conId = member.getConceptId();
+
+        if (!conceptSynonymsMap.keySet().contains(conId)) {
+          // Lookup synonyms and add to member
+          Map<String, List<String>> versionSynonymsMap = new HashMap<>();
+          conceptSynonymsMap.put(conId, versionSynonymsMap);
+        }
+
+        if (!conceptSynonymsMap.get(conId).containsKey(refset.getVersion())) {
+          List<String> synonyms = new ArrayList<>();
+          conceptSynonymsMap.get(conId).put(refset.getVersion(), synonyms);
+        }
+
+        if (conceptSynonymsMap.get(conId).get(refset.getVersion()).isEmpty()) {
+          List<String> synonyms =
+              conceptSynonymsMap.get(conId).get(refset.getVersion());
+
+          try {
+            // Identify Concept's synonyms
+            final Concept con = termHandler.getFullConcept(conId,
+                refset.getTerminology(), refset.getVersion());
+
+            for (Description d : con.getDescriptions()) {
+              if (d.isActive() && !d.getTypeId().equals("900000000000550004")
+                  && !member.getConceptName().equals(d.getTerm())
+                  && !synonyms.contains(d.getTerm())) {
+                if (d.getTerm().length() > 256) {
+                  throw new Exception("Description '" + d.getTerm()
+                      + "' is longer than permitted lenght of 256. It's size is: "
+                      + d.getTerm().length());
+                }
+                synonyms.add(d.getTerm());
+              }
+            }
+
+            member.setSynonyms(synonyms);
+            refsetService.updateMember(member);
+          } catch (NullPointerException e) {
+            // Have Concept Id that doesn't exist on terminology server
+            getLog().info("Concept id '" + conId + "' not found");
+          }
+        } else {
+          // Have previously completed the Lookup of synonyms. Just need to add
+          // them to member
+          member.setSynonyms(
+              conceptSynonymsMap.get(conId).get(refset.getVersion()));
+          refsetService.updateMember(member);
+        }
+
+        if (++count % 50 == 0) {
+          getLog().info("Completed " + count + " out of the "
+              + refset.getMembers().size() + " members to process");
+          try {
+            refsetService.commitClearBegin();
+          } catch (Exception e) {
+            getLog().info(
+                "Failed on committing batch of 50 synonyms with error message: "
+                    + e.getMessage());
+            refsetService.setTransactionPerOperation(false);
+            refsetService.beginTransaction();
+          }
+        }
+      }
+
+      try {
+        refsetService.commitClearBegin();
+      } catch (Exception e) {
+        getLog().info(
+            "Failed on committing batch of 50 synonyms with error message: "
+                + e.getMessage());
+      }
+
+      getLog().info(" Completed refset: " + refset.getName());
+    }
+  }
 }
