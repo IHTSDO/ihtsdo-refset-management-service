@@ -111,7 +111,8 @@ public class MigrationTest extends RestSupport {
       throw new Exception("Test prerequisite: admin.user must be specified");
     }
     if (adminPassword == null || adminPassword.isEmpty()) {
-      throw new Exception("Test prerequisite: admin.password must be specified");
+      throw new Exception(
+          "Test prerequisite: admin.password must be specified");
     }
 
   }
@@ -183,29 +184,24 @@ public class MigrationTest extends RestSupport {
     User admin = securityService.authenticate(adminUser, adminPassword);
 
     // Create refset (extensional) and import definition
-    Refset janRefset =
-        makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project1, null,
-            admin);
+    Refset janRefset = makeRefset("refset1", null, Refset.Type.EXTENSIONAL,
+        project1, null, admin);
     janRefset = refsetService.getRefset(janRefset.getId(), adminAuthToken);
     Logger.getLogger(getClass()).info("  origin = " + janRefset);
 
     // Begin migration
-    Refset julyStagedRefset =
-        refsetService.beginMigration(janRefset.getId(), "en-edition",
-            "20150731", adminAuthToken);
+    Refset julyStagedRefset = refsetService.beginMigration(janRefset.getId(),
+        "en-edition", "20150731", adminAuthToken);
     Logger.getLogger(getClass()).info("  staged = " + julyStagedRefset);
 
     // Get members - should match original member size
-    assertEquals(
-        21,
-        refsetService
-            .findRefsetMembersForQuery(julyStagedRefset.getId(), "",false, 
-                new PfsParameterJpa(), adminAuthToken).getObjects().size());
+    assertEquals(21,
+        refsetService.findRefsetMembersForQuery(julyStagedRefset.getId(), "",
+            false, new PfsParameterJpa(), adminAuthToken).getObjects().size());
 
     // Compare refsets
-    String reportToken =
-        refsetService.compareRefsets(janRefset.getId(),
-            julyStagedRefset.getId(), adminAuthToken);
+    String reportToken = refsetService.compareRefsets(janRefset.getId(),
+        julyStagedRefset.getId(), adminAuthToken);
 
     // Get diff report, only members in common should exist
     MemberDiffReport diffReport =
@@ -214,18 +210,14 @@ public class MigrationTest extends RestSupport {
     assertEquals(0, diffReport.getNewNotOld().size());
 
     // members in common should have all members
-    ConceptRefsetMemberList commonList =
-        refsetService.findMembersInCommon(reportToken, null, null, null,
-            adminAuthToken);
+    ConceptRefsetMemberList commonList = refsetService
+        .findMembersInCommon(reportToken, null, null, null, adminAuthToken);
     assertEquals(21, commonList.getObjects().size());
 
     // Finish migration
     refsetService.finishMigration(janRefset.getId(), adminAuthToken);
-    assertEquals(
-        21,
-        refsetService
-            .findRefsetMembersForQuery(janRefset.getId(), "",false, 
-                new PfsParameterJpa(), adminAuthToken).getObjects().size());
+    assertEquals(21, refsetService.findRefsetMembersForQuery(janRefset.getId(),
+        "", false, new PfsParameterJpa(), adminAuthToken).getObjects().size());
 
     // verifyRefsetLookupCompleted(julyStagedRefset.getId());
     refsetService.removeRefset(janRefset.getId(), true, adminAuthToken);
@@ -251,11 +243,8 @@ public class MigrationTest extends RestSupport {
     Logger.getLogger(getClass()).info("  origin = " + janRefset);
 
     // Verify 118 members
-    assertEquals(
-        118,
-        refsetService
-            .findRefsetMembersForQuery(janRefset.getId(), "",false, 
-                new PfsParameterJpa(), adminAuthToken).getObjects().size());
+    assertEquals(118, refsetService.findRefsetMembersForQuery(janRefset.getId(),
+        "", false, new PfsParameterJpa(), adminAuthToken).getObjects().size());
 
     // Add some inclusions and exclusions
     // Inclusion: 88324004 - Antibody-dependent cell-mediated lympholysis
@@ -287,34 +276,26 @@ public class MigrationTest extends RestSupport {
         adminAuthToken);
 
     // Verify 120 members (+2 inclusions, and 2 regular member => exclusion)
-    assertEquals(
-        120,
-        refsetService
-            .findRefsetMembersForQuery(janRefset.getId(), "",false, 
-                new PfsParameterJpa(), adminAuthToken).getObjects().size());
+    assertEquals(120, refsetService.findRefsetMembersForQuery(janRefset.getId(),
+        "", false, new PfsParameterJpa(), adminAuthToken).getObjects().size());
 
     // Begin migration to 20150731
-    Refset julyStagedRefset =
-        refsetService.beginMigration(janRefset.getId(), "en-edition",
-            "20150731", adminAuthToken);
+    Refset julyStagedRefset = refsetService.beginMigration(janRefset.getId(),
+        "en-edition", "20150731", adminAuthToken);
     Logger.getLogger(getClass()).info("  staged = " + julyStagedRefset);
 
     // Verify expected number of members - 164
-    assertEquals(
-        164,
-        refsetService
-            .findRefsetMembersForQuery(julyStagedRefset.getId(), "",false, 
-                new PfsParameterJpa(), adminAuthToken).getObjects().size());
+    assertEquals(164,
+        refsetService.findRefsetMembersForQuery(julyStagedRefset.getId(), "",
+            false, new PfsParameterJpa(), adminAuthToken).getObjects().size());
 
     // Compare refsets
-    String reportToken =
-        refsetService.compareRefsets(janRefset.getId(),
-            julyStagedRefset.getId(), adminAuthToken);
+    String reportToken = refsetService.compareRefsets(janRefset.getId(),
+        julyStagedRefset.getId(), adminAuthToken);
 
     // Verify common members as expected, 111 cases
-    ConceptRefsetMemberList commonList =
-        refsetService.findMembersInCommon(reportToken, null, null, null,
-            adminAuthToken);
+    ConceptRefsetMemberList commonList = refsetService
+        .findMembersInCommon(reportToken, null, null, null, adminAuthToken);
     assertEquals(110, commonList.getObjects().size());
 
     // Verify diff report
@@ -334,23 +315,18 @@ public class MigrationTest extends RestSupport {
     assertEquals(1, diffReport.getInvalidExclusions().size());
 
     // Verify proper oldNew member access
-    ConceptRefsetMemberList oldRegularMembers =
-        refsetService.getOldRegularMembers(reportToken, "", null, null,
-            adminAuthToken);
-    ConceptRefsetMemberList newRegularMembers =
-        refsetService.getNewRegularMembers(reportToken, "", null, null,
-            adminAuthToken);
+    ConceptRefsetMemberList oldRegularMembers = refsetService
+        .getOldRegularMembers(reportToken, "", null, null, adminAuthToken);
+    ConceptRefsetMemberList newRegularMembers = refsetService
+        .getNewRegularMembers(reportToken, "", null, null, adminAuthToken);
     assertEquals(6, oldRegularMembers.getCount());
     assertEquals(54, newRegularMembers.getCount());
 
     // Finish migration
     // Verify total count
     refsetService.finishMigration(janRefset.getId(), adminAuthToken);
-    assertEquals(
-        164,
-        refsetService
-            .findRefsetMembersForQuery(janRefset.getId(), "",false, 
-                new PfsParameterJpa(), adminAuthToken).getObjects().size());
+    assertEquals(164, refsetService.findRefsetMembersForQuery(janRefset.getId(),
+        "", false, new PfsParameterJpa(), adminAuthToken).getObjects().size());
 
     // cleanup
     refsetService.removeRefset(janRefset.getId(), true, adminAuthToken);
@@ -381,9 +357,8 @@ public class MigrationTest extends RestSupport {
    * @return the refset jpa
    * @throws Exception the exception
    */
-  private RefsetJpa makeRefset(String name, String definition,
-    Refset.Type type, Project project, String refsetId, User auth)
-    throws Exception {
+  private RefsetJpa makeRefset(String name, String definition, Refset.Type type,
+    Project project, String refsetId, User auth) throws Exception {
     RefsetJpa refset = new RefsetJpa();
     refset.setActive(true);
     refset.setType(type);
@@ -426,9 +401,8 @@ public class MigrationTest extends RestSupport {
     }
 
     // Validate refset
-    ValidationResult result =
-        validationService.validateRefset(refset, project.getId(),
-            auth.getAuthToken());
+    ValidationResult result = validationService.validateRefset(refset,
+        project.getId(), auth.getAuthToken());
     if (!result.isValid()) {
       Logger.getLogger(getClass()).error(result.toString());
       throw new Exception("Refset does not pass validation.");
@@ -439,16 +413,13 @@ public class MigrationTest extends RestSupport {
 
     if (type == Refset.Type.EXTENSIONAL) {
       // Import members (from file)
-      ValidationResult vr =
-          refsetService.beginImportMembers(refset.getId(), "DEFAULT",
-              auth.getAuthToken());
+      ValidationResult vr = refsetService.beginImportMembers(refset.getId(),
+          "DEFAULT", auth.getAuthToken());
       if (!vr.isValid()) {
         throw new Exception("import staging is invalid - " + vr);
       }
-      InputStream in =
-          new FileInputStream(
-              new File(
-                  "../config/src/main/resources/data/refset/der2_Refset_SimpleSnapshot_INT_20140731.txt"));
+      InputStream in = new FileInputStream(new File(
+          "../config/src/main/resources/data/refset/der2_Refset_SimpleSnapshot_INT_20140731.txt"));
       refsetService.finishImportMembers(null, in, refset.getId(), "DEFAULT",
           auth.getAuthToken());
       in.close();

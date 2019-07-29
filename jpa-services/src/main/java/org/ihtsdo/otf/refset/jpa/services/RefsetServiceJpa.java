@@ -1230,8 +1230,8 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
       try {
         final Project project = this.getProject(refset.getProject().getId());
         resolvedFromExpression =
-          getTerminologyHandler(project, headers).resolveExpression(definition,
-              refset.getTerminology(), refset.getVersion(), null);
+            getTerminologyHandler(project, headers).resolveExpression(
+                definition, refset.getTerminology(), refset.getVersion(), null);
 
         // Save concepts
         for (final Concept concept : resolvedFromExpression.getObjects()) {
@@ -1588,8 +1588,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
   @Override
   @SuppressWarnings("unchecked")
   public RefsetList getRefsets() {
-    Logger.getLogger(getClass())
-        .debug("Refset Service - get refsets");
+    Logger.getLogger(getClass()).debug("Refset Service - get refsets");
     javax.persistence.Query query =
         manager.createQuery("select a from RefsetJpa a");
     try {

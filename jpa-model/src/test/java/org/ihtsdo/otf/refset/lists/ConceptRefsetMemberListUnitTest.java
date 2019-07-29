@@ -17,7 +17,8 @@ import org.junit.Test;
 /**
  * Unit testing for {@link ConceptRefsetMemberList}.
  */
-public class ConceptRefsetMemberListUnitTest extends AbstractListUnit<ConceptRefsetMember> {
+public class ConceptRefsetMemberListUnitTest
+    extends AbstractListUnit<ConceptRefsetMember> {
 
   /** The list1 test fixture . */
   private ConceptRefsetMemberList list1;
