@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 West Coast Informatics, LLC
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 /*
  * 
@@ -14,6 +14,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -790,6 +791,7 @@ public class TranslationReleaseTest extends RestSupport {
     member.setConceptActive(true);
     member.setConceptId(id);
     member.setConceptName(name);
+    member.setSynonyms(Arrays.asList(name));
     member.setEffectiveTime(new Date());
     member.setMemberType(Refset.MemberType.MEMBER);
     member.setModuleId(refset.getModuleId());
