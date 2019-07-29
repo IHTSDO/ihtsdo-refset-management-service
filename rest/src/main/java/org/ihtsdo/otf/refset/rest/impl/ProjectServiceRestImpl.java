@@ -1136,7 +1136,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
 
   }
 
-*/
+
   /* see superclass */
   @Override
   @GET
