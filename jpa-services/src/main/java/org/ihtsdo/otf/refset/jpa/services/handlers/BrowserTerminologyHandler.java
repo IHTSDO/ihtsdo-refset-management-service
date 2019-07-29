@@ -1,5 +1,5 @@
 /*
- *    Copyright 2015 West Coast Informatics, LLC
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.jpa.services.handlers;
 
@@ -259,10 +259,8 @@ public class BrowserTerminologyHandler extends AbstractTerminologyHandler {
     ConceptList conceptList = new ConceptListJpa();
 
     for (final JsonNode membership : doc.get("memberships")) {
-      if (membership == null || 
-    	  membership.get("type") == null || 
-    	  !membership.get("type").asText().equals("ASSOCIATION")
-    	  ) {
+      if (membership == null || membership.get("type") == null
+          || !membership.get("type").asText().equals("ASSOCIATION")) {
         continue;
       }
       final Concept concept = new ConceptJpa();
@@ -1185,11 +1183,23 @@ public class BrowserTerminologyHandler extends AbstractTerminologyHandler {
     }
   }
 
-@Override
-public List<String> getBranches(String terminology, String version) throws Exception {
-	// TODO Auto-generated method stub
-	return null;
-}
+  @Override
+  public List<String> getBranches(String terminology, String version)
+    throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public List<String> getTranslationExtensions() throws Exception {
+    Logger.getLogger(getClass())
+        .info("  get traslation extensions from branches - " + url);
+    List<String> translationExtentions = new ArrayList<>();
+    translationExtentions.add("CA Extension");
+    translationExtentions.add("Internation Edition");
+    translationExtentions.add("Swedish Edition");
+
+    return translationExtentions;
+  }
 
 }
-

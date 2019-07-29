@@ -593,6 +593,7 @@ tsApp
           $scope.availableChecks = [];
           $scope.selectedChecks = [];
           $scope.errors = [];
+          $scope.translationBranches = [];
 
           // Wire default validation check 'on' by default
           for (var i = 0; i < $scope.validationChecks.length; i++) {
@@ -624,12 +625,38 @@ tsApp
 
               });
           };
+          
+          $scope.getAvailableBranchesByTerminologyHandler = function(terminologyHandlerKey, terminologyHandlerUrl) {
+            projectService.getAvailableBranchesByTerminologyHandler(terminologyHandlerKey, terminologyHandlerUrl).then(
+              function(data) {
+                $scope.translationBranches = data;
+              }
+            );
+          };
+
+          $scope.addTranslationExtension = function(selectedOption) {
+            if (!$scope.project.translationExtensions){
+              $scope.project.translationExtensions = [];
+              $scope.project.translationExtensions.push(selectedOption);
+            } else if (!$scope.project.translationExtensions.includes(selectedOption)) {
+              $scope.project.translationExtensions.push(selectedOption);
+            }
+          };
+
+          $scope.removeTranslationExtension = function(selectedOption) {
+            $scope.project.translationExtensions = 
+              $scope.project.translationExtensions.filter(so => so !== selectedOption);
+          };
 
           // Terminology handler selection
           $scope.selectHandler = function(handler) {
             $scope.project.terminologyHandlerKey = handler.key;
             $scope.project.terminologyHandlerUrl = handler.value;
             $scope.terminologies = [];
+            $scope.translationBranches = [];
+            $scope.getAvailableBranchesByTerminologyHandler(
+              $scope.project.terminologyHandlerKey, 
+              $scope.project.terminologyHandlerUrl);
           }
 
           // Test the handler URL, if successful, mark as such
@@ -810,6 +837,7 @@ tsApp
           $scope.availableChecks = [];
           $scope.selectedChecks = [];
           $scope.errors = [];
+          $scope.translationBranches = [];
 
           // The others should only be selected if they were already saved as valid on the project
           for (var i = 0; i < $scope.validationChecks.length; i++) {
@@ -849,6 +877,29 @@ tsApp
             });
           };
           $scope.getTerminologyEditions();
+          
+          $scope.getAvailableBranchesByProject = function(projectId) {
+            projectService.getAvailableBranchesByProject(projectId).then(
+              function(data) {
+                $scope.translationBranches = data;
+              }
+            );
+          };
+          $scope.getAvailableBranchesByProject($scope.project.id);
+          
+          $scope.addTranslationExtension = function(selectedOption) {
+            if (!$scope.project.translationExtensions){
+              $scope.project.translationExtensions = [];
+              $scope.project.translationExtensions.push(selectedOption);
+            } else if (!$scope.project.translationExtensions.includes(selectedOption)) {
+              $scope.project.translationExtensions.push(selectedOption);
+            }
+          };
+          
+          $scope.removeTranslationExtension = function(selectedOption) {
+            $scope.project.translationExtensions = 
+              $scope.project.translationExtensions.filter(so => so !== selectedOption);
+          };
 
           // Get $scope.modules
           $scope.getModules = function() {

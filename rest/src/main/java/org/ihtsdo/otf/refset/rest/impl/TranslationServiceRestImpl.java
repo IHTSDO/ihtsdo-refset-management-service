@@ -1,5 +1,5 @@
-/**
- * Copyright 2015 West Coast Informatics, LLC
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.rest.impl;
 
@@ -27,6 +27,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
@@ -34,6 +35,7 @@ import org.ihtsdo.otf.refset.ConceptDiffReport;
 import org.ihtsdo.otf.refset.MemoryEntry;
 import org.ihtsdo.otf.refset.Note;
 import org.ihtsdo.otf.refset.PhraseMemory;
+import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.ReleaseInfo;
 import org.ihtsdo.otf.refset.SpellingDictionary;
@@ -66,6 +68,7 @@ import org.ihtsdo.otf.refset.jpa.helpers.IoHandlerInfoListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.LanguageDescriptionTypeListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.TranslationListJpa;
+import org.ihtsdo.otf.refset.jpa.services.RefsetServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.ReleaseServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.TranslationServiceJpa;
@@ -79,6 +82,7 @@ import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.DescriptionJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.LanguageDescriptionTypeJpa;
+import org.ihtsdo.otf.refset.services.RefsetService;
 import org.ihtsdo.otf.refset.services.ReleaseService;
 import org.ihtsdo.otf.refset.services.SecurityService;
 import org.ihtsdo.otf.refset.services.TranslationService;
@@ -3204,7 +3208,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
       securityService.close();
     }
   }
-  
+
   /* see superclass */
   @GET
   @Override
@@ -3216,7 +3220,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass())
-        .info("RESTful call GET (Translation): /lookup/name " + translationId + ", " + conceptId);
+        .info("RESTful call GET (Translation): /lookup/name " + translationId
+            + ", " + conceptId);
 
     final TranslationService translationService =
         new TranslationServiceJpa(getHeaders(headers));
@@ -3229,20 +3234,18 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
           "lookup of concept name", UserRole.AUTHOR);
 
       // Lookup with terminology server and update concept name
-      Concept concept = translationService.updateConceptName(translation,
-          conceptId);
-      
+      Concept concept =
+          translationService.updateConceptName(translation, conceptId);
+
       return concept;
     } catch (Exception e) {
-      handleException(e,
-          "trying to do lookup of concept name");
+      handleException(e, "trying to do lookup of concept name");
     } finally {
       translationService.close();
       securityService.close();
     }
-	return null;
+    return null;
   }
-
 
   /* see superclass */
   @GET
@@ -3543,5 +3546,64 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
       translationService.close();
       securityService.close();
     }
+  }
+
+  /* see superclass */
+  // @Override
+  @GET
+  @Path("/refset/{refsetId}/concept/{conceptId}")
+  @ApiOperation(value = "TODO: Nuno add note", notes = "TODO: Nuno add notes", response = StringList.class)
+  public KeyValuePairList getTranslationSuggestionsForConcept(
+    @ApiParam(value = "Refset id, e.g. 2", required = true) @PathParam("refsetId") Long refsetId,
+    @ApiParam(value = "Concept id, e.g. 2", required = true) @PathParam("conceptId") Long conceptId,
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(getClass()).info("RESTful GET call (Translation): ");
+    KeyValuePairList translationSuggestions = new KeyValuePairList();
+
+    try (final RefsetService refsetService =
+        new RefsetServiceJpa(getHeaders(headers))) {
+      
+      authorizeApp(securityService, authToken, "translationExtentions get branches",
+          UserRole.VIEWER);
+
+      final Refset refset = refsetService.getRefset(refsetId);
+      final Project project = refset.getProject();
+
+      final List<String> translationExtensions =
+          project.getTranslationExtensions();
+      String refsetVersion = refset.getVersion();
+
+      if (StringUtils.countMatches(refsetVersion, "/") > 1) {
+        refsetVersion = refsetVersion.substring(0,
+            refsetVersion.indexOf('/', refsetVersion.indexOf('/') + 1)) + '/';
+
+        TerminologyHandler handler =
+            refsetService.getTerminologyHandler(project, getHeaders(headers));
+
+        for (String te : translationExtensions) {
+          Concept concept = handler.getFullConcept(Long.toString(conceptId),
+              null, refsetVersion + te);
+
+          if (concept != null && concept.getDescriptions() != null) {
+            for (Description d : concept.getDescriptions()) {
+              if (!"en".equalsIgnoreCase(d.getLanguageCode())) {
+                KeyValuePair kvp = new KeyValuePair(te, d.getTerm());
+                translationSuggestions.addKeyValuePair(kvp);
+              }
+            }
+          }
+        }
+      }
+    } catch (Exception e) {
+      handleException(e, "trying to get translation suggestions for concept for refset " + refsetId + " and concept " + conceptId);
+      return null;
+    }
+    finally {
+      securityService.close();
+    }
+
+    return translationSuggestions;
   }
 }
