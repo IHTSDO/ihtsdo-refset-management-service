@@ -1,5 +1,5 @@
-/**
- * Copyright 2015 West Coast Informatics, LLC
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 /*
  * 
@@ -349,5 +349,29 @@ public interface ProjectServiceRest {
    * @return the all terminology editions
    * @throws Exception the exception
    */
-  public TerminologyList getAllTerminologyEditions(String authToken) throws Exception;
+  public TerminologyList getAllTerminologyEditions(String authToken)
+    throws Exception;
+
+  /**
+   * Returns the branches.
+   *
+   * @param projectId the project id
+   * @param authToken the auth token
+   * @return the branches
+   * @throws Exception the exception
+   */
+  public StringList getBranches(Long projectId, String authToken)
+    throws Exception;
+
+  /**
+   * Returns the branches.
+   *
+   * @param terminologyHandlerKey the terminology handler key
+   * @param terminologyHandlerUrl the terminology handler url
+   * @param authToken the auth token
+   * @return the branches
+   * @throws Exception the exception
+   */
+  public StringList getBranches(String terminologyHandlerKey,
+    String terminologyHandlerUrl, String authToken) throws Exception;
 }
