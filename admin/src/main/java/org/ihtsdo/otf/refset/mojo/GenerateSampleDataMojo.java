@@ -1,5 +1,5 @@
-/**
- * Copyright 2015 West Coast Informatics, LLC
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.mojo;
 
@@ -10,6 +10,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -749,7 +750,6 @@ public class GenerateSampleDataMojo extends AbstractMojo {
       new WorkflowServiceRestImpl().performWorkflowAction(project1.getId(),
           test10.getId(), "reviewer1", "REVIEWER", "UNASSIGN",
           reviewer1.getAuthToken());
-      
 
       // test 11
       RefsetJpa test11 = makeRefset("test11",
@@ -757,8 +757,8 @@ public class GenerateSampleDataMojo extends AbstractMojo {
           Refset.Type.INTENSIONAL, project1, "111111111111", "1000124", author1,
           false);
       // add invalid exclusion for migration
-//      new RefsetServiceRestImpl().addRefsetExclusion(test11.getId(),
-//          "124627000", false, author1.getAuthToken());
+      // new RefsetServiceRestImpl().addRefsetExclusion(test11.getId(),
+      // "124627000", false, author1.getAuthToken());
       // add valid exclusion for migration
       new RefsetServiceRestImpl().addRefsetExclusion(test11.getId(), "10406007",
           false, author1.getAuthToken());
@@ -911,6 +911,7 @@ public class GenerateSampleDataMojo extends AbstractMojo {
     member.setTerminologyId(terminologyId);
     member.setConceptId(conceptId);
     member.setConceptName(conceptName);
+    member.setSynonyms(Arrays.asList(conceptName));
     member.setMemberType(memberType);
     member.setModuleId(moduleId);
     member.setLastModifiedBy(lastModifiedBy);

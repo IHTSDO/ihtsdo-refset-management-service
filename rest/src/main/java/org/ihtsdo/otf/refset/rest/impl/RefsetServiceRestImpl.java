@@ -6,6 +6,7 @@ package org.ihtsdo.otf.refset.rest.impl;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -73,6 +74,7 @@ import org.ihtsdo.otf.refset.jpa.services.WorkflowServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.RefsetServiceRest;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
+import org.ihtsdo.otf.refset.rf2.Description;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
 import org.ihtsdo.otf.refset.services.RefsetService;
@@ -406,6 +408,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
           member.setRefset(refset);
           member.setActive(true);
           member.setConceptActive(true);
+          refsetService.populateMemberSynonyms(member, concept, refset);
           member.setLastModifiedBy(userName);
           list.addObject(refsetService.addMember(member));
         }
@@ -832,10 +835,13 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
           if (concept != null) {
             member.setConceptName(concept.getName());
             member.setConceptActive(concept.isActive());
+            refsetService.populateMemberSynonyms(member, concept, refset);
             member.setModuleId(refset.getModuleId());
             member.setLastModifiedBy(userName);
           } else {
             member.setConceptName(TerminologyHandler.UNABLE_TO_DETERMINE_NAME);
+            member.setSynonyms(
+                Arrays.asList(TerminologyHandler.UNABLE_TO_DETERMINE_NAME));
           }
 
           if (clause.isNegated()) {
@@ -1338,8 +1344,11 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         if (concept != null) {
           member.setConceptName(concept.getName());
           member.setConceptActive(concept.isActive());
+          refsetService.populateMemberSynonyms(member, concept, refset);
         } else {
           member.setConceptName(TerminologyHandler.UNABLE_TO_DETERMINE_NAME);
+          member.setSynonyms(
+              Arrays.asList(TerminologyHandler.UNABLE_TO_DETERMINE_NAME));
         }
       }
 
@@ -1470,6 +1479,11 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       }
 
       if (translated == null) {
+        // Need to ensure case isn't an issue
+        if (query != null) {
+          query = query.toLowerCase();
+        }
+        
         final ConceptRefsetMemberList list =
             refsetService.findMembersForRefset(refsetId, query, pfs);
         for (ConceptRefsetMember member : list.getObjects()) {
@@ -1564,13 +1578,16 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       if (inclusion.getConceptName() == null) {
         final Concept concept = refsetService
             .getTerminologyHandler(refset.getProject(), getHeaders(headers))
-            .getConcept(inclusion.getConceptId(), refset.getTerminology(),
+            .getFullConcept(inclusion.getConceptId(), refset.getTerminology(),
                 refset.getVersion());
         if (concept != null) {
           inclusion.setConceptName(concept.getName());
           inclusion.setConceptActive(concept.isActive());
+          refsetService.populateMemberSynonyms(inclusion, concept, refset);
         } else {
           inclusion.setConceptName(TerminologyHandler.UNABLE_TO_DETERMINE_NAME);
+          inclusion.setSynonyms(
+              Arrays.asList(TerminologyHandler.UNABLE_TO_DETERMINE_NAME));
         }
       }
 
@@ -1851,6 +1868,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
             member.setPublished(concept.isPublished());
             member.setConceptId(concept.getTerminologyId());
             member.setConceptName(concept.getName());
+            refsetService.populateMemberSynonyms(member, concept, refset);
           }
 
           // If origin refset has this as in exclusion, keep it that way.
@@ -2098,6 +2116,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
               .setMemberType(stagedMember.getMemberType().getUnstagedType());
           originMember.setConceptActive(stagedMember.isConceptActive());
 
+          originMember.setSynonyms(stagedMember.getSynonyms());
           originMember.setRefset(originRefset);
           originMember.setLastModifiedBy(userName);
           refsetService.updateMember(originMember);
@@ -3080,6 +3099,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
           // Initialize values to be overridden by lookupNames routine
           member.setConceptActive(true);
           member.setConceptName(TerminologyHandler.NAME_LOOKUP_IN_PROGRESS);
+          member.setSynonyms(
+              Arrays.asList(TerminologyHandler.NAME_LOOKUP_IN_PROGRESS));
 
           member.setLastModifiedBy(userName);
           refsetService.addMember(member);
