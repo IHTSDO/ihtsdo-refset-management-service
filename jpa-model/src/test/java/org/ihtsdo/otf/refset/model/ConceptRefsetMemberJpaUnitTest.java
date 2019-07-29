@@ -59,7 +59,8 @@ public class ConceptRefsetMemberJpaUnitTest extends ModelUnitSupport {
 
   /**
    * Setup.
-   * @throws Exception
+   *
+   * @throws Exception the exception
    */
   @SuppressWarnings({
       "rawtypes", "unchecked"
