@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 West Coast Informatics, LLC
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 /*
  * 
@@ -16,6 +16,7 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -628,6 +629,7 @@ public class RefsetReleaseTest extends RestSupport {
     member.setConceptActive(true);
     member.setConceptId(id);
     member.setConceptName(name);
+    member.setSynonyms(Arrays.asList(name));
     member.setEffectiveTime(new Date());
     member.setMemberType(Refset.MemberType.MEMBER);
     member.setModuleId(refset.getModuleId());
@@ -1008,7 +1010,7 @@ public class RefsetReleaseTest extends RestSupport {
   }
 
   /**
-   * Test two releases and verify artifacts are actually correctly rendered
+   * Test two releases and verify artifacts are actually correctly rendered.
    *
    * @throws Exception the exception
    */

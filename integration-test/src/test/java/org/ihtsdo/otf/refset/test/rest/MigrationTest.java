@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 West Coast Informatics, LLC
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 /*
  * 
@@ -12,6 +12,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
@@ -131,7 +132,7 @@ public class MigrationTest extends RestSupport {
   }
 
   /**
-   * Test basic migration
+   * Test basic migration.
    *
    * @throws Exception the exception
    */
@@ -231,7 +232,7 @@ public class MigrationTest extends RestSupport {
   }
 
   /**
-   * Test proper handling of diffReporting on INTENSIONAL refset
+   * Test proper handling of diffReporting on INTENSIONAL refset.
    *
    * @throws Exception the exception
    */
@@ -264,6 +265,10 @@ public class MigrationTest extends RestSupport {
     ConceptRefsetMemberJpa inclusion = new ConceptRefsetMemberJpa();
     inclusion.setRefset(janRefset);
     inclusion.setConceptId("88324004");
+    inclusion.setSynonyms(Arrays.asList(
+        "Antibody-dependent cell-mediated lympholysis", "Abcil phenomena",
+        "Antibody-dependent cell-mediated lympholysis, function (observable entity)",
+        "Antibody-dependent cell-mediated lympholysis, function"));
     inclusion.setMemberType(Refset.MemberType.INCLUSION);
     refsetService.addRefsetInclusion(inclusion, false, adminAuthToken);
 
@@ -273,6 +278,8 @@ public class MigrationTest extends RestSupport {
     inclusion = new ConceptRefsetMemberJpa();
     inclusion.setRefset(janRefset);
     inclusion.setConceptId("91356001");
+    inclusion.setSynonyms(
+        Arrays.asList("Carbuncle of face", "Carbuncle of face (disorder)"));
     inclusion.setMemberType(Refset.MemberType.INCLUSION);
     refsetService.addRefsetInclusion(inclusion, false, adminAuthToken);
 
