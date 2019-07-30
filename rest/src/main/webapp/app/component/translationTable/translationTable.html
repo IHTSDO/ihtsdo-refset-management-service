@@ -572,9 +572,7 @@
           </th>
           <th ng-click="setSortField('available','name', selected.translation)">Name<span
               ng-bind="getSortIndicator('available','name')"></span></th>
-          <th ng-if="projects.role.includes('REVIEW')"
-              ng-click="setSortField('available','author', selected.translation)">Author(s)<span
-              ng-bind="getSortIndicator('available','author')"></span></th>
+          <th ng-if="projects.role.includes('REVIEW')">Author(s)</th>
           <th class="col-md-4 col-xs-4" ng-show="projects.role != 'AUTHOR'">
             <span
               ng-click="setSortField('available','lastModified', selected.translation)">
@@ -705,9 +703,7 @@
           <th class="col-md-4 col-xs-4"
             ng-click="setSortField('assigned','conceptName', selected.translation)">Name<span
               ng-bind="getSortIndicator('assigned','conceptName')"></span></th>
-          <th ng-if="projects.role.includes('REVIEW')"
-              ng-click="setSortField('assigned','author', selected.translation)">Author(s)<span
-              ng-bind="getSortIndicator('assigned','author')"></span></th>
+          <th ng-if="projects.role.includes('REVIEW')">Author(s)</th>
           <th class="col-md-3 col-xs-3"><span
               ng-click="setSortField('assigned','lastModified', selected.translation)">
               Last Modified
