@@ -1193,11 +1193,16 @@ public class BrowserTerminologyHandler extends AbstractTerminologyHandler {
   @Override
   public List<String> getTranslationExtensions() throws Exception {
     Logger.getLogger(getClass())
-        .info("  get traslation extensions from branches - " + url);
-    List<String> translationExtentions = new ArrayList<>();
-    translationExtentions.add("CA Extension");
-    translationExtentions.add("Internation Edition");
-    translationExtentions.add("Swedish Edition");
+        .info("  get translation extensions from branches - " + url);
+
+    final List<String> translationExtentions = new ArrayList<>();
+    final List<Terminology> terminologyEditions = getTerminologyEditions();
+
+    if (terminologyEditions != null && !terminologyEditions.isEmpty()) {
+      for (int i = 0; i < terminologyEditions.size(); i++) {
+        translationExtentions.add(terminologyEditions.get(i).getName());
+      }
+    }
 
     return translationExtentions;
   }
