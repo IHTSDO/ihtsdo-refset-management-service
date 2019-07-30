@@ -71,7 +71,6 @@
             title="Click to clear filter text">Clear</button>
         </span>
 
-
         <table class="table">
           <thead>
             <tr>
@@ -131,17 +130,28 @@
         <span ng-if="!autoResult && translationSuggestions.keyValuePairs == null">
           <small>No auto translation available</small>
         </span>
-        <span ng-if="autoResult">{{autoResult}}</span>
-        <button class="btn btn-xs btn-primary"
-          ng-if="!autoResult && translationSuggestions.keyValuePairs == null"
-          ng-click="addAutoDescription(autoResult);" title="Add description">Add</button>
-        <span ng-show="translationSuggestions.keyValuePairs.length > 0">
-          <div ng-repeat="kvp in translationSuggestions.keyValuePairs">
-            {{kvp.value}} <small>({{kvp.key}})</small>
-            <button class="btn btn-xs btn-primary"
-              ng-click="addAutoDescription(kvp.value);" title="Add description">Add</button>
-          </div>
-        </span>
+        <table ng-show="autoResult || translationSuggestions.keyValuePairs != null" class="table">
+          <tbody>
+            <tr ng-show="autoResult">
+              <td><span>{{autoResult}}</span></td>
+              <td><small>(Google Translate)</small></td>
+              <td>
+                <button class="btn btn-xs btn-primary"
+                  ng-show="autoResult"
+                  ng-click="addAutoDescription(autoResult);" title="Add description">Add</button>
+              </td>
+            </tr>
+            <tr ng-show="translationSuggestions.keyValuePairs.length > 0"
+              ng-repeat="kvp in translationSuggestions.keyValuePairs">
+              <td>{{kvp.value}}</td>
+              <td><small>({{kvp.key}})</small></td>
+              <td>
+                <button class="btn btn-xs btn-primary"
+                  ng-click="addAutoDescription(kvp.value);" title="Add description">Add</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
         &nbsp;
       </div>
       
