@@ -1,5 +1,5 @@
-/**
- * Copyright 2015 West Coast Informatics, LLC
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.services.handlers;
 
@@ -277,4 +277,13 @@ public interface TerminologyHandler extends Configurable {
    */
   public List<String> getRequiredLanguageRefsets(String terminology,
     String version) throws Exception;
+  
+  
+  /**
+   * Returns the translation extensions.
+   *
+   * @return the translation extensions
+   * @throws Exception the exception
+   */
+  public List<String> getTranslationExtensions() throws Exception;
 }

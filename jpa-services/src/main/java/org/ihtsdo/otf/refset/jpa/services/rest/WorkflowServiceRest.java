@@ -29,9 +29,6 @@ public interface WorkflowServiceRest {
    */
   public StringList getWorkflowPaths(String authToken) throws Exception;
 
-
-
-
   /**
    * Perform workflow action for a {@link Refset}.
    *
@@ -47,8 +44,6 @@ public interface WorkflowServiceRest {
   public TrackingRecord performWorkflowAction(Long projectId, Long refsetId,
     String userName, String projectRole, String action, String authToken)
     throws Exception;
-
-
 
   /**
    * Perform workflow action.
@@ -94,7 +89,6 @@ public interface WorkflowServiceRest {
    */
   public TrackingRecord getTrackingRecordForRefset(Long refsetId,
     String authToken) throws Exception;
-
 
   /**
    * Find non release process translations.
@@ -148,7 +142,6 @@ public interface WorkflowServiceRest {
     Long translationId, String userName, PfsParameterJpa pfs, String authToken)
     throws Exception;
 
-
   /**
    * Find available refsets.
    *
@@ -170,14 +163,15 @@ public interface WorkflowServiceRest {
    * @param projectId the project id
    * @param translationId the translation id
    * @param userName the user name
+   * @param actionStatus the action status
    * @param pfs the pfs
    * @param authToken the auth token
    * @return the tracking record list
    * @throws Exception the exception
    */
-  public TrackingRecordList findAssignedConcepts(String userRole, Long projectId,
-    Long translationId, String userName, PfsParameterJpa pfs, String authToken)
-    throws Exception;
+  public TrackingRecordList findAssignedConcepts(String userRole,
+    Long projectId, Long translationId, String userName, String actionStatus,
+    PfsParameterJpa pfs, String authToken) throws Exception;
 
   /**
    * Find assigned refsets.

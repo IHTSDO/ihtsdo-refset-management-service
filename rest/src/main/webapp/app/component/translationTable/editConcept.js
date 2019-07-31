@@ -123,6 +123,7 @@ tsApp.controller('EditConceptModalCtrl', [
     // immediately
     $scope.concept = concept;
     $scope.autoResult = null;
+    $scope.translationSuggestions = [];
     $scope.displayControls = false;
 
     // Data structure for case significance - we just need the
@@ -169,6 +170,13 @@ tsApp.controller('EditConceptModalCtrl', [
           .then(function(data) {
             $scope.autoResult = data;
           });
+                
+        translationService.findTranslationSuggestionsForConcept(
+          $scope.translation.refsetId, $scope.concept.terminologyId)
+          .then(function(data) {
+
+            $scope.translationSuggestions = data;
+        });
       }
 
     });

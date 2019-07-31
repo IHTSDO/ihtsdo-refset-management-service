@@ -71,7 +71,6 @@
             title="Click to clear filter text">Clear</button>
         </span>
 
-
         <table class="table">
           <thead>
             <tr>
@@ -128,15 +127,34 @@
         </span>
       </h5>
       <div class="col-md-12 col-xs-12" ng-show="displaySuggest">
-        &nbsp;
-        <span ng-show="autoResult">{{autoResult}}</span>
-        <span ng-show="!autoResult">
+        <span ng-if="!autoResult && translationSuggestions.keyValuePairs == null">
           <small>No auto translation available</small>
         </span>
+        <table ng-show="autoResult || translationSuggestions.keyValuePairs != null" class="table">
+          <tbody>
+            <tr ng-show="autoResult">
+              <td><span>{{autoResult}}</span></td>
+              <td><small>(Google Translate)</small></td>
+              <td>
+                <button class="btn btn-xs btn-primary"
+                  ng-show="autoResult"
+                  ng-click="addAutoDescription(autoResult);" title="Add description">Add</button>
+              </td>
+            </tr>
+            <tr ng-show="translationSuggestions.keyValuePairs.length > 0"
+              ng-repeat="kvp in translationSuggestions.keyValuePairs">
+              <td>{{kvp.value}}</td>
+              <td><small>({{kvp.key}})</small></td>
+              <td>
+                <button class="btn btn-xs btn-primary"
+                  ng-click="addAutoDescription(kvp.value);" title="Add description">Add</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
         &nbsp;
-        <button class="btn btn-xs btn-primary"
-          ng-click="addAutoDescription(autoResult);" title="Add description">Add</button>
       </div>
+      
       <br />
       <br />
 

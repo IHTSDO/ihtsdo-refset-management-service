@@ -1,5 +1,5 @@
 /**
- * Copyright 2015 West Coast Informatics, LLC
+ * Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.jpa;
 
@@ -34,6 +34,8 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import org.apache.lucene.analysis.core.WhitespaceAnalyzer;
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
 import org.hibernate.envers.Audited;
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Analyzer;
@@ -122,7 +124,7 @@ public class ProjectJpa implements Project {
   /** The terminology handler url. */
   @Column(nullable = true)
   private String terminologyHandlerUrl;
-  
+
   /** The workflow path. */
   @Column(nullable = false)
   private String workflowPath;
@@ -146,6 +148,13 @@ public class ProjectJpa implements Project {
   @ElementCollection(fetch = FetchType.EAGER)
   @CollectionTable(name = "project_validation_checks")
   private List<String> validationChecks = new ArrayList<>();
+
+  /** The translation extensions. */
+  @Column(nullable = true)
+  @ElementCollection(fetch = FetchType.LAZY)
+  @LazyCollection(LazyCollectionOption.FALSE)
+  @CollectionTable(name = "project_translation_extensions")
+  private List<String> translationExtensions = new ArrayList<>();
 
   /**
    * Instantiates an empty {@link ProjectJpa}.
@@ -404,7 +413,7 @@ public class ProjectJpa implements Project {
   public void setOrganization(String organization) {
     this.organization = organization;
   }
-  
+
   /* see superclass */
   // n/a - @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   @Override
@@ -417,7 +426,6 @@ public class ProjectJpa implements Project {
   public void setWorkflowPath(String workflowPath) {
     this.workflowPath = workflowPath;
   }
-
 
   /* see superclass */
   @Override
@@ -511,6 +519,34 @@ public class ProjectJpa implements Project {
   }
 
   /* see superclass */
+  @XmlElement
+  @Override
+  public List<String> getTranslationExtensions() {
+    if (this.translationExtensions == null) {
+      this.translationExtensions = new ArrayList<String>();
+    }
+    return translationExtensions;
+  }
+
+  /* see superclass */
+  @Override
+  public void setTranslationExtensions(List<String> translationExtensions) {
+    this.translationExtensions = translationExtensions;
+  }
+
+  /* see superclass */
+  @Override
+  public void addTranslationExtension(String translationExtensions) {
+    this.translationExtensions.add(translationExtensions);
+  }
+
+  /* see superclass */
+  @Override
+  public void removeTranslationExtension(String translationExtensions) {
+    this.translationExtensions.remove(translationExtensions);
+  }
+
+  /* see superclass */
   @Override
   public boolean equals(Object obj) {
     if (this == obj)
@@ -588,9 +624,10 @@ public class ProjectJpa implements Project {
         + ", organization=" + organization + ", description=" + description
         + ", terminology=" + terminology + ", version=" + version
         + ", terminologyHandlerKey=" + terminologyHandlerKey + ", workflowPath="
-        + workflowPath
-        + ", exclusionClause=" + exclusionClause + ", userRoleMap="
-        + userRoleMap + ", validationChecks=" + validationChecks + "]";
+        + workflowPath + ", exclusionClause=" + exclusionClause
+        + ", userRoleMap=" + userRoleMap + ", validationChecks="
+        + validationChecks + ", translationExtensions=" + translationExtensions
+        + "]";
   }
 
 }

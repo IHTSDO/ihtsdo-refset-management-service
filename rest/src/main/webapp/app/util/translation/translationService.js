@@ -65,6 +65,29 @@ tsApp.service('translationService', [
       });
       return deferred.promise;
     };
+    
+ 	// Finds concepts for translation revision
+    this.findTranslationSuggestionsForConcept = function(refsetId, terminologyId) {
+      console.debug('findTranslationSuggestionsForConcept');
+      var deferred = $q.defer();
+
+      // Finds concepts for translation revision
+      gpService.increment();
+      $http.get(translationUrl + 'refset/' + refsetId + '/concept/' + terminologyId).then(
+      // success
+      function(response) {
+        console.debug('  concepts ', response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    };
 
     // Get translation for id
     this.getTranslation = function(translationId) {

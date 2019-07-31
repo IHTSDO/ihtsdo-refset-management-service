@@ -1,5 +1,5 @@
 /*
- *    Copyright 2015 West Coast Informatics, LLC
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.jpa.services.handlers;
 
@@ -1185,8 +1185,9 @@ public class BrowserTerminologyHandler extends AbstractTerminologyHandler {
   }
 
   @Override
-  public List<String> getBranches(String terminology, String version) throws Exception {
-  	// TODO Auto-generated method stub
+  public List<String> getBranches(String terminology, String version)
+    throws Exception {
+    // TODO Auto-generated method stub
 	return null;
   }
 
@@ -1195,6 +1196,21 @@ public class BrowserTerminologyHandler extends AbstractTerminologyHandler {
     String version) throws Exception {
     return new ArrayList<>();
   }
+  @Override
+  public List<String> getTranslationExtensions() throws Exception {
+    Logger.getLogger(getClass())
+        .info("  get translation extensions from branches - " + url);
+
+    final List<String> translationExtentions = new ArrayList<>();
+    final List<Terminology> terminologyEditions = getTerminologyEditions();
+
+    if (terminologyEditions != null && !terminologyEditions.isEmpty()) {
+      for (int i = 0; i < terminologyEditions.size(); i++) {
+        translationExtentions.add(terminologyEditions.get(i).getName());
+      }
+    }
+
+    return translationExtentions;
+  }
 
 }
-

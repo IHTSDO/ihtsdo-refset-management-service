@@ -1,5 +1,5 @@
-/**
- * Copyright 2015 West Coast Informatics, LLC
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.jpa.services.handlers;
 
@@ -326,7 +326,14 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
           JsonNode reasonId = entry.findValue("referenceSetId");
           reasonMap.put(key.asText(), reasonId.asText());
         }
-
+        /*
+         * Entry<String, JsonNode> entry = mapping.fields().next(); String key =
+         * entry.getKey(); String values = entry.getValue().toString(); if
+         * (values.contains("[")) { values = values.substring(1, values.length()
+         * - 1); } values = values.replaceAll("\"", ""); for (String value :
+         * values.split(",")) { // conceptId, reason reasonMap.put(value, key);
+         * }
+         */
       }
     }
 
@@ -729,6 +736,7 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     final Client client = ClientBuilder.newClient();
     final WebTarget target = client
         .target(url + "/browser/" + version + "/concepts/" + terminologyId);
+    
     final Response response =
         target.request("application/vnd.org.ihtsdo.browser+json")
             .header("Authorization", authHeader)
@@ -1352,7 +1360,7 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     return "";
   }
 
-
+  /* see superclass */
   @Override
   public List<String> getLanguages(String terminology, String version)
     throws Exception {
@@ -1432,8 +1440,10 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     }
   }
 
+  /* see superclass */
   @Override
-  public List<String> getBranches(String terminology, String version) throws Exception {
+  public List<String> getBranches(String terminology, String version)
+    throws Exception {
 	    Logger.getLogger(getClass())
         .info("  get branches - " + url + ", " + terminology + ", " + version);
     // Make a webservice call to SnowOwl to get branches
@@ -1473,6 +1483,50 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     }
 
     return branches;
+  }
+
+  /* see superclass */
+  @Override
+  public List<String> getTranslationExtensions() throws Exception {
+    Logger.getLogger(getClass())
+        .info("  get traslation extensions from branches - " + url);
+    // Make a webservice call to SnowOwl to get branches
+    final Client client = ClientBuilder.newClient();
+
+    PfsParameter localPfs = new PfsParameterJpa();
+    localPfs.setStartIndex(0);
+    localPfs.setMaxResults(1000);
+
+    WebTarget target =
+        client.target(url + "/branches?" + "limit=" + localPfs.getMaxResults());
+
+    Response response =
+        target.request(accept).header("Authorization", authHeader)
+            .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
+            .header("Cookie", getCookieHeader()).get();
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() != Family.SUCCESSFUL) {
+      throw new LocalException(
+          "Unexpected terminology server failure. Message = " + resultString);
+}
+
+    ObjectMapper mapper = new ObjectMapper();
+    JsonNode doc = mapper.readTree(resultString);
+
+    List<String> translationExtentions = new ArrayList<>();
+
+    for (final JsonNode branchNode : doc.get("items")) {
+      String path = branchNode.get("path").asText();
+
+      if (path != null) {
+        path = path.substring(path.lastIndexOf('/') + 1);
+        if (!translationExtentions.contains(path) && path.contains("SNOMED")) {
+          translationExtentions.add(path);
+        }
+      }
+    }
+
+    return translationExtentions;
   }
 
 }

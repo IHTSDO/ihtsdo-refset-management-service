@@ -1,5 +1,5 @@
-/**
- * Copyright 2015 West Coast Informatics, LLC
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset;
 
@@ -194,5 +194,34 @@ public interface Project extends Searchable {
    * @param workflowPath the new workflow path
    */
   public void setWorkflowPath(String workflowPath);
+  
+  
+  /**
+   * Returns the translation extensions.
+   *
+   * @return the translation extensions
+   */
+  public List<String> getTranslationExtensions();
+  
+  /**
+   * Sets the translation extensions.
+   *
+   * @param translationExtensions the translation extensions
+   */
+  public void setTranslationExtensions(List<String> translationExtensions);
+
+  /**
+   * Adds the translation extension.
+   *
+   * @param translationExtensions the translation extensions
+   */
+  public void addTranslationExtension(String translationExtensions);
+
+  /**
+   * Removes the translation extension.
+   *
+   * @param translationExtensions the translation extensions
+   */
+  public void removeTranslationExtension(String translationExtensions);
 
 }
