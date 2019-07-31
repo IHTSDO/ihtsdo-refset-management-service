@@ -6,6 +6,8 @@ package org.ihtsdo.otf.refset.jpa.services.handlers;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -18,6 +20,7 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status.Family;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.Terminology;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
@@ -176,13 +179,46 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
   @Override
   public List<Terminology> getTerminologyVersions(String edition)
     throws Exception {
-    final List<Terminology> list = new ArrayList<Terminology>();
-    final Terminology main = new TerminologyJpa();
-    main.setTerminology(edition);
-    main.setVersion("MAIN");
-    main.setName(edition);
-    list.add(main);
-    return list;
+	    // Make a webservice call to SnowOwl to get branches
+	    final Client client = ClientBuilder.newClient();
+
+	    PfsParameter localPfs = new PfsParameterJpa();
+	    localPfs.setStartIndex(0);
+	    localPfs.setMaxResults(1000);
+
+	    WebTarget target = client.target(url + "/branches?" 
+	        + "limit=" + localPfs.getMaxResults());
+
+	    Response response =
+	        target.request(accept).header("Authorization", authHeader)
+	            .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
+	            .header("Cookie", getCookieHeader()).get();
+	    String resultString = response.readEntity(String.class);
+	    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+	      // n/a
+	    } else {
+
+	      throw new LocalException(
+	          "Unexpected terminology server failure. Message = " + resultString);
+  }
+
+	    ObjectMapper mapper = new ObjectMapper();
+	    JsonNode doc = mapper.readTree(resultString);
+
+	    List<Terminology> branches = new ArrayList<>();
+	    for (final JsonNode branchNode : doc.get("items")) {
+	      String path = branchNode.get("path").asText();
+	      if (StringUtils.countMatches(path, "/") < 3) {
+	    	  final Terminology tmlgy = new TerminologyJpa();
+	    	  tmlgy.setTerminology(edition);
+	    	  tmlgy.setVersion(path);
+	    	  tmlgy.setName(branchNode.get("name").asText());
+	    	  branches.add(tmlgy);
+	      }       
+	    }
+
+	    return branches;
+
   }
 
   /* see superclass */
@@ -1228,7 +1264,7 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
 
     PfsParameter localPfs = new PfsParameterJpa();
     localPfs.setStartIndex(0);
-    localPfs.setMaxResults(50);
+    localPfs.setMaxResults(1000);
 
     WebTarget target = client.target(url + "/" + version + "/branches?" 
         + "limit=" + localPfs.getMaxResults());
@@ -1252,7 +1288,11 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     List<String> branches = new ArrayList<>();
     for (final JsonNode branchNode : doc.get("items")) {
       String path = branchNode.get("path").asText();
-      branches.add(path);     
+      if (terminology.isEmpty() || path.contains(terminology)) {
+    	  if (version.isEmpty() || path.contains(version)) {
+    	      branches.add(path);
+    	  }
+      }       
     }
 
     return branches;
