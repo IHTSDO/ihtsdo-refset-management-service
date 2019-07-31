@@ -606,6 +606,10 @@
           <td>
             {{concept.name}}
             <span name-info name="concept.name"> </span>
+            <span
+              ng-repeat="desc in concept.descriptions | orderBy:'desc.term'">
+              <br /> &bull;&nbsp;{{desc.term}}
+            </span>
           </td>
           <td ng-show="projects.role != 'AUTHOR'">
             {{toDate(concept.lastModified)}}
@@ -685,7 +689,7 @@
         ng-click="paging['assigned'].filter = ''; getAssignedConcepts(selected.translation)"
         title="Click to clear filter text">Clear</button>
     </span>
-
+    
     <table ng-show="selected.translation" class="table">
       <thead>
         <tr>
@@ -708,7 +712,8 @@
                 Status</span>
               <span ng-bind="getSortIndicator('assigned','workflowStatus')"></span>
             </span></th>
-          <th class="col-md-2 col-xs-2">Actions<br /> <span
+
+          <th class="col-md-2 col-xs-2">Actions &emsp;<span
               class="nobreak">
               <!--  Unassign all -->
               <i ng-show="selected.translation.assigned.totalCount > 0"
@@ -724,6 +729,14 @@
                 ng-click="publishAll(user.userName)" title="Publish all"
                 class="noul material-icons md-18">open_in_new</i>
             </span>
+            <span ng-show="(project.workflowPath != 'SNOMED' && projects.role == 'REVIEWER') || (project.workflowPath == 'SNOMED'  && projects.role == 'REVIEWER2')">
+            <br>
+              <select align="center" tooltip-placement="top" uib-tooltip="Action Status"
+                ng-init="actionStatus" ng-model="actionStatus"
+                ng-change="filterActionStatus(actionStatus)"
+                ng-options="item as item for item in actionStatuses">
+              </select>
+            </span>
           </th>
 
         </tr>
@@ -735,7 +748,11 @@
           <td>
             {{record.concept.name}}
             <span name-info name="record.concept.name"> </span>
-          </td>
+            <span
+              ng-repeat="desc in record.concept.descriptions | orderBy:'desc.term'">
+              <br /> &bull;&nbsp;{{desc.term}}
+            </span>
+          </td>                
           <td>
             {{toDate(record.lastModified)}}
             <span ng-show="projects.role == 'ADMIN'">
