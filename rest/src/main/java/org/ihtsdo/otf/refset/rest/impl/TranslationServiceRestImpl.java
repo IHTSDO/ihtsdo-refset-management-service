@@ -3564,28 +3564,52 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
 
     try (final RefsetService refsetService =
         new RefsetServiceJpa(getHeaders(headers))) {
-      
-      authorizeApp(securityService, authToken, "translationExtentions get branches",
-          UserRole.VIEWER);
+
+      authorizeApp(securityService, authToken,
+          "translationExtentions get branches", UserRole.VIEWER);
 
       final Refset refset = refsetService.getRefset(refsetId);
       final Project project = refset.getProject();
-
       final List<String> translationExtensions =
           project.getTranslationExtensions();
+
+      if (translationExtensions == null || translationExtensions.isEmpty()) {
+        Logger.getLogger(getClass()).debug("No translation Extensions.");
+        return translationSuggestions;
+      }
+
+      TerminologyHandler handler =
+          refsetService.getTerminologyHandler(project, getHeaders(headers));
       String refsetVersion = refset.getVersion();
+      Concept concept;
 
-      if (StringUtils.countMatches(refsetVersion, "/") > 1) {
-        refsetVersion = refsetVersion.substring(0,
-            refsetVersion.indexOf('/', refsetVersion.indexOf('/') + 1)) + '/';
-
-        TerminologyHandler handler =
-            refsetService.getTerminologyHandler(project, getHeaders(headers));
-
+      // SNOWOWL, SNOWSTORM
+      if (handler.getName().toLowerCase().contains("snow")) {
         for (String te : translationExtensions) {
-          Concept concept = handler.getFullConcept(Long.toString(conceptId),
-              null, refsetVersion + te);
-
+          if (StringUtils.countMatches(refsetVersion, "/") > 1) {
+            refsetVersion = refsetVersion.substring(0,
+                refsetVersion.indexOf('/', refsetVersion.indexOf('/') + 1))
+                + '/';
+            Logger.getLogger(getClass()).info("Getting concepts for "
+                + refsetVersion + te + " concept:" + conceptId);
+            concept = handler.getFullConcept(Long.toString(conceptId), null,
+                refsetVersion + te);
+            if (concept != null && concept.getDescriptions() != null) {
+              for (Description d : concept.getDescriptions()) {
+                if (!"en".equalsIgnoreCase(d.getLanguageCode())) {
+                  KeyValuePair kvp = new KeyValuePair(te, d.getTerm());
+                  translationSuggestions.addKeyValuePair(kvp);
+                }
+              }
+            }
+          }
+        }
+      } else if (handler.getName().toLowerCase().contains("browser")) {
+        for (String te : translationExtensions) {
+          Logger.getLogger(getClass())
+              .info("Getting concepts for " + te + " concept:" + conceptId);
+          concept = handler.getFullConcept(Long.toString(conceptId),
+              refset.getTerminology(), refset.getVersion());
           if (concept != null && concept.getDescriptions() != null) {
             for (Description d : concept.getDescriptions()) {
               if (!"en".equalsIgnoreCase(d.getLanguageCode())) {
@@ -3596,11 +3620,13 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
           }
         }
       }
+
     } catch (Exception e) {
-      handleException(e, "trying to get translation suggestions for concept for refset " + refsetId + " and concept " + conceptId);
+      handleException(e,
+          "trying to get translation suggestions for concept for refset "
+              + refsetId + " and concept " + conceptId);
       return null;
-    }
-    finally {
+    } finally {
       securityService.close();
     }
 
