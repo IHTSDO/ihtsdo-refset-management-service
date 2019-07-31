@@ -104,7 +104,6 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
   /** The headers. */
   private Map<String, String> headers;
 
-
   /* see superclass */
   @Override
   public TerminologyHandler copy() throws Exception {
@@ -114,7 +113,6 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     handler.setApiKey(getApiKey());
     return handler;
   }
-
 
   /* see superclass */
   @Override
@@ -135,7 +133,6 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     }
     return true;
   }
-
 
   /* see superclass */
   @Override
@@ -158,13 +155,11 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
 
   }
 
-
   /* see superclass */
   @Override
   public String getName() {
     return "Snowowl Terminology handler";
   }
-
 
   /* see superclass */
   @Override
@@ -178,7 +173,6 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     return result;
   }
 
-
   /* see superclass */
   @Override
   public List<Terminology> getTerminologyVersions(String edition)
@@ -191,7 +185,6 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     list.add(main);
     return list;
   }
-
 
   /* see superclass */
   @Override
@@ -305,7 +298,6 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     return list;
   }
 
-
   /* see superclass */
   @Override
   public List<String> getRequiredLanguageRefsets(String terminology,
@@ -348,19 +340,34 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
         metadata.get("requiredLanguageRefsets");
     JsonNode entry = null;
     int index = 0, dex = 0;
+
+    if (requiredLanguageRefsets != null) {
+      while ((entry = requiredLanguageRefsets.get(index++)) != null) {
+        String entryText = entry.toString();
+        // fragile solution to JsonNode.fields and fieldNames next() not working
+        requiredLanguageList.add(entryText.substring(
+            entryText.lastIndexOf(':') - 3, entryText.lastIndexOf(':') - 1));
+      }
+
+    } else {
+      index = 0;
+      String field = "";
+      
+        if (metadata.toString().contains("requiredLanguageRefset")) {
+          // fragile solution to JsonNode.fields and fieldNames next() not
+          // working
+          requiredLanguageList.add(metadata.toString().substring(
+              metadata.toString().lastIndexOf(':') - 3, metadata.toString().lastIndexOf(':') - 1));
+        }
+      
+    }
+
     if (requiredLanguageRefsets == null) {
       return requiredLanguageList;
-    }
-    while ((entry = requiredLanguageRefsets.get(index++)) != null) {
-      String entryText = entry.toString();
-      // fragile solution to JsonNode.fields and fieldNames next() not working
-      requiredLanguageList.add(entryText.substring(
-          entryText.lastIndexOf(':') - 3, entryText.lastIndexOf(':') - 1));
     }
 
     return requiredLanguageList;
   }
-
 
   /* see superclass */
   @Override
@@ -640,7 +647,6 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     return conceptList;
   }
 
-
   /* see superclass */
   @Override
   public int countExpression(String expr, String terminology, String version)
@@ -679,7 +685,6 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     return doc.get("total").asInt();
 
   }
-
 
   /* see superclass */
   @Override
@@ -909,7 +914,6 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     return concept;
   }
 
-
   /* see superclass */
   @Override
   public Concept getConcept(String terminologyId, String terminology,
@@ -929,7 +933,6 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     }
     return conceptList.getObjects().get(0);
   }
-
 
   /* see superclass */
   @Override
@@ -951,13 +954,11 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
         descriptions);
   }
 
-
   /* see superclass */
   @Override
   public boolean isConceptId(String query) {
     return query.matches("\\d+[01]0\\d");
   }
-
 
   /* see superclass */
   @Override
@@ -1103,7 +1104,6 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     return conceptList;
   }
 
-
   /* see superclass */
   @Override
   public ConceptList findRefsetsForQuery(String query, String terminology,
@@ -1131,7 +1131,6 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     }
   }
 
-
   /* see superclass */
   @Override
   public List<Concept> getModules(String terminology, String version)
@@ -1140,7 +1139,6 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
         "< 900000000000443000 | Module (core metadata concept) |", terminology,
         version, null, false).getObjects();
   }
-
 
   /* see superclass */
   @Override
@@ -1204,7 +1202,6 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
 
     return conceptList;
   }
-
 
   /* see superclass */
   @Override
@@ -1277,7 +1274,6 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     return conceptList;
   }
 
-
   /* see superclass */
   @Override
   public void setUrl(String url) throws Exception {
@@ -1286,13 +1282,11 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
         .topPrivateDomain().toString();
   }
 
-
   /* see superclass */
   @Override
   public String getDefaultUrl() {
     return defaultUrl;
   }
-
 
   /* see superclass */
   @Override
@@ -1315,7 +1309,6 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     }
     return "";
   }
-
 
   @Override
   public List<String> getLanguages(String terminology, String version)
