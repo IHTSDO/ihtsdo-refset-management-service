@@ -71,6 +71,7 @@ import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
 
+// TODO: Auto-generated Javadoc
 /**
  * REST implementation for {@link ProjectServiceRest}..
  */
@@ -90,7 +91,7 @@ import com.wordnik.swagger.annotations.ApiParam;
 public class ProjectServiceRestImpl extends RootServiceRestImpl
     implements ProjectServiceRest {
 
-  /** Security context */
+  /**  Security context. */
   @Context
   HttpHeaders headers;
 
@@ -132,6 +133,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
       securityService.close();
     }
   }
+
 
   /* see superclass */
   @Override
@@ -181,6 +183,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     }
     return null;
   }
+
 
   /* see superclass */
   @Override
@@ -239,6 +242,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     return null;
   }
 
+
   /* see superclass */
   @Override
   @POST
@@ -282,6 +286,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     }
   }
 
+
   /* see superclass */
   @Override
   @POST
@@ -324,6 +329,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     }
   }
 
+
   /* see superclass */
   @Override
   @PUT
@@ -359,7 +365,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
           pfs.setMaxResults(1);
           projectService.getTerminologyHandler(project, getHeaders(headers))
               .resolveExpression(project.getExclusionClause(),
-                  project.getTerminology(), "", pfs);
+                  project.getTerminology(), "", pfs, false);
         } catch (Exception e) {
           throw new LocalException("Project has invalid exclusion clause");
         }
@@ -380,6 +386,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     }
 
   }
+
 
   /* see superclass */
   @Override
@@ -419,7 +426,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
           pfs.setMaxResults(1);
           projectService.getTerminologyHandler(project, getHeaders(headers))
               .resolveExpression(project.getExclusionClause(),
-                  project.getTerminology(), "", pfs);
+                  project.getTerminology(), "", pfs, false);
         } catch (Exception e) {
           throw new LocalException("Project has invalid exclusion clause");
         }
@@ -496,6 +503,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
 
   }
 
+
   /* see superclass */
   @Override
   @GET
@@ -524,6 +532,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     }
 
   }
+
 
   /* see superclass */
   @Override
@@ -554,6 +563,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     }
 
   }
+
 
   /* see superclass */
   @Override
@@ -591,6 +601,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     }
 
   }
+
 
   /* see superclass */
   @Override
@@ -670,6 +681,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     return null;
   }
 
+
   /* see superclass */
   @Override
   @GET
@@ -704,6 +716,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     }
     return null;
   }
+
 
   /* see superclass */
   @Override
@@ -744,6 +757,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     return null;
   }
 
+
   /* see superclass */
   @Override
   @POST
@@ -782,6 +796,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     return null;
   }
 
+
   /* see superclass */
   @Override
   @GET
@@ -817,6 +832,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     return null;
   }
 
+
   /* see superclass */
   @Override
   @GET
@@ -843,6 +859,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     }
     return null;
   }
+
 
   /* see superclass */
   @Override
@@ -887,6 +904,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     }
 
   }
+
 
   /* see superclass */
   @Override
@@ -962,6 +980,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     }
 
   }
+
 
   /* see superclass */
   @Override
@@ -1078,7 +1097,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
       if (authToken != null) {
         userName = securityService.getUsernameForToken(authToken);
       }
-      
+
       final Project project = translationService.getProject(projectId);
       if (project == null) {
         throw new LocalException("Invalid project id: " + projectId);
@@ -1118,6 +1137,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
 
   }
 
+
   /* see superclass */
   @Override
   @GET
@@ -1154,6 +1174,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     }
     return null;
   }
+
 
   /* see superclass */
   @GET
@@ -1209,6 +1230,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     }
     return null;
   }
+
 
   /* see superclass */
   @GET
@@ -1308,6 +1330,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
       securityService.close();
     }
   }
+
 
   /* see superclass */
   @Override

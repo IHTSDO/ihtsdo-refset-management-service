@@ -1208,7 +1208,7 @@ public class RefsetClientRest extends RootClientRest
 
   /* see superclass */
   @Override
-  public void startLookupMemberNames(Long refsetId, Boolean background,
+  public void startLookupMemberNames(Long refsetId, Boolean background, String requiredLanguages,
     String authToken) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Rest Client - start lookup of names and statuses of refset members "
@@ -1549,6 +1549,12 @@ public class RefsetClientRest extends RootClientRest
 
     return resultString.equals("true");
 
+  }
+
+  @Override
+  public StringList getRequiredLanguageRefsets(Long refsetId, String authToken) throws Exception {
+	// TODO Auto-generated method stub
+	return null;
   }
 
 }

@@ -321,7 +321,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     // inactivation
     // probably need a better placeholder for this, but for now - good enough
     ConceptList list = this.getConcepts(new ArrayList<>(reasonMap.keySet()),
-        terminology, version);
+        terminology, version, false);
     for (final Concept concept : list.getObjects()) {
       concept.setDefinitionStatusId(reasonMap.get(concept.getTerminologyId()));
     }
@@ -331,7 +331,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
   /* see superclass */
   @Override
   public ConceptList resolveExpression(String expr, String terminology,
-    String version, PfsParameter pfs) throws Exception {
+    String version, PfsParameter pfs, boolean description) throws Exception {
     Logger.getLogger(getClass()).info("  resolve expression - " + terminology
         + ", " + version + ", " + expr + ", " + pfs);
     // Make a webservice call to SnowOwl to get concept
@@ -793,7 +793,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
       return null;
     }
     ConceptList conceptList =
-        resolveExpression(terminologyId, terminology, version, null);
+        resolveExpression(terminologyId, terminology, version, null, false);
     if (conceptList == null || conceptList.getObjects() == null ||
     		conceptList.getObjects().size() == 0){
     	return null;
@@ -804,7 +804,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
   /* see superclass */
   @Override
   public ConceptList getConcepts(List<String> terminologyIds,
-    String terminology, String version) throws Exception {
+    String terminology, String version, boolean definition) throws Exception {
 
     final StringBuilder query = new StringBuilder();
     for (final String terminologyId : terminologyIds) {
@@ -1033,7 +1033,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     if (query != null && !query.isEmpty()) {
       List<Concept> list = resolveExpression(
           "<< 900000000000496009 | Simple map type reference set  |",
-          terminology, version, pfs).getObjects();
+          terminology, version, pfs, false).getObjects();
 
       final RootServiceJpa service = new RootServiceJpa() {
         // n/a
@@ -1049,7 +1049,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     } else {
       return resolveExpression(
           "<< 900000000000496009 | Simple map type reference set  |",
-          terminology, version, pfs);
+          terminology, version, pfs, false);
     }
   }
 
@@ -1059,7 +1059,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     throws Exception {
     return resolveExpression(
         "< 900000000000443000 | Module (core metadata concept) |", terminology,
-        version, null).getObjects();
+        version, null, false).getObjects();
   }
 
   /* see superclass */
@@ -1360,6 +1360,13 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
       tvLanguageMap.put(terminology + version, acceptValue.toString());
       return acceptValue.toString();
     }
+  }
+
+  @Override
+  public List<String> getRequiredLanguageRefsets(String terminology,
+    String version) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
   }
 
 }

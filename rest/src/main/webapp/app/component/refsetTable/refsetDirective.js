@@ -848,13 +848,13 @@ tsApp
               };
 
               // Need both a $scope version and a non one for modals.
-              $scope.startLookup = function(refset) {
-                startLookup(refset);
+              $scope.startLookup = function(refset, languagePriorities) {
+                startLookup(refset, languagePriorities);
               };
 
               // Start lookup again - not $scope because modal must access it
-              function startLookup(refset) {
-                refsetService.startLookup(refset.id).then(
+              function startLookup(refset, languagePriorities) {
+                refsetService.startLookup(refset.id, languagePriorities).then(
                 // Success
                 function(data) {
                   $scope.refsetLookupProgress[refset.id] = 1;
@@ -888,6 +888,7 @@ tsApp
                   if (found) {
                     $interval.cancel($scope.lookupInterval);
                     $scope.lookupInterval = null;
+                    refsetService.fireRefsetChanged(data);
                   }
 
                 },
@@ -3762,11 +3763,14 @@ tsApp
                         $scope.concepts = data.concepts;
 
                         // if no replacements, just add the inclusion
-                        /*if ($scope.concepts.length == 0
-                        // the second clause here is because intensional
-                        // refsets never have inactive members in common
-                        && $scope.stagedRefset.type == 'INTENSIONAL') {
-                          $scope.addRefsetInclusion($scope.stagedRefset, member, staged);*/
+                        /*
+                                                 * if ($scope.concepts.length == 0 // the second
+                                                 * clause here is because intensional // refsets
+                                                 * never have inactive members in common &&
+                                                 * $scope.stagedRefset.type == 'INTENSIONAL') {
+                                                 * $scope.addRefsetInclusion($scope.stagedRefset,
+                                                 * member, staged);
+                                                 */
                         if ($scope.concepts.length == 0) {
                         	window.alert('There are no replacement concepts available.');
                         } else {
@@ -4210,6 +4214,68 @@ tsApp
 
               };
 
+              // Add Start Lookup modal
+              $scope.openStartLookupModal = function() {
+                console.debug('openStartLookupModal ');
+
+                var modalInstance = $uibModal.open({
+                  templateUrl : 'app/component/refsetTable/startLookup.html',
+                  controller : StartLookupModalCtrl,
+                  backdrop : 'static',
+                  resolve : {
+                    refset : function() {
+                      return $scope.selected.refset;
+                    }
+                  }
+                });
+
+                modalInstance.result.then(
+                // Success
+                function(data) {
+                    $scope.handleWorkflow(data);
+                });
+              };
+
+              // Add Start Lookup Modal controller
+              var StartLookupModalCtrl = function($scope, $uibModalInstance, refset) {
+                console.debug('Entered start lookup modal control', refset);
+
+                $scope.refset = refset;
+                $scope.errors = [];
+                $scope.warnings = [];
+                $scope.comments = [];
+                $scope.languagePriorities = [];
+
+                // Get $scope.getRequiredLanguageRefsets - for picklist
+                $scope.getRequiredLanguageRefsets = function(refsetId) {
+                  refsetService.getRequiredLanguageRefsets(refsetId).then(function(data) {
+                    $scope.requiredLanguages = data.strings;
+                    $scope.languagePriorities[0] = data.strings[0];
+                    $scope.languagePriorities[1] = data.strings[1];
+                  });
+                };
+                
+
+                // Dismiss modal
+                $scope.cancel = function() {
+                  $uibModalInstance.dismiss('cancel');
+                };
+
+                // Start the preferred name lookups
+                $scope.startLookup = function() {
+                	if ($scope.languagePriorities[0] == $scope.languagePriorities[1]) {
+                		$scope.errors[0] = 'Preferred Language #1 should not be the same as Preferred Language #2';
+                		return;
+                	}
+                    startLookup($scope.refset, $scope.languagePriorities);
+                    $uibModalInstance.dismiss('');
+                };
+                  
+                // initialize modal
+                $scope.getRequiredLanguageRefsets(refset.id);
+              };
+              
+              
               // INITIALIZE
 
               // Initialize if project setting isn't used
