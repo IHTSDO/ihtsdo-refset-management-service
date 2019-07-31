@@ -1350,7 +1350,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
   @Override
   @GET
   @Path("/{projectId}/translationExtentions")
-  @ApiOperation(value = "TODO: Nuno add note", notes = "TODO: Nuno add notes", response = StringList.class)
+  @ApiOperation(value = "Get a list of strings.", notes = "Get a list of available translation language extensions for a project.", response = StringList.class)
   public StringList getBranches(
     @ApiParam(value = "Project id, e.g. 12345", required = true) @PathParam("projectId") Long projectId,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
@@ -1393,7 +1393,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
   @Override
   @GET
   @Path("/translationExtentions")
-  @ApiOperation(value = "TODO: Nuno add note", notes = "TODO: Nuno add notes", response = StringList.class)
+  @ApiOperation(value = "Get a list of strings.", notes = "Get a list of available translation language extensions for a terminology handler.", response = StringList.class)
   public StringList getBranches(
     @ApiParam(value = "Terminology Handler Key e.g. SNOWOWL-SE", required = true) @QueryParam("terminologyHandlerKey") String terminologyHandlerKey,
     @ApiParam(value = "Terminology Handler URL e.g. https://ms-authoring.ihtsdotools.org/snowowl/snomed-ct/v2", required = true) @QueryParam("terminologyHandlerUrl") String terminologyHandlerUrl,
