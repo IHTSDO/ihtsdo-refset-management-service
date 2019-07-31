@@ -57,6 +57,8 @@ tsApp
               $scope.filters = [];
               $scope.showLatest = true;
               $scope.withNotesOnly = false;
+              $scope.actionStatuses = [ 'All', 'Ready to Finish', 'Ready for Publication' ];
+              $scope.actionStatus = 'All';
 
               // Used for project admin to know what users are assigned to
               // something.
@@ -361,7 +363,8 @@ tsApp
               };
 
               // Get $scope.selected.translation.assigned
-              // If nextIndex is set, we need to open the edit concept modal for
+              // If nextIndex is set, we need to open the edit concept modal
+				// for
               // that entry
               $scope.getAssignedConcepts = function(translation, nextIndex) {
                 if (!$scope.projects.role) {
@@ -378,10 +381,14 @@ tsApp
                   queryRestriction : null
                 };
 
+                if (($scope.project.workflowPath != 'SNOMED' && $scope.projects.role != 'REVIEWER') || ($scope.project.workflowPath == 'SNOMED'  && $scope.projects.role != 'REVIEWER2')) {
+                  $scope.actionStatus = 'All';
+                }
+
                 if ($scope.projects.role != 'ADMIN') {
                   pfs.queryRestriction = $scope.paging['assigned'].filter;
                   workflowService.findAssignedConcepts($scope.projects.role, $scope.project.id,
-                    translation.id, $scope.user.userName, pfs).then(
+                    translation.id, $scope.user.userName, $scope.actionStatus, pfs).then(
                     // Success
                     function(data) {
                       translation.assigned = data.records;
@@ -394,7 +401,7 @@ tsApp
                 } else if ($scope.projects.role == 'ADMIN') {
                   pfs.queryRestriction = $scope.paging['assigned'].filter;
                   workflowService.findAssignedConcepts('ADMIN', $scope.project.id, translation.id,
-                    null, pfs).then(
+                    null, $scope.actionStatus, pfs).then(
                   // Success
                   function(data) {
                     translation.assigned = data.records;
@@ -546,7 +553,7 @@ tsApp
 
                 workflowService
                   .findAssignedConcepts('ADMIN', $scope.project.id, translation.id,
-                   null, {
+                   null, $scope.actionStatus, {
                       startIndex : 0,
                       maxResults : 1
                     })
@@ -649,7 +656,7 @@ tsApp
                 };
 
                 workflowService.findAssignedConcepts($scope.projects.role, $scope.project.id,
-                  $scope.selected.translation.id, userName, pfs).then(
+                  $scope.selected.translation.id, userName, $scope.actionStatus, pfs).then(
                   // Success
                   function(data) {
 
@@ -694,10 +701,10 @@ tsApp
                     : $scope.paging['assigned'].ascending,
                   queryRestriction : $scope.paging['assigned'].filter
                 };
-
+                
                 if ($scope.projects.role != 'ADMIN') {
                   workflowService.findAssignedConcepts($scope.projects.role, $scope.project.id,
-                    $scope.selected.translation.id, userName, pfs).then(
+                    $scope.selected.translation.id, userName, $scope.actionStatus, pfs).then(
                     // Success
                     function(data) {
 
@@ -754,7 +761,7 @@ tsApp
                 };
 
                 workflowService.findAssignedConcepts($scope.projects.role, $scope.project.id,
-                  $scope.selected.translation.id, $scope.user.userName, pfs).then(
+                  $scope.selected.translation.id, $scope.user.userName, $scope.actionStatus, pfs).then(
                   // Success
                   function(data) {
 
@@ -790,6 +797,14 @@ tsApp
                 );
 
               };
+              
+              // Defines what is listed in Reviewer's Assigned Concepts
+              $scope.filterActionStatus = function(actionStatus) {
+                $scope.actionStatus = actionStatus;
+                console.log("actionStatus", actionStatus);
+                $scope.getAssignedConcepts($scope.selected.translation);
+              };
+
               // Performs a workflow action
               $scope.performWorkflowAction = function(concept, action) {
 
@@ -1418,7 +1433,8 @@ tsApp
                 $scope.errors = [];
                 $scope.feedbackRoleOptions = [];
 
-                // if feedback assignment, only options are users that were authors or reviewers
+                // if feedback assignment, only options are users that were
+				// authors or reviewers
                 if (action == 'FEEDBACK') {
                   var previousUsers = [];
                   $scope.role = 'AUTHOR';
@@ -1623,7 +1639,8 @@ tsApp
 
                   // Perform the same search as the current concept id list
                   // and make sure it still matches (otherwise someone else
-                  // may have assigned off this list first). If successful, send
+                  // may have assigned off this list first). If successful,
+					// send
                   // the request
                   var pfs = null;
                   if (type == 'Available') {
@@ -1864,8 +1881,10 @@ tsApp
                     var searchAgain = false;
                     var nextIndex = index;
                     if (action === 'FINISH' || action === 'SAVE') {
-                      // search again if we are at the end of the current search
-                      // results, but not at the end of the total search results
+                      // search again if we are at the end of the current
+						// search
+                      // results, but not at the end of the total search
+						// results
                       if ((index + 1) == $scope.selected.translation.assigned.length
                         && ((($scope.paging['assigned'].page - 1) * $scope.paging['assigned'].pageSize) + index + 1) 
                         < $scope.selected.translation.assigned.totalCount) {
