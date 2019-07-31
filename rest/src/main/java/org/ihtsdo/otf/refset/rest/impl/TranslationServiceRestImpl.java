@@ -3552,7 +3552,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
   // @Override
   @GET
   @Path("/refset/{refsetId}/concept/{conceptId}")
-  @ApiOperation(value = "TODO: Nuno add note", notes = "TODO: Nuno add notes", response = StringList.class)
+  @ApiOperation(value = "Key-value pairs translation extension and concept description.", notes = "Gets translation suggestions for a concept based on project configuration.", response = KeyValuePairList.class)
   public KeyValuePairList getTranslationSuggestionsForConcept(
     @ApiParam(value = "Refset id, e.g. 2", required = true) @PathParam("refsetId") Long refsetId,
     @ApiParam(value = "Concept id, e.g. 2", required = true) @PathParam("conceptId") Long conceptId,
