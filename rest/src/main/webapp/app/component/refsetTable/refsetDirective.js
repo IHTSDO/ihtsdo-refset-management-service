@@ -2602,7 +2602,7 @@ tsApp
                 };
                 $scope.refset = {
                   workflowPath : metadata.workflowPaths[0],
-                  version : $scope.versions[0],
+                  version : null,
                   namespace : $scope.project.namespace,
                   moduleId : $scope.project.moduleId,
                   organization : $scope.project.organization,
@@ -2852,8 +2852,7 @@ tsApp
                   $scope.refset.version = $scope.versions[0];
                   $scope.getModules();
                 };
-                // Init terminology/version
-                $scope.terminologySelected($scope.refset.terminology);
+                
 
                 // Handle version selected
                 $scope.versionSelected = function(version) {
@@ -3221,7 +3220,7 @@ tsApp
                 $scope.terminologies = [];
                 $scope.versions = angular.copy($scope.metadata.versions[$scope.newTerminology]
                   .sort().reverse());
-                $scope.newVersion = $scope.versions[0];
+                $scope.newVersion = null;
                 $scope.validVersion = null;
                 $scope.errors = [];
                 $scope.statusTypes = [{"state":"all","name":"All"},

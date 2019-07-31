@@ -18,7 +18,7 @@ import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.jpa.ProjectJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.services.ProjectServiceJpa;
-import org.ihtsdo.otf.refset.jpa.services.handlers.BrowserTerminologyHandler;
+import org.ihtsdo.otf.refset.jpa.services.handlers.SnowstormTerminologyHandler;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.services.ProjectService;
 import org.junit.After;
@@ -28,7 +28,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
- * Some initial testing for {@link BrowserTerminologyHandler}. Assumes stock dev
+ * Some initial testing for {@link SnowstormTerminologyHandler}. Assumes stock dev
  * load.
  */
 public class BrowserTerminologyHandlerTest extends JpaSupport {
