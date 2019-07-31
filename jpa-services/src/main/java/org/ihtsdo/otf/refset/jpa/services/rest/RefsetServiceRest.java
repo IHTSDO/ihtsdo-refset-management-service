@@ -23,6 +23,7 @@ import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
 
+// TODO: Auto-generated Javadoc
 /**
  * Represents a refsets available via a REST service.
  */
@@ -509,18 +510,6 @@ public interface RefsetServiceRest {
     throws Exception;
 
   /**
-   * Launches the lookup process of identifying the name and active states for
-   * all members of the refset.
-   *
-   * @param refsetId the refset id
-   * @param background the background
-   * @param authToken the auth token
-   * @throws Exception the exception
-   */
-  public void startLookupMemberNames(Long refsetId, Boolean background,
-    String authToken) throws Exception;
-
-  /**
    * Adds the refset members for expression.
    *
    * @param refsetId the refset id
@@ -649,8 +638,8 @@ public interface RefsetServiceRest {
    * @return the input stream
    * @throws Exception the exception
    */
-  public InputStream exportDiffReport(String reportToken, String terminology, String version, String authToken)
-    throws Exception;
+  public InputStream exportDiffReport(String reportToken, String terminology,
+    String version, String authToken) throws Exception;
 
   /**
    * Convert refset.
@@ -676,4 +665,27 @@ public interface RefsetServiceRest {
    */
   public Boolean isTerminologyVersionValid(Long projectId, String terminology,
     String version, String authToken) throws Exception;
+
+  /**
+   * Gets the required language refsets.
+   *
+   * @param refsetId the refset id
+   * @param authToken the auth token
+   * @return the required language refsets
+   * @throws Exception the exception
+   */
+  public StringList getRequiredLanguageRefsets(Long refsetId, String authToken)
+    throws Exception;
+
+  /**
+   * Start lookup member names.
+   *
+   * @param refsetId the refset id
+   * @param background the background
+   * @param requiredLanguages the required languages
+   * @param authToken the auth token
+   * @throws Exception the exception
+   */
+  public void startLookupMemberNames(Long refsetId, Boolean background,
+    String requiredLanguages, String authToken) throws Exception;
 }

@@ -38,7 +38,6 @@ import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.RefsetList;
 import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
-import org.ihtsdo.otf.refset.helpers.TranslationList;
 import org.ihtsdo.otf.refset.jpa.ConceptRefsetMemberNoteJpa;
 import org.ihtsdo.otf.refset.jpa.IoHandlerInfoJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
@@ -50,9 +49,10 @@ import org.ihtsdo.otf.refset.jpa.helpers.ConceptRefsetMemberListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.IoHandlerInfoListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.RefsetListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ReleaseInfoListJpa;
-import org.ihtsdo.otf.refset.jpa.helpers.TranslationListJpa;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
+import org.ihtsdo.otf.refset.rf2.Description;
+import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
 import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.RefsetDescriptorRefsetMemberJpa;
@@ -884,7 +884,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
 
   /* see superclass */
   @Override
-  public void lookupMemberNames(Long refsetId, String label, boolean background)
+  public void lookupMemberNames(Long refsetId, String label, boolean background, List<String> languagePriorities)
     throws Exception {
     Logger.getLogger(getClass()).info("Release Service - lookup member names - "
         + refsetId + ", " + background);
@@ -892,7 +892,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
     if (ConfigUtility.isAssignNames()) {
       if (!lookupProgressMap.containsKey(refsetId)) {
         // Create new thread
-        Runnable lookup = new LookupMemberNamesThread(refsetId, label);
+        Runnable lookup = new LookupMemberNamesThread(refsetId, label, languagePriorities);
         Thread t = new Thread(lookup);
         t.start();
         // Handle non-background
@@ -972,6 +972,9 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
 
     /** The save members. */
     private boolean saveMembers = true;
+    
+    /** The language priorities. */
+    private List<String> languagePriorities;
 
     /**
      * Instantiates a {@link LookupMemberNamesThread} from the specified
@@ -981,9 +984,10 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
      * @param label the label
      * @throws Exception the exception
      */
-    public LookupMemberNamesThread(Long id, String label) throws Exception {
+    public LookupMemberNamesThread(Long id, String label, List<String> languagePriorities) throws Exception {
       this.refsetId = id;
       this.label = label;
+      this.languagePriorities = languagePriorities;
     }
 
     /**
@@ -1084,7 +1088,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
             final TerminologyHandler handler =
                 getTerminologyHandler(refset.getProject(), headers);
             final ConceptList cons =
-                handler.getConcepts(termIds, terminology, version);
+                handler.getConcepts(termIds, terminology, version, true);
 
             // IF the number of concepts returned doesn't match
             // the size of termIds, there was a problem
@@ -1106,9 +1110,23 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
                 final ConceptRefsetMember member = refsetService
                     .getMember(memberMap.get(con.getTerminologyId()).getId());
                 member.setConceptName(con.getName());
-                member.setConceptActive(con.isActive());
-                refsetService.updateMember(member);
-
+                // set concept name to highest ranked provided language
+                // available given the concept's descriptions
+                // type must be 'PT'
+                if (!languagePriorities.isEmpty()) {
+                  for (int i1 = languagePriorities.size() -1 ; i1 >= 0; i1--) {
+                	String lang = languagePriorities.get(i1);
+                    for (Description desc : con.getDescriptions()) {
+                      for (LanguageRefsetMember lrm : desc.getLanguageRefsetMembers()) {
+                    	if (lrm.getAcceptabilityId().equals("900000000000548007")) {
+                    		if (desc.getLanguageCode().equals(lang) && desc.getTypeId().equals("900000000000013009")) {
+                    			member.setConceptName(desc.getTerm()); 
+                    		}
+                    	}
+                      }
+                    }
+                  }
+                }
               }
 
               // This is for an in-memory member, just update the object
@@ -1224,7 +1242,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
         final Project project = this.getProject(refset.getProject().getId());
         resolvedFromExpression =
           getTerminologyHandler(project, headers).resolveExpression(definition,
-              refset.getTerminology(), refset.getVersion(), null);
+              refset.getTerminology(), refset.getVersion(), null, false);
 
         // Save concepts
         for (final Concept concept : resolvedFromExpression.getObjects()) {
