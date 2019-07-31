@@ -41,7 +41,6 @@ public interface WorkflowActionHandler extends Configurable {
     UserRole projectRole, WorkflowAction action, WorkflowService service)
     throws Exception;
 
-
   /**
    * Validate workflow action.
    *
@@ -104,7 +103,7 @@ public interface WorkflowActionHandler extends Configurable {
    * @throws Exception the exception
    */
   public StringList getTranslationAvailableRoles() throws Exception;
-  
+
   /**
    * Gets the workflow config.
    *
@@ -123,9 +122,9 @@ public interface WorkflowActionHandler extends Configurable {
    * @return the concept list
    * @throws Exception the exception
    */
-  public ConceptList findAvailableConcepts(UserRole userRole, Translation translation,
-    PfsParameter pfs, WorkflowService service) throws Exception;
-
+  public ConceptList findAvailableConcepts(UserRole userRole,
+    Translation translation, PfsParameter pfs, WorkflowService service)
+    throws Exception;
 
   /**
    * Find available refsets.
@@ -140,22 +139,21 @@ public interface WorkflowActionHandler extends Configurable {
   public RefsetList findAvailableRefsets(UserRole userRole, Long projectId,
     PfsParameter pfs, WorkflowService service) throws Exception;
 
-
   /**
    * Find assigned concepts.
    *
    * @param userRole the user role
    * @param translation the translation
    * @param userName the user name
+   * @param actionStatus the action status
    * @param pfs the pfs
    * @param service the service
    * @return the tracking record list
    * @throws Exception the exception
    */
   public TrackingRecordList findAssignedConcepts(UserRole userRole,
-    Translation translation, String userName, PfsParameter pfs,
-    WorkflowService service) throws Exception;
-
+    Translation translation, String userName, String actionStatus,
+    PfsParameter pfs, WorkflowService service) throws Exception;
 
   /**
    * Find assigned refsets.
@@ -168,7 +166,7 @@ public interface WorkflowActionHandler extends Configurable {
    * @return the tracking record list
    * @throws Exception the exception
    */
-  public TrackingRecordList findAssignedRefsets(UserRole userRole, Project project,
-    String userName, PfsParameter pfs, WorkflowService service)
+  public TrackingRecordList findAssignedRefsets(UserRole userRole,
+    Project project, String userName, PfsParameter pfs, WorkflowService service)
     throws Exception;
 }

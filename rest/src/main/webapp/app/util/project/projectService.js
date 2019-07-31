@@ -761,4 +761,52 @@ tsApp
           }
         };
         // end
+        
+        //for existing projects
+        this.getAvailableBranchesByProject = function(projectId) {
+          var deferred = $q.defer();
+
+          // Assign user to project
+          gpService.increment();
+          $http.get(
+            projectUrl + projectId + '/translationExtentions').then(
+          // success
+          function(response) {
+            console.debug('  branches = ', response.data);
+            gpService.decrement();
+            deferred.resolve(response.data);
+          },
+          // error
+          function(response) {
+            utilService.handleError(response);
+            gpService.decrement();
+            deferred.reject(response.data);
+          });
+          return deferred.promise;
+        }; // end getBranches
+        
+        // for new projects
+        this.getAvailableBranchesByTerminologyHandler = function(terminologyHandlerKey, terminologyHandlerUrl) {
+          var deferred = $q.defer();
+
+          // Assign user to project
+          gpService.increment();
+          $http.get(
+            projectUrl + '/translationExtentions?terminologyHandlerKey=' 
+              + terminologyHandlerKey + "&terminologyHandlerUrl=" + terminologyHandlerUrl).then(
+          // success
+          function(response) {
+            console.debug('  branches = ', response.data);
+            gpService.decrement();
+            deferred.resolve(response.data);
+          },
+          // error
+          function(response) {
+            utilService.handleError(response);
+            gpService.decrement();
+            deferred.reject(response.data);
+          });
+          return deferred.promise;
+        }; // end getBranches
+        
       } ]);

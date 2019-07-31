@@ -124,6 +124,24 @@
             ng-options="item for item in metadata.workflowPaths"></select>
         </td>
       </tr>
+      <tr ng-if="action==='Edit' ||
+          (action==='Add' && project.terminologyHandlerKey && project.terminologyHandlerUrl ) ">
+        <td>
+          <b>Translation Suggestion Branches</b>
+        </td>
+        <td>
+          <select ng-model="selectedTranslationExtension"
+            ng-options="item for item in translationBranches.strings"
+            ></select>
+          <button class="btn btn-xs btn-primary"
+            ng-click="addTranslationExtension(selectedTranslationExtension);">Add</button>
+          <span>
+            <div ng-repeat="tb in project.translationExtensions">{{tb}}
+              <i class="noul material-icons md-18" ng-click="removeTranslationExtension(tb)">delete</i>
+            </div>
+          </span>
+        </td>
+      </tr>
       <tr>
         <td title="Project level exclusion clause for intensional definitions">
           <b>Exclusion Clause</b>
