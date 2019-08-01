@@ -267,3 +267,7 @@ a:hover {
 	width: 90%;
 	min-width: 900px;
 }
+
+.alert-text {
+	color: red;
+}

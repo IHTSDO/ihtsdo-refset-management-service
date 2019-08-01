@@ -572,6 +572,7 @@
           </th>
           <th ng-click="setSortField('available','name', selected.translation)">Name<span
               ng-bind="getSortIndicator('available','name')"></span></th>
+          <th ng-if="projects.role.includes('REVIEW')">Author(s)</th>
           <th class="col-md-4 col-xs-4" ng-show="projects.role != 'AUTHOR'">
             <span
               ng-click="setSortField('available','lastModified', selected.translation)">
@@ -609,6 +610,11 @@
             <span
               ng-repeat="desc in concept.descriptions | orderBy:'desc.term'">
               <br /> &bull;&nbsp;{{desc.term}}
+            </span>
+          </td>
+          <td ng-if="projects.role.includes('REVIEW')">
+            <span ng-repeat="description in concept.descriptions">
+              {{ description.lastModifiedBy }}
             </span>
           </td>
           <td ng-show="projects.role != 'AUTHOR'">
@@ -656,7 +662,7 @@
     <div class="col-md-12 col-xs-12"></div>
 
     <h4 ng-show="selected.translation">
-      {{projectsRole}} Assigned Concepts
+      {{projects.role}} Assigned Concepts
       <span ng-show="selected.translation.assigned.totalCount>0">
         ({{selected.translation.assigned.totalCount}})</span>
     </h4>
@@ -701,6 +707,7 @@
           <th class="col-md-4 col-xs-4"
             ng-click="setSortField('assigned','conceptName', selected.translation)">Name<span
               ng-bind="getSortIndicator('assigned','conceptName')"></span></th>
+          <th ng-if="projects.role.includes('REVIEW')">Author(s)</th>
           <th class="col-md-3 col-xs-3"><span
               ng-click="setSortField('assigned','lastModified', selected.translation)">
               Last Modified
@@ -753,6 +760,9 @@
               <br /> &bull;&nbsp;{{desc.term}}
             </span>
           </td>                
+          <td ng-if="projects.role.includes('REVIEW')">
+            {{ record.authors.join(",") }}
+          </td>
           <td>
             {{toDate(record.lastModified)}}
             <span ng-show="projects.role == 'ADMIN'">
