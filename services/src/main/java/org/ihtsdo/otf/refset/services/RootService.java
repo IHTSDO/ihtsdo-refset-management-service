@@ -11,7 +11,7 @@ import org.ihtsdo.otf.refset.helpers.PfsParameter;
 /**
  * Generically represents a service. 
  */
-public interface RootService extends AutoCloseable{
+public interface RootService extends AutoCloseable {
 
   /** The logging object ct threshold. */
   public final static int logCt = 2000;
