@@ -3,7 +3,11 @@
  */
 package org.ihtsdo.otf.refset.jpa.services.validation;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Locale;
 import java.util.Properties;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.apache.lucene.queryparser.classic.ParseException;
@@ -25,6 +29,11 @@ import org.ihtsdo.otf.refset.services.TranslationService;
  */
 public class DefaultValidationCheck extends AbstractValidationCheck {
 
+  
+  private static final Set<String> isoLanguages = new HashSet<>(Arrays.asList(Locale.getISOLanguages()));
+  private static final Set<String> isoCountries = new HashSet<>(Arrays.asList(Locale.getISOCountries()));
+  
+  
   /* see superclass */
   @Override
   public void setProperties(Properties p) {
@@ -191,20 +200,36 @@ public class DefaultValidationCheck extends AbstractValidationCheck {
     TranslationService service) throws Exception {
     ValidationResult result = new ValidationResultJpa();
 
+    // The language must be 2 or 5 characters eg. fr or fr-CA    
+    final String language = translation.getLanguage();
+    
     // The language should be a 2 letter code matching a language
-    if (translation.getLanguage() == null) {
-      result.addError("Translation language must be set");
-    }
+    if (language == null || "".equals(language.trim())) {
+      result.addError("Translation language must be set.");
+    } else {
+      // validate 2
+      if (language.trim().length() == 2) {
+        //  The language should be a 2 letter code matching a language
+        if (!language.toLowerCase().equals(language)) {
+          result.addError("Translation language must be lowercase.");
+        }
+      }
+      // validate > 2
+      else {
+        if (!language.contains("-")) {
+          result.addError("Translation language with dialect must contain a dash (Ex. fr-CA) or exclude dialect (Ex. fr).");
+        }
+        else {
+          String[] tokens = language.split("-");
 
-    // The language should be a 2 letter code matching a language
-    if (translation.getLanguage() != null && !translation.getLanguage()
-        .toLowerCase().equals(translation.getLanguage())) {
-      result.addError("Translation language must be lowercase");
-    }
-
-    if (translation.getLanguage() != null
-        && translation.getLanguage().length() > 2) {
-      result.addWarning("Translation language should be a 2 letter code");
+          if (!isoLanguages.contains(tokens[0])) {
+            result.addError("" + tokens[0] + " is not a valid language code.");
+          }
+          if (!isoCountries.contains(tokens[1])) {
+            result.addError("" + tokens[1] + " is not a valid dialect code.");
+          }
+        }        
+      }
     }
 
     return result;
