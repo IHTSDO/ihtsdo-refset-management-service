@@ -172,14 +172,26 @@ public abstract class AbstractTerminologyHandler implements TerminologyHandler {
       final String toLanguage) throws Exception {
       validateReferrer();
 
+      
       if (key == null) {
         throw new IllegalStateException(
             "You MUST have a Google API Key to use the V2 APIs. See http://code.google.com/apis/language/translate/v2/getting_started.html");
       }
+      
+      String fromLang = fromLanguage;
+      String toLang = toLanguage;
+
+      if (fromLanguage != null && fromLanguage.length() > 2) {
+        fromLang = fromLanguage.substring(0, 2);
+      }
+
+      if (toLanguage != null && toLanguage.length() > 2) {
+        toLang = toLanguage.substring(0, 2);
+      }
 
       final String parameters =
           "format=text&key=" + key + "&q=" + URLEncoder.encode(text, "UTF-8")
-              + "&target=" + toLanguage + "&source=" + fromLanguage;
+              + "&target=" + toLang + "&source=" + fromLang;
       final URL url =
           new URL("https://www.googleapis.com/language/translate/v2");
       final JSONObject json = retrieveJSON(url, parameters);
