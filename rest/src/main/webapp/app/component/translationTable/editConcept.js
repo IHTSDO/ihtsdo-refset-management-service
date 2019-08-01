@@ -119,7 +119,12 @@ tsApp.controller('EditConceptModalCtrl', [
     $scope.project = project;
     $scope.user = user;
     $scope.role = role;
-    $scope.authors = translation.assigned.map(a => a.authors).join(', ');
+    
+    if (translation.assigned) {
+      $scope.editTranslation = translation.assigned.find(
+        et => et.concept.terminologyId === concept.terminologyId);
+    }
+    
     // Save this so we can set the workflow status and it shows up
     // immediately
     $scope.concept = concept;
