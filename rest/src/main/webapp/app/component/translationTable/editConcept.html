@@ -7,6 +7,11 @@
     <i title="Close" class="noul glyphicon glyphicon-remove" ng-click="close()">
     </i>
   </span>
+  <div ng-if="role.includes('REVIEW')">
+    <span>
+      Translation Author(s): {{ authors }}
+    </span>
+  </div>
 </div>
 
 <div class="modal-body">

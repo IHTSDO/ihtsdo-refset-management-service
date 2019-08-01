@@ -16,7 +16,7 @@ tsApp.controller('EditConceptModalCtrl', [
   function($scope, $uibModalInstance, $uibModal, projectService, utilService, translationService,
     validationService, workflowService, concept, translation, project, user, role) {
     console.debug('Entered edit concept modal control');
-
+    
     $scope.displaySuggest = true;
     // Paging params
     $scope.pageSize = 4;
@@ -119,6 +119,7 @@ tsApp.controller('EditConceptModalCtrl', [
     $scope.project = project;
     $scope.user = user;
     $scope.role = role;
+    $scope.authors = translation.assigned.map(a => a.authors).join(', ');
     // Save this so we can set the workflow status and it shows up
     // immediately
     $scope.concept = concept;
