@@ -3522,6 +3522,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       for (String str : languagePriorities) {
         list.addObject(str);
       }
+      list.addObject("en");
       return list;
 
     } catch (Exception e) {

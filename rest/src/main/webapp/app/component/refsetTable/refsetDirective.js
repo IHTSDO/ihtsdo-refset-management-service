@@ -4565,10 +4565,6 @@ tsApp
 
                 // Start the preferred name lookups
                 $scope.startLookup = function() {
-                	if ($scope.languagePriorities[0] == $scope.languagePriorities[1]) {
-                		$scope.errors[0] = 'Preferred Language #1 should not be the same as Preferred Language #2';
-                		return;
-                	}
                     startLookup($scope.refset, $scope.languagePriorities);
                     $uibModalInstance.dismiss('');
                 };

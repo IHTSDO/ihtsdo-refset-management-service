@@ -107,7 +107,6 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
   /** The headers. */
   private Map<String, String> headers;
 
-
   /* see superclass */
   @Override
   public TerminologyHandler copy() throws Exception {
@@ -117,7 +116,6 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     handler.setApiKey(getApiKey());
     return handler;
   }
-
 
   /* see superclass */
   @Override
@@ -138,7 +136,6 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     }
     return true;
   }
-
 
   /* see superclass */
   @Override
@@ -161,13 +158,11 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
 
   }
 
-
   /* see superclass */
   @Override
   public String getName() {
     return "Snowowl Terminology handler";
   }
-
 
   /* see superclass */
   @Override
@@ -181,53 +176,51 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     return result;
   }
 
-
   /* see superclass */
   @Override
   public List<Terminology> getTerminologyVersions(String edition)
     throws Exception {
-	    // Make a webservice call to SnowOwl to get branches
-	    final Client client = ClientBuilder.newClient();
+    // Make a webservice call to SnowOwl to get branches
+    final Client client = ClientBuilder.newClient();
 
-	    PfsParameter localPfs = new PfsParameterJpa();
-	    localPfs.setStartIndex(0);
-	    localPfs.setMaxResults(1000);
+    PfsParameter localPfs = new PfsParameterJpa();
+    localPfs.setStartIndex(0);
+    localPfs.setMaxResults(1000);
 
-	    WebTarget target = client.target(url + "/branches?" 
-	        + "limit=" + localPfs.getMaxResults());
+    WebTarget target =
+        client.target(url + "/branches?" + "limit=" + localPfs.getMaxResults());
 
-	    Response response =
-	        target.request(accept).header("Authorization", authHeader)
-	            .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
-	            .header("Cookie", getCookieHeader()).get();
-	    String resultString = response.readEntity(String.class);
-	    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-	      // n/a
-	    } else {
+    Response response =
+        target.request(accept).header("Authorization", authHeader)
+            .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
+            .header("Cookie", getCookieHeader()).get();
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
 
-	      throw new LocalException(
-	          "Unexpected terminology server failure. Message = " + resultString);
+      throw new LocalException(
+          "Unexpected terminology server failure. Message = " + resultString);
+    }
+
+    ObjectMapper mapper = new ObjectMapper();
+    JsonNode doc = mapper.readTree(resultString);
+
+    List<Terminology> branches = new ArrayList<>();
+    for (final JsonNode branchNode : doc.get("items")) {
+      String path = branchNode.get("path").asText();
+      if (StringUtils.countMatches(path, "/") < 3) {
+        final Terminology tmlgy = new TerminologyJpa();
+        tmlgy.setTerminology(edition);
+        tmlgy.setVersion(path);
+        tmlgy.setName(branchNode.get("name").asText());
+        branches.add(tmlgy);
+      }
+    }
+
+    return branches;
+
   }
-
-	    ObjectMapper mapper = new ObjectMapper();
-	    JsonNode doc = mapper.readTree(resultString);
-
-	    List<Terminology> branches = new ArrayList<>();
-	    for (final JsonNode branchNode : doc.get("items")) {
-	      String path = branchNode.get("path").asText();
-	      if (StringUtils.countMatches(path, "/") < 3) {
-	    	  final Terminology tmlgy = new TerminologyJpa();
-	    	  tmlgy.setTerminology(edition);
-	    	  tmlgy.setVersion(path);
-	    	  tmlgy.setName(branchNode.get("name").asText());
-	    	  branches.add(tmlgy);
-	      }       
-	    }
-
-	    return branches;
-
-  }
-
 
   /* see superclass */
   @Override
@@ -348,7 +341,6 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     return list;
   }
 
-
   /* see superclass */
   @Override
   public List<String> getRequiredLanguageRefsets(String terminology,
@@ -390,20 +382,31 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     final JsonNode requiredLanguageRefsets =
         metadata.get("requiredLanguageRefsets");
     JsonNode entry = null;
-    int index = 0, dex = 0;
+    int index = 0;
+    if (requiredLanguageRefsets != null) {
+      while ((entry = requiredLanguageRefsets.get(index++)) != null) {
+        String entryText = entry.toString();
+        // fragile solution to JsonNode.fields and fieldNames next() not working
+        requiredLanguageList.add(entryText.substring(
+            entryText.lastIndexOf(':') - 3, entryText.lastIndexOf(':') - 1));
+      }
+
+    } else {
+      if (metadata.toString().contains("requiredLanguageRefset")) {
+        // fragile solution to JsonNode.fields and fieldNames next() not
+        // working
+        requiredLanguageList.add(metadata.toString().substring(
+            metadata.toString().lastIndexOf(':') - 3,
+            metadata.toString().lastIndexOf(':') - 1));
+      }
+
+    }
+
     if (requiredLanguageRefsets == null) {
       return requiredLanguageList;
     }
-    while ((entry = requiredLanguageRefsets.get(index++)) != null) {
-      String entryText = entry.toString();
-      // fragile solution to JsonNode.fields and fieldNames next() not working
-      requiredLanguageList.add(entryText.substring(
-          entryText.lastIndexOf(':') - 3, entryText.lastIndexOf(':') - 1));
-    }
-
     return requiredLanguageList;
   }
-
 
   /* see superclass */
   @Override
@@ -683,7 +686,6 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     return conceptList;
   }
 
-
   /* see superclass */
   @Override
   public int countExpression(String expr, String terminology, String version)
@@ -723,7 +725,6 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
 
   }
 
-
   /* see superclass */
   @Override
   public Concept getFullConcept(String terminologyId, String terminology,
@@ -736,7 +737,7 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     final Client client = ClientBuilder.newClient();
     final WebTarget target = client
         .target(url + "/browser/" + version + "/concepts/" + terminologyId);
-    
+
     final Response response =
         target.request("application/vnd.org.ihtsdo.browser+json")
             .header("Authorization", authHeader)
@@ -953,7 +954,6 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     return concept;
   }
 
-
   /* see superclass */
   @Override
   public Concept getConcept(String terminologyId, String terminology,
@@ -973,7 +973,6 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     }
     return conceptList.getObjects().get(0);
   }
-
 
   /* see superclass */
   @Override
@@ -995,13 +994,11 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
         descriptions);
   }
 
-
   /* see superclass */
   @Override
   public boolean isConceptId(String query) {
     return query.matches("\\d+[01]0\\d");
   }
-
 
   /* see superclass */
   @Override
@@ -1147,7 +1144,6 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     return conceptList;
   }
 
-
   /* see superclass */
   @Override
   public ConceptList findRefsetsForQuery(String query, String terminology,
@@ -1175,7 +1171,6 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     }
   }
 
-
   /* see superclass */
   @Override
   public List<Concept> getModules(String terminology, String version)
@@ -1184,7 +1179,6 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
         "< 900000000000443000 | Module (core metadata concept) |", terminology,
         version, null, false).getObjects();
   }
-
 
   /* see superclass */
   @Override
@@ -1248,7 +1242,6 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
 
     return conceptList;
   }
-
 
   /* see superclass */
   @Override
@@ -1321,7 +1314,6 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     return conceptList;
   }
 
-
   /* see superclass */
   @Override
   public void setUrl(String url) throws Exception {
@@ -1330,13 +1322,11 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
         .topPrivateDomain().toString();
   }
 
-
   /* see superclass */
   @Override
   public String getDefaultUrl() {
     return defaultUrl;
   }
-
 
   /* see superclass */
   @Override
@@ -1444,7 +1434,7 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
   @Override
   public List<String> getBranches(String terminology, String version)
     throws Exception {
-	    Logger.getLogger(getClass())
+    Logger.getLogger(getClass())
         .info("  get branches - " + url + ", " + terminology + ", " + version);
     // Make a webservice call to SnowOwl to get branches
     final Client client = ClientBuilder.newClient();
@@ -1453,7 +1443,7 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     localPfs.setStartIndex(0);
     localPfs.setMaxResults(1000);
 
-    WebTarget target = client.target(url + "/" + version + "/branches?" 
+    WebTarget target = client.target(url + "/" + version + "/branches?"
         + "limit=" + localPfs.getMaxResults());
 
     Response response =
@@ -1476,10 +1466,10 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     for (final JsonNode branchNode : doc.get("items")) {
       String path = branchNode.get("path").asText();
       if (terminology.isEmpty() || path.contains(terminology)) {
-    	  if (version.isEmpty() || path.contains(version)) {
-    	      branches.add(path);
-    	  }
-      }       
+        if (version.isEmpty() || path.contains(version)) {
+          branches.add(path);
+        }
+      }
     }
 
     return branches;
@@ -1508,7 +1498,7 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     if (response.getStatusInfo().getFamily() != Family.SUCCESSFUL) {
       throw new LocalException(
           "Unexpected terminology server failure. Message = " + resultString);
-}
+    }
 
     ObjectMapper mapper = new ObjectMapper();
     JsonNode doc = mapper.readTree(resultString);

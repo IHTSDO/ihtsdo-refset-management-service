@@ -9,13 +9,13 @@
 <div class="modal-body">
   <div>
     <table class="table">
-      <tr  ng-show="requiredLanguages.length > 0">
+      <tr  ng-show="requiredLanguages.length > 1">
         <td>Default language is English.  Other language(s) can be selected to have precedence.</td><td></td>
       </tr>
-      <tr  ng-show="requiredLanguages.length == 0">
+      <tr  ng-show="requiredLanguages.length == 1">
         <td>Only available language is English.  </td><td></td>
       </tr>
-      <tr ng-show="requiredLanguages.length > 0">
+      <tr ng-show="requiredLanguages.length > 1">
         <td>
           <b>Preferred Language #1</b>
         </td>
@@ -24,7 +24,7 @@
             ng-options="item as item for item in requiredLanguages"></select>          
         </td>
       </tr>
-      <tr ng-show="requiredLanguages.length > 1">
+      <tr ng-show="requiredLanguages.length > 2">
         <td>
           <b>Preferred Language #2</b>
         </td>
