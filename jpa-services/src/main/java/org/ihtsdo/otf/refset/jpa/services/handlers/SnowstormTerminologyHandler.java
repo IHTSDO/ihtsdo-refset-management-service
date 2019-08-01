@@ -177,7 +177,9 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     Logger.getLogger(getClass())
         .debug("  Get terminology versions - " + url + "/codesystems");
     final WebTarget target = client.target(url + "/codesystems");
-    final Response response = target.request(accept).get();
+    final Response response = target.request(accept).header("Authorization", authHeader)
+        .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
+        .header("Cookie", getCookieHeader()).get();
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -210,7 +212,9 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
         + "/codesystems/" + edition + "/versions");
     final WebTarget target =
         client.target(url + "/codesystems/" + edition + "/versions");
-	    final Response response = target.request(accept).get();
+	    final Response response = target.request(accept).header("Authorization", authHeader)
+            .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
+            .header("Cookie", getCookieHeader()).get();
 	    final String resultString = response.readEntity(String.class);
 	    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
 	      // n/a
@@ -1370,7 +1374,9 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
 
     List<String> translationExtentions = new ArrayList<>();
 
-    for (final JsonNode branchNode : doc.get("items")) {
+    int index = 0;
+    JsonNode branchNode = null;
+    while ((branchNode = doc.get(index++)) != null) {
       String path = branchNode.get("path").asText();
 
       if (path != null) {
@@ -1416,7 +1422,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
   public List<String> getRequiredLanguageRefsets(String terminology,
     String version) throws Exception {
     // TODO Auto-generated method stub
-    return null;
+    return new ArrayList<String>();
   }
 
 }
