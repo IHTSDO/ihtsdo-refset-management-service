@@ -1106,7 +1106,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
               termIds.remove(con.getTerminologyId());
 
               // Reread the member as we don't know if it has changed
-              if (saveMembers) {
+              if (saveMembers && languagePriorities != null) {
                 final ConceptRefsetMember member = refsetService
                     .getMember(memberMap.get(con.getTerminologyId()).getId());
                 member.setConceptName(con.getName());
