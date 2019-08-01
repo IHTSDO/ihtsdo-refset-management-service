@@ -3619,18 +3619,20 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
           "start lookup member names", UserRole.AUTHOR);
       // parse required languages
       String[] languages = new String[] {};
-      if (!requiredLanguages.isEmpty()) {
+      if (requiredLanguages != null && !requiredLanguages.isEmpty()) {
         languages = requiredLanguages.split(",");
       }
       List<String> languagePriorities = new ArrayList<>();
       for (String lang : languages) {
         languagePriorities.add(lang);
       }
+      
       // Launch lookup process in background thread
       refsetService.lookupMemberNames(refsetId,
           "requested from client " + userName,
           background == null ? ConfigUtility.isBackgroundLookup() : background,
-          languagePriorities);
+          (requiredLanguages != null) ? languagePriorities : null);
+
     } catch (Exception e) {
       handleException(e,
           "trying to start the lookup of member names and statues");
