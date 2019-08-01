@@ -1535,7 +1535,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       if (ConfigUtility.isAssignNames()) {
         // Lookup member names should always happen after commit
         refsetService.lookupMemberNames(refset.getId(), "adding refset members",
-            ConfigUtility.isBackgroundLookup());
+            ConfigUtility.isBackgroundLookup(), null);
       }
       
     } catch (Exception e) {
