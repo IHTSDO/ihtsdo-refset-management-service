@@ -1127,6 +1127,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
                     }
                   }
                 }
+                refsetService.updateMember(member);
               }
 
               // This is for an in-memory member, just update the object
@@ -1135,6 +1136,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
                     memberMap.get(con.getTerminologyId());
                 member.setConceptName(con.getName());
                 member.setConceptActive(con.isActive());
+                refsetService.updateMember(member);
               }
             }
 
