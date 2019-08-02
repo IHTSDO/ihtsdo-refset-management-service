@@ -2020,7 +2020,7 @@ tsApp
                   angular.forEach($scope.exists, function(member) {
                     var row = "" + member.terminologyId 
                       + "\t" + ((member.effectiveTime !== "null") ? utilService.toShortDate(member.effectiveTime) : "")  
-                      + "\t" + ((member.active === "true") ? "1" : "0") 
+                      + "\t" + ((member.active === true) ? "1" : "0") 
                       + "\t" + ((member.moduleId !== "null") ? member.moduleId : "")  
                       + "\t" + member.refsetId
                       + "\t" + member.conceptId
