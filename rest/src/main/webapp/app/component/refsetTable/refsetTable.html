@@ -657,7 +657,7 @@
             title="Add members - only when refset is assigned"
             class="md-grey material-icons md-18">add</i>
           <i
-            ng-show="value == 'ASSIGNED' && projects.role != 'ADMIN' && selected.refset.type == 'EXTENSIONAL'"
+            ng-show="value == 'ASSIGNED' && projects.role != 'ADMIN' && selected.refset.type == 'EXTENSIONAL' && showImportFromExistingProject"
             ng-click="openImportFromExistingProjectsModal()"
             title="Import from Existing Projects"
             class="noul material-icons md-18">file_copy</i>

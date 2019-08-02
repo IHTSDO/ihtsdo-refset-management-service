@@ -18,9 +18,10 @@ tsApp
       'releaseService',
       'workflowService',
       'validationService',
+      'appConfig',
       function($uibModal, $location, $window, $route, $routeParams, $sce, $interval, utilService,
         securityService, projectService, refsetService, releaseService, workflowService,
-        validationService) {
+        validationService, appConfig) {
         console.debug('configure refsetTable directive');
         return {
           restrict : 'A',
@@ -61,7 +62,8 @@ tsApp
               $scope.filters = [];
               $scope.showDuplicatesExport = false;
               $scope.conceptIds = [];
-
+              $scope.showImportFromExistingProject = false;
+              
               // Page metadata
               var memberTypes = [ 'Member', 'Exclusion', 'Inclusion', 'Active', 'Inactive',
                 'Translated', 'Not Translated' ];
@@ -628,6 +630,13 @@ tsApp
                 if (refset.id != $scope.user.userPreferences.lastRefsetId) {
                   $scope.user.userPreferences.lastRefsetId = refset.id;
                   securityService.updateUserPreferences($scope.user.userPreferences);
+                }
+                //show refset copy button 
+                if (appConfig['deploy.refset.member.copy.group']) {
+                  var refsetList = appConfig['deploy.refset.member.copy.group'].split('|');
+                  if (refsetList.includes($scope.selected.refset.name)) {
+                    $scope.showImportFromExistingProject = true;
+                  }
                 }
               };
 
@@ -1764,6 +1773,7 @@ tsApp
                 };
 
               };
+              
               
               $scope.openImportFromExistingProjectsModal = function() {
                 console.debug('openImportFromExistingProjectsModal ');
