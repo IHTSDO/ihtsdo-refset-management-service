@@ -84,6 +84,8 @@
   <button class="btn btn-xs btn-primary" ng-disabled="!file"
     ng-show="operation == 'Import' && errors.length == 0  && comments.length == 0"
     ng-click="import(file);">Import</button>
+  <button class="btn btn-xs btn-primary" ng-show="operation == 'Import' && errors.length > 1 && (showDuplicatesExport)"
+    ng-click="exportDuplicateMembers(file);">Download Duplicates</button>
   <button class="btn btn-xs btn-primary"
     ng-show="operation == 'Import' && errors.length > 0"
     ng-click="continueImport(file);">Continue With Import</button>
