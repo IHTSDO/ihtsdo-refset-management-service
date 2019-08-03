@@ -1,4 +1,4 @@
-// Refset Table directive
+  // Refset Table directive
 // e.g. <div refset-table value='PUBLISHED' />
 tsApp
   .directive(
@@ -636,6 +636,9 @@ tsApp
                   var refsetList = appConfig['deploy.refset.member.copy.group'].split('|');
                   if (refsetList.includes($scope.selected.refset.name)) {
                     $scope.showImportFromExistingProject = true;
+                  }
+                  else{
+                    $scope.showImportFromExistingProject = false;
                   }
                 }
               };
