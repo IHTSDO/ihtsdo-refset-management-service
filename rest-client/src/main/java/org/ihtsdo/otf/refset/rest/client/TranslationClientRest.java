@@ -34,6 +34,7 @@ import org.ihtsdo.otf.refset.helpers.KeyValuesMap;
 import org.ihtsdo.otf.refset.helpers.LanguageDescriptionTypeList;
 import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.helpers.TranslationList;
+import org.ihtsdo.otf.refset.helpers.TranslationSuggestionList;
 import org.ihtsdo.otf.refset.jpa.ConceptDiffReportJpa;
 import org.ihtsdo.otf.refset.jpa.MemoryEntryJpa;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
@@ -1478,5 +1479,34 @@ public class TranslationClientRest extends RootClientRest
   public Concept updateConceptName(Long translationId, String conceptId, String authToken) throws Exception {
 	// TODO Auto-generated method stub
 	return null;
+  }
+
+  @Override
+  public TranslationSuggestionList getTranslationSuggestionsForConcept(
+    Long refsetId, Long conceptId, String authToken) throws Exception {
+    Logger.getLogger(getClass())
+        .debug("Translation Suggestion - refset: " + refsetId + " concept: " + conceptId);
+
+    Client client = ClientBuilder.newClient();
+    WebTarget target = client.target(config.getProperty("base.url")
+        + "/translation/refset/" + refsetId + "/concept/" + conceptId);
+        
+    Response response = target.request(MediaType.APPLICATION_XML)
+        .header("Authorization", authToken).get();
+
+    if (response.getStatus() == 204) {
+      return null;
+    }
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+
+    // converting to object
+    return (TranslationSuggestionList) ConfigUtility.getGraphForString(resultString,
+        TranslationSuggestionList.class);
   }
 }

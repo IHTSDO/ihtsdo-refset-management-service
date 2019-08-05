@@ -76,7 +76,7 @@ tsApp.service('translationService', [
       $http.get(translationUrl + 'refset/' + refsetId + '/concept/' + terminologyId).then(
       // success
       function(response) {
-        console.debug('  concepts ', response.data);
+        console.debug('  findTranslationSuggestionsForConcept ', response.data);
         gpService.decrement();
         deferred.resolve(response.data);
       },
