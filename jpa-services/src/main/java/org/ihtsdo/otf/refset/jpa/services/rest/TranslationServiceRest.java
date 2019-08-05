@@ -1,8 +1,5 @@
 /**
- * Copyright 2015 West Coast Informatics, LLC
- */
-/*
- * 
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.jpa.services.rest;
 
@@ -21,6 +18,7 @@ import org.ihtsdo.otf.refset.helpers.KeyValuesMap;
 import org.ihtsdo.otf.refset.helpers.LanguageDescriptionTypeList;
 import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.helpers.TranslationList;
+import org.ihtsdo.otf.refset.helpers.TranslationSuggestionList;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.rf2.Concept;
@@ -634,20 +632,27 @@ public interface TranslationServiceRest {
   public KeyValuePairList getFieldFilters(Long projectId, String workflowStatus,
     String authToken) throws Exception;
 
+  /**
+   * Update concept name.
+   *
+   * @param translationId the translation id
+   * @param conceptId the concept id
+   * @param authToken the auth token
+   * @return the concept
+   * @throws Exception the exception
+   */
+  public Concept updateConceptName(Long translationId, String conceptId,
+    String authToken) throws Exception;
 
-	/**
-	 * Update concept name.
-	 *
-	 * @param translationId
-	 *            the translation id
-	 * @param conceptId
-	 *            the concept id
-	 * @param authToken
-	 *            the auth token
-	 * @return the concept
-	 * @throws Exception
-	 *             the exception
-	 */
-	public Concept updateConceptName(Long translationId, String conceptId, String authToken) throws Exception;
-
+  /**
+   * Returns the translation suggestions for concept.
+   *
+   * @param refsetId the refset id
+   * @param conceptId the concept id
+   * @param authToken the auth token
+   * @return the translation suggestions for concept
+   * @throws Exception the exception
+   */
+  public TranslationSuggestionList getTranslationSuggestionsForConcept(
+    Long refsetId, Long conceptId, String authToken) throws Exception;
 }

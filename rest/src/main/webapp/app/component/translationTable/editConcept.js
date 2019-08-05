@@ -174,7 +174,6 @@ tsApp.controller('EditConceptModalCtrl', [
         translationService.findTranslationSuggestionsForConcept(
           $scope.translation.refsetId, $scope.concept.terminologyId)
           .then(function(data) {
-
             $scope.translationSuggestions = data;
         });
       }
