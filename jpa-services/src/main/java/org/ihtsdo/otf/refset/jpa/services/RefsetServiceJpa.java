@@ -973,9 +973,6 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
     /** The save members. */
     private boolean saveMembers = true;
     
-    /**  The preferred language. */
-    private String preferredLanguage;
-
     /**
      * Instantiates a {@link LookupMemberNamesThread} from the specified
      * parameters.
