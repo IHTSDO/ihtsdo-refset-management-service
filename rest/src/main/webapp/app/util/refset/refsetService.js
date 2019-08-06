@@ -1349,14 +1349,13 @@ tsApp.service('refsetService', [
     };
 
     // start lookup of member names/statuses
-    this.startLookup = function(refsetId, preferredLanguage) {
+    this.startLookup = function(refsetId) {
       console.debug('startLookup');
       var deferred = $q.defer();
 
       // get refset revision
       $http.get(
-        refsetUrl + 'lookup/start?refsetId=' + refsetId
-          + (preferredLanguage != null ? '&preferredLanguage=' + preferredLanguage : '')).then(
+        refsetUrl + 'lookup/start?refsetId=' + refsetId).then(
       // success
       function(response) {
         console.debug('  start lookup names = ', response.data);

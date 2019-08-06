@@ -3869,12 +3869,11 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
   public void startLookupMemberNames(
     @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
     @ApiParam(value = "Background flag, e.g. true", required = true) @QueryParam("background") Boolean background,
-    @ApiParam(value = "PreferredLanguage, e.g. fr", required = true) @QueryParam("preferredLanguage") String preferredLanguage,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass())
         .info("RESTful call GET (Refset): /refset/lookup/start " + refsetId
-            + ", " + background + ", " + preferredLanguage);
+            + ", " + background );
 
     final RefsetService refsetService =
         new RefsetServiceJpa(getHeaders(headers));
