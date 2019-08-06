@@ -1810,18 +1810,36 @@ tsApp
                 $scope.exists = [];
                 $scope.invalid = [];
                 $scope.refsets = [];
+                $scope.originalRefsets = [];
                 $scope.includeRefsets = [];
                 $scope.errors = [];
                 $scope.warnings = [];
-                $scope.comments = [];               
+                $scope.comments = [];
+                
+                $scope.workflowStatusList = [];
+                $scope.moduleIdList = [];
+                $scope.effectiveTimeList = [];
                 
                 refsetService.getRefsetsForProject($scope.refset.projectId).then(
                     // Success
                     function(data) {
                       if (data.refsets.length > 0) {
                         $scope.refsets = data.refsets;
+                        $scope.originalRefsets = data.refsets;
                         //remove current refset
                         $scope.refsets = $scope.refsets.filter(r => r.id !== $scope.refset.id);
+
+                        $scope.refsets.forEach(function(refset) {
+                          if (!$scope.workflowStatusList.includes(refset.workflowStatus)) {
+                            $scope.workflowStatusList.push(refset.workflowStatus)
+                          }
+                          if (!$scope.moduleIdList.includes(refset.moduleId)) {
+                            $scope.moduleIdList.push(refset.moduleId)
+                          }
+                          if (refset.effectiveTime && !$scope.effectiveTimeList.includes(utilService.toShortDate(refset.effectiveTime))) {
+                            $scope.effectiveTimeList.push(utilService.toShortDate(refset.effectiveTime))
+                          }                          
+                        });
                       } else {
                         console.info("None returned");
                       }
@@ -1831,6 +1849,32 @@ tsApp
                       handleError($scope.errors, data);
                     }
                 );
+                
+                $scope.filterRefsets = function() {
+                  
+                  $scope.refsets = JSON.parse(JSON.stringify($scope.originalRefsets));
+                  
+                  console.debug("workflow:", $scope.selectedWorkflowStatus);
+                  console.debug("module:", $scope.selectedModule);
+                  console.debug("eff time:", $scope.selectedEffectiveTime);
+                  
+                  if ($scope.selectedWorkflowStatus && $scope.selectedWorkflowStatus !== "") {
+                    $scope.refsets = $scope.refsets.filter(
+                      r => r.workflowStatus === $scope.selectedWorkflowStatus);
+                  }
+                  if ($scope.selectedModule && $scope.selectedModule !== "") {
+                    $scope.refsets = $scope.refsets.filter(
+                      r => r.moduleId === $scope.selectedModule);
+                  }
+                  if ($scope.selectedEffectiveTime && $scope.selectedEffectiveTime !== "") {
+                    $scope.refsets = $scope.refsets.filter(
+                      r => utilService.toShortDate(r.effectiveTime) === utilService.toShortDate($scope.selectedEffectiveTime));
+                  }
+                  //exclude items which were added
+                  angular.forEach($scope.includeRefsets, function(refset) {
+                    $scope.refsets = $scope.refsets.filter(r => r.id !== refset.id );
+                  });
+                }
                 
                 // Add members in the list
                 $scope.includeRefset = function() {
@@ -1863,13 +1907,13 @@ tsApp
                 };
                 
                 // remove from list and add to select.
-                // TODO: fix remove
                 $scope.removeRefset = function(refset) {
                   console.debug("Remove refset", refset.id, refset.name);
                   $scope.includeRefsets = $scope.includeRefsets.filter(r => r.id !== refset.id);
                   $scope.refsetMemberList = $scope.refsetMemberList.filter(r => r.refsetId !== refset.id);
                   $scope.exists = $scope.exists.filter(r => r.refsetId !== refset.id);
                   $scope.refsets.push(refset);
+                  $scope.filterRefsets();
                   
                   console.debug("REMOVE ", 
                       "refsetMemberList: ", $scope.refsetMemberList.length,
@@ -1877,7 +1921,6 @@ tsApp
                       "added: ", $scope.added.length,
                       "exists: ", $scope.exists.length,
                       "invalid: ", $scope.invalid.length,
-                      // "refsets: ", $scope.refsets.length,
                       "indcludeRefsets: ", $scope.includeRefsets.length,
                       "errors: ", $scope.errors.length,
                       "warnings: ", $scope.warnings.length,
@@ -1893,6 +1936,7 @@ tsApp
                   $scope.refsetMemberList = [];
                   $scope.includeRefsets = [];
                   $scope.exists = [];
+                  $scope.filterRefsets();
                   
                   console.debug("CLEAR ", 
                       "refsetMemberList: ", $scope.refsetMemberList.length,
@@ -1900,7 +1944,6 @@ tsApp
                       "added: ", $scope.added.length,
                       "exists: ", $scope.exists.length,
                       "invalid: ", $scope.invalid.length,
-                      // "refsets: ", $scope.refsets.length,
                       "indcludeRefsets: ", $scope.includeRefsets.length,
                       "errors: ", $scope.errors.length,
                       "warnings: ", $scope.warnings.length,
@@ -1958,55 +2001,6 @@ tsApp
                   );
                 }
 
-//                // find member and add if not exists
-//                function includeMember(refset, member) {
-//                  console.debug("add member", refset, member);
-//                  // check that concept id is only digits before proceeding
-//                  var reg = /^\d+$/;
-//                  if (!reg.test(member.conceptId)) {
-//                    console.debug("invalid member", member);
-//                    $scope.invalid.push(member);
-//                    return;
-//                  }
-//                  refsetService.findRefsetMembersForQuery(refset.id, 'conceptId:' + member.conceptId, {
-//                    startIndex : 0,
-//                    maxResults : 1
-//                  }).then(
-//                  // Success
-//                  function(data) {
-//                    if (data.members.length > 0) {
-//                      //console.debug("refset already member", member);
-//                      $scope.exists.push(member);
-//                    } else {
-//                      console.debug("adding member", member);
-//                      var newMember = {
-//                        active : true,
-//                        conceptId : member.conceptId,
-//                        memberType : 'MEMBER',
-//                        moduleId : refset.moduleId,
-//                        refsetId : refset.id
-//                      };
-//
-//                      refsetService.addRefsetMember(newMember).then(
-//                          // Success
-//                          function(data) {
-//                            $scope.added.push(member);
-//                            console.debug("member added", member);
-//                          },
-//                          // Error
-//                          function(data) {
-//                            handleError($scope.errors, data);
-//                          }
-//                      );
-//                    }
-//                  },
-//                  // Error
-//                  function(data) {
-//                    handleError($scope.errors, data);
-//                  });
-//
-//                }
-
                 // Dismiss modal
                 $scope.close = function() {
                   $uibModalInstance.close(refset);
@@ -2038,7 +2032,6 @@ tsApp
                   downloadLink.click();
                 }
                 
-                //NOT BEING CALLED FROM NG-OPTIONS
                 $scope.selectDisplay = function (refset) {
                   var display = refset.name + ' - ' + refset.moduleId + ' - ' + refset.workflowStatus;
                   if (refset.effectiveTime != null) {
