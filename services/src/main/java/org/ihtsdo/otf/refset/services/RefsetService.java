@@ -1,5 +1,5 @@
-/**
- * Copyright 2015 West Coast Informatics, LLC
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.services;
 
@@ -294,11 +294,10 @@ public interface RefsetService extends ReleaseService {
    * @param refsetId the refset
    * @param label the label
    * @param background the background
-   * @param languagePriorities the language priorities
    * @throws Exception the exception
    */
-  public void lookupMemberNames(Long refsetId, String label, boolean background,
-    List<String> languagePriorities) throws Exception;
+  public void lookupMemberNames(Long refsetId, String label, boolean background)
+    throws Exception;
 
   /**
    * Perform member lookup names for a known list of members. This is to support

@@ -1,5 +1,5 @@
-/**
- * Copyright 2015 West Coast Informatics, LLC
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.jpa.services;
 
@@ -884,7 +884,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
 
   /* see superclass */
   @Override
-  public void lookupMemberNames(Long refsetId, String label, boolean background, List<String> languagePriorities)
+  public void lookupMemberNames(Long refsetId, String label, boolean background)
     throws Exception {
     Logger.getLogger(getClass()).info("Release Service - lookup member names - "
         + refsetId + ", " + background);
@@ -892,7 +892,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
     if (ConfigUtility.isAssignNames()) {
       if (!lookupProgressMap.containsKey(refsetId)) {
         // Create new thread
-        Runnable lookup = new LookupMemberNamesThread(refsetId, label, languagePriorities);
+        Runnable lookup = new LookupMemberNamesThread(refsetId, label);
         Thread t = new Thread(lookup);
         t.start();
         // Handle non-background
@@ -973,8 +973,8 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
     /** The save members. */
     private boolean saveMembers = true;
     
-    /** The language priorities. */
-    private List<String> languagePriorities;
+    /**  The preferred language. */
+    private String preferredLanguage;
 
     /**
      * Instantiates a {@link LookupMemberNamesThread} from the specified
@@ -982,12 +982,12 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
      *
      * @param id the id
      * @param label the label
+     * @param preferredLanguage the preferred language
      * @throws Exception the exception
      */
-    public LookupMemberNamesThread(Long id, String label, List<String> languagePriorities) throws Exception {
+    public LookupMemberNamesThread(Long id, String label) throws Exception {
       this.refsetId = id;
       this.label = label;
-      this.languagePriorities = languagePriorities;
     }
 
     /**
@@ -1074,6 +1074,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
           int i = 0;
           final String terminology = refset.getTerminology();
           final String version = refset.getVersion();
+          final String preferredLanguage = refset.getPreferredLanguage();
 
           // Execute for all members
           boolean missingConcepts = false;
@@ -1106,23 +1107,20 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
               termIds.remove(con.getTerminologyId());
 
               // Reread the member as we don't know if it has changed
-              if (saveMembers && languagePriorities != null) {
+              if (saveMembers && !preferredLanguage.isEmpty()) {
                 final ConceptRefsetMember member = refsetService
                     .getMember(memberMap.get(con.getTerminologyId()).getId());
                 member.setConceptName(con.getName());
                 // set concept name to highest ranked provided language
                 // available given the concept's descriptions
                 // type must be 'PT'
-                if (!languagePriorities.isEmpty()) {
-                  for (int i1 = languagePriorities.size() -1 ; i1 >= 0; i1--) {
-                	String lang = languagePriorities.get(i1);
-                    for (Description desc : con.getDescriptions()) {
-                      for (LanguageRefsetMember lrm : desc.getLanguageRefsetMembers()) {
-                    	if (lrm.getAcceptabilityId().equals("900000000000548007")) {
-                    		if (desc.getLanguageCode().equals(lang) && desc.getTypeId().equals("900000000000013009")) {
-                    			member.setConceptName(desc.getTerm()); 
-                    		}
-                    	}
+                for (Description desc : con.getDescriptions()) {
+                  for (LanguageRefsetMember lrm : desc
+                      .getLanguageRefsetMembers()) {
+                    if (lrm.getAcceptabilityId().equals("900000000000548007")) {
+                      if (desc.getLanguageCode().equals(preferredLanguage)
+                          && desc.getTypeId().equals("900000000000013009")) {
+                        member.setConceptName(desc.getTerm());
                       }
                     }
                   }
