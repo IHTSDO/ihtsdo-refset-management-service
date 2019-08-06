@@ -565,6 +565,12 @@ tsApp
                     .sortBy('negated'));
                 }
               };
+              
+              $scope.getRequiredLanguageRefsets = function(refsetId) {
+                refsetService.getRequiredLanguageRefsets(refsetId).then(function(data) {
+                  $scope.requiredLanguages = data.strings;
+                });
+              };
 
               // Table sorting mechanism
               $scope.setSortField = function(table, field, object) {
@@ -625,6 +631,7 @@ tsApp
                 $scope.getMembers(refset);
                 $scope.getStandardDescriptionTypes(refset.terminology, refset.version);
                 $scope.getLink(refset);
+                $scope.getRequiredLanguageRefsets(refset.id);
                 if (refset.id != $scope.user.userPreferences.lastRefsetId) {
                   $scope.user.userPreferences.lastRefsetId = refset.id;
                   securityService.updateUserPreferences($scope.user.userPreferences);
@@ -850,13 +857,14 @@ tsApp
               };
 
               // Need both a $scope version and a non one for modals.
-              $scope.startLookup = function(refset, languagePriorities) {
-                startLookup(refset, languagePriorities);
+              $scope.startLookup = function(refset) {
+                startLookup(refset);
               };
 
               // Start lookup again - not $scope because modal must access it
-              function startLookup(refset, languagePriorities) {
-                refsetService.startLookup(refset.id, languagePriorities).then(
+              function startLookup(refset) {
+                
+                refsetService.startLookup(refset.id, refset.preferredLanguage).then(
                 // Success
                 function(data) {
                   $scope.refsetLookupProgress[refset.id] = 1;
@@ -985,6 +993,50 @@ tsApp
                   });
               }
 
+              $scope.submitRefset = function(refset) {
+
+                // Validate refset
+                validationService.validateRefset(refset).then(
+                  function(data) {
+
+                    // If there are errors, make them available and stop.
+                    if (data.errors && data.errors.length > 0) {
+                      $scope.errors = data.errors;
+                      return;
+                    } else {
+                      $scope.errors = [];
+                    }
+
+                    // if $scope.warnings is empty, and data.warnings is not,
+                    // show warnings and stop
+                    if (data.warnings && data.warnings.length > 0
+                      && $scope.warnings.join() !== data.warnings.join()) {
+                      $scope.warnings = data.warnings;
+                      return;
+                    } else {
+                      $scope.warnings = [];
+                    }
+
+                    // Success - validate refset
+                    refsetService.updateRefset(refset).then(
+                    // Success - update refset
+                    function(data) {
+                      $uibModalInstance.close(refset);
+                    },
+                    // Error - update refset
+                    function(data) {
+                      handleError($scope.errors, data);
+                    });
+
+                  },
+                  // Error - validate refset
+                  function(data) {
+                    handleError($scope.errors, data);
+                  });
+
+              };
+
+              
               //
               // MODALS
               //
@@ -4514,63 +4566,6 @@ tsApp
                   return re.test(email);
                 }
 
-              };
-
-              // Add Start Lookup modal
-              $scope.openStartLookupModal = function() {
-                console.debug('openStartLookupModal ');
-
-                var modalInstance = $uibModal.open({
-                  templateUrl : 'app/component/refsetTable/startLookup.html',
-                  controller : StartLookupModalCtrl,
-                  backdrop : 'static',
-                  resolve : {
-                    refset : function() {
-                      return $scope.selected.refset;
-                    }
-                  }
-                });
-
-                modalInstance.result.then(
-                // Success
-                function(data) {
-                    $scope.handleWorkflow(data);
-                });
-              };
-
-              // Add Start Lookup Modal controller
-              var StartLookupModalCtrl = function($scope, $uibModalInstance, refset) {
-                console.debug('Entered start lookup modal control', refset);
-
-                $scope.refset = refset;
-                $scope.errors = [];
-                $scope.warnings = [];
-                $scope.comments = [];
-                $scope.languagePriorities = [];
-
-                // Get $scope.getRequiredLanguageRefsets - for picklist
-                $scope.getRequiredLanguageRefsets = function(refsetId) {
-                  refsetService.getRequiredLanguageRefsets(refsetId).then(function(data) {
-                    $scope.requiredLanguages = data.strings;
-                    $scope.languagePriorities[0] = data.strings[0];
-                    $scope.languagePriorities[1] = data.strings[1];
-                  });
-                };
-                
-
-                // Dismiss modal
-                $scope.cancel = function() {
-                  $uibModalInstance.dismiss('cancel');
-                };
-
-                // Start the preferred name lookups
-                $scope.startLookup = function() {
-                    startLookup($scope.refset, $scope.languagePriorities);
-                    $uibModalInstance.dismiss('');
-                };
-                  
-                // initialize modal
-                $scope.getRequiredLanguageRefsets(refset.id);
               };
               
               
