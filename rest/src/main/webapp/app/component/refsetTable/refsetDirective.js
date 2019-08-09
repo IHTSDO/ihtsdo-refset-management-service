@@ -2896,6 +2896,11 @@ tsApp
                 console.debug('xxx', $scope.project.terminology, $scope.metadata);
                 $scope.versions = angular.copy($scope.metadata.versions[$scope.project.terminology]
                   .sort().reverse());
+                $scope.intVersion = null;
+                $scope.intVersions = [];
+                $scope.extension = null;
+                $scope.extensions = [];
+                $scope.extVersionOrProjects = [];
                 $scope.filters = filters;
                 $scope.localSet = localSet;
 
@@ -2954,13 +2959,111 @@ tsApp
                 if ($scope.refset.terminology && $scope.refset.version) {
                   $scope.getModules();
                 }
-
+                
+                // extract international versions available on this terminology
+                for (var i = 0; i < $scope.versions.length; i++) {
+                  if ($scope.versions[i].startsWith('MAIN/')) {
+                    var afterMain = $scope.versions[i].substring('MAIN/'.length);
+                    var intVersion = null;
+                    if (afterMain.indexOf('/') != -1) {
+                      intVersion = afterMain.substring(0, afterMain.indexOf('/'));
+                    } else {
+                      intVersion = afterMain;
+                    }
+                    if ($scope.intVersions.includes(intVersion) == false) {
+                      $scope.intVersions.push(intVersion);
+                    }
+                  } else {
+                    // this accommodates BROWSER terminology handler and can be removed after migration to SNOWSTORM
+                    var intVersion = $scope.versions[i];
+                    if ($scope.intVersions.includes(intVersion) == false) {
+                      $scope.intVersions.push(intVersion);
+                    }
+                  }
+                }
+ 
+                
+                // Given the international version selected,
+                // extract the extension part of the version branches and populate $scope.extensions
+                $scope.intVersionSelected = function(intVersion) {
+                  $scope.intVersion = intVersion;
+                  $scope.extension = '';
+                  $scope.extensions = [];
+                  $scope.extVersionOrProjects = [];
+                  for (var i = 0; i < $scope.versions.length; i++) {
+                    if ($scope.versions[i] == 'MAIN/'+ $scope.intVersion + '/' + $scope.refset.terminology ||
+                        $scope.versions[i].startsWith('MAIN/'+ $scope.intVersion + '/' + $scope.refset.terminology + '/')) {
+                      var project = $scope.versions[i].substring(('MAIN/' + $scope.intVersion + '/' + $scope.refset.terminology).length + 1);
+                      // var project = endOfBranch.substring(endOfBranch.indexOf('/') + 1);
+                      if ($scope.extVersionOrProjects.includes(project) == false) {
+                        $scope.extVersionOrProjects.push(project);
+                      }
+                    }
+                  }
+                  if ($scope.project.terminologyHandlerKey != 'BROWSER') {
+                    $scope.refset.version = 'MAIN/' + intVersion + ($scope.refset.terminology != 'SNOMEDCT' ? '/' + $scope.refset.terminology : '');
+                  } else {
+                    $scope.refset.version = intVersion;
+                  }
+                  if ($scope.versionNotInPicklist() == false) {
+                    $scope.getModules();
+                  }
+                };
+                
+                
+                // Given the international version, extension selected,  and extention version or project
+                // compute the version branch path
+                $scope.extVersionOrProjectSelected = function(extVersionOrProject) {
+                  $scope.refset.version = 'MAIN/' + $scope.intVersion + '/' + $scope.refset.terminology + (extVersionOrProject == '' ? '' : '/' + extVersionOrProject);
+                  $scope.extVersionOrProject = extVersionOrProject;
+                };
+                
                 // Handle terminology selected
                 $scope.terminologySelected = function(terminology) {
                   $scope.versions = angular.copy($scope.metadata.versions[terminology].sort()
                     .reverse());
                   $scope.refset.version = $scope.versions[0];
-                  $scope.getModules();
+                  //$scope.getModules();
+                  // extract international versions available on this terminology
+                  $scope.intVersion = '';
+                  $scope.intVersions = [];
+                  for (var i = 0; i < $scope.versions.length; i++) {
+                    if ($scope.versions[i].startsWith('MAIN/')) {
+                        var afterMain = $scope.versions[i].substring('MAIN/'.length);
+                        var intVersion = null;
+                        if (afterMain.indexOf('/') != -1) {
+                          intVersion = afterMain.substring(0, afterMain.indexOf('/'));
+                        } else {
+                          intVersion = afterMain;
+                        }
+                        if ($scope.intVersions.includes(intVersion) == false) {
+                          $scope.intVersions.push(intVersion);
+                        }
+                    // this accommodates BROWSER terminology handler and can be removed after migration to SNOWSTORM
+                    } else {
+                      var intVersion = $scope.versions[i];
+                      if ($scope.intVersions.includes(intVersion) == false) {
+                        $scope.intVersions.push(intVersion);
+                      }
+                    }
+                  }
+                  $scope.extVersionOrProject = '';
+                  $scope.extVersionOrProjects = [];
+                  if ($scope.intVersion) {
+                    for (var i = 0; i < $scope.versions.length; i++) {
+                      if ($scope.versions[i].startsWith('MAIN/'+ $scope.intVersion + '/' + terminology)) {
+                        var project = $scope.versions[i].substring(('MAIN/' + $scope.intVersion + '/' + terminology).length + 1);
+                        if ($scope.extVersionOrProjects.includes(project) == false) {
+                          $scope.extVersionOrProjects.push(project);
+                        }
+                      }
+                    }
+                  }
+                  if ($scope.project.terminologyHandlerKey != 'BROWSER') {
+                    $scope.refset.version = 'MAIN/' + $scope.intVersion + (terminology != 'SNOMEDCT' ? '/' + terminology : '');
+                  } else {
+                    $scope.refset.version = $scope.intVersion;
+                  }
                 };
 
                 // Handle version selected
@@ -2985,6 +3088,7 @@ tsApp
                 $scope.submitRefset = function(refset) {
 
                   refset.projectId = project.id;
+                  refset.version = $scope.refset.version;
                   // Setup definition if configured
                   if (refset.type == 'EXTENSIONAL') {
                     $scope.clause = null;
