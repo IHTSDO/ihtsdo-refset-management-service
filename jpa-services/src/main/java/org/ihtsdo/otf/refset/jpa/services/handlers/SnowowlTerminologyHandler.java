@@ -167,12 +167,63 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
   /* see superclass */
   @Override
   public List<Terminology> getTerminologyEditions() throws Exception {
+    Logger.getLogger(getClass()).info("  get terminology editions ");
+
     List<Terminology> result = new ArrayList<>();
-    // Cache this if ever not hardcoded.
+
+    // Make a webservice call to SnowOwl to get branches
+    final Client client = ClientBuilder.newClient();
+
+    PfsParameter localPfs = new PfsParameterJpa();
+    localPfs.setStartIndex(0);
+    localPfs.setMaxResults(1000);
+
+    WebTarget target =
+        client.target(url + "/branches?" + "limit=" + localPfs.getMaxResults());
+
+    Response response =
+        target.request(accept).header("Authorization", authHeader)
+            .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
+            .header("Cookie", getCookieHeader()).get();
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+
+      throw new LocalException(
+          "Unexpected terminology server failure. Message = " + resultString);
+    }
+
+    // compile list of edition names from branches available
+    ObjectMapper mapper = new ObjectMapper();
+    JsonNode doc = mapper.readTree(resultString);
+
+    for (final JsonNode branchNode : doc.get("items")) {
+      JsonNode metadata = branchNode.get("metadata");
+      if (metadata != null && metadata.get("codeSystemShortName") != null) {
+        Terminology t = new TerminologyJpa();
+        t.setTerminology(metadata.get("codeSystemShortName").asText());
+        t.setName(metadata.get("codeSystemShortName").asText());
+        if (!result.contains(t)) {
+          result.add(t);
+        }
+      }
+    }
+
+    // add SNOMEDCT itself
     Terminology t = new TerminologyJpa();
     t.setTerminology("SNOMEDCT");
     t.setName("SNOMEDCT");
     result.add(t);
+
+    // Reverse sort
+    Collections.sort(result, new Comparator<Terminology>() {
+      @Override
+      public int compare(Terminology o1, Terminology o2) {
+        return o1.getName().compareTo(o2.getName());
+      }
+    });
+
     return result;
   }
 
@@ -206,10 +257,11 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     ObjectMapper mapper = new ObjectMapper();
     JsonNode doc = mapper.readTree(resultString);
 
+    // return versions of all paths that contain the edition specified
     List<Terminology> branches = new ArrayList<>();
     for (final JsonNode branchNode : doc.get("items")) {
       String path = branchNode.get("path").asText();
-      if (StringUtils.countMatches(path, "/") < 3) {
+      if (path.contains(edition)) {
         final Terminology tmlgy = new TerminologyJpa();
         tmlgy.setTerminology(edition);
         tmlgy.setVersion(path);
