@@ -967,7 +967,7 @@ tsApp.service('refsetService', [
           a.href = fileURL;
           a.target = '_blank';
           a.download = action + '_' + utilService.toCamelCase(refset.name) + refset.terminologyId
-            + '_' + utilService.yyyymmdd(new Date()) + '.xls';
+            + '_' + utilService.yyyymmdd(new Date()) + '.txt';
           document.body.appendChild(a);
           gpService.decrement();
           a.click();
