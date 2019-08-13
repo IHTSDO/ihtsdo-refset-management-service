@@ -1265,7 +1265,7 @@ public class RefsetClientRest extends RootClientRest
 
   /* see superclass */
   @Override
-  public void startLookupMemberNames(Long refsetId, Boolean background, String requiredLanguages,
+  public void startLookupMemberNames(Long refsetId, Boolean background, 
     String authToken) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Rest Client - start lookup of names and statuses of refset members "
