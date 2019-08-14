@@ -2142,19 +2142,28 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
           refsetService.removeMember(originMember.getId());
         }
         // member type or concept active status changed, rewire
-        if (stagedMember != null && (stagedMember.getMemberType()
-            .getUnstagedType() != originMember.getMemberType()
-            || stagedMember.isConceptActive() != originMember
-                .isConceptActive())) {
-          // No need to change id, this is
-          originMember
-              .setMemberType(stagedMember.getMemberType().getUnstagedType());
-          originMember.setConceptActive(stagedMember.isConceptActive());
+        if (stagedMember != null) {
+          if (stagedMember.getMemberType().getUnstagedType() != originMember
+              .getMemberType()
+              || stagedMember.isConceptActive() != originMember
+                  .isConceptActive()) {
+            // No need to change id, this is
+            originMember
+                .setMemberType(stagedMember.getMemberType().getUnstagedType());
+            originMember.setConceptActive(stagedMember.isConceptActive());
 
-          originMember.setSynonyms(stagedMember.getSynonyms());
-          originMember.setRefset(originRefset);
-          originMember.setLastModifiedBy(userName);
-          refsetService.updateMember(originMember);
+            originMember.setSynonyms(stagedMember.getSynonyms());
+            originMember.setRefset(originRefset);
+            originMember.setLastModifiedBy(userName);
+            refsetService.updateMember(originMember);
+          }
+
+          // Update if changes in descriptions affected concept name (i.e.
+          // inactivated-old/created-new FSN)
+          if (!stagedMember.getConceptName()
+              .equals(originMember.getConceptName())) {
+            originMember.setConceptName(stagedMember.getConceptName());
+          }
         }
       }
 
