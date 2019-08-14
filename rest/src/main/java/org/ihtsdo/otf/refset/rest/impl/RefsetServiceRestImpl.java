@@ -1385,6 +1385,13 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
           member.setSynonyms(
               Arrays.asList(TerminologyHandler.UNABLE_TO_DETERMINE_NAME));
         }
+      } else {
+        // Have member concept info, but still need to populate synonyms
+        final Concept concept = refsetService
+            .getTerminologyHandler(refset.getProject(), getHeaders(headers))
+            .getFullConcept(member.getConceptId(), refset.getTerminology(),
+                refset.getVersion());
+        refsetService.populateMemberSynonyms(member, concept, refset);
       }
 
       member.setLastModifiedBy(userName);
