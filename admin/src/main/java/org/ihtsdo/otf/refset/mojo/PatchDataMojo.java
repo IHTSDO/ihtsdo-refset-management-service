@@ -206,40 +206,25 @@ public class PatchDataMojo extends AbstractMojo {
   @Override
   public void execute() throws MojoFailureException {
     try {
-      getLog().info("Patch data");
-      getLog().info("  start = " + start);
-      getLog().info("  end = " + end);
-
-      boolean reindex = true;
+      // Default to false as there is at least one case where full reindexing
+      // not needed
+      boolean fullReindex = false;
       final WorkflowService workflowService = new WorkflowServiceJpa();
       final TranslationService translationService = new TranslationServiceJpa();
       final RefsetService refsetService = new RefsetServiceJpa();
+
+      getLog().info("Patch data");
+      getLog().info("  start = " + start);
+      getLog().info("  end = " + end);
 
       // Patch 1000001
       // Set project handler key/url for all projects
       if ("20161215".compareTo(start) >= 0 && "20161215".compareTo(end) <= 0) {
         getLog().info(
             "Processing patch 20161215 - set project terminology handler key/url");
-        for (final Project project : workflowService
-            .findProjectsForQuery(null, null).getObjects()) {
-          project.setTerminologyHandlerKey("BROWSER");
-          project
-              .setTerminologyHandlerUrl("https://sct-rest.ihtsdotools.org/api");
-          getLog().info(
-              "  project = " + project.getId() + ", " + project.getName());
-          workflowService.updateProject(project);
-        }
 
-        // project needs handler key and URL set
-        getLog().info("  Set projects terminology handler key/url");
-        final ProjectList list = workflowService.getProjects();
-        for (final Project project : list.getObjects()) {
-          project.setTerminologyHandlerKey("BROWSER");
-          project
-              .setTerminologyHandlerUrl("https://sct-rest.ihtsdotools.org/api");
-          workflowService.updateProject(project);
-        }
-
+        patch1000001(workflowService);
+        fullReindex = true;
       }
 
       // Patch 20170110
@@ -248,23 +233,8 @@ public class PatchDataMojo extends AbstractMojo {
         getLog().info(
             "Processing patch 20170110 - set project terminology handler key/url"); // Patch
 
-        // PRIOR to this patch update DB and run
-        // admin/src/main/resources/patch20170110.sql
-
-        // This patch requires an "Updatedb"
-        // authors_ORDER column (for tracking_record_authors)
-        // reviewers_ORDER column (for tracking_record_reviewers)
-        // default value should be 1
-        // workflowPath column for projects
-
-        // Set projects default
-        for (final Project project : workflowService
-            .findProjectsForQuery(null, null).getObjects()) {
-          project.setWorkflowPath("DEFAULT");
-          getLog().info(
-              "  project = " + project.getId() + ", " + project.getName());
-          workflowService.updateProject(project);
-        }
+        patch20170110(workflowService);
+        fullReindex = true;
       }
 
       // Patch 20170706
@@ -273,50 +243,9 @@ public class PatchDataMojo extends AbstractMojo {
       if ("20170706".compareTo(start) >= 0 && "20170706".compareTo(end) <= 0) {
         getLog().info(
             "Processing patch 20170706 - Remove fsns on translation descriptions"); // Patch
-        int ct = 0;
-        translationService.setTransactionPerOperation(false);
-        translationService.beginTransaction();
-        for (Translation trans : translationService.getTranslations()
-            .getObjects()) {
-          Translation translation =
-              translationService.getTranslation(trans.getId());
-          if (translation.getRefset().getTerminologyId().equals("722128001")
-              || translation.getRefset().getTerminologyId().equals("722131000")
-              || translation.getRefset().getTerminologyId().equals("722130004")
-              || translation.getRefset().getTerminologyId()
-                  .equals("722129009")) {
-            for (Concept cpt : translation.getConcepts()) {
-              ct++;
-              List<Description> newDescriptionList = new ArrayList<>();
-              Concept concept = translationService.getConcept(cpt.getId());
-              if (concept == null) {
-                continue;
-              }
-              for (Description description : concept.getDescriptions()) {
-                // if fsn, remove language refset members and description
-                if (description.getTypeId().equals("900000000000003001")) {
-                  description.setLanguageRefsetMembers(
-                      new ArrayList<LanguageRefsetMember>());
-                  for (LanguageRefsetMember lrm : description
-                      .getLanguageRefsetMembers()) {
-                    translationService.removeLanguageRefsetMember(lrm.getId());
-                  }
-                  translationService.removeDescription(description.getId());
-                } else {
-                  newDescriptionList.add(description);
-                }
-              }
-              concept.setDescriptions(newDescriptionList);
-              translationService.updateConcept(concept);
 
-              if (ct % 100 == 0) {
-                getLog().info("  ct = " + ct);
-                translationService.commitClearBegin();
-              }
-            }
-          }
-        }
-        translationService.commit();
+        patch20170706(translationService);
+        fullReindex = true;
       }
 
       // Patch 20170920
@@ -330,101 +259,8 @@ public class PatchDataMojo extends AbstractMojo {
         getLog().info(
             "Processing patch 20170920 - Move unreviewed Japanese Starter Set Translation concepts back to EDITING_DONE state"); // Patch
 
-        int ct = 0;
-        translationService.setTransactionPerOperation(false);
-        translationService.beginTransaction();
-        for (Translation trans : translationService.getTranslations()
-            .getObjects()) {
-          Translation translation =
-              translationService.getTranslation(trans.getId());
-          if (translation.getRefset().getTerminologyId().equals("722129009")) {
-            for (Concept concept : translation.getConcepts()) {
-              // if it isn't already reviewed, but is READY_FOR_PUBLICATION,
-              // reassign
-              if (!Arrays.asList(alreadyReviewedJapanese)
-                  .contains(concept.getTerminologyId())
-                  && concept
-                      .getWorkflowStatus() == WorkflowStatus.READY_FOR_PUBLICATION) {
-
-                ct++;
-                TrackingRecordList recordList = new TrackingRecordListJpa();
-                // do not perform a lookup if concept is new
-                if (concept != null && concept.getId() != null) {
-                  recordList =
-                      workflowService.findTrackingRecordsForQuery("conceptId:"
-                          + ((concept == null || concept.getId() == null) ? -1
-                              : concept.getId()),
-                          null);
-                }
-                TrackingRecord record = null;
-                if (recordList.getCount() == 1) {
-                  record = recordList.getObjects().get(0);
-                  workflowService.handleLazyInit(record);
-                  if (record.getConcept() != null) {
-                    workflowService.handleLazyInit(record.getConcept());
-                  }
-                } else if (recordList.getCount() > 1) {
-                  throw new LocalException(
-                      "Unexpected number of tracking records for "
-                          + concept.getTerminologyId());
-                }
-
-                // Author case
-                if (record == null) {
-                  // Add the concept itself (if not already
-                  // exists)
-                  if (concept.getId() == null) {
-                    concept.setTranslation(translation);
-                    concept.setModuleId(translation.getModuleId());
-                    concept.setEffectiveTime(null);
-                    concept.setDefinitionStatusId("UNKNOWN");
-                    concept.setLastModifiedBy("dshapiro");
-                    workflowService.addConcept(concept);
-                  }
-                  // Create a tracking record, fill it out,
-                  // and add it.
-                  TrackingRecord record2 = new TrackingRecordJpa();
-                  record2.getAuthors().add("dshapiro");
-                  record2.setForAuthoring(true);
-                  record2.setForReview(false);
-                  record2.setLastModifiedBy("dshapiro");
-                  record2.setTranslation(translation);
-                  record2.setConcept(concept);
-                  if (concept
-                      .getWorkflowStatus() == WorkflowStatus.READY_FOR_PUBLICATION) {
-                    record2.setRevision(true);
-                    record2.setOriginRevision(workflowService
-                        .getConceptRevisionNumber(concept.getId()));
-                    concept.setRevision(true);
-                  }
-                  record = record2;
-                  workflowService.addTrackingRecord(record2);
-                }
-
-                // Reviewer case
-                else {
-                  record.setForAuthoring(false);
-                  record.setForReview(true);
-                  // Set the review origin revision, so we can
-                  // revert on unassign
-                  record.setReviewOriginRevision(workflowService
-                      .getConceptRevisionNumber(concept.getId()));
-                  record.getReviewers().add("dshapiro");
-                  record.setLastModifiedBy("dshapiro");
-                  concept.setWorkflowStatus(WorkflowStatus.REVIEW_NEW);
-
-                }
-              }
-              translationService.updateConcept(concept);
-
-              if (ct % 100 == 0) {
-                getLog().info("  ct = " + ct);
-                translationService.commitClearBegin();
-              }
-            }
-          }
-        }
-        translationService.commit();
+        patch20170920(workflowService, translationService);
+        fullReindex = true;
       }
 
       // Patch 20171113
@@ -434,34 +270,9 @@ public class PatchDataMojo extends AbstractMojo {
       if ("20171113".compareTo(start) >= 0 && "20171113".compareTo(end) <= 0) {
         getLog()
             .info("Processing patch 20171113 - Fix member ids that need UUIDs"); // Patch
-        int ct = 1;
-        translationService.setTransactionPerOperation(false);
-        translationService.beginTransaction();
 
-        for (Refset rfst : translationService.getRefsets().getObjects()) {
-          Refset refset = translationService.getRefset(rfst.getId());
-          // only execute this on the CDAC India project where refsets have
-          // not yet been published
-          if (!refset.getProject().getName().contains("CDAC")) {
-            continue;
-          }
-          for (ConceptRefsetMember member : refset.getMembers()) {
-            if (member.getTerminologyId().equals(member.getConceptId())) {
-              member.setTerminologyId(UUID.randomUUID().toString());
-              ct++;
-              translationService.updateMember(member);
-              getLog().info("Fixing member: " + member.getConceptId() + " in "
-                  + refset.getTerminologyId());
-            }
-
-            if (ct % 100 == 0) {
-              getLog().info("  ct = " + ct);
-              translationService.commitClearBegin();
-            }
-          }
-
-        }
-        translationService.commit();
+        patch20171113(translationService);
+        fullReindex = true;
       }
 
       // Patch 20180316
@@ -470,67 +281,10 @@ public class PatchDataMojo extends AbstractMojo {
         getLog().info(
             "Processing patch 20180316 - *Remove translation concepts that were removed from corresponding refset"); // Patch
 
-        String[] translationConceptsToRemoveArray = new String[] {
-            "95801002", "91588005", "81877007", "81371004", "8137003",
-            "81102000", "77299006", "73879007", "72298008", "69124005",
-            "68525005", "67415000", "66064007", "64756007", "6408001",
-            "60782007", "58850003", "50845008", "50548001", "5015009", "500000",
-            "4946002", "47268002", "441702008", "439575008", "430950005",
-            "430949005", "4296008", "429275000", "428392002", "427354000",
-            "426041005", "424989000", "421707005", "421668005", "419769007",
-            "419686005", "419258005", "417130004", "410567004", "40913006",
-            "402121009", "40129004", "401123009", "400192002", "399625000",
-            "398175007", "397683000", "390845001", "37757003", "371330000",
-            "371093006", "367522007", "35731002", "34140002", "32935005",
-            "3226008", "31829008", "312403005", "30961001", "308551004",
-            "304388009", "30211000119106", "281657000", "276789009",
-            "269813009", "268808004", "268465005", "268300003", "267796002",
-            "267129008", "267094008", "267052005", "266364000", "262951009",
-            "26174007", "239148005", "238402004", "236704009", "236425005",
-            "23346002", "22913005", "220000", "211964006", "208647006",
-            "201836008", "200627004", "199516000", "195747001", "192839001",
-            "192000006", "190784001", "190392008", "182782007", "171073000",
-            "169851005", "169850006", "16863000", "162249002", "161684005",
-            "161612000", "161591004", "161590003", "15387003", "1508000",
-            "128079007", "11991005", "119424003", "119415007", "111726004",
-            "111181004", "108267006", "106130002", "105592009", "102602003"
-        };
-        Set<String> translationConceptsToRemove = new HashSet<String>(
-            Arrays.asList(translationConceptsToRemoveArray));
-        String refsetId = "733876003"; // Starter set refset
-        translationService.setTransactionPerOperation(true);
-        getLog().info("#translations:"
-            + translationService.getTranslations().getTotalCount());
-        for (Translation translation : translationService.getTranslations()
-            .getObjects()) {
-          getLog()
-              .info("refset tid:" + translation.getRefset().getTerminologyId());
-          if (!translation.getRefset().getTerminologyId().equals(refsetId)) {
-            continue;
-          }
-          ConceptList conceptList = translationService
-              .findConceptsForTranslation(translation.getId(), "", null);
-          getLog().info("conceptList size:" + conceptList.getTotalCount());
-          int ct = 1;
-          for (Concept concept : conceptList.getObjects()) {
-            if (translationConceptsToRemove
-                .contains(concept.getTerminologyId())) {
-              try {
-                translationService.setTransactionPerOperation(true);
-
-                translationService.removeConcept(concept.getId(), true);
-                getLog().info("Removing translation concept: " + ct++ + " "
-                    + concept.toString());
-              } catch (Exception e) {
-                getLog()
-                    .info("Unable to remove concept: " + concept.toString());
-              }
-            }
-
-          }
-
-        }
+        patch20180316(translationService);
+        fullReindex = true;
       }
+
       // Patch 20190708
       // Update browser url to snowstorm and update refset and terminology
       // versions
@@ -538,120 +292,24 @@ public class PatchDataMojo extends AbstractMojo {
       if ("20190708".compareTo(start) >= 0 && "20190708".compareTo(end) <= 0) {
         getLog().info(
             "Processing patch 20190708 - Updating browser to snowstorm APIs"); // Patch
-        int ct = 0;
-        translationService.setTransactionPerOperation(false);
-        translationService.beginTransaction();
-        for (Project prj : translationService.getProjects().getObjects()) {
-          Project project = translationService.getProject(prj.getId());
-          if (project.getId() == 1L
-              && project.getTerminologyHandlerKey().equals("BROWSER")) {
-            ct++;
-            project.setTerminologyHandlerUrl(
-                "http://member-release-browser.ihtsdotools.org/snowstorm/snomed-ct/v2");
-            project.setTerminology("SNOMEDCT");
-            project.setTerminologyHandlerKey("SNOWSTORM");
-            translationService.updateProject(project);
 
-            if (ct % 100 == 0) {
-              getLog().info("projects updated  ct = " + ct);
-              translationService.commitClearBegin();
-            }
-          }
-        }
-        getLog().info("projects updated final ct = " + ct);
-        ct = 0;
-        for (Translation trans : translationService.getTranslations()
-            .getObjects()) {
-          Translation translation =
-              translationService.getTranslation(trans.getId());
-          if (translation.getProject().getId() == 1L
-              && translation.getVersion().length() == 8) {
-            ct++;
-            String old_version = translation.getVersion();
-            translation.setVersion(
-                old_version.substring(0, 4) + "-" + old_version.substring(4, 6)
-                    + "-" + old_version.substring(6, 8));
-            translation.setTerminology("SNOMEDCT");
-            translationService.updateTranslation(translation);
-
-            if (ct % 100 == 0) {
-              getLog().info("translations updated  ct = " + ct);
-              translationService.commitClearBegin();
-            }
-          }
-        }
-        getLog().info("translations updated final ct = " + ct);
-        ct = 0;
-        for (Refset ref : translationService.getRefsets().getObjects()) {
-          Refset refset = translationService.getRefset(ref.getId());
-          if (refset.getProject().getId() == 1L
-              && refset.getVersion().length() == 8) {
-            ct++;
-            String old_version = refset.getVersion();
-            refset.setVersion(
-                old_version.substring(0, 4) + "-" + old_version.substring(4, 6)
-                    + "-" + old_version.substring(6, 8));
-            refset.setTerminology("SNOMEDCT");
-            translationService.updateRefset(refset);
-
-            if (ct % 100 == 0) {
-              getLog().info("refsets updated ct = " + ct);
-              translationService.commitClearBegin();
-            }
-          }
-        }
-        getLog().info("refsets updated final ct = " + ct);
-        translationService.commit();
+        patch20190708(translationService);
+        fullReindex = true;
       }
 
+      // Patch 20190728
       // Patch to populate the new field in ConceptRefsetMemberJpa (synonyms)
-      // Done once per production system to ensure that such systems have this
-      // new lucene index populated
-      if ((start != null && start.equals("AddConceptRefsetMemberJpaSynonyms"))
-          || (end != null && end.equals("AddConceptRefsetMemberJpaSynonyms"))) {
-        // identify projects via find operation
-        getLog()
-            .info("  Identify projects using findProjectsForQuery(null, null)");
+      // Done once per production system. Only need to reindex one thing, so
+      // unless others asking for index, will index within patch
+      if ("20190728".compareTo(start) >= 0 && "20190728".compareTo(end) <= 0) {
+        getLog().info(
+            "Processing patch 20190728 - Adding new ConceptRefsetMemberJpa 'Synonyms' table"); // Patch
 
-        Set<Long> uniqueProjects = new HashSet<>();
-        Map<String, Map<String, List<String>>> conceptSynonymsMap =
-            new HashMap<>();
-
-        refsetService.setTransactionPerOperation(false);
-        refsetService.beginTransaction();
-        for (final Project project : workflowService
-            .findProjectsForQuery(null, null).getObjects()) {
-          if (!uniqueProjects.contains(project.getId())) {
-            getLog()
-                .info("About to start updating project: " + project.getName());
-            uniqueProjects.add(project.getId());
-            addSynonyms(project, conceptSynonymsMap, refsetService);
-            getLog().info(" Completed project: " + project.getName());
-          }
-        }
-
-        // identify projects via get operation
-        getLog().info("  Identify projects using getProjects()");
-        final ProjectList list = workflowService.getProjects();
-        for (final Project project : list.getObjects()) {
-          if (!uniqueProjects.contains(project.getId())) {
-            getLog().info("Via getProjects, about to start updating project: "
-                + project.getName());
-
-            uniqueProjects.add(project.getId());
-            addSynonyms(project, conceptSynonymsMap, refsetService);
-
-            getLog().info(" Completed project: " + project.getName());
-          }
-        }
-
-        getLog().info("Completed operation across all project-refset pairs");
-        refsetService.commit();
-        reindex = false;
+        patch20190728(workflowService, refsetService, fullReindex);
       }
 
       // Reindex
-      if (reindex) {
+      if (fullReindex) {
         getLog().info("  Reindex");
         // login as "admin", use token
         final Properties properties = ConfigUtility.getConfigProperties();
@@ -672,22 +330,472 @@ public class PatchDataMojo extends AbstractMojo {
     }
   }
 
-  /*-
+  /**
+   * Patch 20190708.
    *
-   * Adds the synonyms IFF they are:
-   *  - Active
-   *  - Not Definition Type of Descriptions
-   *  - Not identical to the ConceptName field
-   *  - Length is less than or equal to 256 characters
+   * @param translationService the translation service
+   * @throws Exception the exception
+   */
+  private void patch20190708(TranslationService translationService)
+    throws Exception {
+    int ct = 0;
+    translationService.setTransactionPerOperation(false);
+    translationService.beginTransaction();
+    for (Project prj : translationService.getProjects().getObjects()) {
+      Project project = translationService.getProject(prj.getId());
+      if (project.getId() == 1L
+          && project.getTerminologyHandlerKey().equals("BROWSER")) {
+        ct++;
+        project.setTerminologyHandlerUrl(
+            "http://member-release-browser.ihtsdotools.org/snowstorm/snomed-ct/v2");
+        project.setTerminology("SNOMEDCT");
+        project.setTerminologyHandlerKey("SNOWSTORM");
+        translationService.updateProject(project);
+
+        if (ct % 100 == 0) {
+          getLog().info("projects updated  ct = " + ct);
+          translationService.commitClearBegin();
+        }
+      }
+    }
+    getLog().info("projects updated final ct = " + ct);
+    ct = 0;
+    for (Translation trans : translationService.getTranslations()
+        .getObjects()) {
+      Translation translation =
+          translationService.getTranslation(trans.getId());
+      if (translation.getProject().getId() == 1L
+          && translation.getVersion().length() == 8) {
+        ct++;
+        String old_version = translation.getVersion();
+        translation.setVersion(old_version.substring(0, 4) + "-"
+            + old_version.substring(4, 6) + "-" + old_version.substring(6, 8));
+        translation.setTerminology("SNOMEDCT");
+        translationService.updateTranslation(translation);
+
+        if (ct % 100 == 0) {
+          getLog().info("translations updated  ct = " + ct);
+          translationService.commitClearBegin();
+        }
+      }
+    }
+    getLog().info("translations updated final ct = " + ct);
+    ct = 0;
+    for (Refset ref : translationService.getRefsets().getObjects()) {
+      Refset refset = translationService.getRefset(ref.getId());
+      if (refset.getProject().getId() == 1L
+          && refset.getVersion().length() == 8) {
+        ct++;
+        String old_version = refset.getVersion();
+        refset.setVersion(old_version.substring(0, 4) + "-"
+            + old_version.substring(4, 6) + "-" + old_version.substring(6, 8));
+        refset.setTerminology("SNOMEDCT");
+        translationService.updateRefset(refset);
+
+        if (ct % 100 == 0) {
+          getLog().info("refsets updated ct = " + ct);
+          translationService.commitClearBegin();
+        }
+      }
+    }
+    getLog().info("refsets updated final ct = " + ct);
+    translationService.commit();
+  }
+
+  /**
+   * Patch 20180316.
+   *
+   * @param translationService the translation service
+   * @throws Exception the exception
+   */
+  private void patch20180316(TranslationService translationService)
+    throws Exception {
+    String[] translationConceptsToRemoveArray = new String[] {
+        "95801002", "91588005", "81877007", "81371004", "8137003", "81102000",
+        "77299006", "73879007", "72298008", "69124005", "68525005", "67415000",
+        "66064007", "64756007", "6408001", "60782007", "58850003", "50845008",
+        "50548001", "5015009", "500000", "4946002", "47268002", "441702008",
+        "439575008", "430950005", "430949005", "4296008", "429275000",
+        "428392002", "427354000", "426041005", "424989000", "421707005",
+        "421668005", "419769007", "419686005", "419258005", "417130004",
+        "410567004", "40913006", "402121009", "40129004", "401123009",
+        "400192002", "399625000", "398175007", "397683000", "390845001",
+        "37757003", "371330000", "371093006", "367522007", "35731002",
+        "34140002", "32935005", "3226008", "31829008", "312403005", "30961001",
+        "308551004", "304388009", "30211000119106", "281657000", "276789009",
+        "269813009", "268808004", "268465005", "268300003", "267796002",
+        "267129008", "267094008", "267052005", "266364000", "262951009",
+        "26174007", "239148005", "238402004", "236704009", "236425005",
+        "23346002", "22913005", "220000", "211964006", "208647006", "201836008",
+        "200627004", "199516000", "195747001", "192839001", "192000006",
+        "190784001", "190392008", "182782007", "171073000", "169851005",
+        "169850006", "16863000", "162249002", "161684005", "161612000",
+        "161591004", "161590003", "15387003", "1508000", "128079007",
+        "11991005", "119424003", "119415007", "111726004", "111181004",
+        "108267006", "106130002", "105592009", "102602003"
+    };
+    Set<String> translationConceptsToRemove =
+        new HashSet<String>(Arrays.asList(translationConceptsToRemoveArray));
+    String refsetId = "733876003"; // Starter set refset
+    translationService.setTransactionPerOperation(true);
+    getLog().info("#translations:"
+        + translationService.getTranslations().getTotalCount());
+    for (Translation translation : translationService.getTranslations()
+        .getObjects()) {
+      getLog().info("refset tid:" + translation.getRefset().getTerminologyId());
+      if (!translation.getRefset().getTerminologyId().equals(refsetId)) {
+        continue;
+      }
+      ConceptList conceptList = translationService
+          .findConceptsForTranslation(translation.getId(), "", null);
+      getLog().info("conceptList size:" + conceptList.getTotalCount());
+      int ct = 1;
+      for (Concept concept : conceptList.getObjects()) {
+        if (translationConceptsToRemove.contains(concept.getTerminologyId())) {
+          try {
+            translationService.setTransactionPerOperation(true);
+
+            translationService.removeConcept(concept.getId(), true);
+            getLog().info("Removing translation concept: " + ct++ + " "
+                + concept.toString());
+          } catch (Exception e) {
+            getLog().info("Unable to remove concept: " + concept.toString());
+          }
+        }
+
+      }
+
+    }
+  }
+
+  /**
+   * Patch 20171113.
+   *
+   * @param translationService the translation service
+   * @throws Exception the exception
+   */
+  private void patch20171113(TranslationService translationService)
+    throws Exception {
+    int ct = 1;
+    translationService.setTransactionPerOperation(false);
+    translationService.beginTransaction();
+
+    for (Refset rfst : translationService.getRefsets().getObjects()) {
+      Refset refset = translationService.getRefset(rfst.getId());
+      // only execute this on the CDAC India project where refsets have
+      // not yet been published
+      if (!refset.getProject().getName().contains("CDAC")) {
+        continue;
+      }
+      for (ConceptRefsetMember member : refset.getMembers()) {
+        if (member.getTerminologyId().equals(member.getConceptId())) {
+          member.setTerminologyId(UUID.randomUUID().toString());
+          ct++;
+          translationService.updateMember(member);
+          getLog().info("Fixing member: " + member.getConceptId() + " in "
+              + refset.getTerminologyId());
+        }
+
+        if (ct % 100 == 0) {
+          getLog().info("  ct = " + ct);
+          translationService.commitClearBegin();
+        }
+      }
+
+    }
+    translationService.commit();
+  }
+
+  /**
+   * Patch 20170920.
+   *
+   * @param workflowService the workflow service
+   * @param translationService the translation service
+   * @throws Exception the exception
+   */
+  private void patch20170920(WorkflowService workflowService,
+    TranslationService translationService) throws Exception {
+    int ct = 0;
+    translationService.setTransactionPerOperation(false);
+    translationService.beginTransaction();
+    for (Translation trans : translationService.getTranslations()
+        .getObjects()) {
+      Translation translation =
+          translationService.getTranslation(trans.getId());
+      if (translation.getRefset().getTerminologyId().equals("722129009")) {
+        for (Concept concept : translation.getConcepts()) {
+          // if it isn't already reviewed, but is READY_FOR_PUBLICATION,
+          // reassign
+          if (!Arrays.asList(alreadyReviewedJapanese)
+              .contains(concept.getTerminologyId())
+              && concept
+                  .getWorkflowStatus() == WorkflowStatus.READY_FOR_PUBLICATION) {
+
+            ct++;
+            TrackingRecordList recordList = new TrackingRecordListJpa();
+            // do not perform a lookup if concept is new
+            if (concept != null && concept.getId() != null) {
+              recordList = workflowService.findTrackingRecordsForQuery(
+                  "conceptId:" + ((concept == null || concept.getId() == null)
+                      ? -1 : concept.getId()),
+                  null);
+            }
+            TrackingRecord record = null;
+            if (recordList.getCount() == 1) {
+              record = recordList.getObjects().get(0);
+              workflowService.handleLazyInit(record);
+              if (record.getConcept() != null) {
+                workflowService.handleLazyInit(record.getConcept());
+              }
+            } else if (recordList.getCount() > 1) {
+              throw new LocalException(
+                  "Unexpected number of tracking records for "
+                      + concept.getTerminologyId());
+            }
+
+            // Author case
+            if (record == null) {
+              // Add the concept itself (if not already
+              // exists)
+              if (concept.getId() == null) {
+                concept.setTranslation(translation);
+                concept.setModuleId(translation.getModuleId());
+                concept.setEffectiveTime(null);
+                concept.setDefinitionStatusId("UNKNOWN");
+                concept.setLastModifiedBy("dshapiro");
+                workflowService.addConcept(concept);
+              }
+              // Create a tracking record, fill it out,
+              // and add it.
+              TrackingRecord record2 = new TrackingRecordJpa();
+              record2.getAuthors().add("dshapiro");
+              record2.setForAuthoring(true);
+              record2.setForReview(false);
+              record2.setLastModifiedBy("dshapiro");
+              record2.setTranslation(translation);
+              record2.setConcept(concept);
+              if (concept
+                  .getWorkflowStatus() == WorkflowStatus.READY_FOR_PUBLICATION) {
+                record2.setRevision(true);
+                record2.setOriginRevision(
+                    workflowService.getConceptRevisionNumber(concept.getId()));
+                concept.setRevision(true);
+              }
+              record = record2;
+              workflowService.addTrackingRecord(record2);
+            }
+
+            // Reviewer case
+            else {
+              record.setForAuthoring(false);
+              record.setForReview(true);
+              // Set the review origin revision, so we can
+              // revert on unassign
+              record.setReviewOriginRevision(
+                  workflowService.getConceptRevisionNumber(concept.getId()));
+              record.getReviewers().add("dshapiro");
+              record.setLastModifiedBy("dshapiro");
+              concept.setWorkflowStatus(WorkflowStatus.REVIEW_NEW);
+
+            }
+          }
+          translationService.updateConcept(concept);
+
+          if (ct % 100 == 0) {
+            getLog().info("  ct = " + ct);
+            translationService.commitClearBegin();
+          }
+        }
+      }
+    }
+    translationService.commit();
+  }
+
+  /**
+   * Patch 20170706.
+   *
+   * @param translationService the translation service
+   * @throws Exception the exception
+   */
+  private void patch20170706(TranslationService translationService)
+    throws Exception {
+    int ct = 0;
+    translationService.setTransactionPerOperation(false);
+    translationService.beginTransaction();
+    for (Translation trans : translationService.getTranslations()
+        .getObjects()) {
+      Translation translation =
+          translationService.getTranslation(trans.getId());
+      if (translation.getRefset().getTerminologyId().equals("722128001")
+          || translation.getRefset().getTerminologyId().equals("722131000")
+          || translation.getRefset().getTerminologyId().equals("722130004")
+          || translation.getRefset().getTerminologyId().equals("722129009")) {
+        for (Concept cpt : translation.getConcepts()) {
+          ct++;
+          List<Description> newDescriptionList = new ArrayList<>();
+          Concept concept = translationService.getConcept(cpt.getId());
+          if (concept == null) {
+            continue;
+          }
+          for (Description description : concept.getDescriptions()) {
+            // if fsn, remove language refset members and description
+            if (description.getTypeId().equals("900000000000003001")) {
+              description.setLanguageRefsetMembers(
+                  new ArrayList<LanguageRefsetMember>());
+              for (LanguageRefsetMember lrm : description
+                  .getLanguageRefsetMembers()) {
+                translationService.removeLanguageRefsetMember(lrm.getId());
+              }
+              translationService.removeDescription(description.getId());
+            } else {
+              newDescriptionList.add(description);
+            }
+          }
+          concept.setDescriptions(newDescriptionList);
+          translationService.updateConcept(concept);
+
+          if (ct % 100 == 0) {
+            getLog().info("  ct = " + ct);
+            translationService.commitClearBegin();
+          }
+        }
+      }
+    }
+    translationService.commit();
+  }
+
+  /**
+   * Patch 20170110.
+   *
+   * @param workflowService the workflow service
+   * @throws Exception the exception
+   */
+  private void patch20170110(WorkflowService workflowService) throws Exception {
+    // PRIOR to this patch update DB and run
+    // admin/src/main/resources/patch20170110.sql
+
+    // This patch requires an "Updatedb"
+    // authors_ORDER column (for tracking_record_authors)
+    // reviewers_ORDER column (for tracking_record_reviewers)
+    // default value should be 1
+    // workflowPath column for projects
+
+    // Set projects default
+    for (final Project project : workflowService
+        .findProjectsForQuery(null, null).getObjects()) {
+      project.setWorkflowPath("DEFAULT");
+      getLog()
+          .info("  project = " + project.getId() + ", " + project.getName());
+      workflowService.updateProject(project);
+    }
+  }
+
+  /**
+   * Patch 1000001.
+   *
+   * @param workflowService the workflow service
+   * @throws Exception the exception
+   */
+  private void patch1000001(WorkflowService workflowService) throws Exception {
+    for (final Project project : workflowService
+        .findProjectsForQuery(null, null).getObjects()) {
+      project.setTerminologyHandlerKey("BROWSER");
+      project.setTerminologyHandlerUrl("https://sct-rest.ihtsdotools.org/api");
+      getLog()
+          .info("  project = " + project.getId() + ", " + project.getName());
+      workflowService.updateProject(project);
+    }
+
+    // project needs handler key and URL set
+    getLog().info("  Set projects terminology handler key/url");
+    final ProjectList list = workflowService.getProjects();
+    for (final Project project : list.getObjects()) {
+      project.setTerminologyHandlerKey("BROWSER");
+      project.setTerminologyHandlerUrl("https://sct-rest.ihtsdotools.org/api");
+      workflowService.updateProject(project);
+    }
+
+  }
+
+  /**
+   * Patch 20190728.
+   *
+   * @param workflowService the workflow service
+   * @param refsetService the refset service
+   * @param fullReindex the full reindex
+   * @throws Exception the exception
+   */
+  private void patch20190728(WorkflowService workflowService,
+    RefsetService refsetService, boolean fullReindex) throws Exception {
+    Set<Long> uniqueProjects = new HashSet<>();
+    // Map of (Concept to Map of (Version to List of synonyms))
+    Map<String, Map<String, List<String>>> conceptSynonymsMap = new HashMap<>();
+
+    refsetService.setTransactionPerOperation(false);
+    refsetService.beginTransaction();
+    for (final Project project : workflowService
+        .findProjectsForQuery(null, null).getObjects()) {
+      if (!uniqueProjects.contains(project.getId())) {
+        getLog().info("About to start updating project: " + project.getName());
+        uniqueProjects.add(project.getId());
+        addSynonyms(project, conceptSynonymsMap, refsetService);
+        getLog().info(" Completed project: " + project.getName());
+      }
+    }
+
+    // identify projects via get operation
+    getLog().info("  Identify projects using getProjects()");
+    final ProjectList list = workflowService.getProjects();
+    for (final Project project : list.getObjects()) {
+      if (!uniqueProjects.contains(project.getId())) {
+        getLog().info("Via getProjects, about to start updating project: "
+            + project.getName());
+
+        uniqueProjects.add(project.getId());
+        addSynonyms(project, conceptSynonymsMap, refsetService);
+
+        getLog().info(" Completed project: " + project.getName());
+      }
+    }
+
+    getLog().info("Completed operation across all project-refset pairs");
+    refsetService.commit();
+
+    // if no other patch needs a reindex, then reindex ConceptRefsetMemberJpa
+    // here
+    if (!fullReindex) {
+      getLog().info("  Reindex Refset Members");
+
+      // login as "admin", use token
+      final Properties properties = ConfigUtility.getConfigProperties();
+      SecurityService securityService = new SecurityServiceJpa();
+      String authToken =
+          securityService.authenticate(properties.getProperty("admin.user"),
+              properties.getProperty("admin.password")).getAuthToken();
+      ProjectServiceRestImpl contentService = new ProjectServiceRestImpl();
+      contentService.luceneReindex("ConceptRefsetMemberJpa", authToken);
+    }
+  }
+
+  /**
+   * Adds the synonyms.
    *
    * @param project the project
-   * @param conceptSynonymsMap the concept synonyms
+   * @param conceptSynonymsMapCache the concept synonyms map cache
    * @param refsetService the refset service
    * @throws Exception the exception
    */
   private void addSynonyms(Project project,
-    Map<String, Map<String, List<String>>> conceptSynonymsMap,
+    Map<String, Map<String, List<String>>> conceptSynonymsMapCache,
     RefsetService refsetService) throws Exception {
+    /*-
+    *
+    * Adds the synonyms IFF they are:
+    *  - Active
+    *  - Not Definition Type of Descriptions
+    *  - Not identical to the ConceptName field
+    *  - Length is less than or equal to 256 characters
+    */
     TerminologyHandler termHandler =
         refsetService.getTerminologyHandler(project, null);
 
@@ -700,20 +808,22 @@ public class PatchDataMojo extends AbstractMojo {
       for (ConceptRefsetMember member : refset.getMembers()) {
         String conId = member.getConceptId();
 
-        if (!conceptSynonymsMap.keySet().contains(conId)) {
+        if (!conceptSynonymsMapCache.keySet().contains(conId)) {
           // Lookup synonyms and add to member
           Map<String, List<String>> versionSynonymsMap = new HashMap<>();
-          conceptSynonymsMap.put(conId, versionSynonymsMap);
+          conceptSynonymsMapCache.put(conId, versionSynonymsMap);
         }
 
-        if (!conceptSynonymsMap.get(conId).containsKey(refset.getVersion())) {
+        if (!conceptSynonymsMapCache.get(conId)
+            .containsKey(refset.getVersion())) {
           List<String> synonyms = new ArrayList<>();
-          conceptSynonymsMap.get(conId).put(refset.getVersion(), synonyms);
+          conceptSynonymsMapCache.get(conId).put(refset.getVersion(), synonyms);
         }
 
-        if (conceptSynonymsMap.get(conId).get(refset.getVersion()).isEmpty()) {
+        if (conceptSynonymsMapCache.get(conId).get(refset.getVersion())
+            .isEmpty()) {
           List<String> synonyms =
-              conceptSynonymsMap.get(conId).get(refset.getVersion());
+              conceptSynonymsMapCache.get(conId).get(refset.getVersion());
 
           try {
             // Identify Concept's synonyms
@@ -721,8 +831,7 @@ public class PatchDataMojo extends AbstractMojo {
                 refset.getTerminology(), refset.getVersion());
 
             for (Description d : con.getDescriptions()) {
-              if (d.isActive() && !d.getTypeId().equals("900000000000550004")
-                  && !member.getConceptName().equals(d.getTerm())
+              if (d.isActive() && !d.getTypeId().equals("900000000000550004") // DEFINITION
                   && !synonyms.contains(d.getTerm())) {
                 if (d.getTerm().length() > 256) {
                   throw new Exception("Description '" + d.getTerm()
@@ -743,10 +852,11 @@ public class PatchDataMojo extends AbstractMojo {
           // Have previously completed the Lookup of synonyms. Just need to add
           // them to member
           member.setSynonyms(
-              conceptSynonymsMap.get(conId).get(refset.getVersion()));
+              conceptSynonymsMapCache.get(conId).get(refset.getVersion()));
           refsetService.updateMember(member);
         }
 
+        // Commit every 50 to minimize memory utilization
         if (++count % 50 == 0) {
           getLog().info("Completed " + count + " out of the "
               + refset.getMembers().size() + " members to process");
@@ -762,11 +872,12 @@ public class PatchDataMojo extends AbstractMojo {
         }
       }
 
+      // Commit to catch final (and less-than-fifty) members
       try {
         refsetService.commitClearBegin();
       } catch (Exception e) {
         getLog().info(
-            "Failed on committing batch of 50 synonyms with error message: "
+            "Failed on committing final batch of synonyms with error message: "
                 + e.getMessage());
       }
 

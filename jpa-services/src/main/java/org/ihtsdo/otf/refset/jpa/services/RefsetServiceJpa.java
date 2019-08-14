@@ -1607,17 +1607,22 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
     member.setSynonyms(new ArrayList<String>());
 
     for (Description d : concept.getDescriptions()) {
-      if (!member.getConceptName().equals(d.getTerm())) {
+      if (d.isActive() && !d.getTypeId().equals("900000000000550004") // DEFINITION_DESC_SCTID
+          && !member.getSynonyms().contains(d.getTerm())) {
         member.getSynonyms().add(d.getTerm());
       }
     }
 
     if (member.getSynonyms().isEmpty()) {
-      final Concept fullCon = getTerminologyHandler(refset.getProject(), null)
+      final Project project = this.getProject(refset.getProject().getId());
+
+      final Concept fullCon = getTerminologyHandler(project, null)
           .getFullConcept(concept.getTerminologyId(), refset.getTerminology(),
               refset.getVersion());
+
       for (Description d : fullCon.getDescriptions()) {
-        if (!member.getConceptName().equals(d.getTerm())) {
+        if (d.isActive() && !d.getTypeId().equals("900000000000550004") // DEFINITION_DESC_SCTID
+            && !member.getSynonyms().contains(d.getTerm())) {
           member.getSynonyms().add(d.getTerm());
         }
       }
