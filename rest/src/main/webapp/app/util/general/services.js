@@ -571,6 +571,29 @@ tsApp.service('securityService', [
       }
       return user;
     };
+    
+    // Gets the user
+    this.getUserByUsername = function(username) {
+      console.debug('getUser (username) ' + username);
+      var deferred = $q.defer();
+
+      // Get users
+      gpService.increment();
+      $http.get(securityUrl + '/user/name/' + username).then(
+      // success
+      function(response) {
+        console.debug('  user = ', response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    };
 
     // Sets the user
     this.setUser = function(data) {

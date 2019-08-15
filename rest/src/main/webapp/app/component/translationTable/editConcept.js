@@ -126,7 +126,10 @@ tsApp.controller('EditConceptModalCtrl', [
       $scope.editTranslation = translation.assigned.find(
         et => et.concept.terminologyId === concept.terminologyId);
       $scope.editTranslation.authors.forEach(function(username) {
-        $scope.authorNames.push(securityService.getUser(username).name);
+        securityService.getUserByUsername(username).then(
+          function(data) {
+           $scope.authorNames.push(data.name);
+          });
       });
     }
     
