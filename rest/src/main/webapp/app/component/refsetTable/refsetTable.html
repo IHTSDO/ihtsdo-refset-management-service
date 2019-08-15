@@ -619,7 +619,7 @@
             ng-click="startLookup(selected.refset); $event.stopPropagation()"
             ng-show="(requiresNameLookup && !selected.refset.lookupInProgress)"
             title="Restart name lookup" class="noul material-icons md-18">play_arrow</i>
-          <select ng-model="selected.refset.preferredLanguage"
+          <select ng-model="selected.refset.preferredLanguage" ng-disabled="isDirectory()"
             title="Select preferred language" style="font-size: 12;"
             ng-options="item as item for item in requiredLanguages"
             ng-change="submitRefset(selected.refset);startLookup(selected.refset);"></select>
