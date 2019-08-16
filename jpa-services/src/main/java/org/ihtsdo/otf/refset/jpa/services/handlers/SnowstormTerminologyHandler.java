@@ -243,7 +243,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
       }
     }
 
-    // Look for additional branch paths by calling branches api call
+/*    // Look for additional branch paths by calling branches api call
     PfsParameter localPfs = new PfsParameterJpa();
     localPfs.setStartIndex(0);
     localPfs.setMaxResults(1000);
@@ -279,7 +279,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
         terminology.setVersion(path);
         list.add(terminology);
       }
-    }
+    }*/
 
     // Reverse sort
     Collections.sort(list, new Comparator<Terminology>() {

@@ -261,7 +261,8 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     List<Terminology> branches = new ArrayList<>();
     for (final JsonNode branchNode : doc.get("items")) {
       String path = branchNode.get("path").asText();
-      if (path.contains(edition)) {
+      if ((edition.equals("SNOMEDCT") && !path.contains("SNOMEDCT-")) || 
+          (edition.contains("SNOMEDCT-") && path.contains(edition))) {
         final Terminology tmlgy = new TerminologyJpa();
         tmlgy.setTerminology(edition);
         tmlgy.setVersion(path);
