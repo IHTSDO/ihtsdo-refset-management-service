@@ -21,6 +21,7 @@ import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefsetMember;
 import org.ihtsdo.otf.refset.services.handlers.ExportRefsetHandler;
 import org.ihtsdo.otf.refset.services.handlers.ImportRefsetHandler;
+import org.ihtsdo.otf.refset.services.handlers.TerminologyHandler;
 
 /**
  * Generically represents a service for accessing {@link Refset} information.
@@ -413,6 +414,26 @@ public interface RefsetService extends ReleaseService {
   public RefsetList getRefsets();
 
   /**
+   * Handler already defined
+   * 
+   * Populate members object with concept's synonyms (from term server).
+   * 
+   * Synonyms are indexed (via Luc) and used for refset concept member
+   * filtering.
+   *
+   * @param member the member
+   * @param concept the concept
+   * @param refset the refset
+   * @param handler the handler
+   * @throws Exception the exception
+   */
+  public void populateMemberSynonyms(ConceptRefsetMember member,
+    Concept concept, Refset refset, TerminologyHandler handler)
+    throws Exception;
+
+  /**
+   * Need to access Handler
+   * 
    * Populate members object with concept's synonyms (from term server).
    * 
    * Synonyms are indexed (via Luc) and used for refset concept member
