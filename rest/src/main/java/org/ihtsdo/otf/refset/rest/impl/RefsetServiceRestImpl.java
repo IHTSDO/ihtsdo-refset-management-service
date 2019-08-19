@@ -1522,7 +1522,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
 
       if (translated == null) {
         // Need to ensure case isn't an issue
-        if (query != null) {
+        if (query != null && !query.startsWith("conceptId:")) {
           query = query.toLowerCase();
         }
 
@@ -1881,9 +1881,10 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         // add members from expression results
         // No need to "resolvExpression" because definition computation includes
         // project exclude logic
-        ConceptList conceptList = refsetService
-            .getTerminologyHandler(refset.getProject(), getHeaders(headers))
-            .resolveExpression(refsetCopy.computeDefinition(null, null),
+        TerminologyHandler handler = refsetService
+            .getTerminologyHandler(refset.getProject(), getHeaders(headers));
+        ConceptList conceptList =
+            handler.resolveExpression(refsetCopy.computeDefinition(null, null),
                 refsetCopy.getTerminology(), refsetCopy.getVersion(), null);
 
         // do this to re-use the terminology id
@@ -1910,7 +1911,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
             member.setPublished(concept.isPublished());
             member.setConceptId(concept.getTerminologyId());
             member.setConceptName(concept.getName());
-            refsetService.populateMemberSynonyms(member, concept, refset);
+            refsetService.populateMemberSynonyms(member, concept, refset,
+                handler);
           }
 
           // If origin refset has this as in exclusion, keep it that way.
