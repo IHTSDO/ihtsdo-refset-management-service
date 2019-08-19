@@ -192,6 +192,7 @@ tsApp
           // Success
           function(data) {
             $scope.metadata.terminologies = data.terminologies;
+            $scope.metadata.versions = {};
             // Look up all versions
             for (var i = 0; i < data.terminologies.length; i++) {
               var terminology = data.terminologies[i];

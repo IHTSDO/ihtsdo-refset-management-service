@@ -2919,7 +2919,7 @@ tsApp
                 $scope.errors = [];
                 $scope.warnings = [];
 
-                $scope.versions = {};
+                $scope.versions = [];
                 
                 // Get $scope.modules
                 $scope.getModules = function() {
@@ -2935,6 +2935,7 @@ tsApp
                   refsetService.isTerminologyVersionValid($scope.project.id,
                     $scope.refset.terminology, $scope.refset.version).then(function(data) {
                     $scope.validVersion = data;
+                    $scope.getModules();
                   });
                 }
 
@@ -2959,43 +2960,56 @@ tsApp
                 
                 // Handle terminology selected
                 $scope.terminologySelected = function(terminology) {
-                  $scope.versions = {};
+                  
+                  $scope.versions = [];
                   for (var i = 0; i < $scope.metadata.versions[terminology].length ; i++) {
                     var path = $scope.metadata.versions[terminology][i];
                     var key;
                     // Edition, parse edition version/ project
                     if (path.indexOf("SNOMEDCT-") != -1) {
-                      key = path.substring(path.indexOf('SNOMEDCT-') + 12);
+                      var tmp = path.substring(path.indexOf('SNOMEDCT-'));
+                      if (tmp.indexOf('/')) {
+                        key = tmp.substring(tmp.indexOf('/') + 1);
+                      } else {
+                        key = tmp;
+                      }
+                      // remove task data
+                      if (key.indexOf('/') != -1) {
+                        // account for dual edition projects such as SNOMEDCT-ES/SNOMEDCT-UY
+                        var res = path.match(/SNOMEDCT-/g);
+                        if (res.length == 1) {
+                          key = key.substring(0, key.lastIndexOf('/'));
+                          path = path.substring(0, path.lastIndexOf('/'));
+                        }
+                      }
                     // International edition, parse international version
                     } else {
                       key = path.substring(path.indexOf('/') + 1);
                     }
-                    if ($scope.versions[key] == undefined) {
-                      $scope.versions[key] = path;
+                    var vsn = {
+                      key : key,
+                      path : path
+                    }
+                    var found = false;
+                    if ($scope.versions.indexOf(vsn) == -1) {
+                      for (var j = 0; j < $scope.versions.length; j++) {
+                        // determine if key is already used
+                        if ($scope.versions[j].key == vsn.key) {
+                          found = true;
+                          if (vsn.path > $scope.versions[j].path) {
+                            // replace with more recent path for that key
+                            $scope.versions[j].path = vsn.path;
+                            break;
+                          }
+                        }
+                      }
+                      if (!found) {
+                        $scope.versions.push(vsn);
+                      }
                     }
                   }
 
                 };
-                
-/*                $scope.terminologySelected = function(terminology) {
-                  $scope.versions = {};
-                  for (var i = 0; i < $scope.metadata.versions[terminology].length ; i++) {
-                    var path = $scope.metadata.versions[terminology][i];
-                    var key;
-                    // Edition, parse edition version/ project
-                    if (path.indexOf("SNOMEDCT-") != -1) {
-                      key = path.substring(path.indexOf('SNOMEDCT-') + 12);
-                    // International edition, parse international version
-                    } else {
-                      key = path.substring(path.indexOf('/') + 1);
-                    }
-                    if ($scope.versions[key] == undefined) {
-                      $scope.versions[key] = path;
-                    }
-                  }
-
-                };*/
-
 
                 // Handle version selected
                 $scope.versionSelected = function(version) {
