@@ -126,7 +126,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
   public boolean test(String terminology, String version) throws Exception {
     final Client client = ClientBuilder.newClient();
     final WebTarget target = client.target(
-        url + "/branches/" + (version == null ? "" : "MAIN/" + version));
+        url + "/branches/" + (version == null ? "" : version));
 
     final Response response =
         target.request(accept).header("Authorization", authHeader)

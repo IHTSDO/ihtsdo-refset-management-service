@@ -73,14 +73,13 @@
             class="glyphicon-question-sign"></i>
         </td>
       </tr>
-
       <tr>
         <td>
           <b>Version</b>
         </td>
         <td>
-          <select ng-model="refset.version"
-            ng-options="value as key for (key, value) in versions | orderBy:'key':true track by key"></select>
+          <select ng-model="refset.version" 
+            ng-options="item.path as item.key for item in versions | orderBy:'key'"></select>
         </td>
       </tr>
       <tr>
