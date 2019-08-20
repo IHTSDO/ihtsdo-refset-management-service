@@ -1,5 +1,5 @@
 /**
- * Copyright 2015 West Coast Informatics, LLC
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.jpa.services;
 
@@ -463,6 +463,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa
       final IoHandlerInfo info = new IoHandlerInfoJpa();
       info.setId(entry.getKey());
       info.setName(entry.getValue().getName());
+      info.setIoType(entry.getValue().getIoType());
       info.setFileTypeFilter(entry.getValue().getFileTypeFilter());
       info.setMimeType(entry.getValue().getMimeType());
       list.getObjects().add(info);
@@ -1344,7 +1345,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa
             // Get concepts from Term Server based on list
             final ConceptList cons =
                 getTerminologyHandler(translation.getProject(), headers)
-                    .getConcepts(termIds, terminology, version);
+                    .getConcepts(termIds, terminology, version, false);
 
             // IF the number of concepts returned doesn't match
             // the size of termIds, there was a problem

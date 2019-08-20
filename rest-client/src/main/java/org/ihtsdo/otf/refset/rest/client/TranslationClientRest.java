@@ -1,5 +1,5 @@
 /**
- * Copyright 2015 West Coast Informatics, LLC
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.rest.client;
 
@@ -539,6 +539,7 @@ public class TranslationClientRest extends RootClientRest
     }
   }
 
+  /* see superclass */
   @Override
   public void removeSpellingDictionaryEntry(Long translationId, String entry,
     String authToken) throws Exception {
@@ -1064,7 +1065,7 @@ public class TranslationClientRest extends RootClientRest
   @Override
   public ValidationResult finishImportConcepts(
     FormDataContentDisposition contentDispositionHeader, InputStream in,
-    Long translationId, String ioHandlerInfoId, String authToken)
+    Long translationId, String ioHandlerInfoId, String action, String authToken)
     throws Exception {
 
     Logger.getLogger(getClass())
@@ -1088,6 +1089,41 @@ public class TranslationClientRest extends RootClientRest
     Response response = target.request(MediaType.APPLICATION_XML)
         .header("Authorization", authToken)
         .post(Entity.entity(multiPart, MediaType.MULTIPART_FORM_DATA_TYPE));
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+    // converting to object
+    return (ValidationResultJpa) ConfigUtility.getGraphForString(resultString,
+        ValidationResultJpa.class);
+  }
+  
+  /* see superclass */
+  @Override
+  public ValidationResult finishImportConcepts(
+    Long translationId, String ioHandlerInfoId, String action, String authToken)
+    throws Exception {
+
+    Logger.getLogger(getClass())
+        .debug("Translation Client - finish import concepts");
+    validateNotEmpty(translationId, "translationId");
+    validateNotEmpty(ioHandlerInfoId, "ioHandlerInfoId");
+    validateNotEmpty(action, "action");
+
+    ClientConfig clientConfig = new ClientConfig();
+    clientConfig.register(MultiPartFeature.class);
+    Client client = ClientBuilder.newClient(clientConfig);
+
+    WebTarget target = client.target(config.getProperty("base.url")
+        + "/translation/import/finish/" + ioHandlerInfoId + "?translationId=" + translationId
+        + "&action=" + action);
+
+    Response response = target.request(MediaType.APPLICATION_XML)
+        .header("Authorization", authToken)
+        .post(Entity.xml(""));
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -1418,6 +1454,7 @@ public class TranslationClientRest extends RootClientRest
         TranslationJpa.class);
   }
 
+  /* see superclass */
   @Override
   public Long getOriginForStagedTranslation(Long stagedTranslationId,
     String authToken) throws Exception {
@@ -1474,9 +1511,20 @@ public class TranslationClientRest extends RootClientRest
         KeyValuePairList.class);
   }
 
+  /* see superclass */
   @Override
-  public Concept updateConceptName(Long translationId, String conceptId, String authToken) throws Exception {
-	// TODO Auto-generated method stub
-	return null;
+  public Concept updateConceptName(Long translationId, String conceptId,
+    String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
   }
+
+  // // TODO update this.
+  // @Override
+  // public void importTranslations(Long translationId, String ioHandlerInfoId,
+  // String authToken) throws Exception {
+  // // TODO Auto-generated method stub
+  //
+  // }
+
 }

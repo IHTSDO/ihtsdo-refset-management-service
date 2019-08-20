@@ -1,5 +1,5 @@
-/*
- * Copyright 2015 West Coast Informatics, LLC
+/**
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.model;
 
@@ -67,6 +67,7 @@ public class IoHandlerInfoJpaUnitTest extends ModelUnitSupport {
     tester.include("name");
     tester.include("fileTypeFilter");
     tester.include("mimeType");
+    tester.include("ioType");
 
     assertTrue(tester.testIdentitiyFieldEquals());
     assertTrue(tester.testNonIdentitiyFieldEquals());
