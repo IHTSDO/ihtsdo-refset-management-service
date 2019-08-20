@@ -1868,7 +1868,7 @@ tsApp
                   }
                   if ($scope.selectedEffectiveTime && $scope.selectedEffectiveTime !== "") {
                     $scope.refsets = $scope.refsets.filter(
-                      r => utilService.toShortDate(r.effectiveTime) === utilService.toShortDate($scope.selectedEffectiveTime));
+                      r => utilService.toShortDate(r.effectiveTime) === $scope.selectedEffectiveTime);
                   }
                   //exclude items which were added
                   angular.forEach($scope.includeRefsets, function(refset) {
