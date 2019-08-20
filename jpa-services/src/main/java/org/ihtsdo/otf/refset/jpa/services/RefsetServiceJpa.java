@@ -1,5 +1,5 @@
 /**
- * Copyright 2015 West Coast Informatics, LLC
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.jpa.services;
 
@@ -38,7 +38,6 @@ import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.RefsetList;
 import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
-import org.ihtsdo.otf.refset.helpers.TranslationList;
 import org.ihtsdo.otf.refset.jpa.ConceptRefsetMemberNoteJpa;
 import org.ihtsdo.otf.refset.jpa.IoHandlerInfoJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
@@ -50,7 +49,6 @@ import org.ihtsdo.otf.refset.jpa.helpers.ConceptRefsetMemberListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.IoHandlerInfoListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.RefsetListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ReleaseInfoListJpa;
-import org.ihtsdo.otf.refset.jpa.helpers.TranslationListJpa;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefsetMember;
@@ -660,6 +658,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
       final IoHandlerInfo info = new IoHandlerInfoJpa();
       info.setId(entry.getKey());
       info.setName(entry.getValue().getName());
+      info.setIoType(entry.getValue().getIoType());
       info.setFileTypeFilter(entry.getValue().getFileTypeFilter());
       info.setMimeType(entry.getValue().getMimeType());
       list.getObjects().add(info);
@@ -1084,7 +1083,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
             final TerminologyHandler handler =
                 getTerminologyHandler(refset.getProject(), headers);
             final ConceptList cons =
-                handler.getConcepts(termIds, terminology, version);
+                handler.getConcepts(termIds, terminology, version, false);
 
             // IF the number of concepts returned doesn't match
             // the size of termIds, there was a problem
@@ -1224,7 +1223,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
         final Project project = this.getProject(refset.getProject().getId());
         resolvedFromExpression =
           getTerminologyHandler(project, headers).resolveExpression(definition,
-              refset.getTerminology(), refset.getVersion(), null);
+              refset.getTerminology(), refset.getVersion(), null, false);
 
         // Save concepts
         for (final Concept concept : resolvedFromExpression.getObjects()) {

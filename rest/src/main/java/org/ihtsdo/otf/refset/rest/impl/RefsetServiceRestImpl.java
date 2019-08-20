@@ -1,5 +1,5 @@
 /**
- * Copyright 2015 West Coast Informatics, LLC
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.rest.impl;
 
@@ -386,7 +386,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       final ConceptList resolvedFromExpression = refsetService
           .getTerminologyHandler(refset.getProject(), getHeaders(headers))
           .resolveExpression(refset.computeExpression(expression),
-              refset.getTerminology(), refset.getVersion(), null);
+              refset.getTerminology(), refset.getVersion(), null, false);
 
       final Set<String> conceptIds = new HashSet<>();
       for (final ConceptRefsetMember member : refset.getMembers()) {
@@ -457,7 +457,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       final ConceptList resolvedFromExpression = refsetService
           .getTerminologyHandler(refset.getProject(), getHeaders(headers))
           .resolveExpression(refset.computeExpression(expression),
-              refset.getTerminology(), refset.getVersion(), null);
+              refset.getTerminology(), refset.getVersion(), null, false);
       final Set<String> conceptIds = new HashSet<>();
       for (final Concept concept : resolvedFromExpression.getObjects()) {
         conceptIds.add(concept.getTerminologyId());
@@ -1825,7 +1825,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         ConceptList conceptList = refsetService
             .getTerminologyHandler(refset.getProject(), getHeaders(headers))
             .resolveExpression(refsetCopy.computeDefinition(null, null),
-                refsetCopy.getTerminology(), refsetCopy.getVersion(), null);
+                refsetCopy.getTerminology(), refsetCopy.getVersion(), null, false);
 
         // do this to re-use the terminology id
         final Map<String, ConceptRefsetMember> conceptIdMap = new HashMap<>();
@@ -2677,7 +2677,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         final ConceptList concepts = refsetService
             .getTerminologyHandler(refset.getProject(), getHeaders(headers))
             .resolveExpression(clause.getValue(), refset.getTerminology(),
-                refset.getVersion(), null);
+                refset.getVersion(), null, false);
         clauseToConceptsMap.put(clause.getValue(), concepts);
       }
 
