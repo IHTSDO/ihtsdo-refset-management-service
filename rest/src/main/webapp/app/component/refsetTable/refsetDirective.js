@@ -864,7 +864,7 @@ tsApp
               // Start lookup again - not $scope because modal must access it
               function startLookup(refset) {
                 
-                refsetService.startLookup(refset.id, refset.preferredLanguage).then(
+                refsetService.startLookup(refset.id).then(
                 // Success
                 function(data) {
                   $scope.refsetLookupProgress[refset.id] = 1;
