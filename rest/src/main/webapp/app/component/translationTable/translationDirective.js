@@ -2056,6 +2056,7 @@ tsApp
                                   $scope.warnings = data.warnings;
                                   $scope.comments = data.comments;
                                   startLookup(translation);
+                                  $uibModalInstance.close($scope.translation);
                                 },
                                 // Failure - show error
                                 function(data) {
@@ -2104,6 +2105,7 @@ tsApp
                             $scope.warnings = data.warnings;
                             $scope.comments = data.comments;
                             startLookup(translation);
+                            $uibModalInstance.close($scope.translation);
                           },
                           // Failure - show error
                           function(data) {
