@@ -1,5 +1,5 @@
 /**
- * Copyright 2015 West Coast Informatics, LLC
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.helpers;
 
@@ -9,6 +9,16 @@ package org.ihtsdo.otf.refset.helpers;
  */
 public interface IoHandlerInfo {
 
+  
+  public enum IoType {
+    
+    /**  The file. */
+    FILE,
+    
+    /**  The api. */
+    API
+  }
+  
   /**
    * Returns the id.
    *
@@ -64,4 +74,18 @@ public interface IoHandlerInfo {
    * @param mimeType the mime type
    */
   public void setMimeType(String mimeType);
+  
+  /**
+   * Sets the IO type.
+   *
+   * @param ioType the IO type
+   */
+  public void setIoType(IoType ioType);
+  
+  /**
+   * Returns the IO type.
+   *
+   * @return the IO type
+   */
+  public IoType getIoType();
 }

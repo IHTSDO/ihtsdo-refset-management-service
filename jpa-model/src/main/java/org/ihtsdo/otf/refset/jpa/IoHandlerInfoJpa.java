@@ -1,5 +1,5 @@
 /**
- * Copyright 2015 West Coast Informatics, LLC
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.jpa;
 
@@ -24,6 +24,9 @@ public class IoHandlerInfoJpa implements IoHandlerInfo {
 
   /** The mime type. */
   private String mimeType;
+  
+  /**  The io type. */
+  private IoType ioType;
 
   /**
    * Instantiates an empty {@link IoHandlerInfoJpa}.
@@ -42,6 +45,7 @@ public class IoHandlerInfoJpa implements IoHandlerInfo {
     name = info.getName();
     fileTypeFilter = info.getFileTypeFilter();
     mimeType = info.getMimeType();
+    ioType = info.getIoType();
   }
 
   /* see superclass */
@@ -91,6 +95,18 @@ public class IoHandlerInfoJpa implements IoHandlerInfo {
   public void setMimeType(String mimeType) {
     this.mimeType = mimeType;
   }
+  
+  /* see superclass */
+  @Override
+  public IoType getIoType() {
+    return ioType;
+  }
+  
+  /* see superclass */
+  @Override
+  public void setIoType(IoType ioType) {
+    this.ioType = ioType;
+  }
 
   /* see superclass */
   @Override
@@ -103,6 +119,7 @@ public class IoHandlerInfoJpa implements IoHandlerInfo {
     result = prime * result + ((mimeType == null) ? 0 : mimeType.hashCode());
     result = prime * result + ((id == null) ? 0 : id.hashCode());
     result = prime * result + ((name == null) ? 0 : name.hashCode());
+    result = prime * result + ((ioType == null) ? 0 : ioType.hashCode());
     return result;
   }
 
@@ -136,6 +153,11 @@ public class IoHandlerInfoJpa implements IoHandlerInfo {
         return false;
     } else if (!name.equals(other.name))
       return false;
+    if (ioType == null) {
+      if (other.ioType != null)
+        return false;
+    } else if (!ioType.equals(other.ioType))
+      return false;
     return true;
   }
 
@@ -144,6 +166,6 @@ public class IoHandlerInfoJpa implements IoHandlerInfo {
   public String toString() {
     return "IoHandlerInfoJpa [id=" + id + ", name=" + name
         + ", fileTypeFilter=" + fileTypeFilter + ", mimeType = " + mimeType
-        + "]";
+        + ", ioType=" + ioType + "]";
   }
 }

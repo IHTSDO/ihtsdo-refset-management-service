@@ -1,5 +1,5 @@
 /**
- * Copyright 2015 West Coast Informatics, LLC
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.rest.impl;
 
@@ -359,7 +359,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
           pfs.setMaxResults(1);
           projectService.getTerminologyHandler(project, getHeaders(headers))
               .resolveExpression(project.getExclusionClause(),
-                  project.getTerminology(), "", pfs);
+                  project.getTerminology(), "", pfs, false);
         } catch (Exception e) {
           throw new LocalException("Project has invalid exclusion clause");
         }
@@ -419,7 +419,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
           pfs.setMaxResults(1);
           projectService.getTerminologyHandler(project, getHeaders(headers))
               .resolveExpression(project.getExclusionClause(),
-                  project.getTerminology(), "", pfs);
+                  project.getTerminology(), "", pfs, false);
         } catch (Exception e) {
           throw new LocalException("Project has invalid exclusion clause");
         }
@@ -1280,7 +1280,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass())
-        .info("RESTful GET call (Refset): /concept/alternates " + terminology
+        .info("RESTful GET call (Project): /concept/alternates " + terminology
             + ", " + version + ", " + conceptId);
 
     // Create service and configure transaction scope
@@ -1322,7 +1322,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass())
-        .info("RESTful GET call (Refset): /test " + url);
+        .info("RESTful GET call (Project): /test " + url);
 
     // Create service and configure transaction scope
     final ProjectService projectService =
