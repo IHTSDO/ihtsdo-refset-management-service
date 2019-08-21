@@ -1,5 +1,5 @@
 /**
- * Copyright 2015 West Coast Informatics, LLC
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.services.handlers;
 
@@ -10,6 +10,7 @@ import org.ihtsdo.otf.refset.DefinitionClause;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.Configurable;
+import org.ihtsdo.otf.refset.helpers.IoHandlerInfo;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 
 /**
@@ -23,7 +24,7 @@ import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
  *  - import content from an input stream.
  * </pre>
  */
-public interface ImportRefsetHandler extends Configurable {
+public interface ImportRefsetHandler extends IoHandlerInfo, Configurable {
 
   /**
    * Indicates whether or not this is a delta handler. If so, the import process
@@ -32,20 +33,6 @@ public interface ImportRefsetHandler extends Configurable {
    * @return <code>true</code> if so, <code>false</code> otherwise
    */
   public boolean isDeltaHandler();
-
-  /**
-   * Returns the file type filter.
-   *
-   * @return the file type filter
-   */
-  public String getFileTypeFilter();
-
-  /**
-   * Returns the mime type.
-   *
-   * @return the mime type
-   */
-  public String getMimeType();
 
   /**
    * Import members.

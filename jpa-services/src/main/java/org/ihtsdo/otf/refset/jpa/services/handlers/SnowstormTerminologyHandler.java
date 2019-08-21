@@ -12,6 +12,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 
 import javax.ws.rs.client.Client;
@@ -55,7 +56,7 @@ import com.google.common.net.InternetDomainName;
  * sv-SE-x-46011000052107;q=0.8,en-US;q=0.5 Can find language reference sets
  * descendants of 900000000000506000
  */
-public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
+public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
 
   /** The terminology version language map. */
   private static Map<String, String> tvLanguageMap = new HashMap<>();
@@ -73,22 +74,26 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     idsToIgnore.add("900000000000509007");
     idsToIgnore.add("900000000000508004");
     idsToIgnore.add("608771002");
+    idsToIgnore.add("46011000052107");
 
   }
 
   /**
-   * Instantiates an empty {@link SnowowlTerminologyHandler}.
+   * Instantiates an empty {@link SnowstormTerminologyHandler}.
    *
    * @throws Exception the exception
    */
-  public SnowowlTerminologyHandler() throws Exception {
+  public SnowstormTerminologyHandler() throws Exception {
     super();
 
   }
 
   /** The accept. */
-  private final String accept =
-      "application/vnd.com.b2international.snowowl+json";
+  /*
+   * private final String accept =
+   * "application/vnd.com.b2international.snowowl+json";
+   */
+  private final String accept = "application/json";
 
   /** The domain. */
   private String domain;
@@ -108,7 +113,8 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
   /* see superclass */
   @Override
   public TerminologyHandler copy() throws Exception {
-    final SnowowlTerminologyHandler handler = new SnowowlTerminologyHandler();
+    final SnowstormTerminologyHandler handler =
+        new SnowstormTerminologyHandler();
     handler.defaultUrl = this.defaultUrl;
     handler.authHeader = this.authHeader;
     handler.setApiKey(getApiKey());
@@ -118,9 +124,9 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
   /* see superclass */
   @Override
   public boolean test(String terminology, String version) throws Exception {
-    final String localVersion = version == null ? "MAIN" : version;
     final Client client = ClientBuilder.newClient();
-    final WebTarget target = client.target(url + "/branches/" + localVersion);
+    final WebTarget target = client.target(
+        url + "/branches/" + (version == null ? "" : "MAIN/" + version));
 
     final Response response =
         target.request(accept).header("Authorization", authHeader)
@@ -165,80 +171,48 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
   /* see superclass */
   @Override
   public List<Terminology> getTerminologyEditions() throws Exception {
-    Logger.getLogger(getClass()).info("  get terminology editions ");
-
-    List<Terminology> result = new ArrayList<>();
-
-    // Make a webservice call to SnowOwl to get branches
+    final List<Terminology> list = new ArrayList<Terminology>();
+    // Make a webservice call
     final Client client = ClientBuilder.newClient();
-
-    PfsParameter localPfs = new PfsParameterJpa();
-    localPfs.setStartIndex(0);
-    localPfs.setMaxResults(1000);
-
-    WebTarget target =
-        client.target(url + "/branches?" + "limit=" + localPfs.getMaxResults());
-
-    Response response =
+    Logger.getLogger(getClass())
+        .debug("  Get terminology editions - " + url + "/codesystems");
+    final WebTarget target = client.target(url + "/codesystems");
+    final Response response =
         target.request(accept).header("Authorization", authHeader)
             .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
             .header("Cookie", getCookieHeader()).get();
-    String resultString = response.readEntity(String.class);
+    final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
     } else {
-
       throw new LocalException(
           "Unexpected terminology server failure. Message = " + resultString);
     }
 
-    // compile list of edition names from branches available
-    ObjectMapper mapper = new ObjectMapper();
-    JsonNode doc = mapper.readTree(resultString);
+    final ObjectMapper mapper = new ObjectMapper();
+    final JsonNode doc = mapper.readTree(resultString);
 
-    for (final JsonNode branchNode : doc.get("items")) {
-      JsonNode metadata = branchNode.get("metadata");
-      if (metadata != null && metadata.get("codeSystemShortName") != null) {
-        Terminology t = new TerminologyJpa();
-        t.setTerminology(metadata.get("codeSystemShortName").asText());
-        t.setName(metadata.get("codeSystemShortName").asText());
-        if (!result.contains(t)) {
-          result.add(t);
-        }
-      }
+    for (final JsonNode entry : doc.get("items")) {
+      final Terminology terminology = new TerminologyJpa();
+      terminology.setTerminology(entry.get("shortName").asText());
+      terminology.setName(entry.get("shortName").asText());
+      list.add(terminology);
     }
 
-    // add SNOMEDCT itself
-    Terminology t = new TerminologyJpa();
-    t.setTerminology("SNOMEDCT");
-    t.setName("SNOMEDCT");
-    result.add(t);
-
-    // Reverse sort
-    Collections.sort(result, new Comparator<Terminology>() {
-      @Override
-      public int compare(Terminology o1, Terminology o2) {
-        return o1.getName().compareTo(o2.getName());
-      }
-    });
-
-    return result;
+    return list;
   }
 
   /* see superclass */
   @Override
   public List<Terminology> getTerminologyVersions(String edition)
     throws Exception {
-    // Make a webservice call to SnowOwl to get branches
+    final List<Terminology> list = new ArrayList<Terminology>();
+    // Make a webservice call to get codesystems
     final Client client = ClientBuilder.newClient();
-
-    PfsParameter localPfs = new PfsParameterJpa();
-    localPfs.setStartIndex(0);
-    localPfs.setMaxResults(1000);
-
+    Logger.getLogger(getClass()).debug("  Get terminology versions - " + url
+        + "/codesystems/" + edition + "/versions");
     WebTarget target =
-        client.target(url + "/branches?" + "limit=" + localPfs.getMaxResults());
-
+        client.target(url + "/codesystems/" + edition + "/versions");
     Response response =
         target.request(accept).header("Authorization", authHeader)
             .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
@@ -247,7 +221,6 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
     } else {
-
       throw new LocalException(
           "Unexpected terminology server failure. Message = " + resultString);
     }
@@ -255,21 +228,67 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     ObjectMapper mapper = new ObjectMapper();
     JsonNode doc = mapper.readTree(resultString);
 
-    // return versions of all paths that contain the edition specified
-    List<Terminology> branches = new ArrayList<>();
-    for (final JsonNode branchNode : doc.get("items")) {
-      String path = branchNode.get("path").asText();
-      if (path.contains(edition)) {
-        final Terminology tmlgy = new TerminologyJpa();
-        tmlgy.setTerminology(edition);
-        tmlgy.setVersion(path);
-        tmlgy.setName(branchNode.get("name").asText());
-        branches.add(tmlgy);
+    final List<String> seen = new ArrayList<>();
+    for (final JsonNode entry : doc.get("items")) {
+      if (entry.get("shortName").asText().equals(edition)) {
+        final String version = entry.get("version").asText();
+        if (version != null && !version.isEmpty() && !seen.contains(version)) {
+          final Terminology terminology = new TerminologyJpa();
+          terminology.setTerminology(edition);
+          terminology.setVersion(entry.get("branchPath").asText());
+          terminology.setName(version);
+          list.add(terminology);
+        }
+        seen.add(version);
       }
     }
 
-    return branches;
+    // Look for additional branch paths by calling branches api call
+    PfsParameter localPfs = new PfsParameterJpa();
+    localPfs.setStartIndex(0);
+    localPfs.setMaxResults(1000);
+    Logger.getLogger(getClass()).debug("  Get terminology versions - " + url
+        + "/branches?" + "limit=" + localPfs.getMaxResults());
+    target =
+        client.target(url + "/branches?" + "limit=" + localPfs.getMaxResults());
 
+    response = target.request(accept).header("Authorization", authHeader)
+        .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
+        .header("Cookie", getCookieHeader()).get();
+    resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+
+      throw new LocalException(
+          "Unexpected terminology server failure. Message = " + resultString);
+    }
+
+    mapper = new ObjectMapper();
+    doc = mapper.readTree(resultString);
+
+    // filter out branches that don't match terminology(edition) and version
+    JsonNode entry = null;
+    int index = 0;
+    while ((entry = doc.get(index++)) != null) {
+      String path = entry.get("path").asText();
+      if (((edition.equals("SNOMEDCT") && !path.contains("SNOMEDCT-"))
+          || path.contains(edition))) {
+        final Terminology terminology = new TerminologyJpa();
+        terminology.setTerminology(edition);
+        terminology.setVersion(path);
+        list.add(terminology);
+      }
+    }
+
+    // Reverse sort
+    Collections.sort(list, new Comparator<Terminology>() {
+      @Override
+      public int compare(Terminology o1, Terminology o2) {
+        return o2.getVersion().compareTo(o1.getVersion());
+      }
+    });
+    return list;
   }
 
   /* see superclass */
@@ -281,8 +300,8 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     // Make a webservice call to SnowOwl to get concept
     final Client client = ClientBuilder.newClient();
 
-    WebTarget target = client.target(
-        url + "/" + version + "/concepts/" + conceptId + "?expand=members()");
+    WebTarget target =
+        client.target(url + "/browser/" + version + "/concepts/" + conceptId);
 
     Response response =
         target.request(accept).header("Authorization", authHeader)
@@ -304,80 +323,47 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
 
     /**
      * <pre>
-     * 
      * {
-     *   "items": [
-     *     {
-     *       "id": "150606004",
-     *       "released": true,
-     *       "active": false,
-     *       "effectiveTime": "20020131",
-     *       "moduleId": "900000000000207008",
-     *       "definitionStatus": "PRIMITIVE",
-     *       "subclassDefinitionStatus": "NON_DISJOINT_SUBCLASSES",
-     *       "inactivationIndicator": "AMBIGUOUS",
-     *       "associationTargets": {
-     *         "POSSIBLY_EQUIVALENT_TO": [
-     *           "86052008",
-     *           "266685009"
-     *         ]
-     *       }
-     *     }
-     *   ],
-     *   "offset": 0,
-     *   "limit": 50,
-     *   "total": 1
-     *   
-     *   {
-        "id": "80001d7e-b1b9-56ac-9768-308cabe31117",
-        "released": true,
-        "active": true,
-        "effectiveTime": "20040731",
-        "moduleId": "900000000000207008",
-        "iconId": "290170004",
-        "referencedComponent": {
-          "id": "290170004"
-        },
-        "referenceSetId": "900000000000527005",
-        "referencedComponentId": "290170004",
-        "additionalFields": {
-          "targetComponent": {
-            "id": "216464004"
-          }
-        },
-        "refsetId": "900000000000527005"
-      }
-     * }
+    "conceptId": "217673009",
+    "fsn": "Toxic reaction caused by wasp sting (disorder)",
+    "active": false,
+    "effectiveTime": "20190731",
+    "released": true,
+    "releasedEffectiveTime": 20190731,
+    "inactivationIndicator": "AMBIGUOUS",
+    "associationTargets": {
+    "POSSIBLY_EQUIVALENT_TO": [
+      "7456000"
+    ]
+    },
+    "moduleId": "900000000000207008",
+    "definitionStatus": "PRIMITIVE",
+    "descriptions": [
+     * ...
+     * 
      * </pre>
      */
 
     ObjectMapper mapper = new ObjectMapper();
     JsonNode doc = mapper.readTree(resultString);
 
-    if (doc.get("members") == null) {
+    final Map<String, String> reasonMap = new HashMap<>();
+    // JsonNode entry = null;
+    JsonNode associationTargets = doc.findValue("associationTargets");
+
+    if (associationTargets == null || associationTargets.fields() == null) {
       return new ConceptListJpa();
     }
-    final Map<String, String> reasonMap = new HashMap<>();
-    for (final JsonNode member : doc.get("members")) {
-      JsonNode entry = null;
-      int index = 0;
-      while ((entry = member.get(index++)) != null) {
-        JsonNode addFields = entry.findValue("additionalFields");
-        if (addFields != null
-            && addFields.findValue("targetComponent") != null) {
-          JsonNode key = addFields.findValue("id");
-          JsonNode reasonId = entry.findValue("referenceSetId");
-          reasonMap.put(key.asText(), reasonId.asText());
-        }
-        /*
-         * Entry<String, JsonNode> entry = mapping.fields().next(); String key =
-         * entry.getKey(); String values = entry.getValue().toString(); if
-         * (values.contains("[")) { values = values.substring(1, values.length()
-         * - 1); } values = values.replaceAll("\"", ""); for (String value :
-         * values.split(",")) { // conceptId, reason reasonMap.put(value, key);
-         * }
-         */
-      }
+    Entry<String, JsonNode> entry = associationTargets.fields().next();
+    String key = entry.getKey();
+    String values = entry.getValue().toString();
+    if (values.contains("[")) {
+      values = values.substring(1, values.length() - 1);
+    }
+    values = values.replaceAll("\"", "");
+    for (String value : values.split(",")) {
+      // conceptId, reason
+      reasonMap.put(value, key);
     }
 
     // Look up concepts - set "definition status id" to the reason for
@@ -393,75 +379,8 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
 
   /* see superclass */
   @Override
-  public List<String> getRequiredLanguageRefsets(String terminology,
-    String version) throws Exception {
-    Logger.getLogger(getClass()).info(
-        "  get required language refsets  - " + terminology + ", " + version);
-    // Make a webservice call to SnowOwl to get branch and its required
-    // languages
-    final Client client = ClientBuilder.newClient();
-
-    WebTarget target = client.target(url + "/branches/" + version);
-
-    Response response =
-        target.request(accept).header("Authorization", authHeader)
-            .header("Accept-Language", getAcceptLanguage(terminology, version))
-            .header("Cookie", getCookieHeader()).get();
-    String resultString = response.readEntity(String.class);
-    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-      // n/a
-    } else {
-
-      // Here's the messy part about trying to parse the return error message
-      if (resultString.contains("loop did not match anything")) {
-        return new ArrayList<>();
-      }
-
-      throw new LocalException(
-          "Unexpected terminology server failure. Message = " + resultString);
-    }
-
-    ObjectMapper mapper = new ObjectMapper();
-    JsonNode doc = mapper.readTree(resultString);
-
-    if (doc.get("metadata") == null) {
-      return new ArrayList<>();
-    }
-    List<String> requiredLanguageList = new ArrayList<>();
-    final JsonNode metadata = doc.get("metadata");
-    final JsonNode requiredLanguageRefsets =
-        metadata.get("requiredLanguageRefsets");
-    JsonNode entry = null;
-    int index = 0;
-    if (requiredLanguageRefsets != null) {
-      while ((entry = requiredLanguageRefsets.get(index++)) != null) {
-        String entryText = entry.toString();
-        // fragile solution to JsonNode.fields and fieldNames next() not working
-        requiredLanguageList.add(entryText.substring(
-            entryText.lastIndexOf(':') - 3, entryText.lastIndexOf(':') - 1));
-      }
-
-    } else {
-      if (metadata.toString().contains("requiredLanguageRefset")) {
-        // fragile solution to JsonNode.fields and fieldNames next() not
-        // working
-        requiredLanguageList.add(metadata.toString().substring(
-            metadata.toString().lastIndexOf(':') - 3,
-            metadata.toString().lastIndexOf(':') - 1));
-      }
-
-    }
-
-    if (requiredLanguageRefsets == null) {
-      return requiredLanguageList;
-    }
-    return requiredLanguageList;
-  }
-
-  /* see superclass */
-  @Override
   public ConceptList resolveExpression(String expr, String terminology,
-    String version, PfsParameter pfs, boolean descriptions) throws Exception {
+    String version, PfsParameter pfs, boolean description) throws Exception {
     Logger.getLogger(getClass()).info("  resolve expression - " + terminology
         + ", " + version + ", " + expr + ", " + pfs);
     // Make a webservice call to SnowOwl to get concept
@@ -486,13 +405,10 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
 
     WebTarget target = client.target(url + "/" + version + "/concepts?ecl="
         + URLEncoder.encode(expr, "UTF-8").replaceAll(" ", "%20") + "&limit="
-        + Math.min(initialMaxLimit, localPfs.getMaxResults()) + "&expand=pt()"
-        + (descriptions ? ",descriptions()" : ""));
-    Logger.getLogger(getClass())
-        .info(url + "/" + version + "/concepts?ecl="
-            + URLEncoder.encode(expr, "UTF-8").replaceAll(" ", "%20")
-            + "&limit=" + Math.min(initialMaxLimit, localPfs.getMaxResults())
-            + "&expand=pt()" + (descriptions ? ",descriptions()" : ""));
+        + Math.min(initialMaxLimit, localPfs.getMaxResults()) + "&expand=pt()");
+    Logger.getLogger(getClass()).info(url + "/" + version + "/concepts?ecl="
+        + URLEncoder.encode(expr, "UTF-8").replaceAll(" ", "%20") + "&limit="
+        + Math.min(initialMaxLimit, localPfs.getMaxResults()) + "&expand=pt()");
 
     Response response =
         target.request(accept).header("Authorization", authHeader)
@@ -577,69 +493,25 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
           .setDefinitionStatusId(conceptNode.get("definitionStatus").asText());
 
       // pt.term is the name
-      concept.setName(conceptNode.get("pt").get("term").asText());
+      JsonNode pt = conceptNode.get("pt");
+      if (pt == null) {
+        Logger.getLogger(getClass()).info("pt without term: " + concept);
+        continue;
+      }
+      concept.setName(pt.get("term") != null ? pt.get("term").asText() : "");
 
       concept.setPublishable(true);
       concept.setPublished(true);
 
       conceptList.addObject(concept);
-
-      if (conceptNode.get("descriptions") != null) {
-        for (final JsonNode desc : conceptNode.get("descriptions")
-            .get("items")) {
-          final Description description = new DescriptionJpa();
-
-          description.setActive(desc.get("active").asText().equals("true"));
-
-          description
-              .setCaseSignificanceId(desc.get("caseSignificance").asText());
-
-          description.setConcept(concept);
-          if (desc.has("effectiveTime")) {
-            description.setEffectiveTime(ConfigUtility.DATE_FORMAT
-                .parse(desc.get("effectiveTime").asText()));
-            description.setLastModified(description.getEffectiveTime());
-          } else {
-            description.setLastModified(new Date());
-          }
-          description.setLanguageCode(desc.get("languageCode").asText());
-          description.setLastModifiedBy(terminology);
-          description.setModuleId(desc.get("moduleId").asText());
-          description.setPublishable(true);
-          description.setPublished(true);
-          description.setTerm(desc.get("term").asText());
-          description.setTerminologyId(desc.get("id").asText());
-
-          description.setTypeId(desc.get("typeId").asText());
-
-          if (description.isActive()) {
-            for (final JsonNode language : desc.findValues("acceptability")) {
-              final LanguageRefsetMember member = new LanguageRefsetMemberJpa();
-              member.setActive(true);
-              member.setDescriptionId(concept.getTerminologyId());
-              String key = language.fieldNames().next();
-              member.setRefsetId(key);
-              member.setAcceptabilityId(language.get(key).asText());
-              if (member.getAcceptabilityId().equals("PREFERRED")) {
-                member.setAcceptabilityId("900000000000548007");
-              } else if (member.getAcceptabilityId().equals("ACCEPTABLE")) {
-                member.setAcceptabilityId("900000000000549004");
-              }
-              description.getLanguageRefsetMembers().add(member);
-            }
-          }
-
-          concept.getDescriptions().add(description);
-        }
-      }
     }
 
     // If the total is over the initial max limit and pfs max results is too.
-    if (total > initialMaxLimit && localPfs.getMaxResults() > initialMaxLimit) {
+    while (total > initialMaxLimit && localPfs.getMaxResults() > initialMaxLimit
+        && conceptList.getCount() < total) {
       target = client.target(url + "/" + version + "/concepts?ecl="
-          + URLEncoder.encode(expr, "UTF-8") + "&limit="
-          + (total - initialMaxLimit) + "&searchAfter=" + searchAfter
-          + "&expand=pt()" + (descriptions ? ",descriptions()" : ""));
+          + URLEncoder.encode(expr, "UTF-8") + "&limit=200"
+          /* + (total - initialMaxLimit) */ + "&searchAfter=" + searchAfter + "&expand=pt()");
       response = target.request(accept).header("Authorization", authHeader)
           .header("Accept-Language", getAcceptLanguage(terminology, version))
           .header("Cookie", getCookieHeader()).get();
@@ -656,6 +528,9 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
       // Get concepts returned in this call (up to 200)
       if (doc.get("items") == null) {
         return conceptList;
+      }
+      if (doc.findValue("searchAfter") != null) {
+        searchAfter = doc.findValue("searchAfter").asText();
       }
       for (final JsonNode conceptNode : doc.get("items")) {
         final Concept concept = new ConceptJpa();
@@ -679,56 +554,6 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
         concept.setPublished(true);
 
         conceptList.addObject(concept);
-
-        if (conceptNode.get("descriptions") != null) {
-          for (final JsonNode desc : conceptNode.get("descriptions")
-              .get("items")) {
-            final Description description = new DescriptionJpa();
-
-            description.setActive(desc.get("active").asText().equals("true"));
-
-            description
-                .setCaseSignificanceId(desc.get("caseSignificance").asText());
-
-            description.setConcept(concept);
-            if (desc.has("effectiveTime")) {
-              description.setEffectiveTime(ConfigUtility.DATE_FORMAT
-                  .parse(desc.get("effectiveTime").asText()));
-              description.setLastModified(description.getEffectiveTime());
-            } else {
-              description.setLastModified(new Date());
-            }
-            description.setLanguageCode(desc.get("languageCode").asText());
-            description.setLastModifiedBy(terminology);
-            description.setModuleId(desc.get("moduleId").asText());
-            description.setPublishable(true);
-            description.setPublished(true);
-            description.setTerm(desc.get("term").asText());
-            description.setTerminologyId(desc.get("id").asText());
-
-            description.setTypeId(desc.get("typeId").asText());
-
-            if (description.isActive()) {
-              for (final JsonNode language : desc.findValues("acceptability")) {
-                final LanguageRefsetMember member =
-                    new LanguageRefsetMemberJpa();
-                member.setActive(true);
-                member.setDescriptionId(concept.getTerminologyId());
-                String key = language.fieldNames().next();
-                member.setRefsetId(key);
-                member.setAcceptabilityId(language.get(key).asText());
-                if (member.getAcceptabilityId().equals("PREFERRED")) {
-                  member.setAcceptabilityId("900000000000548007");
-                } else if (member.getAcceptabilityId().equals("ACCEPTABLE")) {
-                  member.setAcceptabilityId("900000000000549004");
-                }
-                description.getLanguageRefsetMembers().add(member);
-              }
-            }
-
-            concept.getDescriptions().add(description);
-          }
-        }
       }
     }
 
@@ -787,10 +612,8 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     final Client client = ClientBuilder.newClient();
     final WebTarget target = client
         .target(url + "/browser/" + version + "/concepts/" + terminologyId);
-
     final Response response =
-        target.request("application/vnd.org.ihtsdo.browser+json")
-            .header("Authorization", authHeader)
+        target.request(accept).header("Authorization", authHeader)
             .header("Accept-Language", getAcceptLanguage(terminology, version))
             .header("Cookie", getCookieHeader()).get();
     final String resultString = response.readEntity(String.class);
@@ -886,7 +709,7 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     concept.setLastModifiedBy(terminology);
     concept.setModuleId(doc.get("moduleId").asText());
     concept.setDefinitionStatusId(doc.get("definitionStatus").asText());
-    concept.setName(doc.get("preferredSynonym").asText());
+    concept.setName(doc.get("fsn").asText());
 
     concept.setPublishable(true);
     concept.setPublished(true);
@@ -970,7 +793,7 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
           rel.setLastModified(new Date());
         }
         rel.setModuleId(relNode.get("moduleId").asText());
-        rel.setTypeId(relNode.get("type").get("fsn").asText()
+        rel.setTypeId(relNode.get("type").get("fsn").get("term").asText()
             .replaceFirst(" \\([a-zA-Z0-9 ]*\\)", ""));
         // Skip "isa" rels
         if (rel.getTypeId().equals("Is a")) {
@@ -992,7 +815,8 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
         } else {
           destination.setId(1L);
         }
-        destination.setName(relNode.get("target").get("fsn").asText());
+        destination
+            .setName(relNode.get("target").get("fsn").get("term").asText());
         destination.setDefinitionStatusId(
             relNode.get("target").get("definitionStatus").asText());
         rel.setDestinationConcept(destination);
@@ -1027,21 +851,81 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
   /* see superclass */
   @Override
   public ConceptList getConcepts(List<String> terminologyIds,
-    String terminology, String version, boolean descriptions) throws Exception {
+    String terminology, String version, boolean definition) throws Exception {
 
     final StringBuilder query = new StringBuilder();
     for (final String terminologyId : terminologyIds) {
       // Only lookup stuff with actual digits
       if (terminologyId.matches("[0-9]*")) {
         if (query.length() != 0) {
-          query.append(" OR ");
+          query.append("&");
         }
-        query.append(terminologyId);
+        query.append("conceptIds=").append(terminologyId);
       }
     }
 
-    return resolveExpression(query.toString(), terminology, version, null,
-        descriptions);
+    final Client client = ClientBuilder.newClient();
+
+    WebTarget target = client.target(url + "/" + version + "/concepts?" + query
+        + "&limit=" + terminologyIds.size());
+    Logger.getLogger(getClass()).info(url + "/" + version + "/concepts?" + query
+        + "&limit=" + terminologyIds.size());
+
+    Response response =
+        target.request(accept).header("Authorization", authHeader)
+            .header("Accept-Language", getAcceptLanguage(terminology, version))
+            .header("Cookie", getCookieHeader()).get();
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+
+      // Here's the messy part about trying to parse the return error message
+      if (resultString.contains("loop did not match anything")) {
+        return new ConceptListJpa();
+      }
+
+      throw new LocalException(
+          "Unexpected terminology server failure. Message = " + resultString);
+    }
+
+    ConceptList conceptList = new ConceptListJpa();
+    ObjectMapper mapper = new ObjectMapper();
+    JsonNode doc = mapper.readTree(resultString);
+
+    // get total amount
+    final int total = doc.get("total").asInt();
+    // Get concepts returned in this call (up to 200)
+    if (doc.get("items") == null) {
+      return conceptList;
+    }
+    String searchAfter = "";
+    if (doc.findValue("searchAfter") != null) {
+      searchAfter = doc.findValue("searchAfter").asText();
+    }
+    for (final JsonNode conceptNode : doc.get("items")) {
+      final Concept concept = new ConceptJpa();
+
+      concept.setActive(conceptNode.get("active").asText().equals("true"));
+      concept.setTerminologyId(conceptNode.get("id").asText());
+      concept.setLastModified(ConfigUtility.DATE_FORMAT
+          .parse(conceptNode.get("effectiveTime").asText()));
+      concept.setLastModifiedBy(terminology);
+      concept.setModuleId(conceptNode.get("moduleId").asText());
+      concept
+          .setDefinitionStatusId(conceptNode.get("definitionStatus").asText());
+
+      // pt.term is the name
+      concept.setName(conceptNode.get("pt").get("term").asText());
+
+      concept.setPublishable(true);
+      concept.setPublished(true);
+
+      conceptList.addObject(concept);
+    }
+
+    conceptList.setTotalCount(total);
+    return conceptList;
   }
 
   /* see superclass */
@@ -1122,7 +1006,7 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
         JsonNode fsn = entry.findValue("fsn");
 
         final Description desc = new DescriptionJpa();
-        desc.setActive(pt.get("active").asText().equals("true"));
+        desc.setActive(entry.get("active").asText().equals("true"));
         desc.setTerm(pt.get("term").asText());
         if (conceptMap.containsKey(conceptId)) {
           final Concept concept = conceptMap.get(conceptId);
@@ -1134,7 +1018,6 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
         else {
           // Filter out inactive concepts, if Active Only is set.
           if (entry.get("active").asText().equals("true")
-              && (pt.get("active").asText().equals("true"))
               || !localPfs.getActiveOnly()) {
             // Skip any new concepts past the limit
             if (index++ > 99) {
@@ -1241,8 +1124,7 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     final WebTarget target = client.target(url + "/browser/" + version
         + "/concepts/" + terminologyId + "/parents");
     final Response response =
-        target.request("application/vnd.org.ihtsdo.browser+json")
-            .header("Authorization", authHeader)
+        target.request(accept).header("Authorization", authHeader)
             .header("Accept-Language", getAcceptLanguage(terminology, version))
             .header("Cookie", getCookieHeader()).get();
     final String resultString = response.readEntity(String.class);
@@ -1282,7 +1164,7 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
       // moduleId is not provided
       concept.setModuleId(null);
       concept.setDefinitionStatusId(entry.get("definitionStatus").asText());
-      concept.setName(entry.get("fsn").asText());
+      concept.setName(entry.get("fsn").get("term").asText());
 
       concept.setPublishable(true);
       concept.setPublished(true);
@@ -1304,8 +1186,7 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     final WebTarget target = client.target(url + "/browser/" + version
         + "/concepts/" + terminologyId + "/children?form=inferred");
     final Response response =
-        target.request("application/vnd.org.ihtsdo.browser+json")
-            .header("Authorization", authHeader)
+        target.request(accept).header("Authorization", authHeader)
             .header("Accept-Language", getAcceptLanguage(terminology, version))
             .header("Cookie", getCookieHeader()).get();
     final String resultString = response.readEntity(String.class);
@@ -1352,7 +1233,7 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
       // no moduleId supplied
       concept.setModuleId(entry.get("moduleId").asText());
       concept.setDefinitionStatusId(entry.get("definitionStatus").asText());
-      concept.setName(entry.get("fsn").asText());
+      concept.setName(entry.get("fsn").get("term").asText());
       concept.setLeaf(entry.get("isLeafInferred").asText().equals("true"));
 
       concept.setPublishable(true);
@@ -1416,7 +1297,12 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     WebTarget target = client.target(url + "/" + version
         + "/concepts?ecl=" + URLEncoder.encode("<900000000000506000", "UTF-8")
             .replaceAll(" ", "%20")
-        + "&limit=" + localPfs.getMaxResults() + "&expand=fsn()");
+        + "&limit=" + localPfs.getMaxResults() + "&offset=0");
+    Logger.getLogger(getClass())
+        .info(url + "/" + version
+            + "/concepts?ecl=" + URLEncoder
+                .encode("<900000000000506000", "UTF-8").replaceAll(" ", "%20")
+            + "&limit=" + localPfs.getMaxResults() + "&offset=0");
 
     Response response =
         target.request(accept).header("Authorization", authHeader)
@@ -1438,7 +1324,9 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     for (final JsonNode conceptNode : doc.get("items")) {
 
       String id = conceptNode.get("id").asText();
-      String term = conceptNode.get("fsn").get("term").asText();
+      JsonNode fsn = conceptNode.get("fsn");
+      String term = fsn == null ? ""
+          : fsn.get("term") == null ? "" : fsn.get("term").asText();
 
       if (!idsToIgnore.contains(id) && term.contains("code")) {
         String code =
@@ -1452,49 +1340,21 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     return languages;
   }
 
-  /**
-   * Returns the accept language.
-   *
-   * @param terminology the terminology
-   * @param version the version
-   * @return the accept language
-   * @throws Exception the exception
-   */
-  private String getAcceptLanguage(String terminology, String version)
-    throws Exception {
-    if (tvLanguageMap.containsKey(terminology + version)) {
-      return tvLanguageMap.get(terminology + version);
-    } else {
-      List<String> languages = getLanguages(terminology, version);
-      StringBuilder acceptValue = new StringBuilder();
-      double index = 0.9;
-      for (String lat : languages) {
-        if (index == 0.0) {
-          index = 0.1;
-        }
-        acceptValue.append(lat).append(";").append("q=" + index).append(",");
-        index = index - 0.1;
-      }
-      tvLanguageMap.put(terminology + version, acceptValue.toString());
-      return acceptValue.toString();
-    }
-  }
-
   /* see superclass */
   @Override
   public List<String> getBranches(String terminology, String version)
     throws Exception {
     Logger.getLogger(getClass())
         .info("  get branches - " + url + ", " + terminology + ", " + version);
-    // Make a webservice call to SnowOwl to get branches
+    // Make a webservice call to get branches
     final Client client = ClientBuilder.newClient();
 
     PfsParameter localPfs = new PfsParameterJpa();
     localPfs.setStartIndex(0);
     localPfs.setMaxResults(1000);
 
-    WebTarget target = client.target(url + "/" + version + "/branches?"
-        + "limit=" + localPfs.getMaxResults());
+    WebTarget target =
+        client.target(url + "/branches?" + "limit=" + localPfs.getMaxResults());
 
     Response response =
         target.request(accept).header("Authorization", authHeader)
@@ -1513,8 +1373,12 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     JsonNode doc = mapper.readTree(resultString);
 
     List<String> branches = new ArrayList<>();
-    for (final JsonNode branchNode : doc.get("items")) {
-      String path = branchNode.get("path").asText();
+
+    // filter out branches that don't match terminology(edition) and version
+    JsonNode entry = null;
+    int index = 0;
+    while ((entry = doc.get(index++)) != null) {
+      String path = entry.get("path").asText();
       if (terminology.isEmpty() || path.contains(terminology)) {
         if (version.isEmpty() || path.contains(version)) {
           branches.add(path);
@@ -1555,7 +1419,9 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
 
     List<String> translationExtentions = new ArrayList<>();
 
-    for (final JsonNode branchNode : doc.get("items")) {
+    int index = 0;
+    JsonNode branchNode = null;
+    while ((branchNode = doc.get(index++)) != null) {
       String path = branchNode.get("path").asText();
 
       if (path != null) {
@@ -1567,6 +1433,42 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     }
 
     return translationExtentions;
+  }
+
+  /**
+   * Returns the accept language.
+   *
+   * @param terminology the terminology
+   * @param version the version
+   * @return the accept language
+   * @throws Exception the exception
+   */
+  private String getAcceptLanguage(String terminology, String version)
+    throws Exception {
+    if (tvLanguageMap.containsKey(terminology + version)) {
+      return tvLanguageMap.get(terminology + version);
+    } else {
+      List<String> languages = getLanguages(terminology, version);
+      StringBuilder acceptValue = new StringBuilder();
+      double index = 0.9;
+      for (String lat : languages) {
+        if (index == 0.0) {
+          index = 0.1;
+        }
+        acceptValue.append(lat).append(";").append("q=" + index).append(",");
+        index = index - 0.1;
+      }
+      tvLanguageMap.put(terminology + version, acceptValue.toString());
+      return acceptValue.toString();
+    }
+  }
+
+  /* see superclass */
+  @Override
+  public List<String> getRequiredLanguageRefsets(String terminology,
+    String version) throws Exception {
+    // TODO Auto-generated method stub
+    return new ArrayList<String>();
   }
 
 }

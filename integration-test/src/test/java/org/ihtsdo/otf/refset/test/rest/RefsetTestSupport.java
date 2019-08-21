@@ -1,8 +1,5 @@
-/*
- * Copyright 2015 West Coast Informatics, LLC
- */
-/*
- * 
+/**
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.test.rest;
 
@@ -345,7 +342,7 @@ public class RefsetTestSupport extends RestSupport {
           new FileInputStream(new File(
               "../config/src/main/resources/data/translation2/translation.zip"));
       translationService.finishImportConcepts(null, in, translation.getId(),
-          "DEFAULT", auth.getAuthToken());
+          "DEFAULT", null, auth.getAuthToken());
       in.close();
     } else {
       ValidationResult vr =
@@ -358,7 +355,7 @@ public class RefsetTestSupport extends RestSupport {
           new FileInputStream(new File(
               "../config/src/main/resources/data/translation2/translation.zip"));
       translationService.finishImportConcepts(null, in, translation.getId(),
-          "DEFAULT", auth.getAuthToken());
+          "DEFAULT", null, auth.getAuthToken());
       in.close();
     }
 
