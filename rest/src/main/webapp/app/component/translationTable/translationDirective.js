@@ -2017,6 +2017,10 @@ tsApp
                   }
 
                   if (type == 'Translation') {
+                    if ($scope.selectedIoHandler.id === 'EXCEL') {
+                      action = 'REVIEW_NEW';
+                    }
+                      
                     translationService.beginImportConcepts($scope.translation.id,
                       $scope.selectedIoHandler.id).then(
 
@@ -2079,6 +2083,11 @@ tsApp
                 $scope.continueImport = function(file, wfStatus) {
 
                   if (type === 'Translation') {
+                    
+                    if ($scope.selectedIoHandler.id === 'EXCEL') {
+                      wfStatus = 'REVIEW_NEW';
+                    }
+                    
                     if ($scope.selectedIoHandler.ioType === 'FILE') {
                       translationService.finishImportConceptsFile($scope.translation.id,
                         $scope.selectedIoHandler.id, file, wfStatus).then(
