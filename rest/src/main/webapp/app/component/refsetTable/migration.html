@@ -16,7 +16,8 @@
             <b>New Terminology:</b>
           </td>
           <td>
-            <select ng-model="newTerminology" ng-change="terminologySelected()"
+            <select ng-model="newTerminology"
+              ng-change="terminologySelected(newTerminology)"
               ng-options="item.terminology as item.name for item in metadata.terminologies"></select>
           </td>
         </tr>
@@ -29,18 +30,26 @@
             <b>New Version:</b>
           </td>
           <td>
-            <!-- <select ng-model="newVersion" ng-options="item for item in versions"></select> -->
+            <select ng-model="newVersion"
+              ng-options="item.path as item.key for item in versions | orderBy:'key'"></select>
+          </td>
+        </tr>
+        <tr>
+          <td></td>
+          <td></td>
+          <td>
+            <b>Terminology Path</b>
+          </td>
+          <td>
             <input style="width: 252px" ng-model="newVersion" list="versions"
               placeholder="e.g. MAIN" ng-change="resetValidVersion();" />
-            <datalist id=versions>
-              <option ng-repeat="version in versions | orderBy:'version'"
-                value="{{version}}">{{version}}</option>
-            </datalist>
             <button class="btn btn-xs btn-warning" ng-show="newVersion"
               ng-click="newVersion=''">Clear</button>
             <button class="btn btn-xs btn-primary"
               ng-show="newVersion && versionNotInPicklist()"
               ng-click="testTerminologyVersion();">Test</button>
+            &nbsp;&nbsp;
+            <span flag-icon obj="refset"></span>
           </td>
         </tr>
       </tbody>

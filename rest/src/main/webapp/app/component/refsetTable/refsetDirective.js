@@ -1572,7 +1572,7 @@ tsApp
                 $scope.action = 'Clone';
                 $scope.project = null;
                 $scope.projects = projects;
-                $scope.metadata = metadata;
+                $scope.localMetadata = angular.copy(metadata);
                 $scope.filters = filters;
                 $scope.versionsMap = {};
                 $scope.terminologies = [];
@@ -1601,41 +1601,32 @@ tsApp
                 $scope.getTerminologyEditions = function() {
                   projectService.getTerminologyEditions($scope.project).then(function(data) {
                     $scope.terminologies = data.terminologies;
+                    $scope.localMetadata.versions = {};
+                    
                     // Look up all versions
                     for (var i = 0; i < data.terminologies.length; i++) {
-                      $scope.getTerminologyVersions(data.terminologies[i].terminology);
+                      $scope.getTerminologyVersions($scope.project, data.terminologies[i].terminology);
                     }
                     $scope.refset.terminology = $scope.project.terminology;
                     if (!$scope.refset.terminology) {
                       $scope.refset.terminology = data.terminologies[0];
                     }
+
                   });
 
                 };
 
                 // Get $scope.versions
-                $scope.getTerminologyVersions = function(terminology) {
-                  projectService.getTerminologyVersions($scope.project, terminology).then(
-                    function(data) {
-                      $scope.versionsMap[terminology] = [];
-                      found = false;
-                      for (var i = 0; i < data.terminologies.length; i++) {
-                        $scope.versionsMap[terminology].push(data.terminologies[i].version);
-                        if ($scope.refset.terminology == terminology) {
-                          $scope.versions = angular.copy($scope.versionsMap[terminology].sort()
-                            .reverse());
-                          $scope.versionSelected(data.terminologies[i].version);
-                          found = true;
-                          break;
-                        }
+                $scope.getTerminologyVersions = function(project, terminology) {
+                  projectService.getTerminologyVersions(project, terminology).then(function(data) {
+                    $scope.localMetadata.versions[terminology] = [];
+                    for (var i = 0; i < data.terminologies.length; i++) {
+                      $scope.localMetadata.versions[terminology].push(data.terminologies[i].version);
+                      if (terminology == 'SNOMEDCT') {
+                        $scope.terminologySelected(terminology);
                       }
-                      if (!found && $scope.refset.terminology == terminology) {
-                        $scope.versions = angular.copy($scope.versionsMap[terminology].sort()
-                          .reverse());
-                        $scope.versionSelected(data.terminologies[0].version);
-                      }
-                    });
-
+                    }
+                  });
                 };
 
                 // Get $scope.modules
@@ -1675,9 +1666,55 @@ tsApp
 
                 // Handle terminology selected
                 $scope.terminologySelected = function(terminology) {
-                  $scope.versions = angular.copy($scope.versionsMap[terminology].sort().reverse());
-                  $scope.refset.version = $scope.versions[0];
-                  $scope.getModules();
+                  
+                  $scope.versions = [];
+                  for (var i = 0; i < $scope.localMetadata.versions[terminology].length ; i++) {
+                    var path = $scope.localMetadata.versions[terminology][i];
+                    var key;
+                    // Edition, parse edition version/ project
+                    if (path.indexOf("SNOMEDCT-") != -1) {
+                      var tmp = path.substring(path.indexOf('SNOMEDCT-'));
+                      if (tmp.indexOf('/')) {
+                        key = tmp.substring(tmp.indexOf('/') + 1);
+                      } else {
+                        key = tmp;
+                      }
+                      // remove task data
+                      if (key.indexOf('/') != -1) {
+                        // account for dual edition projects such as SNOMEDCT-ES/SNOMEDCT-UY
+                        var res = path.match(/SNOMEDCT-/g);
+                        if (res.length == 1) {
+                          key = key.substring(0, key.lastIndexOf('/'));
+                          path = path.substring(0, path.lastIndexOf('/'));
+                        }
+                      }
+                    // International edition, parse international version
+                    } else {
+                      key = path.substring(path.indexOf('/') + 1);
+                    }
+                    var vsn = {
+                      key : key,
+                      path : path
+                    }
+                    var found = false;
+                    if ($scope.versions.indexOf(vsn) == -1) {
+                      for (var j = 0; j < $scope.versions.length; j++) {
+                        // determine if key is already used
+                        if ($scope.versions[j].key == vsn.key) {
+                          found = true;
+                          if (vsn.path > $scope.versions[j].path) {
+                            // replace with more recent path for that key
+                            $scope.versions[j].path = vsn.path;
+                            break;
+                          }
+                        }
+                      }
+                      if (!found) {
+                        $scope.versions.push(vsn);
+                      }
+                    }
+                  }
+
                 };
 
                 // Handle version selected
@@ -1754,6 +1791,7 @@ tsApp
                     });
                 };
 
+     
                 // Dismiss modal
                 $scope.close = function() {
                   $uibModalInstance.close($scope.newRefset);
@@ -3100,6 +3138,7 @@ tsApp
                     });
                 };
 
+                // Initialize
                 $scope.terminologySelected($scope.project.terminology);
                 
                 // Dismiss modal
@@ -3170,8 +3209,7 @@ tsApp
                 $scope.metadata = metadata;
                 $scope.validVersion = null;
                 $scope.terminologies = metadata.terminologies;
-                $scope.versions = $scope.metadata.versions[refset.terminology] ? angular
-                  .copy($scope.metadata.versions[refset.terminology].sort().reverse()) : [];
+
                 $scope.modules = [];
                 $scope.errors = [];
 
@@ -3199,13 +3237,57 @@ tsApp
                 }
 
                 // Handle terminology selected
-                $scope.terminologySelected = function(terminology) {
-                  $scope.versions = angular.copy($scope.metadata.versions[refset.terminology]
-                    .sort().reverse());
-                  $scope.refset.version = $scope.versions[0];
-                  $scope.getModules();
+               $scope.terminologySelected = function(terminology) {
+                  
+                  $scope.versions = [];
+                  for (var i = 0; i < $scope.metadata.versions[terminology].length ; i++) {
+                    var path = $scope.metadata.versions[terminology][i];
+                    var key;
+                    // Edition, parse edition version/ project
+                    if (path.indexOf("SNOMEDCT-") != -1) {
+                      var tmp = path.substring(path.indexOf('SNOMEDCT-'));
+                      if (tmp.indexOf('/')) {
+                        key = tmp.substring(tmp.indexOf('/') + 1);
+                      } else {
+                        key = tmp;
+                      }
+                      // remove task data
+                      if (key.indexOf('/') != -1) {
+                        // account for dual edition projects such as SNOMEDCT-ES/SNOMEDCT-UY
+                        var res = path.match(/SNOMEDCT-/g);
+                        if (res.length == 1) {
+                          key = key.substring(0, key.lastIndexOf('/'));
+                          path = path.substring(0, path.lastIndexOf('/'));
+                        }
+                      }
+                    // International edition, parse international version
+                    } else {
+                      key = path.substring(path.indexOf('/') + 1);
+                    }
+                    var vsn = {
+                      key : key,
+                      path : path
+                    }
+                    var found = false;
+                    if ($scope.versions.indexOf(vsn) == -1) {
+                      for (var j = 0; j < $scope.versions.length; j++) {
+                        // determine if key is already used
+                        if ($scope.versions[j].key == vsn.key) {
+                          found = true;
+                          if (vsn.path > $scope.versions[j].path) {
+                            // replace with more recent path for that key
+                            $scope.versions[j].path = vsn.path;
+                            break;
+                          }
+                        }
+                      }
+                      if (!found) {
+                        $scope.versions.push(vsn);
+                      }
+                    }
+                  }
+
                 };
-                
 
                 // Handle version selected
                 $scope.versionSelected = function(version) {
@@ -3286,6 +3368,9 @@ tsApp
 
                 };
 
+                // initialize
+                $scope.terminologySelected($scope.project.terminology);
+                
                 // Dismiss modal
                 $scope.cancel = function() {
                   $uibModalInstance.close('cancel');
@@ -3571,8 +3656,8 @@ tsApp
                 $scope.paging = paging;
                 $scope.metadata = metadata;
                 $scope.terminologies = [];
-                $scope.versions = angular.copy($scope.metadata.versions[$scope.newTerminology]
-                  .sort().reverse());
+                /* $scope.versions = angular.copy($scope.metadata.versions[$scope.newTerminology]
+                  .sort().reverse());*/
                 $scope.newVersion = null;
                 $scope.validVersion = null;
                 $scope.errors = [];
@@ -3685,11 +3770,57 @@ tsApp
                 };
 
                 // Handle terminology selected
-                $scope.terminologySelected = function() {
-                  $scope.versions = angular.copy($scope.metadata.versions[$scope.newTerminology]
-                    .sort().reverse());
-                  $scope.newVersion = $scope.versions[0];
-                };
+                $scope.terminologySelected = function(terminology) {
+                   
+                   $scope.versions = [];
+                   for (var i = 0; i < $scope.metadata.versions[terminology].length ; i++) {
+                     var path = $scope.metadata.versions[terminology][i];
+                     var key;
+                     // Edition, parse edition version/ project
+                     if (path.indexOf("SNOMEDCT-") != -1) {
+                       var tmp = path.substring(path.indexOf('SNOMEDCT-'));
+                       if (tmp.indexOf('/')) {
+                         key = tmp.substring(tmp.indexOf('/') + 1);
+                       } else {
+                         key = tmp;
+                       }
+                       // remove task data
+                       if (key.indexOf('/') != -1) {
+                         // account for dual edition projects such as SNOMEDCT-ES/SNOMEDCT-UY
+                         var res = path.match(/SNOMEDCT-/g);
+                         if (res.length == 1) {
+                           key = key.substring(0, key.lastIndexOf('/'));
+                           path = path.substring(0, path.lastIndexOf('/'));
+                         }
+                       }
+                     // International edition, parse international version
+                     } else {
+                       key = path.substring(path.indexOf('/') + 1);
+                     }
+                     var vsn = {
+                       key : key,
+                       path : path
+                     }
+                     var found = false;
+                     if ($scope.versions.indexOf(vsn) == -1) {
+                       for (var j = 0; j < $scope.versions.length; j++) {
+                         // determine if key is already used
+                         if ($scope.versions[j].key == vsn.key) {
+                           found = true;
+                           if (vsn.path > $scope.versions[j].path) {
+                             // replace with more recent path for that key
+                             $scope.versions[j].path = vsn.path;
+                             break;
+                           }
+                         }
+                       }
+                       if (!found) {
+                         $scope.versions.push(vsn);
+                       }
+                     }
+                   }
+
+                 };
                 
 
                 // Table sorting mechanism
@@ -3919,6 +4050,9 @@ tsApp
                     $scope.invalidExclusions, $scope.paging['invalidExclusions'], $scope.pageSize);
                 };
 
+                // Initialize
+                $scope.terminologySelected($scope.project.terminology);
+                
                 // Close migration dialog
                 $scope.close = function(refset) {
                   $uibModalInstance.close(refset);
