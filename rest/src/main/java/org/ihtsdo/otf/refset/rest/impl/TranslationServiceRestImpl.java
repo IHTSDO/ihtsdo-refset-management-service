@@ -909,8 +909,9 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
           translation.getProject().getId(), securityService, authToken,
           "import translation concepts", UserRole.AUTHOR);
 
-      final WorkflowStatus workflowStatus = ("REVIEW_NEW".equalsIgnoreCase(wfStatus))
-          ? WorkflowStatus.REVIEW_NEW : WorkflowStatus.READY_FOR_PUBLICATION;
+      final WorkflowStatus workflowStatus =
+          ("REVIEW_NEW".equalsIgnoreCase(wfStatus)) ? WorkflowStatus.REVIEW_NEW
+              : WorkflowStatus.READY_FOR_PUBLICATION;
 
       final User user = securityService.getUser(userName);
 
@@ -953,8 +954,9 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
           translation.getProject().getId(), securityService, authToken,
           "import translation concepts", UserRole.AUTHOR);
 
-      final WorkflowStatus workflowStatus = ("REVIEW_NEW".equalsIgnoreCase(wfStatus))
-          ? WorkflowStatus.REVIEW_NEW : WorkflowStatus.READY_FOR_PUBLICATION;
+      final WorkflowStatus workflowStatus =
+          ("REVIEW_NEW".equalsIgnoreCase(wfStatus)) ? WorkflowStatus.REVIEW_NEW
+              : WorkflowStatus.READY_FOR_PUBLICATION;
 
       final User user = securityService.getUser(userName);
 
@@ -3608,16 +3610,20 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
       if (workflowStatus == WorkflowStatus.REVIEW_NEW) {
         final UserRole projectRole = UserRole.AUTHOR;
 
+        // creates dupes if already exists - why oh why?
         try (final WorkflowService workflowService = new WorkflowServiceJpa()) {
           final WorkflowActionHandler workflowActionHandler =
               workflowService.getWorkflowHandlerForPath(
                   translation.getProject().getWorkflowPath());
           for (Concept concept : concepts) {
-            workflowActionHandler.performWorkflowAction(translation, user,
-                projectRole, WorkflowAction.ASSIGN, concept, workflowService);
-
-            workflowActionHandler.performWorkflowAction(translation, user,
-                projectRole, WorkflowAction.FINISH, concept, workflowService);
+            Concept savedConcept = workflowService.getConcept(concept.getTerminologyId(),
+                translation.getId());
+            if (savedConcept != null && savedConcept.getWorkflowStatus() != WorkflowStatus.EDITING_DONE) {
+              workflowActionHandler.performWorkflowAction(translation, user,
+                  projectRole, WorkflowAction.ASSIGN, savedConcept, workflowService);
+              workflowActionHandler.performWorkflowAction(translation, user,
+                  projectRole, WorkflowAction.FINISH, savedConcept, workflowService);
+            }
           }
         }
       }
