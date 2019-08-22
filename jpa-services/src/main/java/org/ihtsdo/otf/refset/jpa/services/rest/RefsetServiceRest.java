@@ -190,7 +190,6 @@ public interface RefsetServiceRest {
   public ConceptRefsetMember addRefsetMember(ConceptRefsetMemberJpa member,
     String authToken) throws Exception;
 
-  
   /**
    * Adds the refset members.
    *
@@ -199,8 +198,8 @@ public interface RefsetServiceRest {
    * @return the concept refset members
    * @throws Exception the exception
    */
-  public ConceptRefsetMemberList addRefsetMembers(ConceptRefsetMemberJpa[] members,
-    String authToken) throws Exception;
+  public ConceptRefsetMemberList addRefsetMembers(
+    ConceptRefsetMemberJpa[] members, String authToken) throws Exception;
 
   /**
    * Removes the refset member.
@@ -306,9 +305,9 @@ public interface RefsetServiceRest {
    * @throws Exception the exception
    */
   public ValidationResult beginImportMembers(Long refsetId,
-    String ioHandlerInfoId, String[] conceptIds, String authToken) throws Exception;
-  
-  
+    String ioHandlerInfoId, String[] conceptIds, String authToken)
+    throws Exception;
+
   /**
    * Resume import. - recomputes begin and produces same result without actually
    * importing anything.
@@ -674,8 +673,9 @@ public interface RefsetServiceRest {
    * @return the input stream
    * @throws Exception the exception
    */
-  public InputStream exportResfetDuplicatesReport(Long refsetId, String ioHandlerInfoId, String[] conceptIts,
-      String authToken) throws Exception;
+  public InputStream exportResfetDuplicatesReport(Long refsetId,
+    String ioHandlerInfoId, String[] conceptIts, String authToken)
+    throws Exception;
 
   /**
    * Convert refset.
@@ -718,10 +718,10 @@ public interface RefsetServiceRest {
    *
    * @param refsetId the refset id
    * @param background the background
-   * @param requiredLanguages the required languages
    * @param authToken the auth token
    * @throws Exception the exception
    */
   public void startLookupMemberNames(Long refsetId, Boolean background,
-    String requiredLanguages, String authToken) throws Exception;
+    String authToken) throws Exception;
+
 }

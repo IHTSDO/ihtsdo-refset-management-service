@@ -1,5 +1,5 @@
-/**
- * Copyright 2015 West Coast Informatics, LLC
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.jpa.services;
 
@@ -13,8 +13,8 @@ import org.ihtsdo.otf.refset.services.ReleaseService;
 /**
  * JPA enabled implementation of {@link ReleaseService}.
  */
-public class ReleaseServiceJpa extends ProjectServiceJpa implements
-    ReleaseService {
+public class ReleaseServiceJpa extends ProjectServiceJpa
+    implements ReleaseService {
 
   /**
    * Instantiates an empty {@link ReleaseServiceJpa}.
@@ -28,8 +28,8 @@ public class ReleaseServiceJpa extends ProjectServiceJpa implements
   /* see superclass */
   @Override
   public ReleaseInfo getReleaseInfo(Long releaseInfoId) throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Release Service - get release info " + releaseInfoId);
+    Logger.getLogger(getClass())
+        .debug("Release Service - get release info " + releaseInfoId);
     final ReleaseInfo info = manager.find(ReleaseInfoJpa.class, releaseInfoId);
     // lazy init
     info.getProperties().size();
@@ -40,8 +40,8 @@ public class ReleaseServiceJpa extends ProjectServiceJpa implements
   /* see superclass */
   @Override
   public ReleaseInfo addReleaseInfo(ReleaseInfo releaseInfo) throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Release Service - add release info " + releaseInfo.getName());
+    Logger.getLogger(getClass())
+        .debug("Release Service - add release info " + releaseInfo.getName());
     return this.addHasLastModified(releaseInfo);
 
   }
@@ -50,32 +50,32 @@ public class ReleaseServiceJpa extends ProjectServiceJpa implements
   @Override
   public ReleaseArtifact addReleaseArtifact(ReleaseArtifact artifact)
     throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Release Service - add release info " + artifact.getName());
+    Logger.getLogger(getClass())
+        .debug("Release Service - add release info " + artifact.getName());
     return addHasLastModified(artifact);
   }
 
   /* see superclass */
   @Override
   public void updateReleaseArtifact(ReleaseArtifact artifact) throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Release Service - add release info " + artifact.getName());
+    Logger.getLogger(getClass())
+        .debug("Release Service - add release info " + artifact.getName());
     updateHasLastModified(artifact);
   }
 
   /* see superclass */
   @Override
   public void removeReleaseArtifact(Long artifactId) throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Release Service - remove release artifact " + artifactId);
+    Logger.getLogger(getClass())
+        .debug("Release Service - remove release artifact " + artifactId);
     removeHasLastModified(artifactId, ReleaseArtifactJpa.class);
   }
 
   /* see superclass */
   @Override
   public void removeReleaseInfo(Long id) throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Release Service - remove release info " + id);
+    Logger.getLogger(getClass())
+        .debug("Release Service - remove release info " + id);
     removeHasLastModified(id, ReleaseInfoJpa.class);
   }
 
@@ -87,13 +87,15 @@ public class ReleaseServiceJpa extends ProjectServiceJpa implements
     updateHasLastModified(releaseInfo);
   }
 
+  /* see superclass */
   @Override
   public ReleaseArtifact getReleaseArtifact(Long id) throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "ReleaseArtifact Service - get artifact " + id);
+    Logger.getLogger(getClass())
+        .debug("ReleaseArtifact Service - get artifact " + id);
     return getHasLastModified(id, ReleaseArtifactJpa.class);
   }
 
+  /* see superclass */
   @Override
   public void handleLazyInit(ReleaseInfo releaseInfo) throws Exception {
     releaseInfo.getArtifacts().size();

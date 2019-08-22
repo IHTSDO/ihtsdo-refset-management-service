@@ -1467,8 +1467,35 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
   @Override
   public List<String> getRequiredLanguageRefsets(String terminology,
     String version) throws Exception {
-    // TODO Auto-generated method stub
-    return new ArrayList<String>();
+    Logger.getLogger(getClass()).info(
+        "  get required language refsets  - " + terminology + ", " + version);
+    // Make a webservice call to SnowStorm to get branch and its required
+    // languages
+
+    final Client client = ClientBuilder.newClient();
+    final WebTarget target = client.target(url + "/codesystems/" + terminology);
+    final Response response =
+        target.request(accept).header("Authorization", authHeader)
+            .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
+            .header("Cookie", getCookieHeader()).get();
+    final String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new LocalException(
+          "Unexpected terminology server failure. Message = " + resultString);
+    }
+
+    final ObjectMapper mapper = new ObjectMapper();
+    final JsonNode doc = mapper.readTree(resultString);
+
+    JsonNode languageNode = doc.get("languages");
+    List<String> requiredLanguageList = new ArrayList<>();
+    String[] languages = languageNode.toString().split(",");
+    for (String language : languages) {
+      requiredLanguageList.add(language.substring(language.indexOf('"') + 1, language.indexOf(':') -1));
+    }
+    return requiredLanguageList;
   }
 
 }
