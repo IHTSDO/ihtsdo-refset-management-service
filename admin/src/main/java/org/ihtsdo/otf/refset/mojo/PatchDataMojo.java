@@ -343,13 +343,19 @@ public class PatchDataMojo extends AbstractMojo {
     translationService.beginTransaction();
     for (Project prj : translationService.getProjects().getObjects()) {
       Project project = translationService.getProject(prj.getId());
-      if (project.getId() == 1L
-          && project.getTerminologyHandlerKey().equals("BROWSER")) {
+      if (project.getTerminologyHandlerKey().equals("BROWSER")) {
         ct++;
         project.setTerminologyHandlerUrl(
-            "http://member-release-browser.ihtsdotools.org/snowstorm/snomed-ct/v2");
-        project.setTerminology("SNOMEDCT");
-        project.setTerminologyHandlerKey("SNOWSTORM");
+            "https://prod-browser.ihtsdotools.org/snowstorm/snomed-ct/v2");
+        if (project.getTerminology().equals("se-edition")) {
+          project.setTerminology("SNOMEDCT-SE");
+        } else if (project.getTerminology().equals("nl-edition")) {
+          project.setTerminology("SNOMEDCT-NL");
+        } else if (project.getTerminology().equals("ca-edition")) {
+          project.setTerminology("SNOMEDCT-CA");
+        } else {
+          project.setTerminology("SNOMEDCT");
+        }
         translationService.updateProject(project);
 
         if (ct % 100 == 0) {
@@ -364,13 +370,21 @@ public class PatchDataMojo extends AbstractMojo {
         .getObjects()) {
       Translation translation =
           translationService.getTranslation(trans.getId());
-      if (translation.getProject().getId() == 1L
+      if (translation.getProject().getTerminologyHandlerKey().equals("BROWSER")
           && translation.getVersion().length() == 8) {
         ct++;
         String old_version = translation.getVersion();
-        translation.setVersion(old_version.substring(0, 4) + "-"
+        translation.setVersion("MAIN/" + old_version.substring(0, 4) + "-"
             + old_version.substring(4, 6) + "-" + old_version.substring(6, 8));
-        translation.setTerminology("SNOMEDCT");
+        if (translation.getTerminology().equals("se-edition")) {
+          translation.setTerminology("SNOMEDCT-SE");
+        } else if (translation.getTerminology().equals("nl-edition")) {
+          translation.setTerminology("SNOMEDCT-NL");
+        } else if (translation.getTerminology().equals("ca-edition")) {
+          translation.setTerminology("SNOMEDCT-CA");
+        } else {
+          translation.setTerminology("SNOMEDCT");
+        }
         translationService.updateTranslation(translation);
 
         if (ct % 100 == 0) {
@@ -383,13 +397,21 @@ public class PatchDataMojo extends AbstractMojo {
     ct = 0;
     for (Refset ref : translationService.getRefsets().getObjects()) {
       Refset refset = translationService.getRefset(ref.getId());
-      if (refset.getProject().getId() == 1L
+      if (refset.getProject().getTerminologyHandlerKey().equals("BROWSER")
           && refset.getVersion().length() == 8) {
         ct++;
         String old_version = refset.getVersion();
-        refset.setVersion(old_version.substring(0, 4) + "-"
+        refset.setVersion("MAIN/" + old_version.substring(0, 4) + "-"
             + old_version.substring(4, 6) + "-" + old_version.substring(6, 8));
-        refset.setTerminology("SNOMEDCT");
+        if (refset.getTerminology().equals("se-edition")) {
+          refset.setTerminology("SNOMEDCT-SE");
+        } else if (refset.getTerminology().equals("nl-edition")) {
+          refset.setTerminology("SNOMEDCT-NL");
+        } else if (refset.getTerminology().equals("ca-edition")) {
+          refset.setTerminology("SNOMEDCT-CA");
+        } else {
+          refset.setTerminology("SNOMEDCT");
+        }
         translationService.updateRefset(refset);
 
         if (ct % 100 == 0) {
@@ -400,6 +422,7 @@ public class PatchDataMojo extends AbstractMojo {
     }
     getLog().info("refsets updated final ct = " + ct);
     translationService.commit();
+
   }
 
   /**
