@@ -1,5 +1,5 @@
-/**
- * Copyright 2015 West Coast Informatics, LLC
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.services;
 
@@ -11,7 +11,7 @@ import org.ihtsdo.otf.refset.helpers.PfsParameter;
 /**
  * Generically represents a service. 
  */
-public interface RootService {
+public interface RootService extends AutoCloseable {
 
   /** The logging object ct threshold. */
   public final static int logCt = 2000;

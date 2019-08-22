@@ -1,5 +1,5 @@
 /**
- *    Copyright 2019 West Coast Informatics, LLC
+ * Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.model;
 
@@ -9,9 +9,8 @@ import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.helpers.CopyConstructorTester;
 import org.ihtsdo.otf.refset.helpers.EqualsHashcodeTester;
 import org.ihtsdo.otf.refset.helpers.GetterSetterTester;
-import org.ihtsdo.otf.refset.helpers.IoHandlerInfo;
-import org.ihtsdo.otf.refset.helpers.XmlSerializationTester;
-import org.ihtsdo.otf.refset.jpa.IoHandlerInfoJpa;
+import org.ihtsdo.otf.refset.helpers.TranslationSuggestion;
+import org.ihtsdo.otf.refset.helpers.TranslationSuggestionImpl;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -19,12 +18,12 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
- * Unit testing for {@link IoHandlerInfoJpa}.
+ * Unit testing for {@link UserImpl}.
  */
-public class IoHandlerInfoJpaUnitTest extends ModelUnitSupport {
+public class TranslationSuggestionUnitTest extends ModelUnitSupport {
 
   /** The model object to test. */
-  private IoHandlerInfoJpa object;
+  private TranslationSuggestionImpl object;
 
   /**
    * Setup class.
@@ -39,7 +38,7 @@ public class IoHandlerInfoJpaUnitTest extends ModelUnitSupport {
    */
   @Before
   public void setup() {
-    object = new IoHandlerInfoJpa();
+    object = new TranslationSuggestionImpl();
   }
 
   /**
@@ -48,9 +47,10 @@ public class IoHandlerInfoJpaUnitTest extends ModelUnitSupport {
    * @throws Exception the exception
    */
   @Test
-  public void testModelGetSet039() throws Exception {
+  public void testModelGetSet022() throws Exception {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     GetterSetterTester tester = new GetterSetterTester(object);
+    tester.exclude("objectId");
     tester.test();
   }
 
@@ -60,14 +60,12 @@ public class IoHandlerInfoJpaUnitTest extends ModelUnitSupport {
    * @throws Exception the exception
    */
   @Test
-  public void testModelEqualsHashcode039() throws Exception {
+  public void testModelEqualsHashcode022() throws Exception {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     EqualsHashcodeTester tester = new EqualsHashcodeTester(object);
-    tester.include("id");
-    tester.include("name");
-    tester.include("fileTypeFilter");
-    tester.include("mimeType");
-    tester.include("ioType");
+    tester.include("suggestion");
+    tester.include("languageCode");
+    tester.include("source");
 
     assertTrue(tester.testIdentitiyFieldEquals());
     assertTrue(tester.testNonIdentitiyFieldEquals());
@@ -83,22 +81,20 @@ public class IoHandlerInfoJpaUnitTest extends ModelUnitSupport {
    * @throws Exception the exception
    */
   @Test
-  public void testModelCopy039() throws Exception {
+  public void testModelCopy022() throws Exception {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     CopyConstructorTester tester = new CopyConstructorTester(object);
-    assertTrue(tester.testCopyConstructor(IoHandlerInfo.class));
+    assertTrue(tester.testCopyConstructor(TranslationSuggestion.class));
   }
 
   /**
-   * Test XML serialization.
+   * Test not null fields.
    *
    * @throws Exception the exception
    */
   @Test
-  public void testModelXmlSerialization039() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
-    XmlSerializationTester tester = new XmlSerializationTester(object);
-    assertTrue(tester.testXmlSerialization());
+  public void testModelNotNullField022() throws Exception {
+    // n/a
   }
 
   /**
@@ -118,3 +114,4 @@ public class IoHandlerInfoJpaUnitTest extends ModelUnitSupport {
   }
 
 }
+

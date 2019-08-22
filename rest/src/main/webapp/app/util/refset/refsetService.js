@@ -319,6 +319,28 @@ tsApp.service('refsetService', [
       return deferred.promise;
     };
 
+    // add refset member
+    this.addRefsetMembers = function(members) {
+      console.debug('addRefsetMembers');
+      var deferred = $q.defer();
+
+      gpService.increment();
+      $http.put(refsetUrl + 'members/add', members).then(
+      // success
+      function(response) {
+        console.debug('  refset members = ', response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    };
+
     // remove refset member
     this.removeRefsetMember = function(memberId) {
       console.debug('removeRefsetMember');
@@ -373,21 +395,21 @@ tsApp.service('refsetService', [
       // find members
       gpService.increment();
       $http.post(
-        refsetUrl + 'members?refsetId=' + refsetId + '&query=' + utilService.prepQuery(query) +
-        (translated != null ? '&translated=' + translated : ''),
-        utilService.prepPfs(pfs)).then(
-      // success
-      function(response) {
-        console.debug('  members = ', response.data);
-        gpService.decrement();
-        deferred.resolve(response.data);
-      },
-      // error
-      function(response) {
-        utilService.handleError(response);
-        gpService.decrement();
-        deferred.reject(response.data);
-      });
+        refsetUrl + 'members?refsetId=' + refsetId + '&query=' + utilService.prepQuery(query)
+          + (translated != null ? '&translated=' + translated : ''), utilService.prepPfs(pfs))
+        .then(
+        // success
+        function(response) {
+          console.debug('  members = ', response.data);
+          gpService.decrement();
+          deferred.resolve(response.data);
+        },
+        // error
+        function(response) {
+          utilService.handleError(response);
+          gpService.decrement();
+          deferred.reject(response.data);
+        });
       return deferred.promise;
     };
 
@@ -729,6 +751,27 @@ tsApp.service('refsetService', [
       return deferred.promise;
     };
 
+    // get required language refsets for branch
+    this.getRequiredLanguageRefsets = function(refsetId) {
+      console.debug('getRequiredLangaugeRefsets');
+      var deferred = $q.defer();
+
+      // Get required language refsets
+      gpService.increment();
+      $http.get(refsetUrl + 'languages?refsetId=' + refsetId).then(
+      // success
+      function(response) {
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+      });
+      return deferred.promise;
+    };
+
     this.beginRedefinition = function(refsetId, definition) {
       console.debug('beginRedefinition');
       var deferred = $q.defer();
@@ -846,6 +889,39 @@ tsApp.service('refsetService', [
       gpService.increment();
       $http.get(refsetUrl + 'export/definition?refsetId=' + refset.id + '&handlerId=' + handler.id)
         .then(
+          // Success
+          function(response) {
+            var blob = new Blob([ response.data ], {
+              type : ''
+            });
+
+            // fake a file URL and download it
+            var fileURL = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = fileURL;
+            a.target = '_blank';
+            a.download = 'definition_' + utilService.toCamelCase(refset.name)
+              + refset.terminologyId + '_' + utilService.yyyymmdd(new Date())
+              + handler.fileTypeFilter;
+            document.body.appendChild(a);
+            gpService.decrement();
+            a.click();
+            window.URL.revokeObjectURL(fileURL);
+
+          },
+          // Error
+          function(response) {
+            utilService.handleError(response);
+            gpService.decrement();
+          });
+    };
+
+    this.exportMembers = function(refset, handler, query, pfs) {
+      console.debug('exportMembers');
+      gpService.increment();
+      $http.post(
+        refsetUrl + 'export/members?refsetId=' + refset.id + '&handlerId=' + handler.id
+          + (query ? '&query=' + utilService.prepQuery(query) : ""), pfs).then(
         // Success
         function(response) {
           var blob = new Blob([ response.data ], {
@@ -857,12 +933,11 @@ tsApp.service('refsetService', [
           var a = document.createElement('a');
           a.href = fileURL;
           a.target = '_blank';
-          a.download = 'definition_' + utilService.toCamelCase(refset.name) + refset.terminologyId +
-            '_' + utilService.yyyymmdd(new Date()) + handler.fileTypeFilter;
+          a.download = 'members_' + utilService.toCamelCase(refset.name) + refset.terminologyId
+            + '_' + utilService.yyyymmdd(new Date()) + handler.fileTypeFilter;
           document.body.appendChild(a);
           gpService.decrement();
           a.click();
-          window.URL.revokeObjectURL(fileURL);
 
         },
         // Error
@@ -872,77 +947,48 @@ tsApp.service('refsetService', [
         });
     };
 
-    this.exportMembers = function(refset, handler, query, pfs) {
-      console.debug('exportMembers');
-      gpService.increment();
-      $http.post(
-        refsetUrl + 'export/members?refsetId=' + refset.id + '&handlerId=' + handler.id
-          + (query ? '&query=' + utilService.prepQuery(query) : ""), pfs).then(
-      // Success
-      function(response) {
-        var blob = new Blob([ response.data ], {
-          type : ''
-        });
-
-        // fake a file URL and download it
-        var fileURL = URL.createObjectURL(blob);
-        var a = document.createElement('a');
-        a.href = fileURL;
-        a.target = '_blank';
-        a.download = 'members_' + utilService.toCamelCase(refset.name) + refset.terminologyId +
-        '_' + utilService.yyyymmdd(new Date()) + handler.fileTypeFilter;
-        document.body.appendChild(a);
-        gpService.decrement();
-        a.click();
-
-      },
-      // Error
-      function(response) {
-        utilService.handleError(response);
-        gpService.decrement();
-      });
-    };
-    
-    this.exportDiffReport = function(action, reportToken, refset, migrationTerminology, migrationVersion) {
+    this.exportDiffReport = function(action, reportToken, refset, migrationTerminology,
+      migrationVersion) {
       console.debug('exportDiffReport');
       var deferred = $q.defer();
       gpService.increment();
       $http.get(
-        refsetUrl + 'export/report?reportToken=' + reportToken + '&terminology=' + migrationTerminology
-        + '&version=' + migrationVersion).then(
-      // Success
-      function(response) {
-        var blob = new Blob([ response.data ], {
-          type : ''
-        });
+        refsetUrl + 'export/report?reportToken=' + reportToken + '&terminology='
+          + migrationTerminology + '&version=' + migrationVersion).then(
+        // Success
+        function(response) {
+          var blob = new Blob([ response.data ], {
+            type : ''
+          });
 
-        // fake a file URL and download it
-        var fileURL = URL.createObjectURL(blob);
-        var a = document.createElement('a');
-        a.href = fileURL;
-        a.target = '_blank';
-        a.download = action + '_' + utilService.toCamelCase(refset.name) + refset.terminologyId +
-        '_' + utilService.yyyymmdd(new Date()) + '.xls';
-        document.body.appendChild(a);
-        gpService.decrement();
-        a.click();
-        deferred.resolve(response.data);
-      },
-      // Error
-      function(response) {
-        utilService.handleError(response);
-        gpService.decrement();
-        deferred.reject(response.data);
-      });
+          // fake a file URL and download it
+          var fileURL = URL.createObjectURL(blob);
+          var a = document.createElement('a');
+          a.href = fileURL;
+          a.target = '_blank';
+          a.download = action + '_' + utilService.toCamelCase(refset.name) + refset.terminologyId
+            + '_' + utilService.yyyymmdd(new Date()) + '.xls';
+          document.body.appendChild(a);
+          gpService.decrement();
+          a.click();
+          deferred.resolve(response.data);
+        },
+        // Error
+        function(response) {
+          utilService.handleError(response);
+          gpService.decrement();
+          deferred.reject(response.data);
+        });
       return deferred.promise;
     };
 
     // Begin import members - if validation is result, OK to proceed.
-    this.beginImportMembers = function(refsetId, handlerId) {
+    this.beginImportMembers = function(refsetId, handlerId, conceptIds) {
       console.debug('begin import members');
       var deferred = $q.defer();
       gpService.increment();
-      $http.get(refsetUrl + 'import/begin?refsetId=' + refsetId + '&handlerId=' + handlerId).then(
+      $http.post(refsetUrl + 'import/begin?refsetId=' + refsetId + '&handlerId=' + handlerId,
+        conceptIds).then(
       // success
       function(response) {
         console.debug('  validation result = ', response.data);
@@ -956,6 +1002,37 @@ tsApp.service('refsetService', [
         deferred.reject(response.data);
       });
       return deferred.promise;
+    };
+
+    this.exportDuplicateMembers = function(refset, handler, conceptIds) {
+      console.debug('exportDuplicateMembers');
+      gpService.increment();
+      $http.post(
+        refsetUrl + '/export/report/duplicates?refsetId=' + refset.id + '&handlerId=' + handler.id,
+        conceptIds).then(
+        // Success
+        function(response) {
+          var blob = new Blob([ response.data ], {
+            type : ''
+          });
+
+          // fake a file URL and download it
+          var fileURL = URL.createObjectURL(blob);
+          var a = document.createElement('a');
+          a.href = fileURL;
+          a.target = '_blank';
+          a.download = 'duplicates_' + utilService.toCamelCase(refset.name) + refset.terminologyId
+            + '_' + utilService.yyyymmdd(new Date()) + handler.fileTypeFilter;
+          document.body.appendChild(a);
+          gpService.decrement();
+          a.click();
+
+        },
+        // Error
+        function(response) {
+          utilService.handleError(response);
+          gpService.decrement();
+        });
     };
 
     // Cancel import members
@@ -1046,8 +1123,7 @@ tsApp.service('refsetService', [
 
       // get refset revision
       gpService.increment();
-      $http.get(
-        refsetUrl + 'convert?refsetId=' + refset.id + '&type=' + type).then(
+      $http.get(refsetUrl + 'convert?refsetId=' + refset.id + '&type=' + type).then(
       // success
       function(response) {
         console.debug('  refset conversion = ', response.data);
@@ -1278,7 +1354,8 @@ tsApp.service('refsetService', [
       var deferred = $q.defer();
 
       // get refset revision
-      $http.get(refsetUrl + 'lookup/start?refsetId=' + refsetId).then(
+      $http.get(
+        refsetUrl + 'lookup/start?refsetId=' + refsetId).then(
       // success
       function(response) {
         console.debug('  start lookup names = ', response.data);
@@ -1349,7 +1426,7 @@ tsApp.service('refsetService', [
       });
       return deferred.promise;
     };
-    
+
     // checks if terminology version is valid
     this.isTerminologyVersionValid = function(projectId, terminology, version) {
       console.debug('isTerminologyVersionValid', projectId, terminology, version);
@@ -1359,7 +1436,7 @@ tsApp.service('refsetService', [
       gpService.increment();
       $http.get(
         refsetUrl + 'version/valid?projectId=' + projectId + '&terminology=' + terminology
-          + '&version=' + version,  {
+          + '&version=' + version, {
           headers : {
             'Content-type' : 'text/plain'
           }

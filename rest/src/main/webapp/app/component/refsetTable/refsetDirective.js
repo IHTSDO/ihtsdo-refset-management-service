@@ -1,4 +1,4 @@
-// Refset Table directive
+  // Refset Table directive
 // e.g. <div refset-table value='PUBLISHED' />
 tsApp
   .directive(
@@ -18,9 +18,10 @@ tsApp
       'releaseService',
       'workflowService',
       'validationService',
+      'appConfig',
       function($uibModal, $location, $window, $route, $routeParams, $sce, $interval, utilService,
         securityService, projectService, refsetService, releaseService, workflowService,
-        validationService) {
+        validationService, appConfig) {
         console.debug('configure refsetTable directive');
         return {
           restrict : 'A',
@@ -59,7 +60,10 @@ tsApp
               $scope.showLatest = true;
               $scope.withNotesOnly = false;
               $scope.filters = [];
-
+              $scope.showDuplicatesExport = false;
+              $scope.conceptIds = [];
+              $scope.showImportFromExistingProject = false;
+              
               // Page metadata
               var memberTypes = [ 'Member', 'Exclusion', 'Inclusion', 'Active', 'Inactive',
                 'Translated', 'Not Translated' ];
@@ -563,6 +567,12 @@ tsApp
                     .sortBy('negated'));
                 }
               };
+              
+              $scope.getRequiredLanguageRefsets = function(refsetId) {
+                refsetService.getRequiredLanguageRefsets(refsetId).then(function(data) {
+                  $scope.requiredLanguages = data.strings;
+                });
+              };
 
               // Table sorting mechanism
               $scope.setSortField = function(table, field, object) {
@@ -623,9 +633,20 @@ tsApp
                 $scope.getMembers(refset);
                 $scope.getStandardDescriptionTypes(refset.terminology, refset.version);
                 $scope.getLink(refset);
+                $scope.getRequiredLanguageRefsets(refset.id);
                 if (refset.id != $scope.user.userPreferences.lastRefsetId) {
                   $scope.user.userPreferences.lastRefsetId = refset.id;
                   securityService.updateUserPreferences($scope.user.userPreferences);
+                }
+                //show refset copy button 
+                if (appConfig['deploy.refset.member.copy.group']) {
+                  var refsetList = appConfig['deploy.refset.member.copy.group'].split('|');
+                  if (refsetList.includes($scope.selected.refset.name)) {
+                    $scope.showImportFromExistingProject = true;
+                  }
+                  else{
+                    $scope.showImportFromExistingProject = false;
+                  }
                 }
               };
 
@@ -854,6 +875,7 @@ tsApp
 
               // Start lookup again - not $scope because modal must access it
               function startLookup(refset) {
+                
                 refsetService.startLookup(refset.id).then(
                 // Success
                 function(data) {
@@ -888,6 +910,7 @@ tsApp
                   if (found) {
                     $interval.cancel($scope.lookupInterval);
                     $scope.lookupInterval = null;
+                    refsetService.fireRefsetChanged(data);
                   }
 
                 },
@@ -959,7 +982,7 @@ tsApp
                 return workflowService.refsetGetRole(action, $scope.projects.role,
                   refset.workflowStatus, $scope.metadata.workflowConfig);
               }
-
+              
               $scope.showDelta = function(refset) {
                 releaseService.findCurrentRefsetReleaseInfo(refset.id).then(
                   function(data) {
@@ -982,6 +1005,50 @@ tsApp
                   });
               }
 
+              $scope.submitRefset = function(refset) {
+
+                // Validate refset
+                validationService.validateRefset(refset).then(
+                  function(data) {
+
+                    // If there are errors, make them available and stop.
+                    if (data.errors && data.errors.length > 0) {
+                      $scope.errors = data.errors;
+                      return;
+                    } else {
+                      $scope.errors = [];
+                    }
+
+                    // if $scope.warnings is empty, and data.warnings is not,
+                    // show warnings and stop
+                    if (data.warnings && data.warnings.length > 0
+                      && $scope.warnings.join() !== data.warnings.join()) {
+                      $scope.warnings = data.warnings;
+                      return;
+                    } else {
+                      $scope.warnings = [];
+                    }
+
+                    // Success - validate refset
+                    refsetService.updateRefset(refset).then(
+                    // Success - update refset
+                    function(data) {
+                      $uibModalInstance.close(refset);
+                    },
+                    // Error - update refset
+                    function(data) {
+                      handleError($scope.errors, data);
+                    });
+
+                  },
+                  // Error - validate refset
+                  function(data) {
+                    handleError($scope.errors, data);
+                  });
+
+              };
+
+              
               //
               // MODALS
               //
@@ -1569,7 +1636,7 @@ tsApp
                 $scope.action = 'Clone';
                 $scope.project = null;
                 $scope.projects = projects;
-                $scope.metadata = metadata;
+                $scope.localMetadata = angular.copy(metadata);
                 $scope.filters = filters;
                 $scope.versionsMap = {};
                 $scope.terminologies = [];
@@ -1598,41 +1665,32 @@ tsApp
                 $scope.getTerminologyEditions = function() {
                   projectService.getTerminologyEditions($scope.project).then(function(data) {
                     $scope.terminologies = data.terminologies;
+                    $scope.localMetadata.versions = {};
+                    
                     // Look up all versions
                     for (var i = 0; i < data.terminologies.length; i++) {
-                      $scope.getTerminologyVersions(data.terminologies[i].terminology);
+                      $scope.getTerminologyVersions($scope.project, data.terminologies[i].terminology);
                     }
                     $scope.refset.terminology = $scope.project.terminology;
                     if (!$scope.refset.terminology) {
                       $scope.refset.terminology = data.terminologies[0];
                     }
+
                   });
 
                 };
 
                 // Get $scope.versions
-                $scope.getTerminologyVersions = function(terminology) {
-                  projectService.getTerminologyVersions($scope.project, terminology).then(
-                    function(data) {
-                      $scope.versionsMap[terminology] = [];
-                      found = false;
-                      for (var i = 0; i < data.terminologies.length; i++) {
-                        $scope.versionsMap[terminology].push(data.terminologies[i].version);
-                        if ($scope.refset.terminology == terminology) {
-                          $scope.versions = angular.copy($scope.versionsMap[terminology].sort()
-                            .reverse());
-                          $scope.versionSelected(data.terminologies[i].version);
-                          found = true;
-                          break;
-                        }
+                $scope.getTerminologyVersions = function(project, terminology) {
+                  projectService.getTerminologyVersions(project, terminology).then(function(data) {
+                    $scope.localMetadata.versions[terminology] = [];
+                    for (var i = 0; i < data.terminologies.length; i++) {
+                      $scope.localMetadata.versions[terminology].push(data.terminologies[i].version);
+                      if (terminology == 'SNOMEDCT') {
+                        $scope.terminologySelected(terminology);
                       }
-                      if (!found && $scope.refset.terminology == terminology) {
-                        $scope.versions = angular.copy($scope.versionsMap[terminology].sort()
-                          .reverse());
-                        $scope.versionSelected(data.terminologies[0].version);
-                      }
-                    });
-
+                    }
+                  });
                 };
 
                 // Get $scope.modules
@@ -1672,9 +1730,55 @@ tsApp
 
                 // Handle terminology selected
                 $scope.terminologySelected = function(terminology) {
-                  $scope.versions = angular.copy($scope.versionsMap[terminology].sort().reverse());
-                  $scope.refset.version = $scope.versions[0];
-                  $scope.getModules();
+                  
+                  $scope.versions = [];
+                  for (var i = 0; i < $scope.localMetadata.versions[terminology].length ; i++) {
+                    var path = $scope.localMetadata.versions[terminology][i];
+                    var key;
+                    // Edition, parse edition version/ project
+                    if (path.indexOf("SNOMEDCT-") != -1) {
+                      var tmp = path.substring(path.indexOf('SNOMEDCT-'));
+                      if (tmp.indexOf('/')) {
+                        key = tmp.substring(tmp.indexOf('/') + 1);
+                      } else {
+                        key = tmp;
+                      }
+                      // remove task data
+                      if (key.indexOf('/') != -1) {
+                        // account for dual edition projects such as SNOMEDCT-ES/SNOMEDCT-UY
+                        var res = path.match(/SNOMEDCT-/g);
+                        if (res.length == 1) {
+                          key = key.substring(0, key.lastIndexOf('/'));
+                          path = path.substring(0, path.lastIndexOf('/'));
+                        }
+                      }
+                    // International edition, parse international version
+                    } else {
+                      key = path.substring(path.indexOf('/') + 1);
+                    }
+                    var vsn = {
+                      key : key,
+                      path : path
+                    }
+                    var found = false;
+                    if ($scope.versions.indexOf(vsn) == -1) {
+                      for (var j = 0; j < $scope.versions.length; j++) {
+                        // determine if key is already used
+                        if ($scope.versions[j].key == vsn.key) {
+                          found = true;
+                          if (vsn.path > $scope.versions[j].path) {
+                            // replace with more recent path for that key
+                            $scope.versions[j].path = vsn.path;
+                            break;
+                          }
+                        }
+                      }
+                      if (!found) {
+                        $scope.versions.push(vsn);
+                      }
+                    }
+                  }
+
                 };
 
                 // Handle version selected
@@ -1751,6 +1855,7 @@ tsApp
                     });
                 };
 
+     
                 // Dismiss modal
                 $scope.close = function() {
                   $uibModalInstance.close($scope.newRefset);
@@ -1762,7 +1867,273 @@ tsApp
                 };
 
               };
+              
+              
+              $scope.openImportFromExistingProjectsModal = function() {
+                console.debug('openImportFromExistingProjectsModal ');
 
+                var modalInstance = $uibModal.open({
+                  templateUrl : 'app/component/refsetTable/importFromExistingProjects.html',
+                  controller : ImportFromExistingProjectsCtrl,
+                  backdrop : 'static',
+                  resolve : {
+                    refset : function() {
+                      return $scope.selected.refset;
+                    }
+                  }
+                });
+
+                modalInstance.result.then(
+                // Success
+                function(data) {
+                  $scope.handleWorkflow(data);
+                });
+              };
+              
+              // Add Refset Member List controller
+              var ImportFromExistingProjectsCtrl = function($scope, $uibModalInstance, utilService, refset, refsetService) {
+                console.debug('Entered add refset member list modal control', utilService, refset, refsetService);
+                
+                $scope.refsetMemberList = [];
+                $scope.refset = refset;
+                $scope.save = [];
+                $scope.added = [];
+                $scope.exists = [];
+                $scope.invalid = [];
+                $scope.refsets = [];
+                $scope.originalRefsets = [];
+                $scope.includeRefsets = [];
+                $scope.errors = [];
+                $scope.warnings = [];
+                $scope.comments = [];
+                
+                $scope.workflowStatusList = [];
+                $scope.moduleIdList = [];
+                $scope.effectiveTimeList = [];
+                
+                refsetService.getRefsetsForProject($scope.refset.projectId).then(
+                    // Success
+                    function(data) {
+                      if (data.refsets.length > 0) {
+                        $scope.refsets = data.refsets;
+                        $scope.originalRefsets = data.refsets;
+                        //remove current refset
+                        $scope.refsets = $scope.refsets.filter(r => r.id !== $scope.refset.id);
+
+                        $scope.refsets.forEach(function(refset) {
+                          if (!$scope.workflowStatusList.includes(refset.workflowStatus)) {
+                            $scope.workflowStatusList.push(refset.workflowStatus)
+                          }
+                          if (!$scope.moduleIdList.includes(refset.moduleId)) {
+                            $scope.moduleIdList.push(refset.moduleId)
+                          }
+                          if (refset.effectiveTime && !$scope.effectiveTimeList.includes(utilService.toShortDate(refset.effectiveTime))) {
+                            $scope.effectiveTimeList.push(utilService.toShortDate(refset.effectiveTime))
+                          }                          
+                        });
+                      } else {
+                        console.info("None returned");
+                      }
+                    },
+                    // Error
+                    function(data) {
+                      handleError($scope.errors, data);
+                    }
+                );
+                
+                $scope.filterRefsets = function() {
+                  
+                  $scope.refsets = JSON.parse(JSON.stringify($scope.originalRefsets));
+                  
+                  console.debug("workflow:", $scope.selectedWorkflowStatus);
+                  console.debug("module:", $scope.selectedModule);
+                  console.debug("eff time:", $scope.selectedEffectiveTime);
+                  
+                  if ($scope.selectedWorkflowStatus && $scope.selectedWorkflowStatus !== "") {
+                    $scope.refsets = $scope.refsets.filter(
+                      r => r.workflowStatus === $scope.selectedWorkflowStatus);
+                  }
+                  if ($scope.selectedModule && $scope.selectedModule !== "") {
+                    $scope.refsets = $scope.refsets.filter(
+                      r => r.moduleId === $scope.selectedModule);
+                  }
+                  if ($scope.selectedEffectiveTime && $scope.selectedEffectiveTime !== "") {
+                    $scope.refsets = $scope.refsets.filter(
+                      r => utilService.toShortDate(r.effectiveTime) === $scope.selectedEffectiveTime);
+                  }
+                  //exclude items which were added
+                  angular.forEach($scope.includeRefsets, function(refset) {
+                    $scope.refsets = $scope.refsets.filter(r => r.id !== refset.id );
+                  });
+                }
+                
+                // Add members in the list
+                $scope.includeRefset = function() {
+                  console.debug("Include refset", $scope.selectedRefset.id);
+                  $scope.refsets = $scope.refsets.filter(r => r.id !== $scope.selectedRefset.id);
+                  $scope.includeRefsets.push($scope.selectedRefset);
+                  console.debug("Include refsets:", $scope.includeRefsets);
+                  
+                  // initialize
+                  var pfs = {
+                    startIndex : 0
+                  };
+                  
+                  //get members for refset (refsetId, query, pfs, translated)
+                  refsetService.findRefsetMembersForQuery($scope.selectedRefset.id, '', pfs).then(
+                      function(data) {
+                        if (data.members.length > 0 ) {
+                          console.debug("contains", data.members);
+                          angular.forEach(data.members, function(member) {
+                            var exists = $scope.refsetMemberList.filter(m => m.conceptId === member.conceptId);
+                            if (exists.length === 0 ) {
+                              $scope.refsetMemberList.push(member);
+                            } else {
+                              $scope.exists.push(member);
+                            }
+                          });
+                        }
+                      }
+                  );
+                };
+                
+                // remove from list and add to select.
+                $scope.removeRefset = function(refset) {
+                  console.debug("Remove refset", refset.id, refset.name);
+                  $scope.includeRefsets = $scope.includeRefsets.filter(r => r.id !== refset.id);
+                  $scope.refsetMemberList = $scope.refsetMemberList.filter(r => r.refsetId !== refset.id);
+                  $scope.exists = $scope.exists.filter(r => r.refsetId !== refset.id);
+                  $scope.refsets.push(refset);
+                  $scope.filterRefsets();
+                  
+                  console.debug("REMOVE ", 
+                      "refsetMemberList: ", $scope.refsetMemberList.length,
+                      "save: ", $scope.save.length,
+                      "added: ", $scope.added.length,
+                      "exists: ", $scope.exists.length,
+                      "invalid: ", $scope.invalid.length,
+                      "indcludeRefsets: ", $scope.includeRefsets.length,
+                      "errors: ", $scope.errors.length,
+                      "warnings: ", $scope.warnings.length,
+                      "comments: ", $scope.comments.length     
+                  );
+                };
+                
+                $scope.clear = function() {
+                  console.debug("Clear refsets");
+                  angular.forEach($scope.includeRefsets, function(refset) {
+                    $scope.refsets.push(refset);
+                  });
+                  $scope.refsetMemberList = [];
+                  $scope.includeRefsets = [];
+                  $scope.exists = [];
+                  $scope.filterRefsets();
+                  
+                  console.debug("CLEAR ", 
+                      "refsetMemberList: ", $scope.refsetMemberList.length,
+                      "save: ", $scope.save.length,
+                      "added: ", $scope.added.length,
+                      "exists: ", $scope.exists.length,
+                      "invalid: ", $scope.invalid.length,
+                      "indcludeRefsets: ", $scope.includeRefsets.length,
+                      "errors: ", $scope.errors.length,
+                      "warnings: ", $scope.warnings.length,
+                      "comments: ", $scope.comments.length     
+                  );
+                  
+                };
+                
+                $scope.importMembers = function (){
+                  var response = $window.confirm('All members of Refset ' + $scope.refset.name 
+                      + ' will be removed before adding new members, are you sure you want to proceed?')
+                  if ($scope.refsetMemberList.length > 0 && response) {
+                    console.debug("Remove members", $scope.refset.name);
+                    console.debug("Import members", $scope.refsetMemberList.length);                    
+                    refsetService.removeAllRefsetMembers(refset.id).then(function(data) {
+                      refsetService.fireRefsetChanged(refset);
+                      includeMembers($scope.refset, $scope.refsetMemberList);
+                    });
+                  }
+                };
+                
+                function includeMembers(refset, members) {
+                  console.debug("add member");
+                  angular.forEach(members, function(member){
+                    // check that concept id is only digits before proceeding
+                    var reg = /^\d+$/;
+                    if (!reg.test(member.conceptId)) {
+                      console.debug("invalid member", member);
+                      $scope.invalid.push(member);
+                      return;
+                    } else {
+                      var newMember = {
+                        active : true,
+                        conceptId : member.conceptId,
+                        memberType : 'MEMBER',
+                        moduleId : refset.moduleId,
+                        refsetId : refset.id
+                      };
+                      $scope.save.push(newMember);
+                    }                    
+                  });
+                  refsetService.addRefsetMembers($scope.save).then(
+                    // Success
+                    function(data) {
+                      $scope.added = data.members;
+                      console
+                      console.debug("members added ", data.members.length);
+                      $scope.save = [];  // clear
+                    },
+                    // Error
+                    function(data) {
+                      $scope.save = []; // clear
+                      handleError($scope.errors, data);
+                    }
+                  );
+                }
+
+                // Dismiss modal
+                $scope.close = function() {
+                  $uibModalInstance.close(refset);
+                };
+
+                // Dismiss modal
+                $scope.cancel = function() {
+                  $uibModalInstance.dismiss('cancel');
+                };
+                
+                $scope.downloadDuplicates = function() {
+                  console.debug("download duplicates");
+                  var filerows = "id\teffectiveTime\tactive\tmoduleId\trefsetId\treferencedComponentId\r\n";
+                  angular.forEach($scope.exists, function(member) {
+                    var row = "" + member.terminologyId 
+                      + "\t" + ((member.effectiveTime !== "null") ? utilService.toShortDate(member.effectiveTime) : "")  
+                      + "\t" + ((member.active === true) ? "1" : "0") 
+                      + "\t" + ((member.moduleId !== "null") ? member.moduleId : "")  
+                      + "\t" + member.refsetId
+                      + "\t" + member.conceptId
+                      + "\r\n";
+                    filerows = filerows + row;
+                  });
+                  
+                  var blob = new Blob([filerows], { type: "text/plain;charset=utf-8;"});
+                  var downloadLink = document.createElement('a');
+                  downloadLink.setAttribute('download', 'duplicates.txt');
+                  downloadLink.setAttribute('href', window.URL.createObjectURL(blob));
+                  downloadLink.click();
+                }
+                
+                $scope.selectDisplay = function (refset) {
+                  var display = refset.name + ' - ' + refset.moduleId + ' - ' + refset.workflowStatus;
+                  if (refset.effectiveTime != null) {
+                    var d = utilService.toShortDate(new Date(refset.effectiveTime));
+                    return display + ' - ' + d;
+                  }
+                  return display
+                }
+                
+              }; //end 
+              
               // Import/Export modal
               $scope.openImportExportModal = function(lrefset, loperation, ltype) {
                 console.debug('exportModal ', lrefset);
@@ -1812,7 +2183,7 @@ tsApp
                   }
                 });
               };
-
+              
               // Import/Export controller
               var ImportExportModalCtrl = function($scope, $uibModalInstance, refset, metadata,
                 operation, type, ioHandlers, query, pfs) {
@@ -1859,16 +2230,25 @@ tsApp
                 }
                 // Handle export
                 $scope.export = function(file) {
-                  if (type == 'Definition') {
+                  if (type === 'Definition') {
                     refsetService.exportDefinition($scope.refset, $scope.selectedIoHandler);
                   }
-                  if (type == 'Refset Members') {
+                  if (type === 'Refset Members') {
                     refsetService.exportMembers($scope.refset, $scope.selectedIoHandler,
                       $scope.query, $scope.pfs);
                   }
                   $uibModalInstance.close(refset);
                 };
-
+                
+                $scope.exportDuplicateMembers = function(file) {
+                  if (type === 'Refset Members') {
+                    //GET concept Ids from file
+                    refsetService.exportDuplicateMembers($scope.refset, $scope.selectedIoHandler, $scope.conceptIds);
+                  }
+                  $uibModalInstance.close(refset);
+                }
+                
+                
                 // Handle import
                 $scope.import = function(file) {
 
@@ -1885,8 +2265,23 @@ tsApp
                     });
                   }
 
-                  if (type == 'Refset Members') {
-                    refsetService.beginImportMembers($scope.refset.id, $scope.selectedIoHandler.id)
+                  if (type === 'Refset Members') {
+                    
+                    var conceptIds = [];
+                    var reader = new FileReader();
+                    reader.onload = function(progressEvent) {
+                      var lines = this.result.split(/\r\n|\n/);
+                      for(var i = 1; i < lines.length; i++){
+                        //console.log("    LINE: ", lines[i]);
+                        if (lines[i] !== "") {
+                          var fields = lines[i].split(/\t/);
+                          //console.log("    CONCEPT: ", fields[5]);
+                          conceptIds.push(fields[5]);
+                        }
+                        $scope.conceptIds = conceptIds;
+                      }
+                      
+                      refsetService.beginImportMembers($scope.refset.id, $scope.selectedIoHandler.id, $scope.conceptIds)
                       .then(
 
                         // Success
@@ -1894,9 +2289,11 @@ tsApp
                           $scope.importStarted = true;
                           // data is a validation result, check for errors
                           if (data.errors.length > 0) {
-                            $scope.errors = data.errors;
+                          if (data.errors.includes("Refset contains duplicate members.")) {
+                            $scope.showDuplicatesExport = true;
+                          } 
+                            $scope.errors = data.errors;                           
                           } else {
-
                             // If there are no errors, finish import
                             refsetService.finishImportMembers($scope.refset.id,
                               $scope.selectedIoHandler.id, file).then(
@@ -1919,6 +2316,8 @@ tsApp
                         function(data) {
                           handleError($scope.errors, data);
                         });
+                    }
+                    reader.readAsText(file, "UTF-8");
                   }
                 };
 
@@ -1958,7 +2357,7 @@ tsApp
                   $uibModalInstance.close(refset);
                 };
               };
-
+              
               // Release Process modal
               $scope.openReleaseProcessModal = function(lrefset) {
                 console.debug('releaseProcessModal ', lrefset);
@@ -2591,8 +2990,8 @@ tsApp
                 $scope.validVersion = null;
                 $scope.terminologies = metadata.terminologies;
                 console.debug('xxx', $scope.project.terminology, $scope.metadata);
-                $scope.versions = angular.copy($scope.metadata.versions[$scope.project.terminology]
-                  .sort().reverse());
+                /*$scope.metadataVersions = $scope.metadata.versions[refset.terminology] ? angular
+                  .copy($scope.metadata.versions[refset.terminology].sort().reverse()) : [];*/
                 $scope.filters = filters;
                 $scope.localSet = localSet;
 
@@ -2616,6 +3015,8 @@ tsApp
                 $scope.errors = [];
                 $scope.warnings = [];
 
+                $scope.versions = [];
+                
                 // Get $scope.modules
                 $scope.getModules = function() {
                   projectService.getModules($scope.project, $scope.refset.terminology,
@@ -2630,6 +3031,7 @@ tsApp
                   refsetService.isTerminologyVersionValid($scope.project.id,
                     $scope.refset.terminology, $scope.refset.version).then(function(data) {
                     $scope.validVersion = data;
+                    $scope.getModules();
                   });
                 }
 
@@ -2651,13 +3053,58 @@ tsApp
                 if ($scope.refset.terminology && $scope.refset.version) {
                   $scope.getModules();
                 }
-
+                
                 // Handle terminology selected
                 $scope.terminologySelected = function(terminology) {
-                  $scope.versions = angular.copy($scope.metadata.versions[terminology].sort()
-                    .reverse());
-                  $scope.refset.version = $scope.versions[0];
-                  $scope.getModules();
+                  
+                  $scope.versions = [];
+                  for (var i = 0; i < $scope.metadata.versions[terminology].length ; i++) {
+                    var path = $scope.metadata.versions[terminology][i];
+                    var key;
+                    // Edition, parse edition version/ project
+                    if (path.indexOf("SNOMEDCT-") != -1) {
+                      var tmp = path.substring(path.indexOf('SNOMEDCT-'));
+                      if (tmp.indexOf('/')) {
+                        key = tmp.substring(tmp.indexOf('/') + 1);
+                      } else {
+                        key = tmp;
+                      }
+                      // remove task data
+                      if (key.indexOf('/') != -1) {
+                        // account for dual edition projects such as SNOMEDCT-ES/SNOMEDCT-UY
+                        var res = path.match(/SNOMEDCT-/g);
+                        if (res.length == 1) {
+                          key = key.substring(0, key.lastIndexOf('/'));
+                          path = path.substring(0, path.lastIndexOf('/'));
+                        }
+                      }
+                    // International edition, parse international version
+                    } else {
+                      key = path.substring(path.indexOf('/') + 1);
+                    }
+                    var vsn = {
+                      key : key,
+                      path : path
+                    }
+                    var found = false;
+                    if ($scope.versions.indexOf(vsn) == -1) {
+                      for (var j = 0; j < $scope.versions.length; j++) {
+                        // determine if key is already used
+                        if ($scope.versions[j].key == vsn.key) {
+                          found = true;
+                          if (vsn.path > $scope.versions[j].path) {
+                            // replace with more recent path for that key
+                            $scope.versions[j].path = vsn.path;
+                            break;
+                          }
+                        }
+                      }
+                      if (!found) {
+                        $scope.versions.push(vsn);
+                      }
+                    }
+                  }
+
                 };
 
                 // Handle version selected
@@ -2682,6 +3129,7 @@ tsApp
                 $scope.submitRefset = function(refset) {
 
                   refset.projectId = project.id;
+                  refset.version = $scope.refset.version;
                   // Setup definition if configured
                   if (refset.type == 'EXTENSIONAL') {
                     $scope.clause = null;
@@ -2748,6 +3196,9 @@ tsApp
                     });
                 };
 
+                // Initialize
+                $scope.terminologySelected($scope.project.terminology);
+                
                 // Dismiss modal
                 $scope.cancel = function() {
                   $uibModalInstance.dismiss('cancel');
@@ -2816,8 +3267,7 @@ tsApp
                 $scope.metadata = metadata;
                 $scope.validVersion = null;
                 $scope.terminologies = metadata.terminologies;
-                $scope.versions = $scope.metadata.versions[refset.terminology] ? angular
-                  .copy($scope.metadata.versions[refset.terminology].sort().reverse()) : [];
+
                 $scope.modules = [];
                 $scope.errors = [];
 
@@ -2845,13 +3295,57 @@ tsApp
                 }
 
                 // Handle terminology selected
-                $scope.terminologySelected = function(terminology) {
-                  $scope.versions = angular.copy($scope.metadata.versions[refset.terminology]
-                    .sort().reverse());
-                  $scope.refset.version = $scope.versions[0];
-                  $scope.getModules();
+               $scope.terminologySelected = function(terminology) {
+                  
+                  $scope.versions = [];
+                  for (var i = 0; i < $scope.metadata.versions[terminology].length ; i++) {
+                    var path = $scope.metadata.versions[terminology][i];
+                    var key;
+                    // Edition, parse edition version/ project
+                    if (path.indexOf("SNOMEDCT-") != -1) {
+                      var tmp = path.substring(path.indexOf('SNOMEDCT-'));
+                      if (tmp.indexOf('/')) {
+                        key = tmp.substring(tmp.indexOf('/') + 1);
+                      } else {
+                        key = tmp;
+                      }
+                      // remove task data
+                      if (key.indexOf('/') != -1) {
+                        // account for dual edition projects such as SNOMEDCT-ES/SNOMEDCT-UY
+                        var res = path.match(/SNOMEDCT-/g);
+                        if (res.length == 1) {
+                          key = key.substring(0, key.lastIndexOf('/'));
+                          path = path.substring(0, path.lastIndexOf('/'));
+                        }
+                      }
+                    // International edition, parse international version
+                    } else {
+                      key = path.substring(path.indexOf('/') + 1);
+                    }
+                    var vsn = {
+                      key : key,
+                      path : path
+                    }
+                    var found = false;
+                    if ($scope.versions.indexOf(vsn) == -1) {
+                      for (var j = 0; j < $scope.versions.length; j++) {
+                        // determine if key is already used
+                        if ($scope.versions[j].key == vsn.key) {
+                          found = true;
+                          if (vsn.path > $scope.versions[j].path) {
+                            // replace with more recent path for that key
+                            $scope.versions[j].path = vsn.path;
+                            break;
+                          }
+                        }
+                      }
+                      if (!found) {
+                        $scope.versions.push(vsn);
+                      }
+                    }
+                  }
+
                 };
-                
 
                 // Handle version selected
                 $scope.versionSelected = function(version) {
@@ -2932,6 +3426,9 @@ tsApp
 
                 };
 
+                // initialize
+                $scope.terminologySelected($scope.project.terminology);
+                
                 // Dismiss modal
                 $scope.cancel = function() {
                   $uibModalInstance.close('cancel');
@@ -3217,8 +3714,8 @@ tsApp
                 $scope.paging = paging;
                 $scope.metadata = metadata;
                 $scope.terminologies = [];
-                $scope.versions = angular.copy($scope.metadata.versions[$scope.newTerminology]
-                  .sort().reverse());
+                /* $scope.versions = angular.copy($scope.metadata.versions[$scope.newTerminology]
+                  .sort().reverse());*/
                 $scope.newVersion = null;
                 $scope.validVersion = null;
                 $scope.errors = [];
@@ -3331,11 +3828,57 @@ tsApp
                 };
 
                 // Handle terminology selected
-                $scope.terminologySelected = function() {
-                  $scope.versions = angular.copy($scope.metadata.versions[$scope.newTerminology]
-                    .sort().reverse());
-                  $scope.newVersion = $scope.versions[0];
-                };
+                $scope.terminologySelected = function(terminology) {
+                   
+                   $scope.versions = [];
+                   for (var i = 0; i < $scope.metadata.versions[terminology].length ; i++) {
+                     var path = $scope.metadata.versions[terminology][i];
+                     var key;
+                     // Edition, parse edition version/ project
+                     if (path.indexOf("SNOMEDCT-") != -1) {
+                       var tmp = path.substring(path.indexOf('SNOMEDCT-'));
+                       if (tmp.indexOf('/')) {
+                         key = tmp.substring(tmp.indexOf('/') + 1);
+                       } else {
+                         key = tmp;
+                       }
+                       // remove task data
+                       if (key.indexOf('/') != -1) {
+                         // account for dual edition projects such as SNOMEDCT-ES/SNOMEDCT-UY
+                         var res = path.match(/SNOMEDCT-/g);
+                         if (res.length == 1) {
+                           key = key.substring(0, key.lastIndexOf('/'));
+                           path = path.substring(0, path.lastIndexOf('/'));
+                         }
+                       }
+                     // International edition, parse international version
+                     } else {
+                       key = path.substring(path.indexOf('/') + 1);
+                     }
+                     var vsn = {
+                       key : key,
+                       path : path
+                     }
+                     var found = false;
+                     if ($scope.versions.indexOf(vsn) == -1) {
+                       for (var j = 0; j < $scope.versions.length; j++) {
+                         // determine if key is already used
+                         if ($scope.versions[j].key == vsn.key) {
+                           found = true;
+                           if (vsn.path > $scope.versions[j].path) {
+                             // replace with more recent path for that key
+                             $scope.versions[j].path = vsn.path;
+                             break;
+                           }
+                         }
+                       }
+                       if (!found) {
+                         $scope.versions.push(vsn);
+                       }
+                     }
+                   }
+
+                 };
                 
 
                 // Table sorting mechanism
@@ -3565,6 +4108,9 @@ tsApp
                     $scope.invalidExclusions, $scope.paging['invalidExclusions'], $scope.pageSize);
                 };
 
+                // Initialize
+                $scope.terminologySelected($scope.project.terminology);
+                
                 // Close migration dialog
                 $scope.close = function(refset) {
                   $uibModalInstance.close(refset);
@@ -3762,11 +4308,14 @@ tsApp
                         $scope.concepts = data.concepts;
 
                         // if no replacements, just add the inclusion
-                        /*if ($scope.concepts.length == 0
-                        // the second clause here is because intensional
-                        // refsets never have inactive members in common
-                        && $scope.stagedRefset.type == 'INTENSIONAL') {
-                          $scope.addRefsetInclusion($scope.stagedRefset, member, staged);*/
+                        /*
+                                                 * if ($scope.concepts.length == 0 // the second
+                                                 * clause here is because intensional // refsets
+                                                 * never have inactive members in common &&
+                                                 * $scope.stagedRefset.type == 'INTENSIONAL') {
+                                                 * $scope.addRefsetInclusion($scope.stagedRefset,
+                                                 * member, staged);
+                                                 */
                         if ($scope.concepts.length == 0) {
                         	window.alert('There are no replacement concepts available.');
                         } else {
@@ -4209,7 +4758,8 @@ tsApp
                 }
 
               };
-
+              
+              
               // INITIALIZE
 
               // Initialize if project setting isn't used

@@ -1,5 +1,5 @@
-/*
- * Copyright 2015 West Coast Informatics, LLC
+/**
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.test.jpa;
 
@@ -28,8 +28,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
- * Some initial testing for {@link SnowstormTerminologyHandler}. Assumes stock dev
- * load.
+ * Some initial testing for {@link SnowstormTerminologyHandler}. Assumes stock
+ * dev load.
  */
 public class BrowserTerminologyHandlerTest extends JpaSupport {
 
@@ -108,7 +108,7 @@ public class BrowserTerminologyHandlerTest extends JpaSupport {
     concepts.add("126880001");
     concepts.add("72938002");
     ConceptList conceptList = service.getTerminologyHandler(project, null)
-        .getConcepts(concepts, "en-edition", "20160131");
+        .getConcepts(concepts, "en-edition", "20160131", false);
     assertEquals(conceptList.getCount(), 2);
     service.close();
   }
@@ -127,7 +127,7 @@ public class BrowserTerminologyHandlerTest extends JpaSupport {
     pfs.setStartIndex(5);
     ConceptList conceptList = service.getTerminologyHandler(project, null)
         .resolveExpression("<<284009009|Route of administration|", "en-edition",
-            "20160131", pfs);
+            "20160131", pfs, false);
     assertEquals(148, conceptList.getTotalCount());
     assertEquals(25, conceptList.getCount());
 
@@ -142,41 +142,41 @@ public class BrowserTerminologyHandlerTest extends JpaSupport {
     // <<389145006 OR <<195967001)
 
     service.getTerminologyHandler(project, null)
-        .resolveExpression("<<195967001", "en-edition", "20160131", pfs);
+        .resolveExpression("<<195967001", "en-edition", "20160131", pfs, false);
     service.getTerminologyHandler(project, null).resolveExpression(
-        "<<195967001 MINUS <<304527002", "en-edition", "20160131", pfs);
+        "<<195967001 MINUS <<304527002", "en-edition", "20160131", pfs, false);
     service.getTerminologyHandler(project, null).resolveExpression(
-        "<<195967001 OR <<304527002", "en-edition", "20160131", pfs);
+        "<<195967001 OR <<304527002", "en-edition", "20160131", pfs, false);
     service.getTerminologyHandler(project, null).resolveExpression(
         "(<<195967001 OR <<304527002) MINUS <<370218001", "en-edition",
-        "20160131", pfs);
+        "20160131", pfs, false);
     service.getTerminologyHandler(project, null).resolveExpression(
         "(<<195967001 OR <<304527002) MINUS (<<370218001 OR <<389145006)",
-        "en-edition", "20160131", pfs);
+        "en-edition", "20160131", pfs, false);
     service.getTerminologyHandler(project, null).resolveExpression(
         "<<195967001 MINUS (<<370218001 OR <<389145006)", "en-edition",
-        "20160131", pfs);
+        "20160131", pfs, false);
     service.getTerminologyHandler(project, null).resolveExpression(
         "(<<195967001 OR <<304527002 OR <<370218001) MINUS (<<370218001 OR <<389145006 OR <<195967001)",
-        "en-edition", "20160131", pfs);
+        "en-edition", "20160131", pfs, false);
 
     service.getTerminologyHandler(project, null).resolveExpression(
         "< 19829001 |disorder of lung|: 116676008 |associated morphology| = 79654002 |edema|",
-        "en-edition", "20160131", pfs);
+        "en-edition", "20160131", pfs, false);
 
     service.getTerminologyHandler(project, null).resolveExpression(
         "(< 19829001 |disorder of lung|: 116676008 |associated morphology| = 79654002 |edema|) "
             + "OR <<409623005 | Respiratory insufficiency (disorder) |",
-        "en-edition", "20160131", pfs);
+        "en-edition", "20160131", pfs, false);
 
     service.getTerminologyHandler(project, null).resolveExpression(
         "(< 19829001 |disorder of lung|: 116676008 |associated morphology| = 79654002 |edema|) MINUS <<304527002",
-        "en-edition", "20160131", pfs);
+        "en-edition", "20160131", pfs, false);
 
     service.getTerminologyHandler(project, null).resolveExpression(
         "((< 19829001 |disorder of lung|: 116676008 |associated morphology| = 79654002 |edema|) "
             + "OR <<409623005 | Respiratory insufficiency (disorder) |) MINUS <<304527002",
-        "en-edition", "20160131", pfs);
+        "en-edition", "20160131", pfs, false);
 
     // Test more complicated cases
     // < 65801008|Excision (procedure)| AND < 118673008|Procedure on digestive
@@ -185,7 +185,7 @@ public class BrowserTerminologyHandlerTest extends JpaSupport {
     service.getTerminologyHandler(project, null).resolveExpression(
         "(< 65801008|Excision (procedure)| AND < 118673008|Procedure on digestive system (procedure)|) "
             + "OR (< 233604007|Pneumonia (disorder)| MINUS << 64667001|Interstitial pneumonia (disorder)|)",
-        "en-edition", "20160131", pfs);
+        "en-edition", "20160131", pfs, false);
 
     // Complex
     String a =
@@ -194,19 +194,19 @@ public class BrowserTerminologyHandlerTest extends JpaSupport {
         "< 233604007|Pneumonia (disorder)| MINUS << 64667001|Interstitial pneumonia (disorder)|";
     service.getTerminologyHandler(project, null).resolveExpression(
         "((" + a + ") OR (" + a + ")) MINUS ((" + b + ") OR (" + b + "))",
-        "en-edition", "20160131", pfs);
+        "en-edition", "20160131", pfs, false);
 
     service.getTerminologyHandler(project, null).resolveExpression(
         "(65801008 OR (" + a + ")) MINUS ((" + b + ") OR (" + b + "))",
-        "en-edition", "20160131", pfs);
+        "en-edition", "20160131", pfs, false);
 
     service.getTerminologyHandler(project, null).resolveExpression(
         "(65801008 OR (" + a + ")) MINUS ((" + b + ") OR 233604007)",
-        "en-edition", "20160131", pfs);
+        "en-edition", "20160131", pfs, false);
 
     service.getTerminologyHandler(project, null).resolveExpression(
         "65801008 OR (" + a + ") OR (" + b + ") OR 233604007", "en-edition",
-        "20160131", pfs);
+        "20160131", pfs, false);
 
     service.close();
   }
@@ -374,7 +374,7 @@ public class BrowserTerminologyHandlerTest extends JpaSupport {
       ids.add("1234");
       ids.add("5679");
       list = service.getTerminologyHandler(project, null).getConcepts(ids,
-          "abc", "20150131");
+          "abc", "20150131", false);
       fail("Exception expected.");
     } catch (Exception e) {
       // n/a, expected result
@@ -451,5 +451,4 @@ public class BrowserTerminologyHandlerTest extends JpaSupport {
   public static void teardownClass() throws Exception {
     // do nothing
   }
-
 }

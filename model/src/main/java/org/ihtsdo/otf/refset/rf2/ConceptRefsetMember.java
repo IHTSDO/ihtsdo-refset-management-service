@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 West Coast Informatics, LLC
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.rf2;
 
@@ -96,4 +96,18 @@ public interface ConceptRefsetMember extends Component {
    * @param notes the notes
    */
   public void setNotes(List<Note> notes);
+
+  /**
+   * Returns the synonyms.
+   *
+   * @return the synonyms
+   */
+  public List<String> getSynonyms();
+
+  /**
+   * Sets the synonyms.
+   *
+   * @param synonyms the synonyms
+   */
+  public void setSynonyms(List<String> synonyms);
 }

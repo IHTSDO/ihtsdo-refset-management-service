@@ -572,6 +572,7 @@
           </th>
           <th ng-click="setSortField('available','name', selected.translation)">Name<span
               ng-bind="getSortIndicator('available','name')"></span></th>
+          <th ng-if="projects.role.includes('REVIEW')">Author(s)</th>
           <th class="col-md-4 col-xs-4" ng-show="projects.role != 'AUTHOR'">
             <span
               ng-click="setSortField('available','lastModified', selected.translation)">
@@ -606,6 +607,15 @@
           <td>
             {{concept.name}}
             <span name-info name="concept.name"> </span>
+            <span
+              ng-repeat="desc in concept.descriptions | orderBy:'desc.term'">
+              <br /> &bull;&nbsp;{{desc.term}}
+            </span>
+          </td>
+          <td ng-if="projects.role.includes('REVIEW')">
+            <span ng-repeat="description in concept.descriptions">
+              {{ description.lastModifiedBy }}
+            </span>
           </td>
           <td ng-show="projects.role != 'AUTHOR'">
             {{toDate(concept.lastModified)}}
@@ -652,7 +662,7 @@
     <div class="col-md-12 col-xs-12"></div>
 
     <h4 ng-show="selected.translation">
-      {{projectsRole}} Assigned Concepts
+      {{projects.role}} Assigned Concepts
       <span ng-show="selected.translation.assigned.totalCount>0">
         ({{selected.translation.assigned.totalCount}})</span>
     </h4>
@@ -685,7 +695,7 @@
         ng-click="paging['assigned'].filter = ''; getAssignedConcepts(selected.translation)"
         title="Click to clear filter text">Clear</button>
     </span>
-
+    
     <table ng-show="selected.translation" class="table">
       <thead>
         <tr>
@@ -697,6 +707,7 @@
           <th class="col-md-4 col-xs-4"
             ng-click="setSortField('assigned','conceptName', selected.translation)">Name<span
               ng-bind="getSortIndicator('assigned','conceptName')"></span></th>
+          <th ng-if="projects.role.includes('REVIEW')">Author(s)</th>
           <th class="col-md-3 col-xs-3"><span
               ng-click="setSortField('assigned','lastModified', selected.translation)">
               Last Modified
@@ -708,7 +719,8 @@
                 Status</span>
               <span ng-bind="getSortIndicator('assigned','workflowStatus')"></span>
             </span></th>
-          <th class="col-md-2 col-xs-2">Actions<br /> <span
+
+          <th class="col-md-2 col-xs-2">Actions &emsp;<span
               class="nobreak">
               <!--  Unassign all -->
               <i ng-show="selected.translation.assigned.totalCount > 0"
@@ -724,6 +736,14 @@
                 ng-click="publishAll(user.userName)" title="Publish all"
                 class="noul material-icons md-18">open_in_new</i>
             </span>
+            <span ng-show="(project.workflowPath != 'SNOMED' && projects.role == 'REVIEWER') || (project.workflowPath == 'SNOMED'  && projects.role == 'REVIEWER2')">
+            <br>
+              <select align="center" tooltip-placement="top" uib-tooltip="Action Status"
+                ng-init="actionStatus" ng-model="actionStatus"
+                ng-change="filterActionStatus(actionStatus)"
+                ng-options="item as item for item in actionStatuses">
+              </select>
+            </span>
           </th>
 
         </tr>
@@ -735,6 +755,13 @@
           <td>
             {{record.concept.name}}
             <span name-info name="record.concept.name"> </span>
+            <span
+              ng-repeat="desc in record.concept.descriptions | orderBy:'desc.term'">
+              <br /> &bull;&nbsp;{{desc.term}}
+            </span>
+          </td>                
+          <td ng-if="projects.role.includes('REVIEW')">
+            {{ record.authors.join(",") }}
           </td>
           <td>
             {{toDate(record.lastModified)}}

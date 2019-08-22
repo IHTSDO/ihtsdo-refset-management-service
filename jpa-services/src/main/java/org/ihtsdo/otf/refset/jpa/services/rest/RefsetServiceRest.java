@@ -23,6 +23,7 @@ import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
 
+// TODO: Auto-generated Javadoc
 /**
  * Represents a refsets available via a REST service.
  */
@@ -190,6 +191,17 @@ public interface RefsetServiceRest {
     String authToken) throws Exception;
 
   /**
+   * Adds the refset members.
+   *
+   * @param members the members
+   * @param authToken the auth token
+   * @return the concept refset members
+   * @throws Exception the exception
+   */
+  public ConceptRefsetMemberList addRefsetMembers(
+    ConceptRefsetMemberJpa[] members, String authToken) throws Exception;
+
+  /**
    * Removes the refset member.
    *
    * @param memberId the member id
@@ -281,6 +293,20 @@ public interface RefsetServiceRest {
    */
   public ValidationResult beginImportMembers(Long refsetId,
     String ioHandlerInfoId, String authToken) throws Exception;
+
+  /**
+   * Begin import.
+   *
+   * @param refsetId the refset id
+   * @param ioHandlerInfoId the io handler info id
+   * @param conceptIds list of concept ids to import
+   * @param authToken the auth token
+   * @return the member diff report
+   * @throws Exception the exception
+   */
+  public ValidationResult beginImportMembers(Long refsetId,
+    String ioHandlerInfoId, String[] conceptIds, String authToken)
+    throws Exception;
 
   /**
    * Resume import. - recomputes begin and produces same result without actually
@@ -509,18 +535,6 @@ public interface RefsetServiceRest {
     throws Exception;
 
   /**
-   * Launches the lookup process of identifying the name and active states for
-   * all members of the refset.
-   *
-   * @param refsetId the refset id
-   * @param background the background
-   * @param authToken the auth token
-   * @throws Exception the exception
-   */
-  public void startLookupMemberNames(Long refsetId, Boolean background,
-    String authToken) throws Exception;
-
-  /**
    * Adds the refset members for expression.
    *
    * @param refsetId the refset id
@@ -649,7 +663,18 @@ public interface RefsetServiceRest {
    * @return the input stream
    * @throws Exception the exception
    */
-  public InputStream exportDiffReport(String reportToken, String terminology, String version, String authToken)
+  public InputStream exportDiffReport(String reportToken, String terminology,
+    String version, String authToken) throws Exception;
+
+  /**
+   * Export refset duplicates report.
+   *
+   * @param authToken the auth token
+   * @return the input stream
+   * @throws Exception the exception
+   */
+  public InputStream exportResfetDuplicatesReport(Long refsetId,
+    String ioHandlerInfoId, String[] conceptIts, String authToken)
     throws Exception;
 
   /**
@@ -676,4 +701,27 @@ public interface RefsetServiceRest {
    */
   public Boolean isTerminologyVersionValid(Long projectId, String terminology,
     String version, String authToken) throws Exception;
+
+  /**
+   * Gets the required language refsets.
+   *
+   * @param refsetId the refset id
+   * @param authToken the auth token
+   * @return the required language refsets
+   * @throws Exception the exception
+   */
+  public StringList getRequiredLanguageRefsets(Long refsetId, String authToken)
+    throws Exception;
+
+  /**
+   * Start lookup member names.
+   *
+   * @param refsetId the refset id
+   * @param background the background
+   * @param authToken the auth token
+   * @throws Exception the exception
+   */
+  public void startLookupMemberNames(Long refsetId, Boolean background,
+    String authToken) throws Exception;
+
 }

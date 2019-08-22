@@ -1,8 +1,5 @@
-/*
- * Copyright 2015 West Coast Informatics, LLC
- */
-/*
- * 
+/**
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.test.rest;
 
@@ -14,6 +11,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -148,7 +146,8 @@ public class TranslationReleaseTest extends RestSupport {
       throw new Exception("Test prerequisite: admin.user must be specified");
     }
     if (adminPassword == null || adminPassword.isEmpty()) {
-      throw new Exception("Test prerequisite: admin.password must be specified");
+      throw new Exception(
+          "Test prerequisite: admin.password must be specified");
     }
 
   }
@@ -194,9 +193,9 @@ public class TranslationReleaseTest extends RestSupport {
    * @return the refset jpa
    * @throws Exception the exception
    */
-  private RefsetJpa makeRefset(String name, String definition,
-    Refset.Type type, Project project, String refsetId, boolean importFlag,
-    User auth) throws Exception {
+  private RefsetJpa makeRefset(String name, String definition, Refset.Type type,
+    Project project, String refsetId, boolean importFlag, User auth)
+    throws Exception {
     RefsetJpa refset = new RefsetJpa();
     refset.setActive(true);
     refset.setType(type);
@@ -236,9 +235,8 @@ public class TranslationReleaseTest extends RestSupport {
     }
 
     // Validate refset
-    ValidationResult result =
-        validationService.validateRefset(refset, project.getId(),
-            auth.getAuthToken());
+    ValidationResult result = validationService.validateRefset(refset,
+        project.getId(), auth.getAuthToken());
     if (!result.isValid()) {
       Logger.getLogger(getClass()).error(result.toString());
       throw new Exception("Refset does not pass validation.");
@@ -250,25 +248,20 @@ public class TranslationReleaseTest extends RestSupport {
     if (importFlag) {
       if (type == Refset.Type.EXTENSIONAL) {
         // Import members (from file)
-        ValidationResult vr =
-            refsetService.beginImportMembers(refset.getId(), "DEFAULT",
-                auth.getAuthToken());
+        ValidationResult vr = refsetService.beginImportMembers(refset.getId(),
+            "DEFAULT", auth.getAuthToken());
         if (!vr.isValid()) {
           throw new Exception("import staging is invalid - " + vr);
         }
-        InputStream in =
-            new FileInputStream(
-                new File(
-                    "../config/src/main/resources/data/refset/der2_Refset_SimpleSnapshot_INT_20140731.txt"));
+        InputStream in = new FileInputStream(new File(
+            "../config/src/main/resources/data/refset/der2_Refset_SimpleSnapshot_INT_20140731.txt"));
         refsetService.finishImportMembers(null, in, refset.getId(), "DEFAULT",
             auth.getAuthToken());
         in.close();
       } else if (type == Refset.Type.INTENSIONAL) {
         // Import definition (from file)
-        InputStream in =
-            new FileInputStream(
-                new File(
-                    "../config/src/main/resources/data/refset/der2_Refset_DefinitionSnapshot_INT_20140731.txt"));
+        InputStream in = new FileInputStream(new File(
+            "../config/src/main/resources/data/refset/der2_Refset_DefinitionSnapshot_INT_20140731.txt"));
         refsetService.importDefinition(null, in, refset.getId(), "DEFAULT",
             auth.getAuthToken());
         in.close();
@@ -293,8 +286,8 @@ public class TranslationReleaseTest extends RestSupport {
     Project project, boolean importFlag, User auth) throws Exception {
     TranslationJpa translation = new TranslationJpa();
     translation.setName(name);
-    translation.setDescription("Description of translation "
-        + translation.getName());
+    translation
+        .setDescription("Description of translation " + translation.getName());
     translation.setActive(true);
     translation.setEffectiveTime(new Date());
     translation.setLastModified(new Date());
@@ -310,31 +303,27 @@ public class TranslationReleaseTest extends RestSupport {
     translation.setVersion(refset.getVersion());
 
     // Validate translation
-    ValidationResult result =
-        validationService.validateTranslation(translation, project.getId(),
-            auth.getAuthToken());
+    ValidationResult result = validationService.validateTranslation(translation,
+        project.getId(), auth.getAuthToken());
     if (!result.isValid()) {
       Logger.getLogger(getClass()).error(result.toString());
       throw new Exception("translation does not pass validation.");
     }
     // Add translation
-    translation =
-        (TranslationJpa) translationService.addTranslation(translation,
-            auth.getAuthToken());
+    translation = (TranslationJpa) translationService
+        .addTranslation(translation, auth.getAuthToken());
 
     if (importFlag) {
       // Import members (from file)
-      ValidationResult vr =
-          translationService.beginImportConcepts(translation.getId(),
-              "DEFAULT", auth.getAuthToken());
+      ValidationResult vr = translationService.beginImportConcepts(
+          translation.getId(), "DEFAULT", auth.getAuthToken());
       if (!vr.isValid()) {
         throw new Exception("translation staging is not valid - " + vr);
       }
-      InputStream in =
-          new FileInputStream(new File(
-              "../config/src/main/resources/data/translation2/translation.zip"));
+      InputStream in = new FileInputStream(new File(
+          "../config/src/main/resources/data/translation2/translation.zip"));
       translationService.finishImportConcepts(null, in, translation.getId(),
-          "DEFAULT", auth.getAuthToken());
+          "DEFAULT", null, auth.getAuthToken());
       in.close();
     }
     return translation;
@@ -352,9 +341,8 @@ public class TranslationReleaseTest extends RestSupport {
     Project project = projectService.getProject(2L, adminAuthToken);
     User admin = securityService.authenticate(adminUser, adminPassword);
     // Create refset (intensional) and import definition
-    RefsetJpa refset1 =
-        makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project, UUID
-            .randomUUID().toString(), true, admin);
+    RefsetJpa refset1 = makeRefset("refset1", null, Refset.Type.EXTENSIONAL,
+        project, UUID.randomUUID().toString(), true, admin);
     TranslationJpa translation1 =
         makeTranslation("translation1", refset1, project, true, admin);
     // Begin release
@@ -382,9 +370,8 @@ public class TranslationReleaseTest extends RestSupport {
     Project project2 = projectService.getProject(2L, adminAuthToken);
     User admin = securityService.authenticate(adminUser, adminPassword);
     // Create refset (intensional) and import definition
-    RefsetJpa refset1 =
-        makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project2, UUID
-            .randomUUID().toString(), true, admin);
+    RefsetJpa refset1 = makeRefset("refset1", null, Refset.Type.EXTENSIONAL,
+        project2, UUID.randomUUID().toString(), true, admin);
     TranslationJpa translation1 =
         makeTranslation("translation1", refset1, project2, true, admin);
     // Begin release
@@ -415,9 +402,8 @@ public class TranslationReleaseTest extends RestSupport {
     Project project2 = projectService.getProject(2L, adminAuthToken);
     User admin = securityService.authenticate(adminUser, adminPassword);
     // Create refset (intensional) and import definition
-    RefsetJpa refset1 =
-        makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project2, UUID
-            .randomUUID().toString(), true, admin);
+    RefsetJpa refset1 = makeRefset("refset1", null, Refset.Type.EXTENSIONAL,
+        project2, UUID.randomUUID().toString(), true, admin);
     TranslationJpa translation1 =
         makeTranslation("translation1", refset1, project2, true, admin);
     // Begin release
@@ -451,9 +437,8 @@ public class TranslationReleaseTest extends RestSupport {
     Project project2 = projectService.getProject(2L, adminAuthToken);
     User admin = securityService.authenticate(adminUser, adminPassword);
     // Create refset (intensional) and import definition
-    RefsetJpa refset1 =
-        makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project2, UUID
-            .randomUUID().toString(), true, admin);
+    RefsetJpa refset1 = makeRefset("refset1", null, Refset.Type.EXTENSIONAL,
+        project2, UUID.randomUUID().toString(), true, admin);
     TranslationJpa translation1 =
         makeTranslation("translation1", refset1, project2, true, admin);
     // Begin release
@@ -464,16 +449,14 @@ public class TranslationReleaseTest extends RestSupport {
     releaseService.validateTranslationRelease(translation1.getId(),
         adminAuthToken);
     // Beta release
-    Translation stagedTranslation =
-        releaseService.betaTranslationRelease(translation1.getId(), "DEFAULT",
-            adminAuthToken);
+    Translation stagedTranslation = releaseService.betaTranslationRelease(
+        translation1.getId(), "DEFAULT", adminAuthToken);
     // Finish release
     releaseService.finishTranslationRelease(translation1.getId(),
         adminAuthToken);
     // clean up
-    ReleaseInfo releaseInfo =
-        releaseService.getCurrentTranslationReleaseInfo(
-            stagedTranslation.getId(), adminAuthToken);
+    ReleaseInfo releaseInfo = releaseService.getCurrentTranslationReleaseInfo(
+        stagedTranslation.getId(), adminAuthToken);
     releaseService.removeReleaseInfo(releaseInfo.getId(), adminAuthToken);
     translationService.removeTranslation(translation1.getId(), true,
         adminAuthToken);
@@ -494,9 +477,8 @@ public class TranslationReleaseTest extends RestSupport {
     Project project2 = projectService.getProject(2L, adminAuthToken);
     User admin = securityService.authenticate(adminUser, adminPassword);
     // Create refset (intensional) and import definition
-    RefsetJpa refset1 =
-        makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project2, UUID
-            .randomUUID().toString(), true, admin);
+    RefsetJpa refset1 = makeRefset("refset1", null, Refset.Type.EXTENSIONAL,
+        project2, UUID.randomUUID().toString(), true, admin);
     TranslationJpa translation1 =
         makeTranslation("translation1", refset1, project2, true, admin);
     // Begin release
@@ -507,9 +489,8 @@ public class TranslationReleaseTest extends RestSupport {
     releaseService.validateTranslationRelease(translation1.getId(),
         adminAuthToken);
     // Beta release
-    Translation stagedTranslation =
-        releaseService.betaTranslationRelease(translation1.getId(), "DEFAULT",
-            adminAuthToken);
+    Translation stagedTranslation = releaseService.betaTranslationRelease(
+        translation1.getId(), "DEFAULT", adminAuthToken);
     // Finish release
     releaseService.finishTranslationRelease(translation1.getId(),
         adminAuthToken);
@@ -538,20 +519,17 @@ public class TranslationReleaseTest extends RestSupport {
     releaseService.validateTranslationRelease(translation1.getId(),
         adminAuthToken);
     // Beta release
-    Translation stagedTranslation2 =
-        releaseService.betaTranslationRelease(translation1.getId(), "DEFAULT",
-            adminAuthToken);
+    Translation stagedTranslation2 = releaseService.betaTranslationRelease(
+        translation1.getId(), "DEFAULT", adminAuthToken);
     // Finish release
     releaseService.finishTranslationRelease(translation1.getId(),
         adminAuthToken);
     // clean up
-    ReleaseInfo releaseInfo =
-        releaseService.getCurrentTranslationReleaseInfo(
-            stagedTranslation.getId(), adminAuthToken);
+    ReleaseInfo releaseInfo = releaseService.getCurrentTranslationReleaseInfo(
+        stagedTranslation.getId(), adminAuthToken);
     releaseService.removeReleaseInfo(releaseInfo.getId(), adminAuthToken);
-    releaseInfo =
-        releaseService.getCurrentTranslationReleaseInfo(
-            stagedTranslation2.getId(), adminAuthToken);
+    releaseInfo = releaseService.getCurrentTranslationReleaseInfo(
+        stagedTranslation2.getId(), adminAuthToken);
     releaseService.removeReleaseInfo(releaseInfo.getId(), adminAuthToken);
 
     translationService.removeTranslation(stagedTranslation.getId(), true,
@@ -579,18 +557,16 @@ public class TranslationReleaseTest extends RestSupport {
     User admin = securityService.authenticate(adminUser, adminPassword);
 
     // Create refset (extensional)
-    Refset refset =
-        makeRefset("refset", null, Refset.Type.EXTENSIONAL, project, null,
-            true, admin);
+    Refset refset = makeRefset("refset", null, Refset.Type.EXTENSIONAL, project,
+        null, true, admin);
 
     // Create translation
     TranslationJpa janTranslation =
         makeTranslation("translation", refset, project, true, admin);
 
     // Compare translations (thus creating Report Token)
-    String reportToken =
-        translationService.compareTranslations(janTranslation.getId(),
-            janTranslation.getId(), adminAuthToken);
+    String reportToken = translationService.compareTranslations(
+        janTranslation.getId(), janTranslation.getId(), adminAuthToken);
 
     // Release Report Token
     translationService.releaseReportToken(reportToken, adminAuthToken);
@@ -617,9 +593,8 @@ public class TranslationReleaseTest extends RestSupport {
     User admin = securityService.authenticate(adminUser, adminPassword);
 
     // Create refset (intensional) and import definition
-    Refset refset =
-        makeRefset("refset", null, Refset.Type.EXTENSIONAL, project, UUID
-            .randomUUID().toString(), true, admin);
+    Refset refset = makeRefset("refset", null, Refset.Type.EXTENSIONAL, project,
+        UUID.randomUUID().toString(), true, admin);
 
     // Create translation
     TranslationJpa translation =
@@ -632,33 +607,29 @@ public class TranslationReleaseTest extends RestSupport {
     releaseService.validateTranslationRelease(translation.getId(),
         adminAuthToken);
     // Beta release
-    Translation stagedTranslation =
-        releaseService.betaTranslationRelease(translation.getId(), "DEFAULT",
-            adminAuthToken);
+    Translation stagedTranslation = releaseService
+        .betaTranslationRelease(translation.getId(), "DEFAULT", adminAuthToken);
 
     /*
      * While release still in process
      */
 
     // find releases per translation
-    ReleaseInfoList releases =
-        releaseService.findTranslationReleasesForQuery(translation.getId(),
-            null, null, adminAuthToken);
+    ReleaseInfoList releases = releaseService.findTranslationReleasesForQuery(
+        translation.getId(), null, null, adminAuthToken);
     assertEquals(1, releases.getCount());
 
     // find releases per terminologyId (there are two b/c of
     // beginTranslationRelease() with 2nd planned=false
-    releases =
-        releaseService.findTranslationReleasesForQuery(null,
-            "translationTerminologyId:" + translation.getTerminologyId(), null,
-            adminAuthToken);
+    releases = releaseService.findTranslationReleasesForQuery(null,
+        "translationTerminologyId:" + translation.getTerminologyId(), null,
+        adminAuthToken);
     assertEquals(2, releases.getCount());
 
     // find releases per projectId. Will have 2 or more depending on how many
     // have been created in DB
-    releases =
-        releaseService.findTranslationReleasesForQuery(null, "projectId:"
-            + project.getId(), null, adminAuthToken);
+    releases = releaseService.findTranslationReleasesForQuery(null,
+        "projectId:" + project.getId(), null, adminAuthToken);
     assertTrue(releases.getCount() >= 2);
 
     // find releases per translationId & projectId
@@ -677,45 +648,46 @@ public class TranslationReleaseTest extends RestSupport {
     // find releases per projectId & terminologyId. Reason is same as reason
     // during terminologyId only test
     releases =
-        releaseService.findTranslationReleasesForQuery(null,
-            "translationTerminologyId:" + translation.getTerminologyId()
-                + " AND projectId:" + project.getId(), null, adminAuthToken);
+        releaseService
+            .findTranslationReleasesForQuery(null,
+                "translationTerminologyId:" + translation.getTerminologyId()
+                    + " AND projectId:" + project.getId(),
+                null, adminAuthToken);
     assertEquals(2, releases.getCount());
 
     // find releases per translationId & projectId & terminologyId
     releases =
-        releaseService.findTranslationReleasesForQuery(translation.getId(),
-            "translationTerminologyId:" + translation.getTerminologyId()
-                + " AND projectId:" + project.getId(), null, adminAuthToken);
+        releaseService
+            .findTranslationReleasesForQuery(translation.getId(),
+                "translationTerminologyId:" + translation.getTerminologyId()
+                    + " AND projectId:" + project.getId(),
+                null, adminAuthToken);
     assertEquals(1, releases.getCount());
 
     // Now finish the release
-    releaseService
-        .finishTranslationRelease(translation.getId(), adminAuthToken);
+    releaseService.finishTranslationRelease(translation.getId(),
+        adminAuthToken);
 
     /*
      * Following completed of release
      */
 
     // find releases per translation
-    releases =
-        releaseService.findTranslationReleasesForQuery(translation.getId(),
-            null, null, adminAuthToken);
+    releases = releaseService.findTranslationReleasesForQuery(
+        translation.getId(), null, null, adminAuthToken);
     assertEquals(0, releases.getCount());
 
     // find releases per terminologyId (there are two b/c of
     // beginTranslationRelease() with 2nd planned=false
-    releases =
-        releaseService.findTranslationReleasesForQuery(null,
-            "translationTerminologyId:" + translation.getTerminologyId(), null,
-            adminAuthToken);
+    releases = releaseService.findTranslationReleasesForQuery(null,
+        "translationTerminologyId:" + translation.getTerminologyId(), null,
+        adminAuthToken);
     assertEquals(1, releases.getCount());
 
     // find releases per projectId. Will have 2 or more depending on how many
     // have been created in DB
-    releases =
-        releaseService.findTranslationReleasesForQuery(null, "projectId:"
-            + project.getId(), null, adminAuthToken);
+    releases = releaseService.findTranslationReleasesForQuery(null,
+        "projectId:" + project.getId(), null, adminAuthToken);
     assertTrue(releases.getCount() >= 1);
 
     // find releases per translationId & projectId
@@ -734,22 +706,25 @@ public class TranslationReleaseTest extends RestSupport {
     // find releases per projectId & terminologyId. Reason is same as reason
     // during terminologyId only test
     releases =
-        releaseService.findTranslationReleasesForQuery(null,
-            "translationTerminologyId:" + translation.getTerminologyId()
-                + " AND projectId:" + project.getId(), null, adminAuthToken);
+        releaseService
+            .findTranslationReleasesForQuery(null,
+                "translationTerminologyId:" + translation.getTerminologyId()
+                    + " AND projectId:" + project.getId(),
+                null, adminAuthToken);
     assertEquals(1, releases.getCount());
 
     // find releases per translationId & projectId & terminologyId
     releases =
-        releaseService.findTranslationReleasesForQuery(translation.getId(),
-            "translationTerminologyId:" + translation.getTerminologyId()
-                + " AND projectId:" + project.getId(), null, adminAuthToken);
+        releaseService
+            .findTranslationReleasesForQuery(translation.getId(),
+                "translationTerminologyId:" + translation.getTerminologyId()
+                    + " AND projectId:" + project.getId(),
+                null, adminAuthToken);
     assertEquals(0, releases.getCount());
 
     // clean up
-    ReleaseInfo releaseInfo =
-        releaseService.getCurrentTranslationReleaseInfo(
-            stagedTranslation.getId(), adminAuthToken);
+    ReleaseInfo releaseInfo = releaseService.getCurrentTranslationReleaseInfo(
+        stagedTranslation.getId(), adminAuthToken);
 
     translationService.removeTranslation(translation.getId(), true,
         adminAuthToken);
@@ -768,9 +743,8 @@ public class TranslationReleaseTest extends RestSupport {
   public void testNonexistentTranslationReleaseAccess() throws Exception {
     Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
 
-    ReleaseInfo info =
-        releaseService.getCurrentTranslationReleaseInfo(123456789123456789L,
-            adminAuthToken);
+    ReleaseInfo info = releaseService
+        .getCurrentTranslationReleaseInfo(123456789123456789L, adminAuthToken);
     assertNull(info);
   }
 
@@ -790,6 +764,7 @@ public class TranslationReleaseTest extends RestSupport {
     member.setConceptActive(true);
     member.setConceptId(id);
     member.setConceptName(name);
+    member.setSynonyms(Arrays.asList(name));
     member.setEffectiveTime(new Date());
     member.setMemberType(Refset.MemberType.MEMBER);
     member.setModuleId(refset.getModuleId());
@@ -809,9 +784,8 @@ public class TranslationReleaseTest extends RestSupport {
     Project project = projectService.getProject(3L, adminAuthToken);
     User admin = securityService.authenticate(adminUser, adminPassword);
     // Create refset
-    Refset refset1 =
-        makeRefset("refset", null, Refset.Type.EXTENSIONAL, project, UUID
-            .randomUUID().toString(), false, admin);
+    Refset refset1 = makeRefset("refset", null, Refset.Type.EXTENSIONAL,
+        project, UUID.randomUUID().toString(), false, admin);
     // Create translation
     TranslationJpa translation1 =
         makeTranslation("translation", refset1, project, false, admin);
@@ -823,9 +797,8 @@ public class TranslationReleaseTest extends RestSupport {
     ConceptJpa concept1 =
         makeConcept("10000001", "term a", "sensitive", "acceptable");
     concept1.setTranslation(translation1);
-    concept1 =
-        (ConceptJpa) translationService.addTranslationConcept(concept1,
-            adminAuthToken);
+    concept1 = (ConceptJpa) translationService.addTranslationConcept(concept1,
+        adminAuthToken);
 
     // Begin release
     releaseService.beginTranslationRelease(translation1.getId(), "20160101",
@@ -834,9 +807,8 @@ public class TranslationReleaseTest extends RestSupport {
     releaseService.validateTranslationRelease(translation1.getId(),
         adminAuthToken);
     // Beta release
-    Translation release1 =
-        releaseService.betaTranslationRelease(translation1.getId(), "DEFAULT",
-            adminAuthToken);
+    Translation release1 = releaseService.betaTranslationRelease(
+        translation1.getId(), "DEFAULT", adminAuthToken);
     // Finish release
     releaseService.finishTranslationRelease(translation1.getId(),
         adminAuthToken);
@@ -849,9 +821,8 @@ public class TranslationReleaseTest extends RestSupport {
 
     Map<String, Boolean> activeLangMap = new HashMap<>();
     Map<String, String> etLangMap = new HashMap<>();
-    String langId1 =
-        concept1.getDescriptions().get(0).getLanguageRefsetMembers().get(0)
-            .getTerminologyId();
+    String langId1 = concept1.getDescriptions().get(0)
+        .getLanguageRefsetMembers().get(0).getTerminologyId();
     activeLangMap.put(langId1, true);
     etLangMap.put(langId1, "20160101");
     verifyData(activeDescMap, etDescMap, activeLangMap, etLangMap,
@@ -859,9 +830,8 @@ public class TranslationReleaseTest extends RestSupport {
 
     // Add a description to concept1
     addDescription(concept1, "term b", "insensitive", "preferred");
-    concept1 =
-        (ConceptJpa) translationService.updateTranslationConcept(concept1,
-            adminAuthToken);
+    concept1 = (ConceptJpa) translationService
+        .updateTranslationConcept(concept1, adminAuthToken);
 
     // Begin release
     releaseService.beginTranslationRelease(translation1.getId(), "20160102",
@@ -870,9 +840,8 @@ public class TranslationReleaseTest extends RestSupport {
     releaseService.validateTranslationRelease(translation1.getId(),
         adminAuthToken);
     // Beta release
-    Translation release2 =
-        releaseService.betaTranslationRelease(translation1.getId(), "DEFAULT",
-            adminAuthToken);
+    Translation release2 = releaseService.betaTranslationRelease(
+        translation1.getId(), "DEFAULT", adminAuthToken);
     // Finish release
     releaseService.finishTranslationRelease(translation1.getId(),
         adminAuthToken);
@@ -889,9 +858,8 @@ public class TranslationReleaseTest extends RestSupport {
 
     activeLangMap = new HashMap<>();
     etLangMap = new HashMap<>();
-    String langId2 =
-        concept1.getDescriptions().get(1).getLanguageRefsetMembers().get(0)
-            .getTerminologyId();
+    String langId2 = concept1.getDescriptions().get(1)
+        .getLanguageRefsetMembers().get(0).getTerminologyId();
     activeLangMap.put(langId1, true);
     activeLangMap.put(langId2, true);
     etLangMap.put(langId1, "20160101");
@@ -917,13 +885,11 @@ public class TranslationReleaseTest extends RestSupport {
 
     // Add/remove from concept 1
     addDescription(concept1, "term c", "insensitive", "preferred");
-    concept1 =
-        (ConceptJpa) translationService.updateTranslationConcept(concept1,
-            adminAuthToken);
+    concept1 = (ConceptJpa) translationService
+        .updateTranslationConcept(concept1, adminAuthToken);
     concept1.getDescriptions().remove(0);
-    concept1 =
-        (ConceptJpa) translationService.updateTranslationConcept(concept1,
-            adminAuthToken);
+    concept1 = (ConceptJpa) translationService
+        .updateTranslationConcept(concept1, adminAuthToken);
 
     // Begin release
     releaseService.beginTranslationRelease(translation1.getId(), "20160103",
@@ -932,9 +898,8 @@ public class TranslationReleaseTest extends RestSupport {
     releaseService.validateTranslationRelease(translation1.getId(),
         adminAuthToken);
     // Beta release
-    Translation release3 =
-        releaseService.betaTranslationRelease(translation1.getId(), "DEFAULT",
-            adminAuthToken);
+    Translation release3 = releaseService.betaTranslationRelease(
+        translation1.getId(), "DEFAULT", adminAuthToken);
     // Finish release
     releaseService.finishTranslationRelease(translation1.getId(),
         adminAuthToken);
@@ -955,9 +920,8 @@ public class TranslationReleaseTest extends RestSupport {
     activeLangMap = new HashMap<>();
     etLangMap = new HashMap<>();
     // desc 0 has been removed, so 3rd one is now in 2nd position (index 1)
-    String langId3 =
-        concept1.getDescriptions().get(1).getLanguageRefsetMembers().get(0)
-            .getTerminologyId();
+    String langId3 = concept1.getDescriptions().get(1)
+        .getLanguageRefsetMembers().get(0).getTerminologyId();
     activeLangMap.put(langId1, false);
     activeLangMap.put(langId2, true);
     activeLangMap.put(langId3, true);
@@ -991,9 +955,8 @@ public class TranslationReleaseTest extends RestSupport {
     concept1.getDescriptions().get(0).getLanguageRefsetMembers().get(0)
         .setAcceptabilityId("changed");
 
-    concept1 =
-        (ConceptJpa) translationService.updateTranslationConcept(concept1,
-            adminAuthToken);
+    concept1 = (ConceptJpa) translationService
+        .updateTranslationConcept(concept1, adminAuthToken);
 
     // Begin release
     releaseService.beginTranslationRelease(translation1.getId(), "20160104",
@@ -1002,9 +965,8 @@ public class TranslationReleaseTest extends RestSupport {
     releaseService.validateTranslationRelease(translation1.getId(),
         adminAuthToken);
     // Beta release
-    Translation release4 =
-        releaseService.betaTranslationRelease(translation1.getId(), "DEFAULT",
-            adminAuthToken);
+    Translation release4 = releaseService.betaTranslationRelease(
+        translation1.getId(), "DEFAULT", adminAuthToken);
     // Finish release
     releaseService.finishTranslationRelease(translation1.getId(),
         adminAuthToken);
@@ -1052,9 +1014,8 @@ public class TranslationReleaseTest extends RestSupport {
     // Change case sensitivity of desc2
     // Assume description 0 is the one we want to change
     concept1.getDescriptions().get(0).setCaseSignificanceId("insensitive");
-    concept1 =
-        (ConceptJpa) translationService.updateTranslationConcept(concept1,
-            adminAuthToken);
+    concept1 = (ConceptJpa) translationService
+        .updateTranslationConcept(concept1, adminAuthToken);
 
     // Begin release
     releaseService.beginTranslationRelease(translation1.getId(), "20160105",
@@ -1063,9 +1024,8 @@ public class TranslationReleaseTest extends RestSupport {
     releaseService.validateTranslationRelease(translation1.getId(),
         adminAuthToken);
     // Beta release
-    Translation release5 =
-        releaseService.betaTranslationRelease(translation1.getId(), "DEFAULT",
-            adminAuthToken);
+    Translation release5 = releaseService.betaTranslationRelease(
+        translation1.getId(), "DEFAULT", adminAuthToken);
     // Finish release
     releaseService.finishTranslationRelease(translation1.getId(),
         adminAuthToken);
@@ -1107,9 +1067,8 @@ public class TranslationReleaseTest extends RestSupport {
 
     // Change STR of desc2
     concept1.getDescriptions().get(0).setTerm("term b prime");
-    concept1 =
-        (ConceptJpa) translationService.updateTranslationConcept(concept1,
-            adminAuthToken);
+    concept1 = (ConceptJpa) translationService
+        .updateTranslationConcept(concept1, adminAuthToken);
 
     // Begin release
     releaseService.beginTranslationRelease(translation1.getId(), "20160106",
@@ -1118,9 +1077,8 @@ public class TranslationReleaseTest extends RestSupport {
     releaseService.validateTranslationRelease(translation1.getId(),
         adminAuthToken);
     // Beta release
-    Translation release6 =
-        releaseService.betaTranslationRelease(translation1.getId(), "DEFAULT",
-            adminAuthToken);
+    Translation release6 = releaseService.betaTranslationRelease(
+        translation1.getId(), "DEFAULT", adminAuthToken);
     // Finish release
     releaseService.finishTranslationRelease(translation1.getId(),
         adminAuthToken);
@@ -1140,9 +1098,8 @@ public class TranslationReleaseTest extends RestSupport {
 
     activeLangMap = new HashMap<>();
     etLangMap = new HashMap<>();
-    String langId4 =
-        concept1.getDescriptions().get(0).getLanguageRefsetMembers().get(0)
-            .getTerminologyId();
+    String langId4 = concept1.getDescriptions().get(0)
+        .getLanguageRefsetMembers().get(0).getTerminologyId();
     activeLangMap.put(langId1, false);
     activeLangMap.put(langId2, false);
     activeLangMap.put(langId3, true);
@@ -1171,18 +1128,18 @@ public class TranslationReleaseTest extends RestSupport {
     // clean up
     translationService.removeTranslation(translation1.getId(), true,
         adminAuthToken);
-    translationService
-        .removeTranslation(release1.getId(), true, adminAuthToken);
-    translationService
-        .removeTranslation(release2.getId(), true, adminAuthToken);
-    translationService
-        .removeTranslation(release3.getId(), true, adminAuthToken);
-    translationService
-        .removeTranslation(release4.getId(), true, adminAuthToken);
-    translationService
-        .removeTranslation(release5.getId(), true, adminAuthToken);
-    translationService
-        .removeTranslation(release6.getId(), true, adminAuthToken);
+    translationService.removeTranslation(release1.getId(), true,
+        adminAuthToken);
+    translationService.removeTranslation(release2.getId(), true,
+        adminAuthToken);
+    translationService.removeTranslation(release3.getId(), true,
+        adminAuthToken);
+    translationService.removeTranslation(release4.getId(), true,
+        adminAuthToken);
+    translationService.removeTranslation(release5.getId(), true,
+        adminAuthToken);
+    translationService.removeTranslation(release6.getId(), true,
+        adminAuthToken);
 
   }
 
@@ -1304,9 +1261,8 @@ public class TranslationReleaseTest extends RestSupport {
     Map<String, String> etLangMap, Long translationId, String type)
     throws Exception {
 
-    ReleaseInfo info =
-        releaseService.getCurrentTranslationReleaseInfo(translationId,
-            adminAuthToken);
+    ReleaseInfo info = releaseService
+        .getCurrentTranslationReleaseInfo(translationId, adminAuthToken);
 
     for (final ReleaseArtifact artifact : info.getArtifacts()) {
 
@@ -1340,14 +1296,13 @@ public class TranslationReleaseTest extends RestSupport {
         if (activeMapCopy.size() > 1) {
           // bad lines contains things that didn't match expectations
           // activeMapCopy contains things that were expected but didn't exist
-          throw new Exception("Mismatched contents: " + activeDescMap + ", "
-              + badLines);
+          throw new Exception(
+              "Mismatched contents: " + activeDescMap + ", " + badLines);
         }
 
         // Handle Languages
-        lines =
-            getLines(releaseService.exportReleaseArtifact(artifact.getId(),
-                adminAuthToken), "Language");
+        lines = getLines(releaseService.exportReleaseArtifact(artifact.getId(),
+            adminAuthToken), "Language");
         badLines = new HashSet<>();
         activeMapCopy = new HashMap<>(activeLangMap);
         etMapCopy = new HashMap<>(etLangMap);
@@ -1372,8 +1327,8 @@ public class TranslationReleaseTest extends RestSupport {
         if (activeMapCopy.size() > 1) {
           // bad lines contains things that didn't match expectations
           // activeMapCopy contains things that were expected but didn't exist
-          throw new Exception("Mismatched contents: " + activeLangMap + ", "
-              + badLines);
+          throw new Exception(
+              "Mismatched contents: " + activeLangMap + ", " + badLines);
         }
 
       }

@@ -1,5 +1,5 @@
-/**
- * Copyright 2015 West Coast Informatics, LLC
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.jpa.services;
 
@@ -328,7 +328,26 @@ public class ProjectServiceJpa extends RootServiceJpa
     handler.setHeaders(headers);
     return handler;
   }
+  
+  /* see superclass */
+  @Override
+  public TerminologyHandler getTerminologyHandler(String terminologyHandlerKey,
+    String terminologyHandlerUrl, Map<String, String> headers)
+    throws Exception {
 
+    if (!terminologyHandlers.containsKey(terminologyHandlerKey)) {
+      throw new LocalException(
+          "No terminology handler exists for the specified key: "
+              + terminologyHandlerKey);
+    }
+    final TerminologyHandler handler =
+        terminologyHandlers.get(terminologyHandlerKey).copy();
+    handler.setUrl(terminologyHandlerUrl);
+    handler.setHeaders(headers);
+    return handler;
+  }
+
+  /* see superclass */
   @Override
   public KeyValuePairList getTerminologyHandlers() throws Exception {
     final KeyValuePairList list = new KeyValuePairList();

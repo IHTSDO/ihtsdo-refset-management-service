@@ -1,5 +1,5 @@
-/**
- * Copyright 2015 West Coast Informatics, LLC
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.rest.client;
 
@@ -401,9 +401,10 @@ public class ProjectClientRest extends RootClientRest
 
   /* see superclass */
   @Override
-  public TerminologyList getAllTerminologyEditions(
-    String authToken) throws Exception {
-    Logger.getLogger(getClass()).debug("Project Client - get all terminologies");
+  public TerminologyList getAllTerminologyEditions(String authToken)
+    throws Exception {
+    Logger.getLogger(getClass())
+        .debug("Project Client - get all terminologies");
 
     Client client = ClientBuilder.newClient();
     WebTarget target = client
@@ -423,6 +424,7 @@ public class ProjectClientRest extends RootClientRest
         TerminologyListJpa.class);
 
   }
+
   /* see superclass */
   @Override
   public TerminologyList getTerminologyVersions(ProjectJpa project,
@@ -792,6 +794,57 @@ public class ProjectClientRest extends RootClientRest
     return true;
   }
 
+  /* see superclass */
+  @Override
+  public StringList getBranches(Long projectId, String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).debug("Refset Client - getBranches ");
+    validateNotEmpty(projectId, "projectId");
+
+    Client client = ClientBuilder.newClient();
+    WebTarget target = client.target(config.getProperty("base.url") + "/"
+        + projectId + "/translationExtentions");
+
+    Response response = target.request(MediaType.APPLICATION_XML)
+        .header("Authorization", authToken).get();
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() != Family.SUCCESSFUL) {
+      throw new Exception(response.toString());
+    }
+
+    // converting to object
+    return (StringList) ConfigUtility.getGraphForString(resultString,
+        StringList.class);
+  }
+
+  /* see superclass */
+  @Override
+  public StringList getBranches(String terminologyHandlerKey,
+    String terminologyHandlerUrl, String authToken) throws Exception {
+    Logger.getLogger(getClass()).debug("Refset Client - getBranches ");
+    validateNotEmpty(terminologyHandlerKey, "terminologyHandlerKey");
+
+    Client client = ClientBuilder.newClient();
+    WebTarget target = client.target(config.getProperty("base.url")
+        + "/translationExtentions&terminologyHandlerKey="
+        + terminologyHandlerKey + "&terminologyHandlerUrl="
+        + terminologyHandlerUrl);
+
+    Response response = target.request(MediaType.APPLICATION_XML)
+        .header("Authorization", authToken).get();
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() != Family.SUCCESSFUL) {
+      throw new Exception(response.toString());
+    }
+
+    // converting to object
+    return (StringList) ConfigUtility.getGraphForString(resultString,
+        StringList.class);
+  }
+  
+
   @Override
   public String translate(Long projectId, String text, String language,
     String authToken) throws Exception {
@@ -800,8 +853,8 @@ public class ProjectClientRest extends RootClientRest
     validateNotEmpty(text, "text");
 
     Client client = ClientBuilder.newClient();
-    WebTarget target = client
-        .target(config.getProperty("base.url") + "/project/translate?" + "projectId="
+    WebTarget target = client.target(
+        config.getProperty("base.url") + "/project/translate?" + "projectId="
             + projectId + "&text=" + text + "&language=" + language);
     Response response = target.request(MediaType.APPLICATION_XML)
         .header("Authorization", authToken).get();

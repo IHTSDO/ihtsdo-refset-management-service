@@ -1,14 +1,16 @@
 /**
- * Copyright 2015 West Coast Informatics, LLC
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.services.handlers;
 
 import java.io.InputStream;
 import java.util.List;
+import java.util.Map;
 
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.Configurable;
+import org.ihtsdo.otf.refset.helpers.IoHandlerInfo;
 import org.ihtsdo.otf.refset.rf2.Concept;
 
 /**
@@ -22,7 +24,7 @@ import org.ihtsdo.otf.refset.rf2.Concept;
  *  - import content from an input stream.
  * </pre>
  */
-public interface ImportTranslationHandler extends Configurable {
+public interface ImportTranslationHandler extends IoHandlerInfo, Configurable {
 
   /**
    * Indicates whether or not this is a delta handler. If so, the import process
@@ -32,20 +34,6 @@ public interface ImportTranslationHandler extends Configurable {
    * @return <code>true</code> if so, <code>false</code> otherwise
    */
   public boolean isDeltaHandler();
-
-  /**
-   * Returns the file type filter.
-   *
-   * @return the file type filter
-   */
-  public String getFileTypeFilter();
-
-  /**
-   * Returns the mime type.
-   *
-   * @return the mime type
-   */
-  public String getMimeType();
 
   /**
    * Import descriptions and language refset members connected to them.
@@ -65,4 +53,16 @@ public interface ImportTranslationHandler extends Configurable {
    * @throws Exception the exception
    */
   public ValidationResult getValidationResults() throws Exception;
+
+  /**
+   * Import concepts.
+   *
+   * @param translation the translation
+   * @param headers the headers
+   * @return the list
+   * @throws Exception the exception
+   */
+  public List<Concept> importConcepts(Translation translation,
+    Map<String, String> headers) throws Exception;
+
 }

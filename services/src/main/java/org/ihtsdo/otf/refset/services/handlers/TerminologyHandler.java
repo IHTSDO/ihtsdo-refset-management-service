@@ -1,5 +1,5 @@
-/**
- * Copyright 2015 West Coast Informatics, LLC
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.services.handlers;
 
@@ -71,11 +71,12 @@ public interface TerminologyHandler extends Configurable {
    * @param terminolgy the terminolgy
    * @param version the version
    * @param pfs the pfs
+   * @param descriptions the descriptions
    * @return the concept list
    * @throws Exception the exception
    */
   public ConceptList resolveExpression(String expr, String terminolgy,
-    String version, PfsParameter pfs) throws Exception;
+    String version, PfsParameter pfs, boolean descriptions) throws Exception;
 
   /**
    * Returns the concept with descriptions and relationships. Inactive
@@ -104,16 +105,17 @@ public interface TerminologyHandler extends Configurable {
     String version) throws Exception;
 
   /**
-   * Returns the concepts.
+   * Gets the concepts.
    *
    * @param terminologyIds the terminology ids
    * @param terminology the terminology
    * @param version the version
+   * @param descriptions the descriptions
    * @return the concepts
    * @throws Exception the exception
    */
   public ConceptList getConcepts(List<String> terminologyIds,
-    String terminology, String version) throws Exception;
+    String terminology, String version, boolean descriptions) throws Exception;
 
   /**
    * Find concepts for query.
@@ -264,4 +266,23 @@ public interface TerminologyHandler extends Configurable {
    * @throws Exception the exception
    */
   public String translate(String text, String langauge) throws Exception;
+
+  /**
+   * Gets the required language refsets.
+   *
+   * @param terminology the terminology
+   * @param version the version
+   * @return the required language refsets
+   * @throws Exception the exception
+   */
+  public List<String> getRequiredLanguageRefsets(String terminology,
+    String version) throws Exception;
+
+  /**
+   * Returns the translation extensions.
+   *
+   * @return the translation extensions
+   * @throws Exception the exception
+   */
+  public List<String> getTranslationExtensions() throws Exception;
 }

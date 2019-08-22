@@ -1,5 +1,5 @@
-/**
- * Copyright 2015 West Coast Informatics, LLC
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.services;
 
@@ -124,6 +124,20 @@ public interface ProjectService extends RootService {
    */
   public TerminologyHandler getTerminologyHandler(Project project,
     Map<String, String> headers) throws Exception;
+  
+  
+  /**
+   * Returns the terminology handler.
+   *
+   * @param terminologyHandlerKey the terminology handler key
+   * @param terminologyHandlerUrl the terminology handler url
+   * @param headers the headers
+   * @return the terminology handler
+   * @throws Exception the exception
+   */
+  public TerminologyHandler getTerminologyHandler(String terminologyHandlerKey,
+    String terminologyHandlerUrl, Map<String, String> headers)
+    throws Exception;
 
   /**
    * Returns the terminology handlers.

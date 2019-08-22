@@ -1,8 +1,5 @@
-/*
- * Copyright 2015 West Coast Informatics, LLC
- */
-/*
- * 
+/**
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.test.rest;
 
@@ -10,6 +7,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
@@ -126,7 +124,8 @@ public class RefsetTestSupport extends RestSupport {
       throw new Exception("Test prerequisite: admin.user must be specified");
     }
     if (adminPassword == null || adminPassword.isEmpty()) {
-      throw new Exception("Test prerequisite: admin.password must be specified");
+      throw new Exception(
+          "Test prerequisite: admin.password must be specified");
     }
 
   }
@@ -214,9 +213,8 @@ public class RefsetTestSupport extends RestSupport {
     }
 
     // Validate refset
-    ValidationResult result =
-        validationService.validateRefset(refset, project.getId(),
-            adminAuthToken);
+    ValidationResult result = validationService.validateRefset(refset,
+        project.getId(), adminAuthToken);
     if (!result.isValid()) {
       Logger.getLogger(getClass()).error(result.toString());
       throw new Exception("Refset does not pass validation.");
@@ -233,9 +231,8 @@ public class RefsetTestSupport extends RestSupport {
 
       if (type == Refset.Type.EXTENSIONAL) {
         // EXTENSIONAL Import members (from file)
-        ValidationResult vr =
-            refsetService.beginImportMembers(refset.getId(), "DEFAULT",
-                adminAuthToken);
+        ValidationResult vr = refsetService.beginImportMembers(refset.getId(),
+            "DEFAULT", adminAuthToken);
         if (!vr.isValid()) {
           throw new Exception("import staging is invalid - " + vr);
         }
@@ -244,18 +241,14 @@ public class RefsetTestSupport extends RestSupport {
         refset =
             (RefsetJpa) refsetService.getRefset(refset.getId(), adminAuthToken);
 
-        InputStream in =
-            new FileInputStream(
-                new File(
+        InputStream in = new FileInputStream(new File(
                     "../config/src/main/resources/data/refset/der2_Refset_SimpleSnapshot_INT_20140731.txt"));
         refsetService.finishImportMembers(null, in, refset.getId(), "DEFAULT",
             adminAuthToken);
         in.close();
       } else if (type == Refset.Type.INTENSIONAL) {
         // Import definition (from file)
-        InputStream in =
-            new FileInputStream(
-                new File(
+        InputStream in = new FileInputStream(new File(
                     "../config/src/main/resources/data/refset/der2_Refset_DefinitionSnapshot_INT_20140731.txt"));
         refsetService.importDefinition(null, in, refset.getId(), "DEFAULT",
             adminAuthToken);
@@ -282,6 +275,7 @@ public class RefsetTestSupport extends RestSupport {
     member.setConceptActive(true);
     member.setConceptId(id);
     member.setConceptName(name);
+    member.setSynonyms(Arrays.asList(name));
     member.setEffectiveTime(new Date());
     member.setMemberType(Refset.MemberType.MEMBER);
     member.setModuleId(refset.getModuleId());
@@ -304,8 +298,8 @@ public class RefsetTestSupport extends RestSupport {
     ++translationCt;
     TranslationJpa translation = new TranslationJpa();
     translation.setName(name);
-    translation.setDescription("Description of translation "
-        + translation.getName());
+    translation
+        .setDescription("Description of translation " + translation.getName());
     translation.setActive(true);
     translation.setEffectiveTime(new Date());
     translation.setLastModified(new Date());
@@ -321,44 +315,38 @@ public class RefsetTestSupport extends RestSupport {
     translation.setVersion(refset.getVersion());
 
     // Validate translation
-    ValidationResult result =
-        validationService.validateTranslation(translation, project.getId(),
-            auth.getAuthToken());
+    ValidationResult result = validationService.validateTranslation(translation,
+        project.getId(), auth.getAuthToken());
     if (!result.isValid()) {
       Logger.getLogger(getClass()).error(result.toString());
       throw new Exception("translation does not pass validation.");
     }
     // Add translation
-    translation =
-        (TranslationJpa) translationService.addTranslation(translation,
-            auth.getAuthToken());
+    translation = (TranslationJpa) translationService
+        .addTranslation(translation, auth.getAuthToken());
 
     // Import members (from file) - switch file based on counter
     if (translationCt % 2 == 0) {
-      ValidationResult vr =
-          translationService.beginImportConcepts(translation.getId(),
-              "DEFAULT", auth.getAuthToken());
+      ValidationResult vr = translationService.beginImportConcepts(
+          translation.getId(), "DEFAULT", auth.getAuthToken());
       if (!vr.isValid()) {
         throw new Exception("translation staging is not valid - " + vr);
       }
-      InputStream in =
-          new FileInputStream(new File(
+      InputStream in = new FileInputStream(new File(
               "../config/src/main/resources/data/translation2/translation.zip"));
       translationService.finishImportConcepts(null, in, translation.getId(),
-          "DEFAULT", auth.getAuthToken());
+          "DEFAULT", null, auth.getAuthToken());
       in.close();
     } else {
-      ValidationResult vr =
-          translationService.beginImportConcepts(translation.getId(),
-              "DEFAULT", auth.getAuthToken());
+      ValidationResult vr = translationService.beginImportConcepts(
+          translation.getId(), "DEFAULT", auth.getAuthToken());
       if (!vr.isValid()) {
         throw new Exception("translation staging is not valid - " + vr);
       }
-      InputStream in =
-          new FileInputStream(new File(
+      InputStream in = new FileInputStream(new File(
               "../config/src/main/resources/data/translation2/translation.zip"));
       translationService.finishImportConcepts(null, in, translation.getId(),
-          "DEFAULT", auth.getAuthToken());
+          "DEFAULT", null, auth.getAuthToken());
       in.close();
     }
 
