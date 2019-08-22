@@ -651,7 +651,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
       authorizeApp(securityService, authToken, "get terminology editions",
           UserRole.VIEWER);
       if (project == null) {
-        throw new LocalException("Get modules requires a project");
+        throw new LocalException("Get editions requires a project");
       }
 
       final List<Terminology> editions =
@@ -662,7 +662,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
       list.setTotalCount(list.getCount());
       return list;
     } catch (Exception e) {
-      handleException(e, "trying to get all terminologies");
+      handleException(e, "trying to get all editions");
     } finally {
       projectService.close();
       securityService.close();
@@ -732,6 +732,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
       final TerminologyList list = new TerminologyListJpa();
       list.setObjects(versions);
       list.setTotalCount(list.getCount());
+
       return list;
 
     } catch (Exception e) {
@@ -1280,7 +1281,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass())
-        .info("RESTful GET call (Refset): /concept/alternates " + terminology
+        .info("RESTful GET call (Project): /concept/alternates " + terminology
             + ", " + version + ", " + conceptId);
 
     // Create service and configure transaction scope
@@ -1322,7 +1323,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass())
-        .info("RESTful GET call (Refset): /test " + url);
+        .info("RESTful GET call (Project): /test " + url);
 
     // Create service and configure transaction scope
     final ProjectService projectService =

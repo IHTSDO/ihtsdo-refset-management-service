@@ -3176,7 +3176,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
   @ApiOperation(value = "Start lookup of concept names", notes = "Starts a process for looking up concept names and concept active status")
   public void startLookupConceptNames(
     @ApiParam(value = "Translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
-    @ApiParam(value = "Background flag, e.g. true", required = true) @QueryParam("background") Boolean background,
+    @ApiParam(value = "Background flag, e.g. true", required = false) @QueryParam("background") Boolean background,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass())
@@ -3204,6 +3204,45 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
       securityService.close();
     }
   }
+  
+  /* see superclass */
+  @GET
+  @Override
+  @Path("/lookup/name")
+  @ApiOperation(value = "Update concept name", notes = "Updates a concept name based on term server lookup")
+  public Concept updateConceptName(
+    @ApiParam(value = "Translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
+    @ApiParam(value = "Terminology id, e.g. 775431004", required = true) @QueryParam("conceptId") String conceptId,
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass())
+        .info("RESTful call GET (Translation): /lookup/name " + translationId + ", " + conceptId);
+
+    final TranslationService translationService =
+        new TranslationServiceJpa(getHeaders(headers));
+    try {
+      final Translation translation =
+          translationService.getTranslation(translationId);
+      // Authorize the call
+      final String userName = authorizeProject(translationService,
+          translation.getProject().getId(), securityService, authToken,
+          "lookup of concept name", UserRole.AUTHOR);
+
+      // Lookup with terminology server and update concept name
+      Concept concept = translationService.updateConceptName(translation,
+          conceptId);
+      
+      return concept;
+    } catch (Exception e) {
+      handleException(e,
+          "trying to do lookup of concept name");
+    } finally {
+      translationService.close();
+      securityService.close();
+    }
+	return null;
+  }
+
 
   /* see superclass */
   @GET
