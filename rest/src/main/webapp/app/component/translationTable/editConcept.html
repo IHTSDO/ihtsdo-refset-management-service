@@ -132,13 +132,14 @@
         </span>
       </h5>
       <div class="col-md-12 col-xs-12" ng-show="displaySuggest">
-        <span ng-if="!autoResult && translationSuggestions.keyValuePairs == null">
+        <span ng-if="!autoResult && translationSuggestions.translationSuggestions == null">
           <small>No auto translation available</small>
         </span>
-        <table ng-show="autoResult || translationSuggestions.keyValuePairs != null" class="table">
+        <table ng-show="autoResult || translationSuggestions.translationSuggestions != null" class="table">
           <tbody>
             <tr ng-show="autoResult">
               <td><span>{{autoResult}}</span></td>
+              <td>{{translation.language.substring(0,2)}}</td>
               <td><small>(Google Translate)</small></td>
               <td>
                 <button class="btn btn-xs btn-primary"
@@ -146,10 +147,11 @@
                   ng-click="addAutoDescription(autoResult);" title="Add description">Add</button>
               </td>
             </tr>
-            <tr ng-show="translationSuggestions.keyValuePairs.length > 0"
-              ng-repeat="kvp in translationSuggestions.keyValuePairs">
-              <td>{{kvp.value}}</td>
-              <td><small>({{kvp.key}})</small></td>
+            <tr ng-show="translationSuggestions.translationSuggestions.length > 0"
+              ng-repeat="ts in translationSuggestions.translationSuggestions">
+              <td>{{ts.suggestion}}</td>
+              <td>{{ts.languageCode}}</td>
+              <td><small>({{ts.source}})</small></td>
               <td>
                 <button class="btn btn-xs btn-primary"
                   ng-click="addAutoDescription(kvp.value);" title="Add description">Add</button>
