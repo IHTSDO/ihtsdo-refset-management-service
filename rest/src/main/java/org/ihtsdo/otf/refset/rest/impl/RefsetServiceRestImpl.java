@@ -6,6 +6,7 @@ package org.ihtsdo.otf.refset.rest.impl;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -412,6 +413,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
           member.setRefset(refset);
           member.setActive(true);
           member.setConceptActive(true);
+          refsetService.populateMemberSynonyms(member, concept, refset);
           member.setLastModifiedBy(userName);
           list.addObject(refsetService.addMember(member));
         }
@@ -838,10 +840,13 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
           if (concept != null) {
             member.setConceptName(concept.getName());
             member.setConceptActive(concept.isActive());
+            refsetService.populateMemberSynonyms(member, concept, refset);
             member.setModuleId(refset.getModuleId());
             member.setLastModifiedBy(userName);
           } else {
             member.setConceptName(TerminologyHandler.UNABLE_TO_DETERMINE_NAME);
+            member.setSynonyms(
+                Arrays.asList(TerminologyHandler.UNABLE_TO_DETERMINE_NAME));
           }
 
           if (clause.isNegated()) {
@@ -1381,10 +1386,14 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
     if (reasonMap.containsKey(c.getDefinitionStatusId())) {
       reasonConcept = reasonMap.get(c.getDefinitionStatusId());
     } else {
-      reasonConcept =
-          refsetService.getTerminologyHandler(member.getRefset().getProject(),
-              getHeaders(headers)).getConcept(c.getDefinitionStatusId(),
-                  migrationTerminology, migrationVersion);
+      reasonConcept = refsetService
+          .getTerminologyHandler(member.getRefset().getProject(),
+              getHeaders(headers))
+          .findConceptsForQuery(
+              c.getDefinitionStatusId().replace('_', ' ')
+                  + " association reference set",
+              migrationTerminology, migrationVersion, null)
+          .getObjects().get(0);
       reasonMap.put(c.getDefinitionStatusId(), reasonConcept);
     }
     sb.append(reasonConcept.getName()).append("\t");
@@ -1395,13 +1404,6 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
   }
 
   /* see superclass */
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.refset.jpa.services.rest.RefsetServiceRest#addRefsetMember(
-   * org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa, java.lang.String)
-   */
   @Override
   @PUT
   @Path("/member/add")
@@ -1454,9 +1456,19 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
             }
           }
           member.setConceptActive(concept.isActive());
+          refsetService.populateMemberSynonyms(member, concept, refset);
         } else {
           member.setConceptName(TerminologyHandler.UNABLE_TO_DETERMINE_NAME);
+          member.setSynonyms(
+              Arrays.asList(TerminologyHandler.UNABLE_TO_DETERMINE_NAME));
         }
+      } else {
+        // Have member concept info, but still need to populate synonyms
+        final Concept concept = refsetService
+            .getTerminologyHandler(refset.getProject(), getHeaders(headers))
+            .getFullConcept(member.getConceptId(), refset.getTerminology(),
+                refset.getVersion());
+        refsetService.populateMemberSynonyms(member, concept, refset);
       }
 
       member.setLastModifiedBy(userName);
@@ -1688,6 +1700,11 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       }
 
       if (translated == null) {
+        // Need to ensure case isn't an issue
+        if (query != null && !query.startsWith("conceptId:")) {
+          query = query.toLowerCase();
+        }
+
         final ConceptRefsetMemberList list =
             refsetService.findMembersForRefset(refsetId, query, pfs);
         for (ConceptRefsetMember member : list.getObjects()) {
@@ -1782,13 +1799,16 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       if (inclusion.getConceptName() == null) {
         final Concept concept = refsetService
             .getTerminologyHandler(refset.getProject(), getHeaders(headers))
-            .getConcept(inclusion.getConceptId(), refset.getTerminology(),
+            .getFullConcept(inclusion.getConceptId(), refset.getTerminology(),
                 refset.getVersion());
         if (concept != null) {
           inclusion.setConceptName(concept.getName());
           inclusion.setConceptActive(concept.isActive());
+          refsetService.populateMemberSynonyms(inclusion, concept, refset);
         } else {
           inclusion.setConceptName(TerminologyHandler.UNABLE_TO_DETERMINE_NAME);
+          inclusion.setSynonyms(
+              Arrays.asList(TerminologyHandler.UNABLE_TO_DETERMINE_NAME));
         }
       }
 
@@ -2040,9 +2060,10 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         // add members from expression results
         // No need to "resolvExpression" because definition computation includes
         // project exclude logic
-        ConceptList conceptList = refsetService
-            .getTerminologyHandler(refset.getProject(), getHeaders(headers))
-            .resolveExpression(refsetCopy.computeDefinition(null, null),
+        TerminologyHandler handler = refsetService
+            .getTerminologyHandler(refset.getProject(), getHeaders(headers));
+        ConceptList conceptList =
+            handler.resolveExpression(refsetCopy.computeDefinition(null, null),
                 refsetCopy.getTerminology(), refsetCopy.getVersion(), null, false);
 
         // do this to re-use the terminology id
@@ -2069,6 +2090,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
             member.setPublished(concept.isPublished());
             member.setConceptId(concept.getTerminologyId());
             member.setConceptName(concept.getName());
+            refsetService.populateMemberSynonyms(member, concept, refset,
+                handler);
           }
 
           // If origin refset has this as in exclusion, keep it that way.
@@ -2307,18 +2330,28 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
           refsetService.removeMember(originMember.getId());
         }
         // member type or concept active status changed, rewire
-        if (stagedMember != null && (stagedMember.getMemberType()
-            .getUnstagedType() != originMember.getMemberType()
+        if (stagedMember != null) {
+          if (stagedMember.getMemberType().getUnstagedType() != originMember
+              .getMemberType()
             || stagedMember.isConceptActive() != originMember
-                .isConceptActive())) {
+                  .isConceptActive()) {
           // No need to change id, this is
           originMember
               .setMemberType(stagedMember.getMemberType().getUnstagedType());
           originMember.setConceptActive(stagedMember.isConceptActive());
 
+            originMember.setSynonyms(stagedMember.getSynonyms());
           originMember.setRefset(originRefset);
           originMember.setLastModifiedBy(userName);
           refsetService.updateMember(originMember);
+        }
+
+          // Update if changes in descriptions affected concept name (i.e.
+          // inactivated-old/created-new FSN)
+          if (!stagedMember.getConceptName()
+              .equals(originMember.getConceptName())) {
+            originMember.setConceptName(stagedMember.getConceptName());
+      }
         }
       }
 
@@ -3388,6 +3421,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
           // Initialize values to be overridden by lookupNames routine
           member.setConceptActive(true);
           member.setConceptName(TerminologyHandler.NAME_LOOKUP_IN_PROGRESS);
+          member.setSynonyms(
+              Arrays.asList(TerminologyHandler.NAME_LOOKUP_IN_PROGRESS));
 
           member.setLastModifiedBy(userName);
           refsetService.addMember(member);
