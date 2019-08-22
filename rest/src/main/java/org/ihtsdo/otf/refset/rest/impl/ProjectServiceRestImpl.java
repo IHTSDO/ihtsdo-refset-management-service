@@ -1,4 +1,4 @@
-/*
+/**
  *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.rest.impl;

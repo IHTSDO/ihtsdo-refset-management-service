@@ -277,8 +277,7 @@ public interface TerminologyHandler extends Configurable {
    */
   public List<String> getRequiredLanguageRefsets(String terminology,
     String version) throws Exception;
-  
-  
+
   /**
    * Returns the translation extensions.
    *

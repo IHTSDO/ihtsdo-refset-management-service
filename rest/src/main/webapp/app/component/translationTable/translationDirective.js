@@ -1917,7 +1917,7 @@ tsApp
 
               // Import/Export modal
               $scope.openImportExportModal = function(ltranslation, loperation, ltype) {
-                console.debug('exportModal ', ltranslation);
+                console.debug('exportModal ', ltranslation, loperation, ltype);
 
                 var modalInstance = $uibModal.open({
                   templateUrl : 'app/component/translationTable/importExport.html',
@@ -2010,7 +2010,7 @@ tsApp
                 };
 
                 // Handle import
-                $scope.import = function(file) {
+                $scope.import = function(file, action) {
                   if (type == 'Spelling Dictionary') {
                     translationService.importSpellingDictionary($scope.translation.id, file).then(
                     // Success
@@ -2036,6 +2036,10 @@ tsApp
                   }
 
                   if (type == 'Translation') {
+                    if ($scope.selectedIoHandler.id === 'EXCEL') {
+                      action = 'REVIEW_NEW';
+                    }
+                      
                     translationService.beginImportConcepts($scope.translation.id,
                       $scope.selectedIoHandler.id).then(
 
@@ -2047,9 +2051,65 @@ tsApp
                           $scope.errors = data.errors;
                         } else {
 
-                          // If there are no errors, finish import
-                          translationService.finishImportConcepts($scope.translation.id,
-                            $scope.selectedIoHandler.id, file).then(
+                          if ($scope.selectedIoHandler.ioType === 'FILE') {
+                            // If there are no errors, finish import
+                            translationService.finishImportConceptsFile($scope.translation.id,
+                              $scope.selectedIoHandler.id, file, action).then(
+                                // Success - close dialog
+                                function(data) {
+                                  $scope.importFinished = true;
+                                  $scope.errors = data.errors;
+                                  $scope.warnings = data.warnings;
+                                  $scope.comments = data.comments;
+                                  startLookup(translation);
+                                },
+                                // Failure - show error
+                                function(data) {
+                                  handleError($scope.errors, data);
+                                });
+                          } else if ($scope.selectedIoHandler.ioType === 'API') {
+                          
+                            // If there are no errors, finish import
+                            translationService.finishImportConceptsApi($scope.translation.id,
+                              $scope.selectedIoHandler.id, action).then(
+                                // Success - close dialog
+                                function(data) {
+                                  $scope.importFinished = true;
+                                  $scope.errors = data.errors;
+                                  $scope.warnings = data.warnings;
+                                  $scope.comments = data.comments;
+                                  startLookup(translation);
+                                  $uibModalInstance.close($scope.translation);
+                                },
+                                // Failure - show error
+                                function(data) {
+                                  handleError($scope.errors, data);
+                                });
+                          } else {
+                            console.log("ERROR - selected Io Hanlder is not FILE or API"); 
+                          }
+                        }
+                      },
+
+                      // Failure - show error, clear global error
+                      function(data) {
+                        handleError($scope.errors, data);
+                      });
+                  }
+                };
+
+                // Handle continue import
+                $scope.continueImport = function(file, wfStatus) {
+
+                  if (type === 'Translation') {
+                    
+                    if ($scope.selectedIoHandler.id === 'EXCEL') {
+                      wfStatus = 'REVIEW_NEW';
+                    }
+                    
+                    if ($scope.selectedIoHandler.ioType === 'FILE') {
+                      translationService.finishImportConceptsFile($scope.translation.id,
+                        $scope.selectedIoHandler.id, file, wfStatus).then(
                           // Success - close dialog
                           function(data) {
                             $scope.importFinished = true;
@@ -2062,37 +2122,27 @@ tsApp
                           function(data) {
                             handleError($scope.errors, data);
                           });
-                        }
-                      },
-
-                      // Failure - show error, clear global error
-                      function(data) {
-                        handleError($scope.errors, data);
-                      });
+                    } else if ($scope.selectedIoHandler.ioType === 'API') {
+                      // If there are no errors, finish import
+                      translationService.finishImportConceptsApi($scope.translation.id,
+                        $scope.selectedIoHandler.id, wfStatus).then(
+                          // Success - close dialog
+                          function(data) {
+                            $scope.importFinished = true;
+                            $scope.errors = data.errors;
+                            $scope.warnings = data.warnings;
+                            $scope.comments = data.comments;
+                            startLookup(translation);
+                            $uibModalInstance.close($scope.translation);
+                          },
+                          // Failure - show error
+                          function(data) {
+                            handleError($scope.errors, data);
+                          });
+                    }
                   }
                 };
-
-                // Handle continue import
-                $scope.continueImport = function(file) {
-
-                  if (type == 'Translation') {
-                    translationService.finishImportConcepts($scope.translation.id,
-                      $scope.selectedIoHandler.id, file).then(
-                    // Success - close dialog
-                    function(data) {
-                      $scope.importFinished = true;
-                      $scope.errors = data.errors;
-                      $scope.warnings = data.warnings;
-                      $scope.comments = data.comments;
-                      startLookup(translation);
-                    },
-                    // Failure - show error
-                    function(data) {
-                      handleError($scope.errors, data);
-                    });
-                  }
-                };
-
+                
                 // Dismiss modal
                 $scope.cancel = function() {
                   // If there are lingering errors, cancel the import

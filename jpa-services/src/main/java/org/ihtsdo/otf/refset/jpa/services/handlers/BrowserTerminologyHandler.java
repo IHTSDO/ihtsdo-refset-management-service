@@ -1184,6 +1184,7 @@ public class BrowserTerminologyHandler extends AbstractTerminologyHandler {
     }
   }
 
+  /* see superclass */
   @Override
   public List<String> getBranches(String terminology, String version)
     throws Exception {
@@ -1191,11 +1192,14 @@ public class BrowserTerminologyHandler extends AbstractTerminologyHandler {
 	return null;
   }
 
+  /* see superclass */
   @Override
   public List<String> getRequiredLanguageRefsets(String terminology,
     String version) throws Exception {
     return new ArrayList<>();
   }
+
+  /* see superclass */
   @Override
   public List<String> getTranslationExtensions() throws Exception {
     Logger.getLogger(getClass())

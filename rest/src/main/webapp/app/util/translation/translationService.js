@@ -1131,14 +1131,14 @@ tsApp.service('translationService', [
     };
 
     // Finish import concepts - if validation is result, OK to proceed.
-    this.finishImportConcepts = function(translationId, handlerId, file) {
+    this.finishImportConceptsFile = function(translationId, handlerId, file, wfStatus) {
       console.debug('finish import concepts');
       var deferred = $q.defer();
       gpService.increment();
       Upload.upload(
         {
           url : translationUrl + 'import/finish?translationId=' + translationId + '&handlerId='
-            + handlerId,
+            + handlerId + '&wfStatus=' + wfStatus,
           data : {
             file : file
           }
@@ -1162,6 +1162,32 @@ tsApp.service('translationService', [
       });
       return deferred.promise;
     };
+    
+    this.finishImportConceptsApi = function(translationId, handlerId, wfStatus) {
+      console.debug('finish import concepts');
+      var deferred = $q.defer();
+      gpService.increment();
+      $http.post(translationUrl + 'import/finish/' + handlerId + '?translationId=' + translationId
+        + '&wfStatus=' + wfStatus).then(
+      // Success
+      function(response) {
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      },
+      // event
+      function(evt) {
+        var progressPercentage = parseInt(100.0 * evt.loaded / evt.total);
+        console.debug('progress: ' + progressPercentage + '% ' + evt.config.data.file.name);
+      });
+      return deferred.promise;
+    };
+    
     // Begin import phrase memory
     this.importPhraseMemory = function(translationId, file) {
       console.debug('import phrase memory');
@@ -1325,7 +1351,7 @@ tsApp.service('translationService', [
       });
       return deferred.promise;
     };
-
+    
     // end
 
   } ]);

@@ -1,5 +1,5 @@
-/*
- * Copyright 2015 West Coast Informatics, LLC
+/**
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.test.jpa;
 
@@ -28,8 +28,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
- * Some initial testing for {@link SnowstormTerminologyHandler}. Assumes stock dev
- * load.
+ * Some initial testing for {@link SnowstormTerminologyHandler}. Assumes stock
+ * dev load.
  */
 public class BrowserTerminologyHandlerTest extends JpaSupport {
 
@@ -451,5 +451,4 @@ public class BrowserTerminologyHandlerTest extends JpaSupport {
   public static void teardownClass() throws Exception {
     // do nothing
   }
-
 }
