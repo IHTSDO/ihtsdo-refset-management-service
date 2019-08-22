@@ -4,6 +4,7 @@
 package org.ihtsdo.otf.refset.jpa.services;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -628,7 +629,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
   @Override
   public void handleLazyInit(ConceptRefsetMember member) {
     member.getNotes().size();
-
+    member.getSynonyms().size();
   }
 
   /* see superclass */
@@ -764,6 +765,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
         member.setId(null);
         // Clear notes
         member.getNotes().clear();
+        member.getSynonyms().clear();
         if (member.getEffectiveTime() == null)
           member.setEffectiveTime(effectiveTime);
         refsetCopy.getMembers().add(member);
@@ -1123,6 +1125,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
                     }
                   }
                 }
+                populateMemberSynonyms(member, con, refset, handler);
                 refsetService.updateMember(member);
               }
 
@@ -1132,7 +1135,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
                     memberMap.get(con.getTerminologyId());
                 member.setConceptName(con.getName());
                 member.setConceptActive(con.isActive());
-                refsetService.updateMember(member);
+                populateMemberSynonyms(member, con, refset, handler);
               }
             }
 
@@ -1145,6 +1148,8 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
                     refsetService.getMember(memberMap.get(termId).getId());
                 member.setConceptName(
                     TerminologyHandler.UNABLE_TO_DETERMINE_NAME);
+                member.setSynonyms(
+                    Arrays.asList(TerminologyHandler.UNABLE_TO_DETERMINE_NAME));
                 refsetService.updateMember(member);
 
               }
@@ -1154,6 +1159,8 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
                 final ConceptRefsetMember member = memberMap.get(termId);
                 member.setConceptName(
                     TerminologyHandler.UNABLE_TO_DETERMINE_NAME);
+                member.setSynonyms(
+                    Arrays.asList(TerminologyHandler.UNABLE_TO_DETERMINE_NAME));
               }
             }
 
@@ -1232,14 +1239,14 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
       }
     }
     ConceptList resolvedFromExpression = null;
+    final Project project = this.getProject(refset.getProject().getId());
+    final TerminologyHandler handler = getTerminologyHandler(project, headers);
     final String definition = refset.computeDefinition(null, null);
     if (definition.equals("")) {
       resolvedFromExpression = new ConceptListJpa();
     } else {
       try {
-        final Project project = this.getProject(refset.getProject().getId());
-        resolvedFromExpression =
-          getTerminologyHandler(project, headers).resolveExpression(definition,
+        resolvedFromExpression = handler.resolveExpression(definition,
               refset.getTerminology(), refset.getVersion(), null, false);
 
         // Save concepts
@@ -1298,6 +1305,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
         member.setPublished(concept.isPublished());
         member.setConceptId(concept.getTerminologyId());
         member.setConceptName(concept.getName());
+        populateMemberSynonyms(member, concept, refset, handler);
         member.setMemberType(Refset.MemberType.MEMBER);
         member.setModuleId(concept.getModuleId());
         member.setRefset(refset);
@@ -1596,8 +1604,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
   @Override
   @SuppressWarnings("unchecked")
   public RefsetList getRefsets() {
-    Logger.getLogger(getClass())
-        .debug("Refset Service - get refsets");
+    Logger.getLogger(getClass()).debug("Refset Service - get refsets");
     javax.persistence.Query query =
         manager.createQuery("select a from RefsetJpa a");
     try {
@@ -1610,4 +1617,62 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
     }
   }
 
+  /* see superclass */
+  public void populateMemberSynonyms(ConceptRefsetMember member,
+    Concept concept, Refset refset) throws Exception {
+    member.setSynonyms(new ArrayList<String>());
+
+    populateMemberSynonymsFromConcept(member, concept);
+
+    if (member.getSynonyms().isEmpty()) {
+      TerminologyHandler handler = null;
+
+      try {
+        final Project project = this.getProject(refset.getProject().getId());
+        handler = getTerminologyHandler(project, null);
+      } catch (Exception e) {
+        handler = getTerminologyHandler(refset.getProject(), null);
+}
+
+      populateMemberSynonyms(member, concept, refset, handler);
+    }
+  }
+
+  /* see superclass */
+  @Override
+  public void populateMemberSynonyms(ConceptRefsetMember member,
+    Concept concept, Refset refset, TerminologyHandler handler)
+    throws Exception {
+    member.setSynonyms(new ArrayList<String>());
+
+    populateMemberSynonymsFromConcept(member, concept);
+
+    if (member.getSynonyms().isEmpty()) {
+      final Concept fullCon = handler.getFullConcept(concept.getTerminologyId(),
+          refset.getTerminology(), refset.getVersion());
+
+      for (Description d : fullCon.getDescriptions()) {
+        if (d.isActive() && !d.getTypeId().equals("900000000000550004") // DEFINITION_DESC_SCTID
+            && !member.getSynonyms().contains(d.getTerm())) {
+          member.getSynonyms().add(d.getTerm());
+        }
+      }
+    }
+  }
+
+  /**
+   * Populate member synonyms from concept if descriptions have content.
+   *
+   * @param member the member
+   * @param concept the concept
+   */
+  private void populateMemberSynonymsFromConcept(ConceptRefsetMember member,
+    Concept concept) {
+    for (Description d : concept.getDescriptions()) {
+      if (d.isActive() && !d.getTypeId().equals("900000000000550004") // DEFINITION_DESC_SCTID
+          && !member.getSynonyms().contains(d.getTerm())) {
+        member.getSynonyms().add(d.getTerm());
+      }
+    }
+  }
 }
