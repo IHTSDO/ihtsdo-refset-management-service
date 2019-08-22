@@ -54,6 +54,9 @@ import org.ihtsdo.otf.refset.helpers.LanguageDescriptionTypeList;
 import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.helpers.TranslationList;
+import org.ihtsdo.otf.refset.helpers.TranslationSuggestion;
+import org.ihtsdo.otf.refset.helpers.TranslationSuggestionImpl;
+import org.ihtsdo.otf.refset.helpers.TranslationSuggestionList;
 import org.ihtsdo.otf.refset.jpa.ConceptDiffReportJpa;
 import org.ihtsdo.otf.refset.jpa.ConceptNoteJpa;
 import org.ihtsdo.otf.refset.jpa.MemoryEntryJpa;
@@ -2202,7 +2205,6 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
   }
 
   /* see superclass */
-  /* see superclass */
   @GET
   @Override
   @Path("/memory/suggest")
@@ -3549,24 +3551,24 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
   }
 
   /* see superclass */
-  // @Override
+  @Override
   @GET
   @Path("/refset/{refsetId}/concept/{conceptId}")
-  @ApiOperation(value = "Key-value pairs translation extension and concept description.", notes = "Gets translation suggestions for a concept based on project configuration.", response = KeyValuePairList.class)
-  public KeyValuePairList getTranslationSuggestionsForConcept(
+  @ApiOperation(value = "Translation suggesttion list", notes = "Gets translation suggestions for a concept based on project configuration.", response = TranslationSuggestionList.class)
+  public TranslationSuggestionList getTranslationSuggestionsForConcept(
     @ApiParam(value = "Refset id, e.g. 2", required = true) @PathParam("refsetId") Long refsetId,
     @ApiParam(value = "Concept id, e.g. 2", required = true) @PathParam("conceptId") Long conceptId,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
     Logger.getLogger(getClass()).info("RESTful GET call (Translation): ");
-    KeyValuePairList translationSuggestions = new KeyValuePairList();
+    TranslationSuggestionList translationSuggestions = new TranslationSuggestionList();
 
     try (final RefsetService refsetService =
         new RefsetServiceJpa(getHeaders(headers))) {
 
       authorizeApp(securityService, authToken,
-          "translationExtentions get branches", UserRole.VIEWER);
+          "translation suggestions for concept", UserRole.VIEWER);
 
       final Refset refset = refsetService.getRefset(refsetId);
       final Project project = refset.getProject();
@@ -3597,8 +3599,11 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
             if (concept != null && concept.getDescriptions() != null) {
               for (Description d : concept.getDescriptions()) {
                 if (!"en".equalsIgnoreCase(d.getLanguageCode())) {
-                  KeyValuePair kvp = new KeyValuePair(te, d.getTerm());
-                  translationSuggestions.addKeyValuePair(kvp);
+                  TranslationSuggestion ts = new TranslationSuggestionImpl();
+                  ts.setSuggestion(d.getTerm());
+                  ts.setLanguageCode(d.getLanguageCode());
+                  ts.setSource(te);
+                  translationSuggestions.addTranslationSuggestion(ts);
                 }
               }
             }
@@ -3613,8 +3618,11 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
           if (concept != null && concept.getDescriptions() != null) {
             for (Description d : concept.getDescriptions()) {
               if (!"en".equalsIgnoreCase(d.getLanguageCode())) {
-                KeyValuePair kvp = new KeyValuePair(te, d.getTerm());
-                translationSuggestions.addKeyValuePair(kvp);
+                TranslationSuggestion ts = new TranslationSuggestionImpl();
+                ts.setSuggestion(d.getTerm());
+                ts.setLanguageCode(d.getLanguageCode());
+                ts.setSource(te);
+                translationSuggestions.addTranslationSuggestion(ts);
               }
             }
           }
