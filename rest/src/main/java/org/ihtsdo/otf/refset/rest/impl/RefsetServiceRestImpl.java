@@ -1,4 +1,4 @@
-/*
+/**
  *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.rest.impl;
@@ -2043,8 +2043,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         ConceptList conceptList = refsetService
             .getTerminologyHandler(refset.getProject(), getHeaders(headers))
             .resolveExpression(refsetCopy.computeDefinition(null, null),
-                refsetCopy.getTerminology(), refsetCopy.getVersion(), null,
-                false);
+                refsetCopy.getTerminology(), refsetCopy.getVersion(), null, false);
 
         // do this to re-use the terminology id
         final Map<String, ConceptRefsetMember> conceptIdMap = new HashMap<>();

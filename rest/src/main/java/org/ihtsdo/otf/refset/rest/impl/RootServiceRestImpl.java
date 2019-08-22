@@ -1,5 +1,5 @@
 /**
- * Copyright 2015 West Coast Informatics, LLC
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.rest.impl;
 
@@ -30,7 +30,7 @@ public class RootServiceRestImpl {
 
   /** The user name for error messages. */
   private String userName;
-
+  
   /** The websocket. */
   private static NotificationWebsocket websocket = null;
 
@@ -103,7 +103,7 @@ public class RootServiceRestImpl {
     userName = securityService.getUsernameForToken(authToken);
     return userName;
   }
-
+  
   /**
    * Authorize the users project role or accept application ADMIN.
    *

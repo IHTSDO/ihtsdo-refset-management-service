@@ -1,5 +1,5 @@
 /**
- * Copyright 2015 West Coast Informatics, LLC
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.jpa.services.handlers;
 
@@ -19,14 +19,12 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.ss.util.NumberToTextConverter;
-import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.jpa.ValidationResultJpa;
 import org.ihtsdo.otf.refset.jpa.services.RefsetServiceJpa;
-import org.ihtsdo.otf.refset.rf2.Component;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.Description;
 import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
@@ -35,23 +33,39 @@ import org.ihtsdo.otf.refset.rf2.jpa.DescriptionJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.LanguageRefsetMemberJpa;
 import org.ihtsdo.otf.refset.services.RefsetService;
 import org.ihtsdo.otf.refset.services.handlers.IdentifierAssignmentHandler;
+import org.ihtsdo.otf.refset.services.handlers.ImportExportAbstract;
 import org.ihtsdo.otf.refset.services.handlers.ImportTranslationHandler;
 
 /**
  * Implementation of an algorithm to import a refset definition.
  */
-public class ImportTranslationExcelHandler implements ImportTranslationHandler {
+public class ImportTranslationExcelHandler extends ImportExportAbstract
+    implements ImportTranslationHandler {
 
-  
+  /** The Constant CONCEPT_ID. */
   private static final int CONCEPT_ID = 0;
+
+  /** The Constant FSN_TERM. */
   private static final int FSN_TERM = 1;
+
+  /** The Constant TRANSLATED_TERM. */
   private static final int TRANSLATED_TERM = 2;
+
+  /** The Constant LANGUAGE_CODE. */
   private static final int LANGUAGE_CODE = 3;
+
+  /** The Constant CASE_SIGNIFIANCE. */
   private static final int CASE_SIGNIFIANCE = 4;
+
+  /** The Constant TYPE. */
   private static final int TYPE = 5;
+
+  /** The Constant LANGUAGE_REFERENCE_SET. */
   private static final int LANGUAGE_REFERENCE_SET = 6;
+
+  /** The Constant ACCEPTABILITY. */
   private static final int ACCEPTABILITY = 7;
-  
+
   /** The request cancel flag. */
   boolean requestCancel = false;
 
@@ -71,8 +85,26 @@ public class ImportTranslationExcelHandler implements ImportTranslationHandler {
 
   /* see superclass */
   @Override
+  public void setId(String id) {
+    // not used
+  }
+
+  /* see superclass */
+  @Override
+  public String getId() {
+    return this.id;
+  }
+
+  /* see superclass */
+  @Override
   public boolean isDeltaHandler() {
     return false;
+  }
+
+  /* see superclass */
+  @Override
+  public void setFileTypeFilter(String fileTypeFilter) {
+    // not used
   }
 
   /* see superclass */
@@ -89,8 +121,32 @@ public class ImportTranslationExcelHandler implements ImportTranslationHandler {
 
   /* see superclass */
   @Override
+  public void setMimeType(String mimeType) {
+    // not used
+  }
+
+  /* see superclass */
+  @Override
+  public void setName(String name) {
+    // not used
+  }
+
+  /* see superclass */
+  @Override
   public String getName() {
     return "Import Excel";
+  }
+
+  /* see superclass */
+  @Override
+  public void setIoType(IoType ioType) {
+    // not used
+  }
+
+  /* see superclass */
+  @Override
+  public IoType getIoType() {
+    return IoType.FILE;
   }
 
   /**
@@ -104,7 +160,8 @@ public class ImportTranslationExcelHandler implements ImportTranslationHandler {
   /* see superclass */
   @SuppressWarnings("resource")
   @Override
-  public List<Concept> importConcepts(Translation translation, InputStream content) throws Exception {
+  public List<Concept> importConcepts(Translation translation,
+    InputStream content) throws Exception {
     Logger.getLogger(getClass()).info("Import translation concepts");
 
     // initialize
@@ -113,17 +170,13 @@ public class ImportTranslationExcelHandler implements ImportTranslationHandler {
     /** The descriptions. */
     Map<String, Description> descriptions = new HashMap<>();
 
-    /** The language entries. */
-    Map<String, LanguageRefsetMember> descLangMap = new HashMap<>();
-  
-
-    
     final Map<String, Concept> conceptCache = new HashMap<>();
     // Handle the input stream as an input stream
     try (final Workbook workbook = WorkbookFactory.create(content);) {
 
       if (workbook.getNumberOfSheets() != 1) {
-        throw new LocalException("Unexpected number of sheets in Excel file. File must have one sheet.");
+        throw new LocalException(
+            "Unexpected number of sheets in Excel file. File must have one sheet.");
       }
 
       // expecting only one workbook in file with translations.
@@ -131,7 +184,8 @@ public class ImportTranslationExcelHandler implements ImportTranslationHandler {
 
       try (final RefsetService service = new RefsetServiceJpa();) {
 
-        Logger.getLogger(getClass()).debug("Import translation Rf2 handler - reading Excel file.");
+        Logger.getLogger(getClass())
+            .debug("Import translation Rf2 handler - reading Excel file.");
 
         boolean isFirstRow = true;
         for (final Row row : sheet) {
@@ -141,15 +195,15 @@ public class ImportTranslationExcelHandler implements ImportTranslationHandler {
             isFirstRow = false;
             continue;
           }
-          
+
           // file format
-          // 1. Concept Id - CONCEPT_ID - 
-          // 2. GB/US FSN Term - FSN_TERM - 
-          // 3. Translated Term - TRANSLATED_TERM - 
-          // 4. Language Code - LANGUAGE_CODE - 
-          // 5. Case Signifiance - CASE_SIGNIFIANCE - used 
+          // 1. Concept Id - CONCEPT_ID -
+          // 2. GB/US FSN Term - FSN_TERM -
+          // 3. Translated Term - TRANSLATED_TERM -
+          // 4. Language Code - LANGUAGE_CODE -
+          // 5. Case Signifiance - CASE_SIGNIFIANCE - used
           // 6. Type - TYPE - used
-          // 7. Language reference set - LANGUAGE_REFERENCE_SET - NOT used 
+          // 7. Language reference set - LANGUAGE_REFERENCE_SET - NOT used
           // 8. Acceptability - ACCEPTABILITY - used
 
           // Create description and populate from RF2
@@ -161,7 +215,8 @@ public class ImportTranslationExcelHandler implements ImportTranslationHandler {
           description.setTerminologyId(null);
           description.setLanguageCode(getCellValue(row, LANGUAGE_CODE));
           description.setTypeId(getCellValue(row, TYPE));
-          description.setCaseSignificanceId(getCellValue(row, CASE_SIGNIFIANCE));
+          description
+              .setCaseSignificanceId(getCellValue(row, CASE_SIGNIFIANCE));
           description.setEffectiveTime(new Date());
 
           // Handle the concept the description is connected to
@@ -184,37 +239,41 @@ public class ImportTranslationExcelHandler implements ImportTranslationHandler {
           // Cache the description for lookup by the language reset member
           descriptions.put(conceptId, description);
 
-          Logger.getLogger(getClass()).debug("  description = " + conceptId + ", "
-              + description.getTerminologyId() + ", " + description.getTerm());
+          Logger.getLogger(getClass())
+              .debug("  description = " + conceptId + ", "
+                  + description.getTerminologyId() + ", "
+                  + description.getTerm());
 
           // Create and configure the member
           final LanguageRefsetMember member = new LanguageRefsetMemberJpa();
           setCommonFields(member, translation.getRefset());
-            member.setTerminologyId(UUID.randomUUID().toString());
-            member.setEffectiveTime(new Date());
-          
+          member.setTerminologyId(UUID.randomUUID().toString());
+          member.setEffectiveTime(new Date());
+
           // Set from the translation refset
           member.setRefsetId(translation.getRefset().getTerminologyId());
 
           // Language unique attributes
-          member.setAcceptabilityId(getCellValue(row, ACCEPTABILITY));   
-          
+          member.setAcceptabilityId(getCellValue(row, ACCEPTABILITY));
+
           // Connect description and language refset member object
           member.setDescriptionId(description.getTerminologyId());
           description.getLanguageRefsetMembers().add(member);
         }
 
-
         // Assign identifiers
-        final IdentifierAssignmentHandler handler = service.getIdentifierAssignmentHandler(ConfigUtility.DEFAULT);
+        final IdentifierAssignmentHandler handler =
+            service.getIdentifierAssignmentHandler(ConfigUtility.DEFAULT);
         for (final Description description : descriptions.values()) {
-          if (description.getTerminologyId() == null || description.getTerminologyId().startsWith("TMP-")) {
+          if (description.getTerminologyId() == null
+              || description.getTerminologyId().startsWith("TMP-")) {
             description.setTerminologyId("");
             description.setTerminologyId(handler.getTerminologyId(description));
           }
         }
 
-        validationResult.addComment(descriptions.size() + " descriptions successfully loaded.");
+        validationResult.addComment(
+            descriptions.size() + " descriptions successfully loaded.");
 
       } catch (Exception e) {
         Logger.getLogger(getClass()).error("", e);
@@ -232,37 +291,37 @@ public class ImportTranslationExcelHandler implements ImportTranslationHandler {
 
   }
 
-  /**
-   * Sets the common fields.
-   *
-   * @param c the c
-   * @param refset the refset
-   */
-  @SuppressWarnings("static-method")
-  private void setCommonFields(Component c, Refset refset) {
-    c.setActive(true);
-    c.setEffectiveTime(null);
-    c.setId(null);
-    c.setPublishable(true);
-    c.setPublished(false);
-    c.setModuleId(refset.getModuleId());
-  }
-
+  /* see superclass */
   @Override
   public ValidationResult getValidationResults() throws Exception {
     return validationResult;
   }
-  
-  //convert cell value to string
+
+  /**
+   * Returns the cell value.
+   *
+   * @param row the row
+   * @param cellIndex the cell index
+   * @return the cell value
+   */
+  // convert cell value to string
   private String getCellValue(Row row, int cellIndex) {
-    
+
     String value = null;
     if (row.getCell(cellIndex).getCellType() == CellType.STRING) {
       value = row.getCell(cellIndex).getStringCellValue();
     } else if (row.getCell(cellIndex).getCellType() == CellType.NUMERIC) {
-      value = NumberToTextConverter.toText(row.getCell(cellIndex).getNumericCellValue());
+      value = NumberToTextConverter
+          .toText(row.getCell(cellIndex).getNumericCellValue());
     }
     return value;
+  }
+
+  @Override
+  public List<Concept> importConcepts(Translation translation,
+    Map<String, String> headers) throws Exception {
+    // not implemented
+    return null;
   }
 
 }

@@ -24,7 +24,7 @@
           <span ng-show="ioHandlers.length == 1">{{ioHandlers[0].name}}</span>
         </td>
       </tr>
-      <tr ng-show="operation == 'Import'">
+      <tr ng-show="operation == 'Import' && selectedIoHandler.ioType == 'FILE'">
         <td class="col-md-4 col-xs-4">
           <b>Choose File</b>
         </td>
@@ -39,6 +39,24 @@
               ngf-drag-over-class="'dragover'" ngf-max-size="200MB"
               ngf-pattern="'.txt,{{selectedIoHandler.fileTypeFilter}}'">Drop
               file here</div>
+          </div>
+        </td>
+      </tr>
+      <tr ng-show="operation == 'Import' && selectedIoHandler.ioType == 'API'">
+        <td class="col-md-4 col-xs-4">
+          <b>Term Server load</b>
+        </td>
+        <td class="col-md-8 col-xs-8">
+          <div class="row">
+            <span class="col-md-8 col-xs-8">
+              <input type="radio" ng-model="selectedAction" value="REVIEW_NEW">&nbsp;For Review
+              &nbsp;&nbsp;&nbsp;
+              <input type="radio" ng-model="selectedAction" value="READY_FOR_PUBLICATION">&nbsp;Finished
+            </span>
+
+          </div>
+          <div class="row">
+            
           </div>
         </td>
       </tr>
@@ -85,22 +103,25 @@
     </table>
   </div>
 </div>
-
 <div class="modal-footer">
   <button class="btn btn-xs btn-primary" ng-show="operation == 'Export'"
     ng-click="export();">Export</button>
   <!-- spelling/memory import button -->
   <button class="btn btn-xs btn-primary" ng-disabled="!file"
     ng-show="operation == 'Import' && type != 'Translation'"
-    ng-click="import(file);">Import</button>
+    ng-click="import(file, selectedAction);">Import</button>
 
   <!--  translation import button -->
   <button class="btn btn-xs btn-primary" ng-disabled="!file"
-    ng-show="operation == 'Import' && errors.length == 0 && comments.length == 0 && type == 'Translation'"
-    ng-click="import(file);">Import</button>
-  <button class="btn btn-xs btn-primary" ng-disabled="!file"
+    ng-show="operation == 'Import' && selectedIoHandler.ioType == 'FILE' && errors.length == 0 && comments.length == 0 && type == 'Translation'"
+    ng-click="import(file, selectedAction);">Import</button>
+  <button class="btn btn-xs btn-primary" ng-disabled="!selectedAction"
+    ng-show="operation == 'Import' && selectedIoHandler.ioType == 'API' && errors.length == 0 && comments.length == 0 && type == 'Translation'"
+    ng-click="import(null, selectedAction);">Import</button>
+    
+  <button class="btn btn-xs btn-primary" ng-disabled="!file && selectedIoHandler.ioType == 'FILE'"
     ng-show="operation == 'Import' && errors.length > 0 && type == 'Translation'"
-    ng-click="continueImport(file);">Continue With Import</button>
+    ng-click="continueImport(file, selectedAction);">Continue With Import</button>
   <button class="btn btn-xs btn-warning" ng-show="comments.length == 0"
     ng-click="cancel()">Cancel</button>
   <button class="btn btn-xs btn-warning" ng-click="close()">Close</button>

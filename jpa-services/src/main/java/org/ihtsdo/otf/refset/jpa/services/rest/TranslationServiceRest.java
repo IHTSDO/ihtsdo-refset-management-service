@@ -190,18 +190,32 @@ public interface TranslationServiceRest {
    * Finish import of concepts.
    *
    * @param contentDispositionHeader the content disposition header
-   * @param in the in
+   * @param inputStream the input stream
    * @param translationId the translation id
    * @param ioHandlerInfoId the io handler info id
+   * @param wfStatus the workflow status
    * @param authToken the auth token
    * @return the validation result
    * @throws Exception the exception
    */
   public ValidationResult finishImportConcepts(
-    FormDataContentDisposition contentDispositionHeader, InputStream in,
-    Long translationId, String ioHandlerInfoId, String authToken)
+    FormDataContentDisposition contentDispositionHeader, InputStream inputStream,
+    Long translationId, String ioHandlerInfoId, String wfStatus, String authToken)
     throws Exception;
 
+  /**
+   * Finish import concepts.
+   *
+   * @param translationId the translation id
+   * @param handlerName the handler name
+   * @param wfStatus the workflow status
+   * @param authToken the auth token
+   * @return the validation result
+   * @throws Exception the exception
+   */
+  public ValidationResult finishImportConcepts(Long translationId,
+    String handlerName, String wfStatus, String authToken) throws Exception;
+  
   /**
    * Cancel import.
    *
@@ -643,7 +657,6 @@ public interface TranslationServiceRest {
    */
   public Concept updateConceptName(Long translationId, String conceptId,
     String authToken) throws Exception;
-
   /**
    * Returns the translation suggestions for concept.
    *

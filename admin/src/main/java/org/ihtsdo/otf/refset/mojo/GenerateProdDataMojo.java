@@ -1,5 +1,5 @@
 /**
- * Copyright 2015 West Coast Informatics, LLC
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 /**
  * Copyright (c) 2012 International Health Terminology Standards Development
@@ -499,7 +499,7 @@ public class GenerateProdDataMojo extends AbstractMojo {
         new FileInputStream(new File("../config/src/main/resources/data/" + dir
             + "/" + file));
     translationService.finishImportConcepts(null, in, translation.getId(),
-        "DEFAULT", auth.getAuthToken());
+        "DEFAULT", null, auth.getAuthToken());
     in.close();
 
     final TranslationJpa retval =

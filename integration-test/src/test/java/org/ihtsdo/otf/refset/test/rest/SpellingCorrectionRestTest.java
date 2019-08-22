@@ -1,8 +1,5 @@
-/*
- * Copyright 2015 West Coast Informatics, LLC
- */
-/*
- * 
+/**
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.test.rest;
 
@@ -294,7 +291,7 @@ public class SpellingCorrectionRestTest extends RestSupport {
         new FileInputStream(new File(
             "../config/src/main/resources/data/translation2/translation.zip"));
     translationService.finishImportConcepts(null, in, translation.getId(),
-        "DEFAULT", adminAuthToken);
+        "DEFAULT", null, adminAuthToken);
     in.close();
 
     return (TranslationJpa) translationService.getTranslation(
