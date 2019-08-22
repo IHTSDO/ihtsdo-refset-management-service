@@ -757,8 +757,8 @@ public class GenerateSampleDataMojo extends AbstractMojo {
           Refset.Type.INTENSIONAL, project1, "111111111111", "1000124", author1,
           false);
       // add invalid exclusion for migration
-      new RefsetServiceRestImpl().addRefsetExclusion(test11.getId(),
-          "124627000", false, author1.getAuthToken());
+//      new RefsetServiceRestImpl().addRefsetExclusion(test11.getId(),
+//          "124627000", false, author1.getAuthToken());
       // add valid exclusion for migration
       new RefsetServiceRestImpl().addRefsetExclusion(test11.getId(), "10406007",
           false, author1.getAuthToken());
@@ -949,7 +949,7 @@ public class GenerateSampleDataMojo extends AbstractMojo {
     info.setReleaseBeginDate(new Date());
     info.setReleaseFinishDate(new Date());
     info.setTerminology("en-edition");
-    info.setVersion("20150131");
+    info.setVersion("20190131");
     info.setPlanned(false);
     // Need to use Jpa because rest service doesn't have "add release info"
     ReleaseService service = new ReleaseServiceJpa();
@@ -1040,11 +1040,11 @@ public class GenerateSampleDataMojo extends AbstractMojo {
     refset.setTerminology("en-edition");
     refset.setTerminologyId(refsetId);
     // This is an opportunity to use "branch"
-    refset.setVersion("20150131");
+    refset.setVersion("20190131");
     refset.setLocalSet(false);
     if (importMembers) {
       refset.setWorkflowStatus(WorkflowStatus.PUBLISHED);
-      refset.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse("20150131"));
+      refset.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse("20190131"));
     } else {
       refset.setWorkflowStatus(WorkflowStatus.NEW);
       refset.setEffectiveTime(null);
@@ -1143,7 +1143,7 @@ public class GenerateSampleDataMojo extends AbstractMojo {
     translation.setVersion(refset.getVersion());
     translation.setTerminologyId(refset.getTerminologyId());
     translation.setWorkflowStatus(WorkflowStatus.PUBLISHED);
-    translation.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse("20150131"));
+    translation.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse("20190131"));
 
     TranslationServiceRest translationService =
         new TranslationServiceRestImpl();

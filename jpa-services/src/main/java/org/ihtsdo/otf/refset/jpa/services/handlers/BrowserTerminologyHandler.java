@@ -259,7 +259,10 @@ public class BrowserTerminologyHandler extends AbstractTerminologyHandler {
     ConceptList conceptList = new ConceptListJpa();
 
     for (final JsonNode membership : doc.get("memberships")) {
-      if (!membership.get("type").asText().equals("ASSOCIATION")) {
+      if (membership == null || 
+    	  membership.get("type") == null || 
+    	  !membership.get("type").asText().equals("ASSOCIATION")
+    	  ) {
         continue;
       }
       final Concept concept = new ConceptJpa();
@@ -1182,4 +1185,11 @@ public class BrowserTerminologyHandler extends AbstractTerminologyHandler {
     }
   }
 
+@Override
+public List<String> getBranches(String terminology, String version) throws Exception {
+	// TODO Auto-generated method stub
+	return null;
 }
+
+}
+
