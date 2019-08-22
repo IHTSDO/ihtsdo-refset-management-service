@@ -1,11 +1,12 @@
 /**
- * Copyright 2015 West Coast Informatics, LLC
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.rest.impl;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -73,10 +74,13 @@ import org.ihtsdo.otf.refset.jpa.services.WorkflowServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.RefsetServiceRest;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
+import org.ihtsdo.otf.refset.rf2.Description;
+import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
 import org.ihtsdo.otf.refset.services.RefsetService;
 import org.ihtsdo.otf.refset.services.ReleaseService;
+import org.ihtsdo.otf.refset.services.RootService;
 import org.ihtsdo.otf.refset.services.SecurityService;
 import org.ihtsdo.otf.refset.services.TranslationService;
 import org.ihtsdo.otf.refset.services.WorkflowService;
@@ -87,11 +91,14 @@ import org.ihtsdo.otf.refset.services.handlers.TerminologyHandler;
 import org.ihtsdo.otf.refset.workflow.TrackingRecord;
 import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
 
+// TODO: Auto-generated Javadoc
 /**
  * REST implementation for {@link RefsetServiceRest}..
  */
@@ -106,7 +113,7 @@ import com.wordnik.swagger.annotations.ApiParam;
 public class RefsetServiceRestImpl extends RootServiceRestImpl
     implements RefsetServiceRest {
 
-  /** Security context */
+  /** Security context. */
   @Context
   HttpHeaders headers;
 
@@ -124,9 +131,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
   private static Map<String, MemberDiffReport> memberDiffReportMap =
       new HashMap<>();
 
-
+  /** The reason map. */
   private Map<String, Concept> reasonMap = new HashMap<>();
-  
+
   /**
    * Instantiates an empty {@link RefsetServiceRestImpl}.
    *
@@ -215,10 +222,10 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
   /* see superclass */
   @Override
   @GET
-  @Path("/refsets/{projectid}")
+  @Path("/refsets/{projectId}")
   @ApiOperation(value = "Find refsets for project", notes = "Finds refsets for the specified project", response = RefsetListJpa.class)
   public RefsetList getRefsetsForProject(
-    @ApiParam(value = "Project id, e.g. 2", required = true) Long projectId,
+    @ApiParam(value = "Project id, e.g. 2", required = true) @PathParam("projectId") Long projectId,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass())
@@ -386,7 +393,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       final ConceptList resolvedFromExpression = refsetService
           .getTerminologyHandler(refset.getProject(), getHeaders(headers))
           .resolveExpression(refset.computeExpression(expression),
-              refset.getTerminology(), refset.getVersion(), null);
+              refset.getTerminology(), refset.getVersion(), null, false);
 
       final Set<String> conceptIds = new HashSet<>();
       for (final ConceptRefsetMember member : refset.getMembers()) {
@@ -398,7 +405,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         // Only add where the refset doesn't already have a member
         if (!conceptIds.contains(concept.getTerminologyId())) {
           final ConceptRefsetMemberJpa member = new ConceptRefsetMemberJpa();
-          //member.setTerminologyId(concept.getTerminologyId());
+          // member.setTerminologyId(concept.getTerminologyId());
           member.setConceptId(concept.getTerminologyId());
           member.setConceptName(concept.getName());
           member.setMemberType(Refset.MemberType.MEMBER);
@@ -406,6 +413,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
           member.setRefset(refset);
           member.setActive(true);
           member.setConceptActive(true);
+          refsetService.populateMemberSynonyms(member, concept, refset);
           member.setLastModifiedBy(userName);
           list.addObject(refsetService.addMember(member));
         }
@@ -457,7 +465,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       final ConceptList resolvedFromExpression = refsetService
           .getTerminologyHandler(refset.getProject(), getHeaders(headers))
           .resolveExpression(refset.computeExpression(expression),
-              refset.getTerminology(), refset.getVersion(), null);
+              refset.getTerminology(), refset.getVersion(), null, false);
       final Set<String> conceptIds = new HashSet<>();
       for (final Concept concept : resolvedFromExpression.getObjects()) {
         conceptIds.add(concept.getTerminologyId());
@@ -832,10 +840,13 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
           if (concept != null) {
             member.setConceptName(concept.getName());
             member.setConceptActive(concept.isActive());
+            refsetService.populateMemberSynonyms(member, concept, refset);
             member.setModuleId(refset.getModuleId());
             member.setLastModifiedBy(userName);
           } else {
             member.setConceptName(TerminologyHandler.UNABLE_TO_DETERMINE_NAME);
+            member.setSynonyms(
+                Arrays.asList(TerminologyHandler.UNABLE_TO_DETERMINE_NAME));
           }
 
           if (clause.isNegated()) {
@@ -1053,7 +1064,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
     throws Exception {
 
     Logger.getLogger(getClass())
-        .info("RESTful call GET (Refset): /export/report " + reportToken + " " + migrationTerminology + " " + migrationVersion);
+        .info("RESTful call GET (Refset): /export/report " + reportToken + " "
+            + migrationTerminology + " " + migrationVersion);
 
     final RefsetService refsetService =
         new RefsetServiceJpa(getHeaders(headers));
@@ -1085,7 +1097,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
 
       // Replacement Concepts
       StringBuilder replacementConceptsSb = new StringBuilder();
-      
+
       // Old regular members
       sb.append("\r\n").append("Old Members").append("\r\n");
       if (report.getOldRegularMembers().size() > 0) {
@@ -1096,15 +1108,20 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       for (ConceptRefsetMember member : report.getOldRegularMembers()) {
         Logger.getLogger(getClass()).debug("  member = " + member);
         sb = appendDiffReportMember(sb, member);
-        
-        if (!member.isConceptActive() && report.getNewRefset().getType() == Type.INTENSIONAL) {
-            ConceptList conceptList = refsetService.getTerminologyHandler(member.getRefset().getProject(), getHeaders(headers))
-              .getReplacementConcepts(member.getConceptId(), migrationTerminology, migrationVersion);
-            for (Concept c : conceptList.getObjects()) {
-          	  replacementConceptsSb = appendReplacementConceptInfo(replacementConceptsSb, member, c,
-          			  refsetService, migrationTerminology, migrationVersion);
-            }
+
+        if (!member.isConceptActive()
+            && report.getNewRefset().getType() == Type.INTENSIONAL) {
+          ConceptList conceptList = refsetService
+              .getTerminologyHandler(member.getRefset().getProject(),
+                  getHeaders(headers))
+              .getReplacementConcepts(member.getConceptId(),
+                  migrationTerminology, migrationVersion);
+          for (Concept c : conceptList.getObjects()) {
+            replacementConceptsSb =
+                appendReplacementConceptInfo(replacementConceptsSb, member, c,
+                    refsetService, migrationTerminology, migrationVersion);
           }
+        }
       }
 
       if (report.getNewRefset().getType() == Type.INTENSIONAL) {
@@ -1180,35 +1197,101 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       }
 
       // Members in common & Replacement Concepts
-      
+
       StringBuilder membersInCommonSb = new StringBuilder();
       for (ConceptRefsetMember member : membersInCommonMap.get(reportToken)) {
         Logger.getLogger(getClass()).debug("  member = " + member);
         membersInCommonSb = appendDiffReportMember(membersInCommonSb, member);
-        
+
         if (!member.isConceptActive()) {
-          ConceptList conceptList = refsetService.getTerminologyHandler(member.getRefset().getProject(), getHeaders(headers))
-            .getReplacementConcepts(member.getConceptId(), migrationTerminology, migrationVersion);
+          ConceptList conceptList = refsetService
+              .getTerminologyHandler(member.getRefset().getProject(),
+                  getHeaders(headers))
+              .getReplacementConcepts(member.getConceptId(),
+                  migrationTerminology, migrationVersion);
           for (Concept c : conceptList.getObjects()) {
-        	  replacementConceptsSb = appendReplacementConceptInfo(replacementConceptsSb, member, c,
-        			  refsetService, migrationTerminology, migrationVersion);
+            replacementConceptsSb =
+                appendReplacementConceptInfo(replacementConceptsSb, member, c,
+                    refsetService, migrationTerminology, migrationVersion);
           }
         }
       }
-      
-      sb.append("\r\n").append("Inactive Concepts with their suggested Replacement Concepts").append("\r\n");
+
+      sb.append("\r\n")
+          .append("Inactive Concepts with their suggested Replacement Concepts")
+          .append("\r\n");
       if (replacementConceptsSb.length() > 0) {
-    	  sb = appendReplacementConceptReportHeader(sb);
-          sb.append(replacementConceptsSb);
+        sb = appendReplacementConceptReportHeader(sb);
+        sb.append(replacementConceptsSb);
       } else {
-          sb = sb.append("n/a").append("\r\n");
+        sb = sb.append("n/a").append("\r\n");
       }
-      
+
       sb.append("\r\n").append("Members in Common").append("\r\n");
       sb = appendDiffReportHeader(sb);
       sb.append(membersInCommonSb);
-      
+
       return new ByteArrayInputStream(sb.toString().getBytes("UTF-8"));
+
+    } catch (Exception e) {
+      handleException(e, "trying to export diff report");
+    } finally {
+      refsetService.close();
+      securityService.close();
+    }
+    return null;
+
+  }
+
+  /* see superclass */
+  @POST
+  @Override
+  @Produces("application/octet-stream")
+  @Path("/export/report/duplicates")
+  @ApiOperation(value = "Export report of duplicates", notes = "Exports the report of duplicate refsets ", response = InputStream.class)
+  public InputStream exportResfetDuplicatesReport(
+    @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
+    @ApiParam(value = "Import handler id, e.g. \"DEFAULT\"", required = true) @QueryParam("handlerId") String ioHandlerInfoId,
+    @ApiParam(value = "List of concept id", required = false) String[] conceptIds,
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(getClass())
+        .info("RESTful call POST (Refset): /export/report/duplicates "
+            + refsetId + ", " + ioHandlerInfoId);
+
+    final RefsetService refsetService =
+        new RefsetServiceJpa(getHeaders(headers));
+    try {
+      // Load refset
+      final Refset refset = refsetService.getRefset(refsetId);
+      if (refset == null) {
+        throw new Exception("Invalid refset id " + refsetId);
+      }
+
+      // Authorize the call
+      final String userName =
+          authorizeProject(refsetService, refset.getProject().getId(),
+              securityService, authToken, "duplicate members", UserRole.AUTHOR);
+
+      // Check refset type
+      if (refset.getType() != Refset.Type.EXTENSIONAL) {
+        throw new LocalException(
+            "Duplicates download is only allowed for extensional type refsets.");
+      }
+
+      // validate the import handler
+      final ExportRefsetHandler handler =
+          refsetService.getExportRefsetHandler(ioHandlerInfoId);
+      if (handler == null) {
+        throw new Exception("invalid handler id " + ioHandlerInfoId);
+      }
+
+      List<ConceptRefsetMember> duplicates =
+          findDuplicates(refset.getMembers(), conceptIds);
+      if (!duplicates.isEmpty()) {
+        return handler.exportMembers(refset, duplicates);
+      }
 
     } catch (Exception e) {
       handleException(e, "trying to export diff report");
@@ -1237,16 +1320,22 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
     sb.append("\r\n");
     return sb;
   }
-  
-	private StringBuilder appendReplacementConceptReportHeader(StringBuilder sb) {
-		sb.append("Inactive ConceptID").append("\t");
-		sb.append("Inactive Concept FSN").append("\t");
-		sb.append("Reason").append("\t");
-		sb.append("Suggested Replacement ConceptID(s)").append("\t");
-		sb.append("Suggested Replacement FSN(s)").append("\t");
-		sb.append("\r\n");
-		return sb;
-	}
+
+  /**
+   * Append replacement concept report header.
+   *
+   * @param sb the sb
+   * @return the string builder
+   */
+  private StringBuilder appendReplacementConceptReportHeader(StringBuilder sb) {
+    sb.append("Inactive ConceptID").append("\t");
+    sb.append("Inactive Concept FSN").append("\t");
+    sb.append("Reason").append("\t");
+    sb.append("Suggested Replacement ConceptID(s)").append("\t");
+    sb.append("Suggested Replacement FSN(s)").append("\t");
+    sb.append("\r\n");
+    return sb;
+  }
 
   /**
    * Append diff report member.
@@ -1273,30 +1362,48 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
     sb.append("\r\n");
     return sb;
   }
-  
-	private StringBuilder appendReplacementConceptInfo(StringBuilder sb, ConceptRefsetMember member,
-			Concept c, RefsetService refsetService, String migrationTerminology, String migrationVersion) 
-			throws Exception {
-		
-		sb.append(member.getConceptId()).append("\t");
-		sb.append(member.getConceptName()).append("\t");
-		// given the reason code, look up the reason's name
-		Concept reasonConcept = null;
-		  if (reasonMap.containsKey(c.getDefinitionStatusId())) {
-			reasonConcept = reasonMap.get(c.getDefinitionStatusId());
-		  } else {
-		    reasonConcept = refsetService.getTerminologyHandler(
-		      member.getRefset().getProject(), getHeaders(headers)).findConceptsForQuery(
-			  c.getDefinitionStatusId().replace('_', ' ') + " association reference set", migrationTerminology, migrationVersion, null).getObjects().get(0);
-		    reasonMap.put(c.getDefinitionStatusId(), reasonConcept);
-		  }
-		sb.append(reasonConcept.getName()).append("\t");
-		sb.append(c.getTerminologyId()).append("\t");
-		sb.append(c.getName()).append("\r\n");
-		
-		return sb;
-	}
 
+  /**
+   * Append replacement concept info.
+   *
+   * @param sb the sb
+   * @param member the member
+   * @param c the c
+   * @param refsetService the refset service
+   * @param migrationTerminology the migration terminology
+   * @param migrationVersion the migration version
+   * @return the string builder
+   * @throws Exception the exception
+   */
+  private StringBuilder appendReplacementConceptInfo(StringBuilder sb,
+    ConceptRefsetMember member, Concept c, RefsetService refsetService,
+    String migrationTerminology, String migrationVersion) throws Exception {
+
+    sb.append(member.getConceptId()).append("\t");
+    sb.append(member.getConceptName()).append("\t");
+    // given the reason code, look up the reason's name
+    Concept reasonConcept = null;
+    if (reasonMap.containsKey(c.getDefinitionStatusId())) {
+      reasonConcept = reasonMap.get(c.getDefinitionStatusId());
+    } else {
+      reasonConcept = refsetService
+          .getTerminologyHandler(member.getRefset().getProject(),
+              getHeaders(headers))
+          .findConceptsForQuery(
+              c.getDefinitionStatusId().replace('_', ' ')
+                  + " association reference set",
+              migrationTerminology, migrationVersion, null)
+          .getObjects().get(0);
+      reasonMap.put(c.getDefinitionStatusId(), reasonConcept);
+    }
+    sb.append(reasonConcept.getName()).append("\t");
+    sb.append(c.getTerminologyId()).append("\t");
+    sb.append(c.getName()).append("\r\n");
+
+    return sb;
+  }
+
+  /* see superclass */
   @Override
   @PUT
   @Path("/member/add")
@@ -1330,17 +1437,38 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       }
 
       // Look up concept name and active
-      if (member.getConceptName() == null) {
+      if (member.getConceptName() == null
+          || !refset.getPreferredLanguage().equals("en")) {
         final Concept concept = refsetService
             .getTerminologyHandler(refset.getProject(), getHeaders(headers))
-            .getConcept(member.getConceptId(), refset.getTerminology(),
+            .getFullConcept(member.getConceptId(), refset.getTerminology(),
                 refset.getVersion());
         if (concept != null) {
           member.setConceptName(concept.getName());
+          for (Description desc : concept.getDescriptions()) {
+            for (LanguageRefsetMember lrm : desc.getLanguageRefsetMembers()) {
+              if (lrm.getAcceptabilityId().equals("900000000000548007")) {
+                if (desc.getLanguageCode().equals(refset.getPreferredLanguage())
+                    && desc.getTypeId().equals("900000000000013009")) {
+                  member.setConceptName(desc.getTerm());
+                }
+              }
+            }
+          }
           member.setConceptActive(concept.isActive());
+          refsetService.populateMemberSynonyms(member, concept, refset);
         } else {
           member.setConceptName(TerminologyHandler.UNABLE_TO_DETERMINE_NAME);
+          member.setSynonyms(
+              Arrays.asList(TerminologyHandler.UNABLE_TO_DETERMINE_NAME));
         }
+      } else {
+        // Have member concept info, but still need to populate synonyms
+        final Concept concept = refsetService
+            .getTerminologyHandler(refset.getProject(), getHeaders(headers))
+            .getFullConcept(member.getConceptId(), refset.getTerminology(),
+                refset.getVersion());
+        refsetService.populateMemberSynonyms(member, concept, refset);
       }
 
       member.setLastModifiedBy(userName);
@@ -1361,6 +1489,101 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       securityService.close();
     }
 
+  }
+
+  /* see superclass */
+  @Override
+  @PUT
+  @Path("/members/add")
+  @ApiOperation(value = "Add new member", notes = "Adds the new member", response = ConceptRefsetMemberJpa.class)
+  public ConceptRefsetMemberList addRefsetMembers(
+    @ApiParam(value = "Member, e.g. newMember", required = true) ConceptRefsetMemberJpa[] members,
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(getClass())
+        .info("RESTful call PUT (refset): /members/add " + members);
+
+    final ConceptRefsetMemberList postAdditionsRefsetMemberList =
+        new ConceptRefsetMemberListJpa();
+    Refset refset = null;
+    int addCount = 0;
+
+    try (final RefsetService refsetService =
+        new RefsetServiceJpa(getHeaders(headers));) {
+
+      // Configure transaction scope
+      refsetService.setTransactionPerOperation(false);
+      refsetService.beginTransaction();
+
+      // use first to get refset id
+      refset = refsetService.getRefset(members[0].getRefsetId());
+
+      final ConceptRefsetMemberList preAdditionsRefsetMemberList =
+          refsetService.findMembersForRefset(refset.getId(), "", null);
+      final List<ConceptRefsetMember> preAdditionsRefsetMembers =
+          preAdditionsRefsetMemberList.getObjects();
+
+      final String userName =
+          authorizeProject(refsetService, refset.getProject().getId(),
+              securityService, authToken, "add new member", UserRole.AUTHOR);
+
+      for (final ConceptRefsetMemberJpa member : members) {
+
+        // Check if member already exists, then skip
+        ConceptRefsetMember memberExists =
+            Iterables.tryFind(preAdditionsRefsetMembers,
+                new Predicate<ConceptRefsetMember>() {
+                  public boolean apply(ConceptRefsetMember m) {
+                    return member.getConceptId().equals(m.getConceptId());
+                  }
+                }).orNull();
+
+        if (memberExists != null) {
+          // Member already exists
+          Logger.getLogger(getClass())
+              .info("  member already exists = " + member.getConceptId());
+          postAdditionsRefsetMemberList.addObject(memberExists);
+
+        } else {
+
+          // concept name lookup will happen after the members are all added
+          member.setConceptName(TerminologyHandler.UNABLE_TO_DETERMINE_NAME);
+
+          member.setLastModifiedBy(userName);
+          ConceptRefsetMember newMember = refsetService.addMember(member);
+          addCount++;
+
+          addLogEntry(refsetService, userName, "ADD member",
+              refset.getProject().getId(), refset.getId(),
+              refset.getTerminologyId() + " = " + newMember.getConceptId() + " "
+                  + newMember.getConceptName());
+
+          postAdditionsRefsetMemberList.addObject(newMember);
+          if (addCount % RootService.commitCt == 0) {
+            refsetService.commitClearBegin();
+          }
+        }
+
+      }
+
+      refsetService.commit();
+
+      // With contents committed, can now lookup Names/Statuses of members
+      if (ConfigUtility.isAssignNames()) {
+        // Lookup member names should always happen after commit
+        refsetService.lookupMemberNames(refset.getId(), "adding refset members",
+            ConfigUtility.isBackgroundLookup());
+      }
+
+    } catch (Exception e) {
+      handleException(e, "trying to add new member ");
+      return null;
+    } finally {
+      securityService.close();
+    }
+
+    return postAdditionsRefsetMemberList;
   }
 
   /* see superclass */
@@ -1416,6 +1639,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
 
     final RefsetService refsetService =
         new RefsetServiceJpa(getHeaders(headers));
+    int removeCount = 0;
     try {
       final Refset refset = refsetService.getRefset(refsetId);
       final String userName = authorizeProject(refsetService,
@@ -1426,6 +1650,12 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       for (final ConceptRefsetMember member : refsetService
           .findMembersForRefset(refsetId, "", null).getObjects()) {
         refsetService.removeMember(member.getId());
+        removeCount++;
+
+        if (removeCount % RootService.commitCt == 0) {
+          refsetService.commitClearBegin();
+        }
+
       }
       addLogEntry(refsetService, userName, "REMOVE all members",
           refset.getProject().getId(), refsetId, refset.getTerminologyId());
@@ -1470,6 +1700,11 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       }
 
       if (translated == null) {
+        // Need to ensure case isn't an issue
+        if (query != null && !query.startsWith("conceptId:")) {
+          query = query.toLowerCase();
+        }
+
         final ConceptRefsetMemberList list =
             refsetService.findMembersForRefset(refsetId, query, pfs);
         for (ConceptRefsetMember member : list.getObjects()) {
@@ -1564,13 +1799,16 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       if (inclusion.getConceptName() == null) {
         final Concept concept = refsetService
             .getTerminologyHandler(refset.getProject(), getHeaders(headers))
-            .getConcept(inclusion.getConceptId(), refset.getTerminology(),
+            .getFullConcept(inclusion.getConceptId(), refset.getTerminology(),
                 refset.getVersion());
         if (concept != null) {
           inclusion.setConceptName(concept.getName());
           inclusion.setConceptActive(concept.isActive());
+          refsetService.populateMemberSynonyms(inclusion, concept, refset);
         } else {
           inclusion.setConceptName(TerminologyHandler.UNABLE_TO_DETERMINE_NAME);
+          inclusion.setSynonyms(
+              Arrays.asList(TerminologyHandler.UNABLE_TO_DETERMINE_NAME));
         }
       }
 
@@ -1822,10 +2060,11 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         // add members from expression results
         // No need to "resolvExpression" because definition computation includes
         // project exclude logic
-        ConceptList conceptList = refsetService
-            .getTerminologyHandler(refset.getProject(), getHeaders(headers))
-            .resolveExpression(refsetCopy.computeDefinition(null, null),
-                refsetCopy.getTerminology(), refsetCopy.getVersion(), null);
+        TerminologyHandler handler = refsetService
+            .getTerminologyHandler(refset.getProject(), getHeaders(headers));
+        ConceptList conceptList =
+            handler.resolveExpression(refsetCopy.computeDefinition(null, null),
+                refsetCopy.getTerminology(), refsetCopy.getVersion(), null, false);
 
         // do this to re-use the terminology id
         final Map<String, ConceptRefsetMember> conceptIdMap = new HashMap<>();
@@ -1851,6 +2090,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
             member.setPublished(concept.isPublished());
             member.setConceptId(concept.getTerminologyId());
             member.setConceptName(concept.getName());
+            refsetService.populateMemberSynonyms(member, concept, refset,
+                handler);
           }
 
           // If origin refset has this as in exclusion, keep it that way.
@@ -2089,18 +2330,28 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
           refsetService.removeMember(originMember.getId());
         }
         // member type or concept active status changed, rewire
-        if (stagedMember != null && (stagedMember.getMemberType()
-            .getUnstagedType() != originMember.getMemberType()
+        if (stagedMember != null) {
+          if (stagedMember.getMemberType().getUnstagedType() != originMember
+              .getMemberType()
             || stagedMember.isConceptActive() != originMember
-                .isConceptActive())) {
+                  .isConceptActive()) {
           // No need to change id, this is
           originMember
               .setMemberType(stagedMember.getMemberType().getUnstagedType());
           originMember.setConceptActive(stagedMember.isConceptActive());
 
+            originMember.setSynonyms(stagedMember.getSynonyms());
           originMember.setRefset(originRefset);
           originMember.setLastModifiedBy(userName);
           refsetService.updateMember(originMember);
+        }
+
+          // Update if changes in descriptions affected concept name (i.e.
+          // inactivated-old/created-new FSN)
+          if (!stagedMember.getConceptName()
+              .equals(originMember.getConceptName())) {
+            originMember.setConceptName(stagedMember.getConceptName());
+      }
         }
       }
 
@@ -2677,7 +2928,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         final ConceptList concepts = refsetService
             .getTerminologyHandler(refset.getProject(), getHeaders(headers))
             .resolveExpression(clause.getValue(), refset.getTerminology(),
-                refset.getVersion(), null);
+                refset.getVersion(), null, false);
         clauseToConceptsMap.put(clause.getValue(), concepts);
       }
 
@@ -2847,6 +3098,96 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       // already
       final ValidationResult result = new ValidationResultJpa();
       if (refset.getMembers().size() != 0) {
+        result.addError(
+            "Refset already contains members, this operation will add or update members");
+      } else {
+        return result;
+      }
+
+      addLogEntry(refsetService, userName, "BEGIN IMPORT refset",
+          refset.getProject().getId(), refset.getId(), refset.toString());
+      return result;
+    } catch (Exception e) {
+      handleException(e, "trying to begin import members");
+    } finally {
+      refsetService.close();
+      securityService.close();
+    }
+    return null;
+  }
+
+  /* see superclass */
+  @POST
+  @Override
+  @Path("/import/begin")
+  @ApiOperation(value = "Begin member import", notes = "Begins the import process by validating and staging the refset", response = ValidationResultJpa.class)
+  public ValidationResult beginImportMembers(
+    @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
+    @ApiParam(value = "Import handler id, e.g. \"DEFAULT\"", required = true) @QueryParam("handlerId") String ioHandlerInfoId,
+    @ApiParam(value = "List of concept id", required = false) String[] conceptIds,
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(getClass())
+        .info("RESTful call POST (Refset): /import/begin " + refsetId + ", "
+            + ioHandlerInfoId);
+
+    final RefsetService refsetService =
+        new RefsetServiceJpa(getHeaders(headers));
+    try {
+      // Load refset
+      final Refset refset = refsetService.getRefset(refsetId);
+      if (refset == null) {
+        throw new Exception("Invalid refset id " + refsetId);
+      }
+
+      // Authorize the call
+      final String userName =
+          authorizeProject(refsetService, refset.getProject().getId(),
+              securityService, authToken, "import members", UserRole.AUTHOR);
+
+      // Check staging flag
+      if (refset.isStaged()) {
+        throw new LocalException(
+            "Begin import is not allowed while the refset is already staged.");
+      }
+
+      // Check refset type
+      if (refset.getType() != Refset.Type.EXTENSIONAL) {
+        throw new LocalException(
+            "Import is only allowed for extensional type refsets.");
+      }
+
+      // validate the import handler
+      final ImportRefsetHandler handler =
+          refsetService.getImportRefsetHandler(ioHandlerInfoId);
+      if (handler == null) {
+        throw new Exception("invalid handler id " + ioHandlerInfoId);
+      }
+
+      // Mark the record as staged and create a staging change entry
+      refset.setStaged(true);
+      refset.setStagingType(Refset.StagingType.IMPORT);
+      refset.setLastModifiedBy(userName);
+      refsetService.updateRefset(refset);
+
+      final StagedRefsetChange change = new StagedRefsetChangeJpa();
+      change.setOriginRefset(refset);
+      change.setType(Refset.StagingType.IMPORT);
+      change.setStagedRefset(refset);
+      refsetService.addStagedRefsetChange(change);
+
+      // Get a validation result based on whether the refset has members
+      // already
+      final ValidationResult result = new ValidationResultJpa();
+
+      List<ConceptRefsetMember> duplicates =
+          findDuplicates(refset.getMembers(), conceptIds);
+
+      if (!duplicates.isEmpty()) {
+        result.addError("Refset contains duplicate members.");
+      }
+      if (!refset.getMembers().isEmpty()) {
         result.addError(
             "Refset already contains members, this operation will add or update members");
       } else {
@@ -3080,6 +3421,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
           // Initialize values to be overridden by lookupNames routine
           member.setConceptActive(true);
           member.setConceptName(TerminologyHandler.NAME_LOOKUP_IN_PROGRESS);
+          member.setSynonyms(
+              Arrays.asList(TerminologyHandler.NAME_LOOKUP_IN_PROGRESS));
 
           member.setLastModifiedBy(userName);
           refsetService.addMember(member);
@@ -3204,6 +3547,49 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       handleException(e, "trying to get refset types");
       return null;
     } finally {
+      securityService.close();
+    }
+  }
+
+  /* see superclass */
+  @Override
+  @GET
+  @Path("/languages")
+  @ApiOperation(value = "Get required language refsets", notes = "Gets list of required language refsets for a branch", response = StringList.class)
+  public StringList getRequiredLanguageRefsets(
+    @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info("RESTful POST call (Refset): /languages");
+
+    final RefsetService refsetService =
+        new RefsetServiceJpa(getHeaders(headers));
+    try {
+      final Refset refset = refsetService.getRefset(refsetId);
+      // Authorize the call
+      final String userName = authorizeProject(refsetService,
+          refset.getProject().getId(), securityService, authToken,
+          "get required language refsets", UserRole.AUTHOR);
+
+      List<String> languagePriorities = refsetService
+          .getTerminologyHandler(refset.getProject(), getHeaders(headers))
+          .getRequiredLanguageRefsets(refset.getTerminology(),
+              refset.getVersion());
+
+      StringList list = new StringList();
+      for (String str : languagePriorities) {
+        list.addObject(str);
+      }
+      if (!list.contains("en")) {
+        list.addObject("en");
+      }
+      return list;
+
+    } catch (Exception e) {
+      handleException(e, "trying to get required language refsets");
+      return null;
+    } finally {
+      refsetService.close();
       securityService.close();
     }
   }
@@ -3522,7 +3908,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass())
-        .info("RESTful call GET (Refset): /refset/lookup/start " + refsetId);
+        .info("RESTful call GET (Refset): /refset/lookup/start " + refsetId
+            + ", " + background );
 
     final RefsetService refsetService =
         new RefsetServiceJpa(getHeaders(headers));
@@ -3845,5 +4232,29 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       securityService.close();
     }
     return null;
+  }
+
+  /**
+   * Find duplicates.
+   *
+   * @param members the members
+   * @param conceptIds the concept ids
+   * @return the list
+   */
+  private List<ConceptRefsetMember> findDuplicates(
+    List<ConceptRefsetMember> members, String[] conceptIds) {
+
+    final List<ConceptRefsetMember> duplicates = new ArrayList<>();
+
+    if (conceptIds != null) {
+      for (String c : conceptIds) {
+        for (ConceptRefsetMember crm : members) {
+          if (c.equals(crm.getConceptId())) {
+            duplicates.add(crm);
+          }
+        }
+      }
+    }
+    return duplicates;
   }
 }

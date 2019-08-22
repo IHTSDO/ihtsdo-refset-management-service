@@ -8,15 +8,16 @@ tsApp.controller('EditConceptModalCtrl', [
   'translationService',
   'validationService',
   'workflowService',
+  'securityService',
   'concept',
   'translation',
   'project',
   'user',
   'role',
   function($scope, $uibModalInstance, $uibModal, projectService, utilService, translationService,
-    validationService, workflowService, concept, translation, project, user, role) {
+    validationService, workflowService, securityService, concept, translation, project, user, role) {
     console.debug('Entered edit concept modal control');
-
+    
     $scope.displaySuggest = true;
     // Paging params
     $scope.pageSize = 4;
@@ -119,10 +120,24 @@ tsApp.controller('EditConceptModalCtrl', [
     $scope.project = project;
     $scope.user = user;
     $scope.role = role;
+    $scope.authorNames = [];
+        
+    if (translation.assigned) {
+      $scope.editTranslation = translation.assigned.find(
+        et => et.concept.terminologyId === concept.terminologyId);
+      $scope.editTranslation.authors.forEach(function(username) {
+        securityService.getUserByUsername(username).then(
+          function(data) {
+           $scope.authorNames.push(data.name);
+          });
+      });
+    }
+    
     // Save this so we can set the workflow status and it shows up
     // immediately
     $scope.concept = concept;
     $scope.autoResult = null;
+    $scope.translationSuggestions = [];
     $scope.displayControls = false;
 
     // Data structure for case significance - we just need the
@@ -169,6 +184,12 @@ tsApp.controller('EditConceptModalCtrl', [
           .then(function(data) {
             $scope.autoResult = data;
           });
+                
+        translationService.findTranslationSuggestionsForConcept(
+          $scope.translation.refsetId, $scope.concept.terminologyId)
+          .then(function(data) {
+            $scope.translationSuggestions = data;
+        });
       }
 
     });

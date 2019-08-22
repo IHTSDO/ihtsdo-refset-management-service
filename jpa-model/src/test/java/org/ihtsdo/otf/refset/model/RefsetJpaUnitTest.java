@@ -141,6 +141,7 @@ public class RefsetJpaUnitTest extends ModelUnitSupport {
     tester.include("lookupInProgress");
     tester.include("revision");
     tester.include("localSet");
+    tester.include("preferredLanguage");
 
     // Set up objects
     tester.proxy(Project.class, 1, p1);
@@ -228,6 +229,7 @@ public class RefsetJpaUnitTest extends ModelUnitSupport {
     tester.include("inPublicationProcess");
     tester.include("lookupInProgress");
     tester.include("revision");
+    tester.include("preferredLanguage");
 
     assertTrue(tester.testNotNullFields());
   }

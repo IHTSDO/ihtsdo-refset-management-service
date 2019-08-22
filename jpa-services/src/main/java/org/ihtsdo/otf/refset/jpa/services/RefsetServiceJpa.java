@@ -1,9 +1,10 @@
 /**
- * Copyright 2015 West Coast Informatics, LLC
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.jpa.services;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -38,7 +39,6 @@ import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.RefsetList;
 import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
-import org.ihtsdo.otf.refset.helpers.TranslationList;
 import org.ihtsdo.otf.refset.jpa.ConceptRefsetMemberNoteJpa;
 import org.ihtsdo.otf.refset.jpa.IoHandlerInfoJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
@@ -50,9 +50,10 @@ import org.ihtsdo.otf.refset.jpa.helpers.ConceptRefsetMemberListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.IoHandlerInfoListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.RefsetListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ReleaseInfoListJpa;
-import org.ihtsdo.otf.refset.jpa.helpers.TranslationListJpa;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
+import org.ihtsdo.otf.refset.rf2.Description;
+import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
 import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.RefsetDescriptorRefsetMemberJpa;
@@ -628,7 +629,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
   @Override
   public void handleLazyInit(ConceptRefsetMember member) {
     member.getNotes().size();
-
+    member.getSynonyms().size();
   }
 
   /* see superclass */
@@ -660,6 +661,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
       final IoHandlerInfo info = new IoHandlerInfoJpa();
       info.setId(entry.getKey());
       info.setName(entry.getValue().getName());
+      info.setIoType(entry.getValue().getIoType());
       info.setFileTypeFilter(entry.getValue().getFileTypeFilter());
       info.setMimeType(entry.getValue().getMimeType());
       list.getObjects().add(info);
@@ -763,6 +765,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
         member.setId(null);
         // Clear notes
         member.getNotes().clear();
+        member.getSynonyms().clear();
         if (member.getEffectiveTime() == null)
           member.setEffectiveTime(effectiveTime);
         refsetCopy.getMembers().add(member);
@@ -972,13 +975,14 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
 
     /** The save members. */
     private boolean saveMembers = true;
-
+    
     /**
      * Instantiates a {@link LookupMemberNamesThread} from the specified
      * parameters.
      *
      * @param id the id
      * @param label the label
+     * @param preferredLanguage the preferred language
      * @throws Exception the exception
      */
     public LookupMemberNamesThread(Long id, String label) throws Exception {
@@ -1070,6 +1074,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
           int i = 0;
           final String terminology = refset.getTerminology();
           final String version = refset.getVersion();
+          final String preferredLanguage = refset.getPreferredLanguage();
 
           // Execute for all members
           boolean missingConcepts = false;
@@ -1084,7 +1089,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
             final TerminologyHandler handler =
                 getTerminologyHandler(refset.getProject(), headers);
             final ConceptList cons =
-                handler.getConcepts(termIds, terminology, version);
+                handler.getConcepts(termIds, terminology, version, true);
 
             // IF the number of concepts returned doesn't match
             // the size of termIds, there was a problem
@@ -1102,13 +1107,26 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
               termIds.remove(con.getTerminologyId());
 
               // Reread the member as we don't know if it has changed
-              if (saveMembers) {
+              if (saveMembers && !preferredLanguage.isEmpty()) {
                 final ConceptRefsetMember member = refsetService
                     .getMember(memberMap.get(con.getTerminologyId()).getId());
                 member.setConceptName(con.getName());
-                member.setConceptActive(con.isActive());
+                // set concept name to highest ranked provided language
+                // available given the concept's descriptions
+                // type must be 'PT'
+                for (Description desc : con.getDescriptions()) {
+                  for (LanguageRefsetMember lrm : desc
+                      .getLanguageRefsetMembers()) {
+                    if (lrm.getAcceptabilityId().equals("900000000000548007")) {
+                      if (desc.getLanguageCode().equals(preferredLanguage)
+                          && desc.getTypeId().equals("900000000000013009")) {
+                        member.setConceptName(desc.getTerm());
+                      }
+                    }
+                  }
+                }
+                populateMemberSynonyms(member, con, refset, handler);
                 refsetService.updateMember(member);
-
               }
 
               // This is for an in-memory member, just update the object
@@ -1117,6 +1135,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
                     memberMap.get(con.getTerminologyId());
                 member.setConceptName(con.getName());
                 member.setConceptActive(con.isActive());
+                populateMemberSynonyms(member, con, refset, handler);
               }
             }
 
@@ -1129,6 +1148,8 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
                     refsetService.getMember(memberMap.get(termId).getId());
                 member.setConceptName(
                     TerminologyHandler.UNABLE_TO_DETERMINE_NAME);
+                member.setSynonyms(
+                    Arrays.asList(TerminologyHandler.UNABLE_TO_DETERMINE_NAME));
                 refsetService.updateMember(member);
 
               }
@@ -1138,6 +1159,8 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
                 final ConceptRefsetMember member = memberMap.get(termId);
                 member.setConceptName(
                     TerminologyHandler.UNABLE_TO_DETERMINE_NAME);
+                member.setSynonyms(
+                    Arrays.asList(TerminologyHandler.UNABLE_TO_DETERMINE_NAME));
               }
             }
 
@@ -1216,15 +1239,15 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
       }
     }
     ConceptList resolvedFromExpression = null;
+    final Project project = this.getProject(refset.getProject().getId());
+    final TerminologyHandler handler = getTerminologyHandler(project, headers);
     final String definition = refset.computeDefinition(null, null);
     if (definition.equals("")) {
       resolvedFromExpression = new ConceptListJpa();
     } else {
       try {
-        final Project project = this.getProject(refset.getProject().getId());
-        resolvedFromExpression =
-          getTerminologyHandler(project, headers).resolveExpression(definition,
-              refset.getTerminology(), refset.getVersion(), null);
+        resolvedFromExpression = handler.resolveExpression(definition,
+              refset.getTerminology(), refset.getVersion(), null, false);
 
         // Save concepts
         for (final Concept concept : resolvedFromExpression.getObjects()) {
@@ -1282,6 +1305,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
         member.setPublished(concept.isPublished());
         member.setConceptId(concept.getTerminologyId());
         member.setConceptName(concept.getName());
+        populateMemberSynonyms(member, concept, refset, handler);
         member.setMemberType(Refset.MemberType.MEMBER);
         member.setModuleId(concept.getModuleId());
         member.setRefset(refset);
@@ -1580,8 +1604,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
   @Override
   @SuppressWarnings("unchecked")
   public RefsetList getRefsets() {
-    Logger.getLogger(getClass())
-        .debug("Refset Service - get refsets");
+    Logger.getLogger(getClass()).debug("Refset Service - get refsets");
     javax.persistence.Query query =
         manager.createQuery("select a from RefsetJpa a");
     try {
@@ -1594,4 +1617,62 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
     }
   }
 
+  /* see superclass */
+  public void populateMemberSynonyms(ConceptRefsetMember member,
+    Concept concept, Refset refset) throws Exception {
+    member.setSynonyms(new ArrayList<String>());
+
+    populateMemberSynonymsFromConcept(member, concept);
+
+    if (member.getSynonyms().isEmpty()) {
+      TerminologyHandler handler = null;
+
+      try {
+        final Project project = this.getProject(refset.getProject().getId());
+        handler = getTerminologyHandler(project, null);
+      } catch (Exception e) {
+        handler = getTerminologyHandler(refset.getProject(), null);
+}
+
+      populateMemberSynonyms(member, concept, refset, handler);
+    }
+  }
+
+  /* see superclass */
+  @Override
+  public void populateMemberSynonyms(ConceptRefsetMember member,
+    Concept concept, Refset refset, TerminologyHandler handler)
+    throws Exception {
+    member.setSynonyms(new ArrayList<String>());
+
+    populateMemberSynonymsFromConcept(member, concept);
+
+    if (member.getSynonyms().isEmpty()) {
+      final Concept fullCon = handler.getFullConcept(concept.getTerminologyId(),
+          refset.getTerminology(), refset.getVersion());
+
+      for (Description d : fullCon.getDescriptions()) {
+        if (d.isActive() && !d.getTypeId().equals("900000000000550004") // DEFINITION_DESC_SCTID
+            && !member.getSynonyms().contains(d.getTerm())) {
+          member.getSynonyms().add(d.getTerm());
+        }
+      }
+    }
+  }
+
+  /**
+   * Populate member synonyms from concept if descriptions have content.
+   *
+   * @param member the member
+   * @param concept the concept
+   */
+  private void populateMemberSynonymsFromConcept(ConceptRefsetMember member,
+    Concept concept) {
+    for (Description d : concept.getDescriptions()) {
+      if (d.isActive() && !d.getTypeId().equals("900000000000550004") // DEFINITION_DESC_SCTID
+          && !member.getSynonyms().contains(d.getTerm())) {
+        member.getSynonyms().add(d.getTerm());
+      }
+    }
+  }
 }

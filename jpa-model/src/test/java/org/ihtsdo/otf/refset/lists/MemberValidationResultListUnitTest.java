@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 West Coast Informatics, LLC
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.lists;
 
@@ -21,7 +21,8 @@ import org.junit.Test;
 /**
  * Unit testing for {@link MemberValidationResultList}.
  */
-public class MemberValidationResultListUnitTest extends AbstractListUnit<MemberValidationResult> {
+public class MemberValidationResultListUnitTest
+    extends AbstractListUnit<MemberValidationResult> {
 
   /** The list1 test fixture . */
   private MemberValidationResultList list1;
@@ -62,8 +63,10 @@ public class MemberValidationResultListUnitTest extends AbstractListUnit<MemberV
     r2.setId(2L);
     ConceptRefsetMember m1 = new ConceptRefsetMemberJpa();
     m1.setId(1L);
+    m1.getSynonyms().add("testWord1");
     ConceptRefsetMember m2 = new ConceptRefsetMemberJpa();
     m2.setId(2L);
+    m2.getSynonyms().add("testWord2");
     m1.setRefset(r1);
     m2.setRefset(r2);
     o1.setMember(m1);

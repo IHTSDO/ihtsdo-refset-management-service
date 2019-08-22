@@ -1,5 +1,5 @@
 /**
- * Copyright 2015 West Coast Informatics, LLC
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 /**
  * Copyright (c) 2012 International Health Terminology Standards Development
@@ -133,7 +133,7 @@ public class DeltaTranslationMojo extends AbstractMojo {
         final FileInputStream in = new FileInputStream(new File(file));
         translationService = new TranslationClientRest(properties);
         translationService.finishImportConcepts(null, in, translationId,
-            ioHandlerInfoId, authToken);
+            ioHandlerInfoId, null, authToken);
 
       } else {
 
@@ -162,7 +162,7 @@ public class DeltaTranslationMojo extends AbstractMojo {
         final FileInputStream in = new FileInputStream(new File(file));
         translationService = new TranslationServiceRestImpl();
         translationService.finishImportConcepts(null, in, translationId,
-            ioHandlerInfoId, authToken);
+            ioHandlerInfoId, null, authToken);
 
       }
       // Done

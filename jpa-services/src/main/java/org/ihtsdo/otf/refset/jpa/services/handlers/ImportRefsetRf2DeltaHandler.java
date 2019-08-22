@@ -1,5 +1,5 @@
 /**
- * Copyright 2015 West Coast Informatics, LLC
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.jpa.services.handlers;
 
@@ -19,16 +19,17 @@ import org.ihtsdo.otf.refset.helpers.FieldedStringTokenizer;
 import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.jpa.DefinitionClauseJpa;
 import org.ihtsdo.otf.refset.jpa.ValidationResultJpa;
-import org.ihtsdo.otf.refset.rf2.Component;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
+import org.ihtsdo.otf.refset.services.handlers.ImportExportAbstract;
 import org.ihtsdo.otf.refset.services.handlers.ImportRefsetHandler;
 import org.ihtsdo.otf.refset.services.helpers.PushBackReader;
 
 /**
  * Implementation of an algorithm to import a refset definition.
  */
-public class ImportRefsetRf2DeltaHandler implements ImportRefsetHandler {
+public class ImportRefsetRf2DeltaHandler extends ImportExportAbstract
+    implements ImportRefsetHandler {
 
   /** The request cancel flag. */
   boolean requestCancel = false;
@@ -52,8 +53,26 @@ public class ImportRefsetRf2DeltaHandler implements ImportRefsetHandler {
 
   /* see superclass */
   @Override
+  public void setId(String id) {
+    // not used
+  }
+
+  /* see superclass */
+  @Override
+  public String getId() {
+    return this.id;
+  }
+
+  /* see superclass */
+  @Override
   public boolean isDeltaHandler() {
     return true;
+  }
+
+  /* see superclass */
+  @Override
+  public void setFileTypeFilter(String fileTypeFilter) {
+    // not used
   }
 
   /* see superclass */
@@ -64,14 +83,38 @@ public class ImportRefsetRf2DeltaHandler implements ImportRefsetHandler {
 
   /* see superclass */
   @Override
+  public void setMimeType(String mimeType) {
+    // not used
+  }
+
+  /* see superclass */
+  @Override
   public String getMimeType() {
     return "text/plain";
   }
 
   /* see superclass */
   @Override
+  public void setName(String name) {
+    // not used
+  }
+
+  /* see superclass */
+  @Override
   public String getName() {
     return "Import RF2 Delta";
+  }
+
+  /* see superclass */
+  @Override
+  public void setIoType(IoType ioType) {
+    // not used
+  }
+
+  /* see superclass */
+  @Override
+  public IoType getIoType() {
+    return IoType.FILE;
   }
 
   /* see superclass */
@@ -145,9 +188,10 @@ public class ImportRefsetRf2DeltaHandler implements ImportRefsetHandler {
         member.setRefset(refset);
         String conceptId = fields[5].trim();
         if (!conceptId.equals(fields[5])) {
-        	pbr.close();
-        	throw new LocalException("Unexpected white space padding the concept id *"
-                + fields[5] + "*");
+          pbr.close();
+          throw new LocalException(
+              "Unexpected white space padding the concept id *" + fields[5]
+                  + "*");
         }
         member.setConceptId(conceptId);
         if (!fields[1].equals("")) {
@@ -172,8 +216,8 @@ public class ImportRefsetRf2DeltaHandler implements ImportRefsetHandler {
       validationResult
           .addComment("1 new member successfully loaded or updatd.");
     } else {
-      validationResult.addComment(addedCt
-          + " new members successfully loaded or updated.");
+      validationResult
+          .addComment(addedCt + " new members successfully loaded or updated.");
     }
 
     if (inactiveCt == 1) {
@@ -240,8 +284,8 @@ public class ImportRefsetRf2DeltaHandler implements ImportRefsetHandler {
             continue;
           }
           // Skip project exclusion clause
-          if (trimClause(clause).equals(
-              refset.getProject().getExclusionClause())) {
+          if (trimClause(clause)
+              .equals(refset.getProject().getExclusionClause())) {
             continue;
           }
 
@@ -265,13 +309,11 @@ public class ImportRefsetRf2DeltaHandler implements ImportRefsetHandler {
   @SuppressWarnings("static-method")
   private String trimClause(String clause) {
     // Strip leading parens
-    String retval =
-        clause.replaceFirst("^\\s*\\(\\s*", "")
-            .replaceFirst("^\\s*\\(\\s*", "").replaceFirst("^\\s*\\(\\s*", "");
+    String retval = clause.replaceFirst("^\\s*\\(\\s*", "")
+        .replaceFirst("^\\s*\\(\\s*", "").replaceFirst("^\\s*\\(\\s*", "");
     // Strip trailing parens
-    retval =
-        retval.replaceFirst("\\s*\\)\\s*$", "")
-            .replaceFirst("\\s*\\)\\s*$", "").replaceFirst("\\s*\\)\\s*$", "");
+    retval = retval.replaceFirst("\\s*\\)\\s*$", "")
+        .replaceFirst("\\s*\\)\\s*$", "").replaceFirst("\\s*\\)\\s*$", "");
     return retval.trim();
   }
 
@@ -279,21 +321,6 @@ public class ImportRefsetRf2DeltaHandler implements ImportRefsetHandler {
   @Override
   public void setProperties(Properties p) throws Exception {
     // n/a
-  }
-
-  /**
-   * Sets the common fields.
-   *
-   * @param c the c
-   * @param refset the refset
-   */
-  @SuppressWarnings("static-method")
-  private void setCommonFields(Component c, Refset refset) {
-    c.setActive(true);
-    c.setId(null);
-    c.setPublishable(true);
-    c.setPublished(false);
-    c.setModuleId(refset.getModuleId());
   }
 
   @Override

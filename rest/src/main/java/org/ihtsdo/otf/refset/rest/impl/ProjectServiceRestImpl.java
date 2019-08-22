@@ -1,5 +1,5 @@
 /**
- * Copyright 2015 West Coast Informatics, LLC
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.rest.impl;
 
@@ -65,12 +65,14 @@ import org.ihtsdo.otf.refset.services.ProjectService;
 import org.ihtsdo.otf.refset.services.RefsetService;
 import org.ihtsdo.otf.refset.services.SecurityService;
 import org.ihtsdo.otf.refset.services.TranslationService;
+import org.ihtsdo.otf.refset.services.handlers.TerminologyHandler;
 import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
 
+// TODO: Auto-generated Javadoc
 /**
  * REST implementation for {@link ProjectServiceRest}..
  */
@@ -90,7 +92,7 @@ import com.wordnik.swagger.annotations.ApiParam;
 public class ProjectServiceRestImpl extends RootServiceRestImpl
     implements ProjectServiceRest {
 
-  /** Security context */
+  /** Security context. */
   @Context
   HttpHeaders headers;
 
@@ -132,6 +134,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
       securityService.close();
     }
   }
+
 
   /* see superclass */
   @Override
@@ -181,6 +184,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     }
     return null;
   }
+
 
   /* see superclass */
   @Override
@@ -239,6 +243,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     return null;
   }
 
+
   /* see superclass */
   @Override
   @POST
@@ -282,6 +287,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     }
   }
 
+
   /* see superclass */
   @Override
   @POST
@@ -324,6 +330,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     }
   }
 
+
   /* see superclass */
   @Override
   @PUT
@@ -359,7 +366,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
           pfs.setMaxResults(1);
           projectService.getTerminologyHandler(project, getHeaders(headers))
               .resolveExpression(project.getExclusionClause(),
-                  project.getTerminology(), "", pfs);
+                  project.getTerminology(), "", pfs, false);
         } catch (Exception e) {
           throw new LocalException("Project has invalid exclusion clause");
         }
@@ -380,6 +387,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     }
 
   }
+
 
   /* see superclass */
   @Override
@@ -419,7 +427,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
           pfs.setMaxResults(1);
           projectService.getTerminologyHandler(project, getHeaders(headers))
               .resolveExpression(project.getExclusionClause(),
-                  project.getTerminology(), "", pfs);
+                  project.getTerminology(), "", pfs, false);
         } catch (Exception e) {
           throw new LocalException("Project has invalid exclusion clause");
         }
@@ -496,6 +504,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
 
   }
 
+
   /* see superclass */
   @Override
   @GET
@@ -524,6 +533,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     }
 
   }
+
 
   /* see superclass */
   @Override
@@ -554,6 +564,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     }
 
   }
+
 
   /* see superclass */
   @Override
@@ -591,6 +602,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     }
 
   }
+
 
   /* see superclass */
   @Override
@@ -670,6 +682,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     return null;
   }
 
+
   /* see superclass */
   @Override
   @GET
@@ -704,6 +717,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     }
     return null;
   }
+
 
   /* see superclass */
   @Override
@@ -744,6 +758,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     return null;
   }
 
+
   /* see superclass */
   @Override
   @POST
@@ -782,6 +797,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     return null;
   }
 
+
   /* see superclass */
   @Override
   @GET
@@ -817,6 +833,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     return null;
   }
 
+
   /* see superclass */
   @Override
   @GET
@@ -843,6 +860,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     }
     return null;
   }
+
 
   /* see superclass */
   @Override
@@ -887,6 +905,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     }
 
   }
+
 
   /* see superclass */
   @Override
@@ -962,6 +981,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     }
 
   }
+
 
   /* see superclass */
   @Override
@@ -1078,7 +1098,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
       if (authToken != null) {
         userName = securityService.getUsernameForToken(authToken);
       }
-      
+
       final Project project = translationService.getProject(projectId);
       if (project == null) {
         throw new LocalException("Invalid project id: " + projectId);
@@ -1118,6 +1138,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
 
   }
 
+
   /* see superclass */
   @Override
   @GET
@@ -1154,6 +1175,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     }
     return null;
   }
+
 
   /* see superclass */
   @GET
@@ -1209,6 +1231,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     }
     return null;
   }
+
 
   /* see superclass */
   @GET
@@ -1309,6 +1332,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     }
   }
 
+
   /* see superclass */
   @Override
   @GET
@@ -1344,6 +1368,92 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
       projectService.close();
       securityService.close();
     }
+  }
+
+  /* see superclass */
+  @Override
+  @GET
+  @Path("/{projectId}/translationExtentions")
+  @ApiOperation(value = "Get a list of strings.", notes = "Get a list of available translation language extensions for a project.", response = StringList.class)
+  public StringList getBranches(
+    @ApiParam(value = "Project id, e.g. 12345", required = true) @PathParam("projectId") Long projectId,
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(getClass()).info("RESTful GET call (Project): " + projectId
+        + "/{projectId}/translationExtentions");
+    StringList translationExtentions = new StringList();
+
+    try (final ProjectService projectService =
+        new ProjectServiceJpa(getHeaders(headers))) {
+
+      authorizeApp(securityService, authToken,
+          "translationExtentions get branches", UserRole.VIEWER);
+
+      final Project project = projectService.getProject(projectId);
+
+      final PfsParameter pfs = new PfsParameterJpa();
+      pfs.setStartIndex(0);
+
+      final List<String> sl =
+          projectService.getTerminologyHandler(project, getHeaders(headers))
+              .getTranslationExtensions();
+
+      translationExtentions.setObjects(sl);
+      translationExtentions.setTotalCount((sl != null) ? sl.size() : 0);
+
+    } catch (Exception e) {
+      Logger.getLogger(getClass()).error("ERROR: ", e);
+      throw new LocalException(
+          "Error getting branches project id " + projectId);
+    } finally {
+      securityService.close();
+    }
+
+    return translationExtentions;
+  }
+
+  /* see superclass */
+  @Override
+  @GET
+  @Path("/translationExtentions")
+  @ApiOperation(value = "Get a list of strings.", notes = "Get a list of available translation language extensions for a terminology handler.", response = StringList.class)
+  public StringList getBranches(
+    @ApiParam(value = "Terminology Handler Key e.g. SNOWOWL-SE", required = true) @QueryParam("terminologyHandlerKey") String terminologyHandlerKey,
+    @ApiParam(value = "Terminology Handler URL e.g. https://ms-authoring.ihtsdotools.org/snowowl/snomed-ct/v2", required = true) @QueryParam("terminologyHandlerUrl") String terminologyHandlerUrl,
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(getClass()).info("RESTful GET call (Project): "
+        + "/translationExtentions/" + terminologyHandlerKey);
+    StringList translationExtentions = new StringList();
+
+    try (final ProjectService projectService =
+        new ProjectServiceJpa(getHeaders(headers))) {
+
+      authorizeApp(securityService, authToken,
+          "translationExtentions get branches", UserRole.VIEWER);
+
+      final PfsParameter pfs = new PfsParameterJpa();
+      pfs.setStartIndex(0);
+
+      final TerminologyHandler handler = projectService.getTerminologyHandler(
+          terminologyHandlerKey, terminologyHandlerUrl, getHeaders(headers));
+      final List<String> sl = handler.getTranslationExtensions();
+
+      translationExtentions.setObjects(sl);
+      translationExtentions.setTotalCount((sl != null) ? sl.size() : 0);
+
+    } catch (Exception e) {
+      Logger.getLogger(getClass()).error("ERROR: ", e);
+      throw new LocalException(
+          "Error getting branches for terminology handler key "
+              + terminologyHandlerKey + " with URL " + terminologyHandlerUrl);
+    } finally {
+      securityService.close();
+    }
+
+    return translationExtentions;
   }
 
   /**

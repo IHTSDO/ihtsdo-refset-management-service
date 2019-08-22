@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 West Coast Informatics, LLC
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.rf2.jpa;
 
@@ -201,9 +201,8 @@ public abstract class AbstractComponent implements Component {
     int result = 1;
     result = prime * result + (active ? 1231 : 1237);
     result = prime * result + ((moduleId == null) ? 0 : moduleId.hashCode());
-    result =
-        prime * result
-            + ((terminologyId == null) ? 0 : terminologyId.hashCode());
+    result = prime * result
+        + ((terminologyId == null) ? 0 : terminologyId.hashCode());
     // Removed bc was preventing compare on migrations from returning anything
     // in common
     // result = prime * result + ((version == null) ? 0 : version.hashCode());

@@ -1,5 +1,5 @@
 /**
- * Copyright 2015 West Coast Informatics, LLC
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.mojo;
 
@@ -10,6 +10,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -582,9 +583,12 @@ public class GenerateSampleDataMojo extends AbstractMojo {
       // test 2
       RefsetJpa test2 = makeRefset("test2", null, Refset.Type.EXTENSIONAL,
           project1, "222222", "1000124", author1, false);
+      List<String> synonymList =
+          Arrays.asList("Pigmented dermatofibrosarcoma protuberans",
+              "Bednar tumor", "Bednar tumour");
       ConceptRefsetMemberJpa test2member1 = makeRefsetMember(test2, "62621002",
-          "Bednar tumor", Refset.MemberType.MEMBER, "en-edition", "20150131",
-          "731000124108", "62621002", author1.getName(), author1);
+          "Bednar tumor", synonymList, Refset.MemberType.MEMBER, "en-edition",
+          "20150131", "731000124108", "62621002", author1.getName(), author1);
       new WorkflowServiceRestImpl().performWorkflowAction(project1.getId(),
           test2.getId(), "author1", "AUTHOR", "ASSIGN", author1.getAuthToken());
 
@@ -749,7 +753,6 @@ public class GenerateSampleDataMojo extends AbstractMojo {
       new WorkflowServiceRestImpl().performWorkflowAction(project1.getId(),
           test10.getId(), "reviewer1", "REVIEWER", "UNASSIGN",
           reviewer1.getAuthToken());
-      
 
       // test 11
       RefsetJpa test11 = makeRefset("test11",
@@ -757,8 +760,8 @@ public class GenerateSampleDataMojo extends AbstractMojo {
           Refset.Type.INTENSIONAL, project1, "111111111111", "1000124", author1,
           false);
       // add invalid exclusion for migration
-//      new RefsetServiceRestImpl().addRefsetExclusion(test11.getId(),
-//          "124627000", false, author1.getAuthToken());
+      // new RefsetServiceRestImpl().addRefsetExclusion(test11.getId(),
+      // "124627000", false, author1.getAuthToken());
       // add valid exclusion for migration
       new RefsetServiceRestImpl().addRefsetExclusion(test11.getId(), "10406007",
           false, author1.getAuthToken());
@@ -775,14 +778,19 @@ public class GenerateSampleDataMojo extends AbstractMojo {
       // test 12
       RefsetJpa test12 = makeRefset("test12", null, Refset.Type.EXTENSIONAL,
           project1, "121212121212", "1000124", author1, false);
+
+      synonymList = Arrays.asList("Specific enzyme deficiency");
       ConceptRefsetMemberJpa test12member1 = makeRefsetMember(test12,
-          "129456006", "Specific enzyme deficiency (disorder)",
+          "129456006", "Specific enzyme deficiency (disorder)", synonymList,
           Refset.MemberType.MEMBER, "en-edition", "20150131", "731000124108",
           "129456006", author1.getName(), author1);
+
+      synonymList = Arrays.asList("Deficiency of O-acetylserine (thiol)-lyase",
+          "Deficiency of cysteine synthase");
       ConceptRefsetMemberJpa test12member2 = makeRefsetMember(test12,
           "124627000", "Deficiency of O-acetylserine (thiol)-lyase (disorder) ",
-          Refset.MemberType.MEMBER, "en-edition", "20150131", "731000124108",
-          "124627000", author1.getName(), author1);
+          synonymList, Refset.MemberType.MEMBER, "en-edition", "20150131",
+          "731000124108", "124627000", author1.getName(), author1);
       new WorkflowServiceRestImpl().performWorkflowAction(project1.getId(),
           test12.getId(), "author1", "AUTHOR", "ASSIGN",
           author1.getAuthToken());
@@ -892,6 +900,7 @@ public class GenerateSampleDataMojo extends AbstractMojo {
    * @param refset the refset
    * @param conceptId the concept id
    * @param conceptName the concept name
+   * @param synonyms the synonyms
    * @param memberType the member type
    * @param terminology the terminology
    * @param version the version
@@ -904,9 +913,10 @@ public class GenerateSampleDataMojo extends AbstractMojo {
    */
   @SuppressWarnings("static-method")
   private ConceptRefsetMemberJpa makeRefsetMember(Refset refset,
-    String conceptId, String conceptName, Refset.MemberType memberType,
-    String terminology, String version, String moduleId, String terminologyId,
-    String lastModifiedBy, User auth) throws Exception {
+    String conceptId, String conceptName, List<String> synonyms,
+    Refset.MemberType memberType, String terminology, String version,
+    String moduleId, String terminologyId, String lastModifiedBy, User auth)
+    throws Exception {
     final ConceptRefsetMemberJpa member = new ConceptRefsetMemberJpa();
     member.setTerminologyId(terminologyId);
     member.setConceptId(conceptId);
@@ -918,6 +928,7 @@ public class GenerateSampleDataMojo extends AbstractMojo {
     member.setRefset(refset);
     member.setActive(true);
     member.setConceptActive(true);
+    member.setSynonyms(synonyms);
 
     return (ConceptRefsetMemberJpa) new RefsetServiceRestImpl()
         .addRefsetMember(member, auth.getAuthToken());
@@ -1171,7 +1182,7 @@ public class GenerateSampleDataMojo extends AbstractMojo {
       InputStream in = new FileInputStream(new File(
           "../config/src/main/resources/data/translation2/translation.zip"));
       translationService.finishImportConcepts(null, in, translation.getId(),
-          "DEFAULT", auth.getAuthToken());
+          "DEFAULT", null, auth.getAuthToken());
       in.close();
     } else {
       ValidationResult vr = translationService.beginImportConcepts(
@@ -1183,7 +1194,7 @@ public class GenerateSampleDataMojo extends AbstractMojo {
       InputStream in = new FileInputStream(new File(
           "../config/src/main/resources/data/translation2/translation.zip"));
       translationService.finishImportConcepts(null, in, translation.getId(),
-          "DEFAULT", auth.getAuthToken());
+          "DEFAULT", null, auth.getAuthToken());
       in.close();
     }
     if (assignNames) {

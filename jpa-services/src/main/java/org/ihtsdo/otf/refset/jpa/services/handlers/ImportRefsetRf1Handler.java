@@ -1,5 +1,5 @@
 /**
- * Copyright 2015 West Coast Informatics, LLC
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.jpa.services.handlers;
 
@@ -17,16 +17,17 @@ import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.FieldedStringTokenizer;
 import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.jpa.ValidationResultJpa;
-import org.ihtsdo.otf.refset.rf2.Component;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
+import org.ihtsdo.otf.refset.services.handlers.ImportExportAbstract;
 import org.ihtsdo.otf.refset.services.handlers.ImportRefsetHandler;
 import org.ihtsdo.otf.refset.services.helpers.PushBackReader;
 
 /**
  * Implementation of an algorithm to import refset members from RF1.
  */
-public class ImportRefsetRf1Handler implements ImportRefsetHandler {
+public class ImportRefsetRf1Handler extends ImportExportAbstract
+    implements ImportRefsetHandler {
 
   /** The request cancel flag. */
   boolean requestCancel = false;
@@ -53,8 +54,26 @@ public class ImportRefsetRf1Handler implements ImportRefsetHandler {
 
   /* see superclass */
   @Override
+  public void setId(String id) {
+    // not used
+  }
+
+  /* see superclass */
+  @Override
+  public String getId() {
+    return this.id;
+  }
+
+  /* see superclass */
+  @Override
   public boolean isDeltaHandler() {
     return false;
+  }
+
+  /* see superclass */
+  @Override
+  public void setFileTypeFilter(String fileTypeFilter) {
+    // not used
   }
 
   /* see superclass */
@@ -65,14 +84,38 @@ public class ImportRefsetRf1Handler implements ImportRefsetHandler {
 
   /* see superclass */
   @Override
+  public void setMimeType(String mimeType) {
+    // not used
+  }
+
+  /* see superclass */
+  @Override
   public String getMimeType() {
     return "text/plain";
   }
 
   /* see superclass */
   @Override
+  public void setName(String name) {
+    // not used
+  }
+
+  /* see superclass */
+  @Override
   public String getName() {
     return "Import RF1";
+  }
+
+  /* see superclass */
+  @Override
+  public void setIoType(IoType ioType) {
+    // not used
+  }
+
+  /* see superclass */
+  @Override
+  public IoType getIoType() {
+    return IoType.FILE;
   }
 
   /* see superclass */
@@ -115,9 +158,10 @@ public class ImportRefsetRf1Handler implements ImportRefsetHandler {
         member.setRefset(refset);
         String conceptId = fields[1].trim();
         if (!conceptId.equals(fields[1])) {
-        	pbr.close();
-        	throw new LocalException("Unexpected white space padding the concept id *"
-                + fields[1] + "*");
+          pbr.close();
+          throw new LocalException(
+              "Unexpected white space padding the concept id *" + fields[1]
+                  + "*");
         }
         member.setConceptId(conceptId);
         member.setEffectiveTime(null);
@@ -141,28 +185,14 @@ public class ImportRefsetRf1Handler implements ImportRefsetHandler {
   @Override
   public List<DefinitionClause> importDefinition(Refset refset,
     InputStream content) throws Exception {
-    throw new LocalException("This handler only supports importing of members.");
+    throw new LocalException(
+        "This handler only supports importing of members.");
   }
 
   /* see superclass */
   @Override
   public void setProperties(Properties p) throws Exception {
     // n/a
-  }
-
-  /**
-   * Sets the common fields.
-   *
-   * @param c the c
-   * @param refset the refset
-   */
-  @SuppressWarnings("static-method")
-  private void setCommonFields(Component c, Refset refset) {
-    c.setActive(true);
-    c.setId(null);
-    c.setPublishable(true);
-    c.setPublished(false);
-    c.setModuleId(refset.getModuleId());
   }
 
   @Override

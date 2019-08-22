@@ -1,0 +1,179 @@
+<div class="modal-header">
+  <h4 style="display: inline">Import Refset From Existing Project</h4>
+  <span style="float: right">
+    <i ng-show="!hasResults()" class="noul glyphicon glyphicon-remove"
+      ng-click="cancel()"></i>
+    <i ng-show="hasResults()" class="noul glyphicon glyphicon-remove"
+      ng-click="close()"></i>
+  </span>
+</div>
+
+<div class="modal-body">
+  <div>
+    <table class="table">
+      <tr>
+        <td>
+          <select ng-model="selectedWorkflowStatus" ng-change="filterRefsets()"
+            ng-options="workflowStatus as workflowStatus for workflowStatus in workflowStatusList | orderBy:'toString()' ">
+              <option value="" selected>All Workflow Statuses</option>
+          </select>
+          &nbsp;&nbsp;
+          <select ng-model="selectedModule" ng-change="filterRefsets()"
+            ng-options="moduleId as moduleId for moduleId in moduleIdList | orderBy:'toString()'">
+              <option value="" selected>All Modules</option>
+          </select>
+          &nbsp;&nbsp;
+          <select ng-model="selectedEffectiveTime" ng-change="filterRefsets()"
+            ng-options="effectiveTime as effectiveTime for effectiveTime in effectiveTimeList | orderBy:'toString()':true">
+              <option value="" selected>All Dates</option>
+          </select>
+        </td>
+       </tr>
+      <tr>
+        <td>
+          <select ng-model="selectedRefset" ng-change="changeRefset()" 
+            ng-options="selectDisplay(item) for item in refsets | orderBy : 'name'">
+            <option value="" disabled selected>Select Refset</option>
+          </select>
+        </td>
+        <td>
+        <button ng-show="selectedProject !== ''" class="btn btn-xs btn-primary"
+          ng-click="includeRefset()">Add</button>
+        </td>
+      </tr>
+      <tr ng-repeat="refset in includeRefsets">
+        <td>
+          <div>{{selectDisplay(refset)}}</div>
+        </td>
+        <td>
+          <i title="Remove" class="noul material-icons md-18" ng-click="removeRefset(refset)">delete</i>
+        </td>
+      </tr>
+      <tr ng-show="hasResults()">
+        <td colspan="2">
+          <div ng-show="added.length>0" class="alert alert-success">
+            {{added.length}} members added
+            <div style="display: inline; float: right;">
+              <i title="Show added concept ids"
+                class="noul material-icons md-18"
+                ng-click="added.expand = !added.expand;">attach_file</i>
+            </div>
+            <p ng-show="added.expand">
+              [
+              <span ng-repeat="conceptId in added">{{conceptId}}, </span>
+              ]
+            </p>
+          </div>
+          <div ng-show="removed.length>0" class="alert alert-success">
+            {{removed.length}} members removed
+            <div style="display: inline; float: right;">
+              <i title="Show removed concept ids"
+                class="noul material-icons md-18"
+                ng-click="removed.expand = !removed.expand;">attach_file</i>
+            </div>
+            <p ng-show="removed.expand">
+              [
+              <span ng-repeat="conceptId in removed">{{conceptId}}, </span>
+              ]
+            </p>
+          </div>
+          <div ng-show="exists.length>0" class="alert alert-warning">
+            {{exists.length}} members not added because they already exist
+            <div style="display: inline; float: right;">
+              <i title="Show concept ids for members already present"
+                class="noul material-icons md-18"
+                ng-click="exists.expand = !exists.expand;">attach_file</i>
+            </div>
+            <p ng-show="exists.expand">
+              [
+              <span ng-repeat="conceptId in exists">{{conceptId}}, </span>
+              ]
+            </p>
+          </div>
+          <div ng-show="notExists.length>0" class="alert alert-warning">
+            {{notExists.length}} members not removed because they did not exist
+            <div style="display: inline; float: right;">
+              <i title="Show concept ids for members not removed"
+                class="noul material-icons md-18"
+                ng-click="notExists.expand = !notExists.expand;">attach_file</i>
+            </div>
+            <p ng-show="notExists.expand">
+              [
+              <span ng-repeat="conceptId in notExists">{{conceptId}}, </span>
+              ]
+            </p>
+          </div>
+          <div ng-show="invalid.length>0" class="alert alert-warning">
+            {{invalid.length}} members not added because they are invalid
+            <div style="display: inline; float: right;">
+              <i title="Show concept ids for members that are invalid"
+                class="noul material-icons md-18"
+                ng-click="invalid.expand = !invalid.expand;">attach_file</i>
+            </div>
+            <p ng-show="invalid.expand">
+              [
+              <span ng-repeat="conceptId in invalid">{{conceptId}}, </span>
+              ]
+            </p>
+          </div>
+        </td>
+      </tr>
+
+      <!--  contains duplicates -->
+      <tr ng-show="exists.length > 0">
+        <td colspan="2">
+          <div ng-repeat="item in exists">
+
+          </div>
+        </td>
+      </tr>
+      <!-- Errors and warnings-->
+      <tr ng-show="warnings.length > 0">
+        <td>&nbsp;</td>
+        <td>
+          <div class="alert alert-warning" ng-repeat="warning in warnings">
+            {{warning}}</div>
+        </td>
+      </tr>
+      <tr
+        ng-show="errors.length == 1 || (errors.length == 2 && errors[1].length>100)">
+        <td colspan="2">
+          <div class="alert alert-danger alert-error">
+            {{errors[0]}}
+            <div style="display: inline; float: right;">
+              <i ng-show="errors[1]"
+                title="{{error.expand ? 'Show' : 'Hide'}} long error"
+                class="noul material-icons md-18"
+                ng-click="error.expand = !error.expand;">attach_file</i>
+            </div>
+            <p ng-show="errors[1] && error.expand">
+              <br />{{errors[1]}}
+            </p>
+          </div>
+        </td>
+      </tr>
+      <tr
+        ng-show="errors.length>2 || (errors.length == 2 && errors[1].length<101)">
+        <td colspan="2">
+          <div class="alert alert-danger alert-error"
+            ng-repeat="error in errors">{{error}}</div>
+        </td>
+      </tr>
+      <tr class="alert alert-warning" ng-repeat="warning in warnings">
+        <td colspan="2">
+          <div class="alert alert-warning" ng-repeat="warning in warnings">{{warning}}</div>
+        </td>
+      </tr>
+
+    </table>
+  </div>
+  <div class="modal-footer">
+  <button class="btn btn-xs btn-primary"
+      ng-show="exists.length > 0" ng-click="downloadDuplicates();">Download Duplicates Report</button>
+    <button class="btn btn-xs btn-primary"
+      ng-disabled="includeRefsets.length == 0" ng-click="clear();">Clear</button>
+    <button class="btn btn-xs btn-primary"
+      ng-disabled="includeRefsets.length == 0" ng-click="importMembers();">Import</button>
+    <button class="btn btn-xs btn-warning" ng-click="close()">Close</button>
+  </div>
+</div>
