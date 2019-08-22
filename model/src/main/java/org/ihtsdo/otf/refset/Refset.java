@@ -1,5 +1,5 @@
-/**
- * Copyright 2015 West Coast Informatics, LLC
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset;
 
@@ -359,7 +359,8 @@ public interface Refset extends Component, Searchable {
    *
    * @param enabledFeedbackEvents the enabled feedback events
    */
-  public void setEnabledFeedbackEvents(Set<FeedbackEvent> enabledFeedbackEvents);
+  public void setEnabledFeedbackEvents(
+    Set<FeedbackEvent> enabledFeedbackEvents);
 
   /**
    * Returns the user role map.
@@ -499,4 +500,18 @@ public interface Refset extends Component, Searchable {
    * @param translated the new translated
    */
   public void setTranslated(boolean translated);
+
+  /**
+   * Sets the preferred language.
+   *
+   * @param preferredLanguage the preferred language
+   */
+  public void setPreferredLanguage(String preferredLanguage);
+
+  /**
+   * Returns the preferred language.
+   *
+   * @return the preferred language
+   */
+  public String getPreferredLanguage();
 }

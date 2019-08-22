@@ -318,7 +318,7 @@ tsApp.service('refsetService', [
       });
       return deferred.promise;
     };
-    
+
     // add refset member
     this.addRefsetMembers = function(members) {
       console.debug('addRefsetMembers');
@@ -987,7 +987,8 @@ tsApp.service('refsetService', [
       console.debug('begin import members');
       var deferred = $q.defer();
       gpService.increment();
-      $http.post(refsetUrl + 'import/begin?refsetId=' + refsetId + '&handlerId=' + handlerId, conceptIds).then(
+      $http.post(refsetUrl + 'import/begin?refsetId=' + refsetId + '&handlerId=' + handlerId,
+        conceptIds).then(
       // success
       function(response) {
         console.debug('  validation result = ', response.data);
@@ -1002,12 +1003,13 @@ tsApp.service('refsetService', [
       });
       return deferred.promise;
     };
-       
+
     this.exportDuplicateMembers = function(refset, handler, conceptIds) {
-        console.debug('exportDuplicateMembers');
-        gpService.increment();
-        $http.post(
-          refsetUrl + '/export/report/duplicates?refsetId=' + refset.id + '&handlerId=' + handler.id, conceptIds).then(
+      console.debug('exportDuplicateMembers');
+      gpService.increment();
+      $http.post(
+        refsetUrl + '/export/report/duplicates?refsetId=' + refset.id + '&handlerId=' + handler.id,
+        conceptIds).then(
         // Success
         function(response) {
           var blob = new Blob([ response.data ], {
@@ -1019,8 +1021,8 @@ tsApp.service('refsetService', [
           var a = document.createElement('a');
           a.href = fileURL;
           a.target = '_blank';
-          a.download = 'duplicates_' + utilService.toCamelCase(refset.name) + refset.terminologyId +
-          '_' + utilService.yyyymmdd(new Date()) + handler.fileTypeFilter;
+          a.download = 'duplicates_' + utilService.toCamelCase(refset.name) + refset.terminologyId
+            + '_' + utilService.yyyymmdd(new Date()) + handler.fileTypeFilter;
           document.body.appendChild(a);
           gpService.decrement();
           a.click();
@@ -1031,7 +1033,7 @@ tsApp.service('refsetService', [
           utilService.handleError(response);
           gpService.decrement();
         });
-      };
+    };
 
     // Cancel import members
     this.cancelImportMembers = function(refsetId) {
@@ -1347,14 +1349,13 @@ tsApp.service('refsetService', [
     };
 
     // start lookup of member names/statuses
-    this.startLookup = function(refsetId, languagePriorities) {
+    this.startLookup = function(refsetId) {
       console.debug('startLookup');
       var deferred = $q.defer();
 
       // get refset revision
       $http.get(
-        refsetUrl + 'lookup/start?refsetId=' + refsetId
-          + (languagePriorities != null ? '&requiredLanguages=' + languagePriorities : '')).then(
+        refsetUrl + 'lookup/start?refsetId=' + refsetId).then(
       // success
       function(response) {
         console.debug('  start lookup names = ', response.data);

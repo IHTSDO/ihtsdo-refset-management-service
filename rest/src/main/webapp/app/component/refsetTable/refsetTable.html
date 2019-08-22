@@ -600,8 +600,7 @@
             ng-show="value == 'ASSIGNED' && projects.role != 'ADMIN' && selected.refset.type == 'EXTENSIONAL'"
             ng-click="openImportFromExistingProjectsModal()"
             title="Import from Existing Projects"
-            class="noul material-icons md-18">file_copy</i>
-          <i
+            class="noul material-icons md-18">file_copy</i> <i
             ng-show="value == 'ASSIGNED' && projects.role != 'ADMIN' && selected.refset.type == 'EXTENSIONAL'"
             ng-click="openAddMemberModal(selected.refset);"
             title="Add member(s)" class="noul material-icons md-18">add</i> <i
@@ -617,9 +616,13 @@
           <!-- Lookup names -->
           <i
             confirm="Are you sure you want to initiate name/active lookup (long-running for large refsets)?"
-            ng-click="openStartLookupModal(selected.refset); $event.stopPropagation()"
-            ng-show="(!selected.refset.lookupInProgress)"
+            ng-click="startLookup(selected.refset); $event.stopPropagation()"
+            ng-show="(requiresNameLookup && !selected.refset.lookupInProgress)"
             title="Restart name lookup" class="noul material-icons md-18">play_arrow</i>
+          <select ng-model="selected.refset.preferredLanguage" ng-show="!isDirectory()"
+            title="Select preferred language" style="font-size: 12;"
+            ng-options="item as item for item in requiredLanguages"
+            ng-change="submitRefset(selected.refset);startLookup(selected.refset);"></select>
         </span>
       </h4>
       <div>
