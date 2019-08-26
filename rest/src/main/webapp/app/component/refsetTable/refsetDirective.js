@@ -121,6 +121,7 @@ tsApp
 
               $scope.ioImportHandlers = [];
               $scope.ioExportHandlers = [];
+              $scope.isSnowowl = false;
 
               // Refset Changed handler
               $scope.$on('refset:refsetChanged', function(event, data) {
@@ -156,6 +157,7 @@ tsApp
                 $scope.getRefsets();
                 $scope.getFilters();
                 // $scope.projects.role already updated
+                $scope.isSnowowl = $scope.project.terminologyHandlerKey.indexOf('SNOWOWL') >= 0;
               };
 
               // Get $scope.refsets
@@ -1033,7 +1035,7 @@ tsApp
                     refsetService.updateRefset(refset).then(
                     // Success - update refset
                     function(data) {
-                      $uibModalInstance.close(refset);
+                      //$uibModalInstance.close(refset);
                     },
                     // Error - update refset
                     function(data) {
@@ -3285,6 +3287,7 @@ tsApp
                   refsetService.isTerminologyVersionValid($scope.project.id,
                     $scope.refset.terminology, $scope.refset.version).then(function(data) {
                     $scope.validVersion = data;
+                    $scope.getModules();
                   });
                 }
 
@@ -3298,6 +3301,9 @@ tsApp
                $scope.terminologySelected = function(terminology) {
                   
                   $scope.versions = [];
+                  if (!$scope.metadata.versions[terminology]) {
+                    return;
+                  }
                   for (var i = 0; i < $scope.metadata.versions[terminology].length ; i++) {
                     var path = $scope.metadata.versions[terminology][i];
                     var key;
@@ -3427,7 +3433,14 @@ tsApp
                 };
 
                 // initialize
-                $scope.terminologySelected($scope.project.terminology);
+                if ($scope.refset.version.lastIndexOf('SNOMEDCT-') >= 0) {
+                  var index = $scope.refset.version.lastIndexOf('SNOMEDCT-');
+                  var prevTerminology = $scope.refset.version.substring(index, index + 11);
+                  $scope.terminologySelected(prevTerminology);
+                  $scope.refset.terminology = prevTerminology;
+                } else {
+                  $scope.terminologySelected($scope.project.terminology);
+                }
                 
                 // Dismiss modal
                 $scope.cancel = function() {
