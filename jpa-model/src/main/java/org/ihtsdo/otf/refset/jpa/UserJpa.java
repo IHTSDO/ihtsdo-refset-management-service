@@ -1,5 +1,5 @@
-/**
- * Copyright 2015 West Coast Informatics, LLC
+/*
+ * Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.jpa;
 
@@ -35,6 +35,7 @@ import org.hibernate.search.annotations.FieldBridge;
 import org.hibernate.search.annotations.Fields;
 import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Indexed;
+import org.hibernate.search.annotations.SortableField;
 import org.hibernate.search.annotations.Store;
 import org.hibernate.search.bridge.builtin.EnumBridge;
 import org.ihtsdo.otf.refset.Project;
@@ -137,6 +138,7 @@ public class UserJpa implements User {
   /* see superclass */
   @Override
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  @SortableField
   public String getUserName() {
     return userName;
   }
@@ -153,6 +155,7 @@ public class UserJpa implements User {
       @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO),
       @Field(name = "nameSort", index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   })
+  @SortableField(forField = "nameSort")
   public String getName() {
     return name;
   }

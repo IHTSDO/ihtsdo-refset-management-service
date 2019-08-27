@@ -33,17 +33,19 @@ import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import org.apache.lucene.analysis.core.WhitespaceAnalyzer;
-import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 import org.hibernate.envers.Audited;
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Analyzer;
+import org.hibernate.search.annotations.DateBridge;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.FieldBridge;
 import org.hibernate.search.annotations.Fields;
 import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Indexed;
+import org.hibernate.search.annotations.Resolution;
+import org.hibernate.search.annotations.SortableField;
 import org.hibernate.search.annotations.Store;
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
@@ -52,6 +54,8 @@ import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.jpa.helpers.UserMapUserNameBridge;
 import org.ihtsdo.otf.refset.jpa.helpers.UserRoleBridge;
 import org.ihtsdo.otf.refset.jpa.helpers.UserRoleMapAdapter;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
  * JPA enabled implementation of {@link Project}.
@@ -225,6 +229,7 @@ public class ProjectJpa implements Project {
 
   /* see superclass */
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  @DateBridge(resolution=Resolution.SECOND)
   @Override
   public Date getLastModified() {
     return lastModified;
@@ -346,6 +351,7 @@ public class ProjectJpa implements Project {
       @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO),
       @Field(name = "nameSort", index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   })
+  @SortableField(forField = "nameSort")
   public String getName() {
     return name;
   }
@@ -359,6 +365,7 @@ public class ProjectJpa implements Project {
   /* see superclass */
   @Override
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  @SortableField
   public String getNamespace() {
     return namespace;
   }
@@ -388,6 +395,7 @@ public class ProjectJpa implements Project {
       @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO),
       @Field(name = "descriptionSort", index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   })
+  @SortableField(forField = "descriptionSort")
   public String getDescription() {
     return description;
   }
@@ -403,6 +411,7 @@ public class ProjectJpa implements Project {
       @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO),
       @Field(name = "organizationSort", index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   })
+  @SortableField(forField = "organizationSort")
   @Override
   public String getOrganization() {
     return organization;

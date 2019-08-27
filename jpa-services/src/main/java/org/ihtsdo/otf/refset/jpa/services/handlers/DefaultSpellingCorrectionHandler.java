@@ -1,15 +1,15 @@
-/**
- * Copyright 2015 West Coast Informatics, LLC
+/*
+ * Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.jpa.services.handlers;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.Reader;
 import java.io.UnsupportedEncodingException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -25,7 +25,6 @@ import org.apache.lucene.search.spell.LevensteinDistance;
 import org.apache.lucene.search.spell.PlainTextDictionary;
 import org.apache.lucene.search.spell.SpellChecker;
 import org.apache.lucene.store.FSDirectory;
-import org.apache.lucene.util.Version;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.LocalException;
@@ -69,13 +68,17 @@ public class DefaultSpellingCorrectionHandler
           "Index directory hibernate.search.default.indexBase not set in config.properties");
     }
     // e.g. $dir/spelling/$translationId
-    File indexDir =
-        new File(new File(dir, "spelling"), translation.getId().toString());
+
+    // TODO: remove for JDK11 & Framework upgrade. Remove after testing.
+    // File indexDir =
+    // new File(new File(dir, "spelling"), translation.getId().toString());
 
     // Load the dictionary
 
     // Create the index writer
-    FSDirectory indexFsDir = FSDirectory.open(indexDir);
+    final Path indexDir =
+        Paths.get(dir, "spelling", translation.getId().toString());
+    final FSDirectory indexFsDir = FSDirectory.open(indexDir);
     checker = new SpellChecker(indexFsDir);
     // Presumably not needed - index already built, just opening it
     // reindex(translation.getSpellingDictionary().getEntries(),true);
@@ -91,17 +94,16 @@ public class DefaultSpellingCorrectionHandler
       throw new Exception(
           "Set translation must be called prior to calling reindex");
     }
-    IndexWriterConfig iwConfig = new IndexWriterConfig(Version.LATEST,
-        // lowercase keyword analyzer
-        new Analyzer() {
-          @Override
-          protected TokenStreamComponents createComponents(String fieldName,
-            Reader reader) {
-            Tokenizer source = new KeywordTokenizer(reader);
-            TokenStream filter = new LowerCaseFilter(source);
-            return new TokenStreamComponents(source, filter);
-          }
-        });
+
+    IndexWriterConfig iwConfig = new IndexWriterConfig(new Analyzer() {
+      @Override
+      protected TokenStreamComponents createComponents(String fieldName) {
+        Tokenizer source = new KeywordTokenizer();
+        TokenStream filter = new LowerCaseFilter(source);
+        return new TokenStreamComponents(source, filter);
+      }
+    });
+
     StringBuilder builder = new StringBuilder();
     for (String s : entries) {
       builder.append(s);

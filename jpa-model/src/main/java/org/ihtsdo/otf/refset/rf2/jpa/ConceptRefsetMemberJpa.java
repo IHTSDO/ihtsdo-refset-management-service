@@ -12,6 +12,7 @@ import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
@@ -29,6 +30,7 @@ import org.hibernate.search.annotations.Fields;
 import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.IndexedEmbedded;
+import org.hibernate.search.annotations.SortableField;
 import org.hibernate.search.annotations.Store;
 import org.hibernate.search.bridge.builtin.EnumBridge;
 import org.hibernate.search.bridge.builtin.LongBridge;
@@ -83,7 +85,7 @@ public class ConceptRefsetMemberJpa extends AbstractComponent
   /** The synonyms. */
   @ElementCollection
   @Column(name = "synonym", nullable = true)
-  @CollectionTable(name = "concept_refset_members_synonyms")
+  @CollectionTable(name = "concept_refset_members_synonyms", joinColumns = @JoinColumn(name="concept_refset_members_synonyms_id"))
   private List<String> synonyms;
 
   /**
@@ -193,6 +195,7 @@ public class ConceptRefsetMemberJpa extends AbstractComponent
       @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO),
       @Field(name = "conceptNameSort", index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   })
+  @SortableField(forField = "conceptNameSort")
   @Override
   public String getConceptName() {
     return conceptName;

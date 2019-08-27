@@ -30,12 +30,6 @@
       <artifactId>refset-jpa-services</artifactId>
     </dependency>
 
-    <!-- LVG -->
-    <dependency>
-      <groupId>gov.nih.nlm.nls.lvg</groupId>
-      <artifactId>lvgdist</artifactId>
-    </dependency>
-
     <!-- Logging -->
     <dependency>
       <groupId>org.slf4j</groupId>

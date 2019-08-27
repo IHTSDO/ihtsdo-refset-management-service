@@ -86,10 +86,10 @@
       <artifactId>jackson-module-jaxb-annotations</artifactId>
     </dependency>
 
-    <dependency>
+<!--     <dependency>
       <groupId>asm</groupId>
       <artifactId>asm</artifactId>
-    </dependency>
+    </dependency> -->
     <dependency>
       <groupId>com.wordnik</groupId>
       <artifactId>swagger-jersey2-jaxrs_2.10</artifactId>

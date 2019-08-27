@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 West Coast Informatics, LLC
+ * Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.rf2.jpa;
 
@@ -26,6 +26,7 @@ import org.hibernate.search.annotations.ContainedIn;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Fields;
 import org.hibernate.search.annotations.Index;
+import org.hibernate.search.annotations.SortableField;
 import org.hibernate.search.annotations.Store;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.Description;
@@ -133,6 +134,7 @@ public class DescriptionJpa extends AbstractComponent implements Description {
       @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO),
       @Field(name = "termSort", index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   })
+  @SortableField(forField = "termSort")
   @Analyzer(definition = "noStopWord")
   public String getTerm() {
     return term;
