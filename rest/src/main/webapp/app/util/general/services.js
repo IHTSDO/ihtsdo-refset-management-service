@@ -579,7 +579,7 @@ tsApp.service('securityService', [
 
       // Get users
       gpService.increment();
-      $http.get(securityUrl + '/user/name/' + username).then(
+      $http.get(securityUrl + 'user/name/' + username).then(
       // success
       function(response) {
         console.debug('  user = ', response.data);
