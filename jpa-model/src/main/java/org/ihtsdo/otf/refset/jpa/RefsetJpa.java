@@ -769,6 +769,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
 
   /* see superclass */
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  @SortableField
   @Override
   public String getTerminology() {
     return terminology;
@@ -819,8 +820,9 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   }
 
   /* see superclass */
-  @Override
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  @SortableField
+  @Override
   public String getDomain() {
     return domain;
   }

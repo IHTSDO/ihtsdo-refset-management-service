@@ -331,6 +331,7 @@ public class TranslationJpa extends AbstractComponent implements Translation {
 
   /* see superclass */
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  @SortableField
   @Override
   public String getLanguage() {
     return language;

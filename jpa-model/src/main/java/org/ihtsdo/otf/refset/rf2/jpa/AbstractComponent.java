@@ -21,6 +21,7 @@ import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.FieldBridge;
 import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Resolution;
+import org.hibernate.search.annotations.SortableField;
 import org.hibernate.search.annotations.Store;
 import org.hibernate.search.bridge.builtin.LongBridge;
 import org.ihtsdo.otf.refset.rf2.Component;
@@ -112,6 +113,7 @@ public abstract class AbstractComponent implements Component {
   @Override
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   @DateBridge(resolution=Resolution.SECOND)
+  @SortableField
   public Date getEffectiveTime() {
     return effectiveTime;
   }
@@ -126,6 +128,7 @@ public abstract class AbstractComponent implements Component {
   @Override
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   @DateBridge(resolution=Resolution.SECOND)
+  @SortableField
   public Date getLastModified() {
     return lastModified;
   }
@@ -188,6 +191,7 @@ public abstract class AbstractComponent implements Component {
   /* see superclass */
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   @Override
+  @SortableField
   public String getModuleId() {
     return moduleId;
   }
@@ -243,6 +247,7 @@ public abstract class AbstractComponent implements Component {
   /* see superclass */
   @Override
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  @SortableField
   public String getTerminologyId() {
     return terminologyId;
   }
