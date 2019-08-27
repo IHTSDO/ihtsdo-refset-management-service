@@ -27,7 +27,6 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
-import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import org.hibernate.envers.Audited;
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Field;
@@ -36,6 +35,7 @@ import org.hibernate.search.annotations.Fields;
 import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.IndexedEmbedded;
+import org.hibernate.search.annotations.SortableField;
 import org.hibernate.search.annotations.Store;
 import org.hibernate.search.bridge.builtin.EnumBridge;
 import org.hibernate.search.bridge.builtin.LongBridge;
@@ -52,6 +52,8 @@ import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.AbstractComponent;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
 import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
  * JPA enabled implementation of {@link Refset}. This object extends
@@ -172,6 +174,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
 
   /** The definition clauses. */
   @OneToMany(cascade = CascadeType.ALL, targetEntity = DefinitionClauseJpa.class)
+  @JoinColumn(name="refsets_id", referencedColumnName="id")
   private List<DefinitionClause> definitionClauses = new ArrayList<>();
 
   /** The translations. */
@@ -254,6 +257,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
       @Field(name = "nameSort", index = Index.YES, analyze = Analyze.NO, store = Store.NO),
       @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
   })
+  @SortableField(forField = "nameSort")
   public String getName() {
     return name;
   }
@@ -264,6 +268,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
       @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO),
       @Field(name = "descriptionSort", index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   })
+  @SortableField(forField = "descriptionSort")
   public String getDescription() {
     return description;
   }
@@ -559,6 +564,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
       @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO),
       @Field(name = "organizationSort", index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   })
+  @SortableField(forField = "organizationSort")
   @Override
   public String getOrganization() {
     return (project != null) ? project.getOrganization() : "";

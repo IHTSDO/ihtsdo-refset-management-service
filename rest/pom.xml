@@ -36,8 +36,6 @@
 	</properties>
 
 	<dependencies>
-
-
 		<!-- Model interfaces. -->
 		<dependency>
 			<groupId>org.ihtsdo.otf.refset</groupId>
@@ -115,6 +113,10 @@
 			<artifactId>jersey-common</artifactId>
 		</dependency>
 		<dependency>
+          <groupId>org.glassfish.jersey.inject</groupId>
+          <artifactId>jersey-hk2</artifactId>
+        </dependency>
+		<dependency>
 			<groupId>org.glassfish.jersey.media</groupId>
 			<artifactId>jersey-media-jaxb</artifactId>
 		</dependency>
@@ -135,6 +137,7 @@
 			<artifactId>jersey-media-multipart</artifactId>
 		</dependency>
 
+        <!-- jackson -->
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-core</artifactId>
@@ -145,13 +148,11 @@
 		</dependency>
 
 		<dependency>
-			<groupId>asm</groupId>
-			<artifactId>asm</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>com.wordnik</groupId>
 			<artifactId>swagger-jersey2-jaxrs_2.10</artifactId>
 		</dependency>
+    
+        <!-- javax -->
 		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>javax.servlet-api</artifactId>
