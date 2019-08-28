@@ -169,6 +169,7 @@ public class UserJpa implements User {
   /* see superclass */
   @Override
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  @SortableField
   public String getEmail() {
     return email;
   }
@@ -182,6 +183,7 @@ public class UserJpa implements User {
   /* see superclass */
   @Override
   @Field(bridge = @FieldBridge(impl = EnumBridge.class), index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  @SortableField
   public UserRole getApplicationRole() {
     return applicationRole;
   }
