@@ -122,6 +122,7 @@ public class ConceptRefsetMemberJpa extends AbstractComponent
    * @return the concept id
    */
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  @SortableField
   @Override
   public String getConceptId() {
     return conceptId;

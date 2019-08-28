@@ -230,6 +230,7 @@ public class ProjectJpa implements Project {
   /* see superclass */
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   @DateBridge(resolution=Resolution.SECOND)
+  @SortableField
   @Override
   public Date getLastModified() {
     return lastModified;
