@@ -792,7 +792,7 @@ tsApp
           // Assign user to project
           gpService.increment();
           $http.get(
-            projectUrl + '/translationExtentions?terminologyHandlerKey=' 
+            projectUrl + 'translationExtentions?terminologyHandlerKey=' 
               + terminologyHandlerKey + "&terminologyHandlerUrl=" + terminologyHandlerUrl).then(
           // success
           function(response) {
