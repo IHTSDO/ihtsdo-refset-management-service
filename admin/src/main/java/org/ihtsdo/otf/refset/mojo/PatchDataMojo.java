@@ -356,6 +356,7 @@ public class PatchDataMojo extends AbstractMojo {
         } else {
           project.setTerminology("SNOMEDCT");
         }
+        project.setTerminologyHandlerKey("SNOWSTORM");
         translationService.updateProject(project);
 
         if (ct % 100 == 0) {

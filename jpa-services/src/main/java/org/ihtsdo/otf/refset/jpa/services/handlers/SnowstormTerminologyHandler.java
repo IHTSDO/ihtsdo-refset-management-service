@@ -605,7 +605,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
   public Concept getFullConcept(String terminologyId, String terminology,
     String version) throws Exception {
     Logger.getLogger(getClass()).info(
-        "  get full concept - " + url + ", " + terminology + ", " + version);
+        "  get full concept: " + terminologyId + "- " + url + ", " + terminology + ", " + version);
     // TODO resolve this date conversion 20150131 -> 2015-01-31
     // version = "MAIN/2015-01-31";
     // Make a webservice call to SnowOwl to get concept
