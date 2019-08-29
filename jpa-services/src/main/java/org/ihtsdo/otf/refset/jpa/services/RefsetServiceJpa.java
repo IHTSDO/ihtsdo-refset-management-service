@@ -1629,9 +1629,9 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
 
       try {
         final Project project = this.getProject(refset.getProject().getId());
-        handler = getTerminologyHandler(project, null);
+        handler = getTerminologyHandler(project, headers);
       } catch (Exception e) {
-        handler = getTerminologyHandler(refset.getProject(), null);
+        handler = getTerminologyHandler(refset.getProject(), headers);
 }
 
       populateMemberSynonyms(member, concept, refset, handler);
