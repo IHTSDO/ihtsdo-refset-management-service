@@ -709,7 +709,10 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     concept.setLastModifiedBy(terminology);
     concept.setModuleId(doc.get("moduleId").asText());
     concept.setDefinitionStatusId(doc.get("definitionStatus").asText());
-    concept.setName(doc.get("fsn").asText());
+    JsonNode fsn = doc.get("fsn");
+    String term = fsn == null ? ""
+        : fsn.get("term") == null ? "" : fsn.get("term").asText();
+    concept.setName(term);
 
     concept.setPublishable(true);
     concept.setPublished(true);
