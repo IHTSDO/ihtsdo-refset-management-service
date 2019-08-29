@@ -198,6 +198,7 @@ public class ProjectJpa implements Project {
 
   /* see superclass */
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  @SortableField
   @Override
   public Long getId() {
     return this.id;
