@@ -194,7 +194,7 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     Response response =
         target.request(accept).header("Authorization", authHeader)
             .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
-            .header("Cookie", getCookieHeader()).get();
+            .header("Cookie", genericUserCookie != null ? genericUserCookie : getCookieHeader()).get();
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -254,7 +254,7 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     Response response =
         target.request(accept).header("Authorization", authHeader)
             .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
-            .header("Cookie", getCookieHeader()).get();
+            .header("Cookie", genericUserCookie != null ? genericUserCookie : getCookieHeader()).get();
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -419,7 +419,7 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     Response response =
         target.request(accept).header("Authorization", authHeader)
             .header("Accept-Language", getAcceptLanguage(terminology, version))
-            .header("Cookie", getCookieHeader()).get();
+            .header("Cookie", genericUserCookie != null ? genericUserCookie : getCookieHeader()).get();
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
