@@ -85,7 +85,7 @@ public class ConceptRefsetMemberJpa extends AbstractComponent
   /** The synonyms. */
   @ElementCollection
   @Column(name = "synonym", nullable = true)
-  @CollectionTable(name = "concept_refset_members_synonyms", joinColumns = @JoinColumn(name="concept_refset_members_synonyms_id"))
+  @CollectionTable(name = "concept_refset_members_synonyms")
   private List<String> synonyms;
 
   /**
