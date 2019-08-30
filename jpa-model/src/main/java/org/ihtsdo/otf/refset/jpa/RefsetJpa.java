@@ -174,7 +174,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
 
   /** The definition clauses. */
   @OneToMany(cascade = CascadeType.ALL, targetEntity = DefinitionClauseJpa.class)
-  @JoinColumn(name="refsets_id", referencedColumnName="id")
+  @CollectionTable(name = "refsets_definition_clauses", joinColumns = @JoinColumn(name = "refsets_id"))
   private List<DefinitionClause> definitionClauses = new ArrayList<>();
 
   /** The translations. */
