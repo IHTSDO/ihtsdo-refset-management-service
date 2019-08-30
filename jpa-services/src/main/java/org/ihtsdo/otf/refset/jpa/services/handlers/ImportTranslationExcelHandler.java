@@ -167,8 +167,10 @@ public class ImportTranslationExcelHandler extends ImportExportAbstract
     // initialize
     validationResult = new ValidationResultJpa();
 
+    int skippedDueToLanguageNotMatching = 0;
+    
     /** The descriptions. */
-    Map<String, Description> descriptions = new HashMap<>();
+    List<Description> descriptions = new ArrayList<>();
 
     final Map<String, Concept> conceptCache = new HashMap<>();
     // Handle the input stream as an input stream
@@ -206,6 +208,12 @@ public class ImportTranslationExcelHandler extends ImportExportAbstract
           // 7. Language reference set - LANGUAGE_REFERENCE_SET - NOT used
           // 8. Acceptability - ACCEPTABILITY - used
 
+          // If excel language doesn't match translation's language, skip
+          if(!translation.getLanguage().equals(getCellValue(row, LANGUAGE_CODE))){
+            skippedDueToLanguageNotMatching++;
+            continue;
+          }
+          
           // Create description and populate from RF2
           final Description description = new DescriptionJpa();
 
@@ -237,7 +245,7 @@ public class ImportTranslationExcelHandler extends ImportExportAbstract
           description.setConcept(concept);
 
           // Cache the description for lookup by the language reset member
-          descriptions.put(conceptId, description);
+          descriptions.add(description);
 
           Logger.getLogger(getClass())
               .debug("  description = " + conceptId + ", "
@@ -264,7 +272,7 @@ public class ImportTranslationExcelHandler extends ImportExportAbstract
         // Assign identifiers
         final IdentifierAssignmentHandler handler =
             service.getIdentifierAssignmentHandler(ConfigUtility.DEFAULT);
-        for (final Description description : descriptions.values()) {
+        for (final Description description : descriptions) {
           if (description.getTerminologyId() == null
               || description.getTerminologyId().startsWith("TMP-")) {
             description.setTerminologyId("");
@@ -274,6 +282,8 @@ public class ImportTranslationExcelHandler extends ImportExportAbstract
 
         validationResult.addComment(
             descriptions.size() + " descriptions successfully loaded.");
+        validationResult.addComment(
+            skippedDueToLanguageNotMatching + " descriptions skipped: language code in file not same as translation language.");
 
       } catch (Exception e) {
         Logger.getLogger(getClass()).error("", e);
