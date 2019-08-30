@@ -46,6 +46,11 @@ public class ProjectServiceJpa extends RootServiceJpa
   private static Map<String, TerminologyHandler> terminologyHandlers =
       new HashMap<>();
 
+  /** The terminology handler for a specific handler/URL combination. */
+  private static Map<String, TerminologyHandler> instantiatedTerminologyHandlers =
+      new HashMap<>();
+  
+  
   static {
     try {
       if (config == null)
@@ -322,10 +327,17 @@ public class ProjectServiceJpa extends RootServiceJpa
           "No terminology handler exists for the specified key: "
               + project.getTerminologyHandlerKey());
     }
+    
+    if (instantiatedTerminologyHandlers.containsKey(project.getTerminologyHandlerKey()  + "|" +  project.getTerminologyHandlerUrl())) {
+      return instantiatedTerminologyHandlers.get(project.getTerminologyHandlerKey()  + "|" +  project.getTerminologyHandlerUrl());
+    }    
+    
     final TerminologyHandler handler =
         terminologyHandlers.get(project.getTerminologyHandlerKey()).copy();
     handler.setUrl(project.getTerminologyHandlerUrl());
     handler.setHeaders(headers);
+    
+    instantiatedTerminologyHandlers.put(project.getTerminologyHandlerKey()  + "|" +  project.getTerminologyHandlerUrl(), handler);
     return handler;
   }
   
@@ -340,10 +352,17 @@ public class ProjectServiceJpa extends RootServiceJpa
           "No terminology handler exists for the specified key: "
               + terminologyHandlerKey);
     }
+    
+    if (instantiatedTerminologyHandlers.containsKey(terminologyHandlerKey + "|" + terminologyHandlerUrl)) {
+      return instantiatedTerminologyHandlers.get(terminologyHandlerKey + "|" + terminologyHandlerUrl);
+    }     
+    
     final TerminologyHandler handler =
         terminologyHandlers.get(terminologyHandlerKey).copy();
     handler.setUrl(terminologyHandlerUrl);
     handler.setHeaders(headers);
+    
+    instantiatedTerminologyHandlers.put(terminologyHandlerKey + "|" + terminologyHandlerUrl, handler);    
     return handler;
   }
 
