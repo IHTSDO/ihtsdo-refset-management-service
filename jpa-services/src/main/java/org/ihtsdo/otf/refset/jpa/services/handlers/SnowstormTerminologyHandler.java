@@ -6,6 +6,7 @@ package org.ihtsdo.otf.refset.jpa.services.handlers;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -61,6 +62,9 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
   /** The terminology version language map. */
   private static Map<String, String> tvLanguageMap = new HashMap<>();
 
+  private static Date terminologiesForURLexpirationDate = new Date();
+  private static Map<String,List<Terminology>> terminologiesForURL = new HashMap<>();
+  
   /** The ids to ignore. */
   private static List<String> idsToIgnore = new ArrayList<>();
 
@@ -171,7 +175,23 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
   /* see superclass */
   @Override
   public List<Terminology> getTerminologyEditions() throws Exception {
-    final List<Terminology> list = new ArrayList<Terminology>();
+
+    // Check if the terminologiesForURL cache is expired and needs to be cleared and re-read
+    if(new Date().after(terminologiesForURLexpirationDate)) {
+      terminologiesForURL.clear();
+      
+      //Set the new expiration date for tomorrow
+      Calendar now = Calendar.getInstance();
+      now.add(Calendar.HOUR,24);
+      terminologiesForURLexpirationDate = now.getTime();
+    }
+    
+    if(terminologiesForURL.containsKey(url)) {
+      return terminologiesForURL.get(url);
+    }    
+    
+    final List<Terminology> result = new ArrayList<Terminology>();
+    
     // Make a webservice call
     final Client client = ClientBuilder.newClient();
     Logger.getLogger(getClass())
@@ -196,10 +216,13 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
       final Terminology terminology = new TerminologyJpa();
       terminology.setTerminology(entry.get("shortName").asText());
       terminology.setName(entry.get("shortName").asText());
-      list.add(terminology);
+      result.add(terminology);
     }
 
-    return list;
+    //Add to static map, so it doesn't need to be looked up again
+    terminologiesForURL.put(url, result);    
+    
+    return result;
   }
 
   /* see superclass */

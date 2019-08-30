@@ -6,6 +6,7 @@ package org.ihtsdo.otf.refset.jpa.services.handlers;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -24,7 +25,6 @@ import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status.Family;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.Terminology;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
@@ -65,6 +65,9 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
 
   /** The terminology version language map. */
   private static Map<String, String> tvLanguageMap = new HashMap<>();
+
+  private static Date terminologiesForURLexpirationDate = new Date();
+  private static Map<String,List<Terminology>> terminologiesForURL = new HashMap<>();
 
   /** The ids to ignore. */
   private static List<String> idsToIgnore = new ArrayList<>();
@@ -178,8 +181,22 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
   @Override
   public List<Terminology> getTerminologyEditions() throws Exception {
     Logger.getLogger(getClass()).info("  get terminology editions ");
-
-    List<Terminology> result = new ArrayList<>();
+    
+    // Check if the terminologiesForURL cache is expired and needs to be cleared and re-read
+    if(new Date().after(terminologiesForURLexpirationDate)) {
+      terminologiesForURL.clear();
+      
+      //Set the new expiration date for tomorrow
+      Calendar now = Calendar.getInstance();
+      now.add(Calendar.HOUR,24);
+      terminologiesForURLexpirationDate = now.getTime();
+    }
+    
+    if(terminologiesForURL.containsKey(url)) {
+      return terminologiesForURL.get(url);
+    }    
+    
+    final List<Terminology> result = new ArrayList<>();
 
     // Make a webservice call to SnowOwl to get branches
     final Client client = ClientBuilder.newClient();
@@ -234,6 +251,9 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
       }
     });
 
+    //Add to static map, so it doesn't need to be looked up again
+    terminologiesForURL.put(url, result);
+    
     return result;
   }
 

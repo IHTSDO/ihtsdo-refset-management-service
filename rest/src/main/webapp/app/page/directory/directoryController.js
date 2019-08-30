@@ -102,8 +102,8 @@ tsApp.controller('DirectoryCtrl',
       };
 
       // Lookup terminologies, names, and versions
-      $scope.getTerminologyMetadata = function(project) {
-        projectService.getAllTerminologyEditions(project).then(
+      $scope.getTerminologyMetadata = function() {
+        projectService.getAllTerminologyEditions().then(
         // Success
         function(data) {
           $scope.metadata.terminologies = data.terminologies;
