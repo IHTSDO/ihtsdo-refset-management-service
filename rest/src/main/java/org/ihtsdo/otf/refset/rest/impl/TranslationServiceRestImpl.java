@@ -929,10 +929,10 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
 
     } finally {
       securityService.close();
-      }
+    }
 
     return null;
-        }
+  }
 
   /* see superclass */
   @POST
@@ -946,7 +946,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-          Logger.getLogger(getClass())
+    Logger.getLogger(getClass())
         .info("RESTful call POST (Translation): /import/finish/" + handlerName
             + "/" + translationId);
 
@@ -2973,9 +2973,9 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
       final Translation translation =
           translationService.getTranslation(translationId);
       // Authorize the call
-      final String userName = authorizeProject(translationService,
-          translation.getProject().getId(), securityService, authToken,
-          "lookup of concept name", UserRole.AUTHOR);
+      authorizeProject(translationService, translation.getProject().getId(),
+          securityService, authToken, "lookup of concept name",
+          UserRole.AUTHOR);
 
       // Lookup with terminology server and update concept name
       Concept concept =
@@ -3304,7 +3304,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
     throws Exception {
 
     Logger.getLogger(getClass()).info("RESTful GET call (Translation): ");
-    TranslationSuggestionList translationSuggestions = new TranslationSuggestionList();
+    TranslationSuggestionList translationSuggestions =
+        new TranslationSuggestionList();
 
     try (final RefsetService refsetService =
         new RefsetServiceJpa(getHeaders(headers))) {
@@ -3713,13 +3714,16 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
               workflowService.getWorkflowHandlerForPath(
                   translation.getProject().getWorkflowPath());
           for (Concept concept : concepts) {
-            Concept savedConcept = workflowService.getConcept(concept.getTerminologyId(),
-                translation.getId());
-            if (savedConcept != null && savedConcept.getWorkflowStatus() != WorkflowStatus.EDITING_DONE) {
+            Concept savedConcept = workflowService
+                .getConcept(concept.getTerminologyId(), translation.getId());
+            if (savedConcept != null && savedConcept
+                .getWorkflowStatus() != WorkflowStatus.EDITING_DONE) {
               workflowActionHandler.performWorkflowAction(translation, user,
-                  projectRole, WorkflowAction.ASSIGN, savedConcept, workflowService);
+                  projectRole, WorkflowAction.ASSIGN, savedConcept,
+                  workflowService);
               workflowActionHandler.performWorkflowAction(translation, user,
-                  projectRole, WorkflowAction.FINISH, savedConcept, workflowService);
+                  projectRole, WorkflowAction.FINISH, savedConcept,
+                  workflowService);
             }
           }
         }
