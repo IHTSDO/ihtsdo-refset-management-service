@@ -1,5 +1,5 @@
-/**
- * Copyright 2015 West Coast Informatics, LLC
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.rest.impl;
 
@@ -668,15 +668,15 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl
     Logger.getLogger(getClass())
         .info("RESTful POST call (Workflow): /message ");
 
-    final WorkflowService workflowService = new WorkflowServiceJpa();
     // Test preconditions
     if (objectId == null) {
       handleException(new Exception("Required parameter has a null value"), "");
     }
 
-    final TranslationService translationService = new TranslationServiceJpa();
+    try (final WorkflowService workflowService = new WorkflowServiceJpa();
+        final TranslationService translationService =
+            new TranslationServiceJpa();) {
 
-    try {
       final Refset refset = translationService.getRefset(objectId);
       final Translation translation =
           translationService.getTranslation(objectId);
@@ -692,7 +692,6 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl
     } catch (Exception e) {
       handleException(e, "send a message email");
     } finally {
-      workflowService.close();
       securityService.close();
     }
   }
