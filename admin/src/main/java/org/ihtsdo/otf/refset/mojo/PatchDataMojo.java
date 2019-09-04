@@ -205,13 +205,15 @@ public class PatchDataMojo extends AbstractMojo {
   /* see superclass */
   @Override
   public void execute() throws MojoFailureException {
-    try {
+
+    try (final WorkflowService workflowService = new WorkflowServiceJpa();
+        final TranslationService translationService =
+            new TranslationServiceJpa();
+        final RefsetService refsetService = new RefsetServiceJpa();) {
+
       // Default to false as there is at least one case where full reindexing
       // not needed
       boolean fullReindex = false;
-      final WorkflowService workflowService = new WorkflowServiceJpa();
-      final TranslationService translationService = new TranslationServiceJpa();
-      final RefsetService refsetService = new RefsetServiceJpa();
 
       getLog().info("Patch data");
       getLog().info("  start = " + start);
@@ -313,16 +315,17 @@ public class PatchDataMojo extends AbstractMojo {
         getLog().info("  Reindex");
         // login as "admin", use token
         final Properties properties = ConfigUtility.getConfigProperties();
-        SecurityService securityService = new SecurityServiceJpa();
-        String authToken =
-            securityService.authenticate(properties.getProperty("admin.user"),
-                properties.getProperty("admin.password")).getAuthToken();
-        ProjectServiceRestImpl contentService = new ProjectServiceRestImpl();
-        contentService.luceneReindex(null, authToken);
+
+        try (
+            final SecurityService securityService = new SecurityServiceJpa();) {
+          String authToken =
+              securityService.authenticate(properties.getProperty("admin.user"),
+                  properties.getProperty("admin.password")).getAuthToken();
+          ProjectServiceRestImpl contentService = new ProjectServiceRestImpl();
+          contentService.luceneReindex(null, authToken);
+        }
       }
 
-      workflowService.close();
-      translationService.close();
       getLog().info("Done ...");
     } catch (Exception e) {
       Logger.getLogger(getClass()).error("Unexpected exception", e);
@@ -792,12 +795,13 @@ public class PatchDataMojo extends AbstractMojo {
 
       // login as "admin", use token
       final Properties properties = ConfigUtility.getConfigProperties();
-      SecurityService securityService = new SecurityServiceJpa();
-      String authToken =
-          securityService.authenticate(properties.getProperty("admin.user"),
-              properties.getProperty("admin.password")).getAuthToken();
-      ProjectServiceRestImpl contentService = new ProjectServiceRestImpl();
-      contentService.luceneReindex("ConceptRefsetMemberJpa", authToken);
+      try (final SecurityService securityService = new SecurityServiceJpa();) {
+        String authToken =
+            securityService.authenticate(properties.getProperty("admin.user"),
+                properties.getProperty("admin.password")).getAuthToken();
+        ProjectServiceRestImpl contentService = new ProjectServiceRestImpl();
+        contentService.luceneReindex("ConceptRefsetMemberJpa", authToken);
+      }
     }
   }
 
