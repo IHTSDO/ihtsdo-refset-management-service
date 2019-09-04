@@ -1270,9 +1270,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       }
 
       // Authorize the call
-      final String userName =
-          authorizeProject(refsetService, refset.getProject().getId(),
-              securityService, authToken, "duplicate members", UserRole.AUTHOR);
+      authorizeProject(refsetService, refset.getProject().getId(),
+          securityService, authToken, "duplicate members", UserRole.AUTHOR);
 
       // Check refset type
       if (refset.getType() != Refset.Type.EXTENSIONAL) {
@@ -2062,9 +2061,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         // project exclude logic
         TerminologyHandler handler = refsetService
             .getTerminologyHandler(refset.getProject(), getHeaders(headers));
-        ConceptList conceptList =
-            handler.resolveExpression(refsetCopy.computeDefinition(null, null),
-                refsetCopy.getTerminology(), refsetCopy.getVersion(), null, false);
+        ConceptList conceptList = handler.resolveExpression(
+            refsetCopy.computeDefinition(null, null),
+            refsetCopy.getTerminology(), refsetCopy.getVersion(), null, false);
 
         // do this to re-use the terminology id
         final Map<String, ConceptRefsetMember> conceptIdMap = new HashMap<>();
@@ -2333,25 +2332,25 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         if (stagedMember != null) {
           if (stagedMember.getMemberType().getUnstagedType() != originMember
               .getMemberType()
-            || stagedMember.isConceptActive() != originMember
+              || stagedMember.isConceptActive() != originMember
                   .isConceptActive()) {
-          // No need to change id, this is
-          originMember
-              .setMemberType(stagedMember.getMemberType().getUnstagedType());
-          originMember.setConceptActive(stagedMember.isConceptActive());
+            // No need to change id, this is
+            originMember
+                .setMemberType(stagedMember.getMemberType().getUnstagedType());
+            originMember.setConceptActive(stagedMember.isConceptActive());
 
             originMember.setSynonyms(stagedMember.getSynonyms());
-          originMember.setRefset(originRefset);
-          originMember.setLastModifiedBy(userName);
-          refsetService.updateMember(originMember);
-        }
+            originMember.setRefset(originRefset);
+            originMember.setLastModifiedBy(userName);
+            refsetService.updateMember(originMember);
+          }
 
           // Update if changes in descriptions affected concept name (i.e.
           // inactivated-old/created-new FSN)
           if (!stagedMember.getConceptName()
               .equals(originMember.getConceptName())) {
             originMember.setConceptName(stagedMember.getConceptName());
-      }
+          }
         }
       }
 
@@ -3567,9 +3566,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
     try {
       final Refset refset = refsetService.getRefset(refsetId);
       // Authorize the call
-      final String userName = authorizeProject(refsetService,
-          refset.getProject().getId(), securityService, authToken,
-          "get required language refsets", UserRole.AUTHOR);
+      authorizeProject(refsetService, refset.getProject().getId(),
+          securityService, authToken, "get required language refsets",
+          UserRole.AUTHOR);
 
       List<String> languagePriorities = refsetService
           .getTerminologyHandler(refset.getProject(), getHeaders(headers))
@@ -3909,7 +3908,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
     throws Exception {
     Logger.getLogger(getClass())
         .info("RESTful call GET (Refset): /refset/lookup/start " + refsetId
-            + ", " + background );
+            + ", " + background);
 
     final RefsetService refsetService =
         new RefsetServiceJpa(getHeaders(headers));
