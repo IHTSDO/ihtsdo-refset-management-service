@@ -1,49 +1,36 @@
-/**
+/*
  *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.jpa.services.handlers;
 
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.UUID;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.Project;
-import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
-import org.ihtsdo.otf.refset.User;
-import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
-import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.jpa.ValidationResultJpa;
 import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.TranslationServiceJpa;
-import org.ihtsdo.otf.refset.jpa.services.WorkflowServiceJpa;
-import org.ihtsdo.otf.refset.rf2.Component;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.rf2.Description;
 import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.DescriptionJpa;
-import org.ihtsdo.otf.refset.rf2.jpa.LanguageRefsetMemberJpa;
 import org.ihtsdo.otf.refset.services.SecurityService;
 import org.ihtsdo.otf.refset.services.TranslationService;
-import org.ihtsdo.otf.refset.services.WorkflowService;
 import org.ihtsdo.otf.refset.services.handlers.ImportExportAbstract;
 import org.ihtsdo.otf.refset.services.handlers.ImportTranslationHandler;
 import org.ihtsdo.otf.refset.services.handlers.TerminologyHandler;
-import org.ihtsdo.otf.refset.services.handlers.WorkflowActionHandler;
-import org.ihtsdo.otf.refset.workflow.WorkflowAction;
-import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 
 /**
  * Implementation of an algorithm to import a refset definition.
@@ -59,6 +46,9 @@ public class ImportTranslationTermServerHandler extends ImportExportAbstract
 
   /** The validation result. */
   ValidationResult validationResult = new ValidationResultJpa();
+
+  /** The Constant requestSize. */
+  private final static int requestSize = 200;
 
   /**
    * Instantiates an empty {@link ImportTranslationTermServerHandler}.
@@ -155,11 +145,11 @@ public class ImportTranslationTermServerHandler extends ImportExportAbstract
 
   /* see superclass */
   @Override
-  public List<Concept> importConcepts(Translation translation, Map<String, String> headers)
-    throws Exception {
+  public List<Concept> importConcepts(Translation translation,
+    Map<String, String> headers) throws Exception {
 
-    Logger.getLogger(getClass())
-        .info("Import translation concepts translationid: " + translation.getId());
+    Logger.getLogger(getClass()).info(
+        "Import translation concepts translationid: " + translation.getId());
 
     try (
         final TranslationService translationService =
@@ -177,16 +167,18 @@ public class ImportTranslationTermServerHandler extends ImportExportAbstract
       ConceptList concepts = null;
       final Set<Concept> conceptList = new HashSet<>();
 
-      final int pageSize = Math.min(members.size(), 50);
+      final int pageSize = Math.min(members.size(), requestSize);
       int iteration = 0;
       int remainder = members.size();
 
       do {
-        
-        Logger.getLogger(getClass()).info("FROM: " + pageSize * iteration + " TO: " +  Math.min(((iteration + 1) * pageSize), members.size()));
-        
+
+        Logger.getLogger(getClass()).info("FROM: " + pageSize * iteration
+            + " TO: " + Math.min(((iteration + 1) * pageSize), members.size()));
+
         List<ConceptRefsetMember> conceptSubset =
-            members.subList(pageSize * iteration, Math.min(((iteration + 1) * pageSize), members.size()));
+            members.subList(pageSize * iteration,
+                Math.min(((iteration + 1) * pageSize), members.size()));
         iteration++;
 
         List<String> terminologyIds = new ArrayList<>();
@@ -213,6 +205,13 @@ public class ImportTranslationTermServerHandler extends ImportExportAbstract
     }
   }
 
+  /**
+   * Creates the translations.
+   *
+   * @param translation the translation
+   * @param conceptList the concept list
+   * @return the list
+   */
   private List<Concept> createTranslations(Translation translation,
     Set<Concept> conceptList) {
 
@@ -251,11 +250,11 @@ public class ImportTranslationTermServerHandler extends ImportExportAbstract
           concept.getDescriptions().add(description);
           description.setConcept(concept);
 
-          for (LanguageRefsetMember lrm : originalDescription.getLanguageRefsetMembers()) {
+          for (LanguageRefsetMember lrm : originalDescription
+              .getLanguageRefsetMembers()) {
             setCommonFields(lrm, translation.getRefset());
-            description.getLanguageRefsetMembers()
-            .add(lrm);
-          }          
+            description.getLanguageRefsetMembers().add(lrm);
+          }
 
           Logger.getLogger(getClass()).debug("STOP");
 
@@ -264,7 +263,7 @@ public class ImportTranslationTermServerHandler extends ImportExportAbstract
     } // end for concept
 
     Logger.getLogger(getClass()).debug("STOP");
-    
+
     return new ArrayList<>(conceptCache.values());
   }
 
