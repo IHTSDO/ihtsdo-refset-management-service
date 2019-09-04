@@ -975,14 +975,13 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
 
     /** The save members. */
     private boolean saveMembers = true;
-    
+
     /**
      * Instantiates a {@link LookupMemberNamesThread} from the specified
      * parameters.
      *
      * @param id the id
      * @param label the label
-     * @param preferredLanguage the preferred language
      * @throws Exception the exception
      */
     public LookupMemberNamesThread(Long id, String label) throws Exception {
@@ -1213,7 +1212,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
           "Unable to count total expression items, the expression could not be resolved - "
               + expression);
     }
-    return new Integer(total);
+    return Integer.valueOf(total);
   }
 
   /* see superclass */
@@ -1247,17 +1246,17 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
     } else {
       try {
         resolvedFromExpression = handler.resolveExpression(definition,
-              refset.getTerminology(), refset.getVersion(), null, false);
+            refset.getTerminology(), refset.getVersion(), null, false);
 
         // Save concepts
         for (final Concept concept : resolvedFromExpression.getObjects()) {
-        resolvedConcepts.add(concept.getTerminologyId());
+          resolvedConcepts.add(concept.getTerminologyId());
         }
       } catch (Exception e) {
         throw new LocalException(
-          "Unable to resolve refset definition, the expression could not be resolved - "
-              + definition,
-          e);
+            "Unable to resolve refset definition, the expression could not be resolved - "
+                + definition,
+            e);
       }
     }
 
@@ -1632,7 +1631,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
         handler = getTerminologyHandler(project, headers);
       } catch (Exception e) {
         handler = getTerminologyHandler(refset.getProject(), headers);
-}
+      }
 
       populateMemberSynonyms(member, concept, refset, handler);
     }

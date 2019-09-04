@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 West Coast Informatics, LLC
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.test.rest;
 
@@ -109,8 +109,8 @@ public class SecurityServiceRestNormalUseTest extends SecurityTestSupport {
     assertTrue(user == null);
 
     // PROCEDURE 5: authenticate a user that does not exist
-    Logger.getLogger(getClass()).info(
-        "  Procedure 5: authenticate a user that does not exist");
+    Logger.getLogger(getClass())
+        .info("  Procedure 5: authenticate a user that does not exist");
 
     // get the existing test user if it exists
     user = service.getUser(badUserName, adminAuthToken);
@@ -130,8 +130,8 @@ public class SecurityServiceRestNormalUseTest extends SecurityTestSupport {
     // authenticate user based on config parameters
     viewerUserNameAuthToken =
         service.authenticate(viewerUserName, viewerUserPassword).getAuthToken();
-    assertTrue(viewerUserNameAuthToken != null
-        && !viewerUserNameAuthToken.isEmpty());
+    assertTrue(
+        viewerUserNameAuthToken != null && !viewerUserNameAuthToken.isEmpty());
 
     // retrieve user and verify it exists
     user = service.getUser(viewerUserName, adminAuthToken);
@@ -139,10 +139,8 @@ public class SecurityServiceRestNormalUseTest extends SecurityTestSupport {
 
     // PROCEDURE 6: Authenticate a user that exists in database with changed
     // details
-    Logger
-        .getLogger(getClass())
-        .info(
-            "  Procedure 6: authenticate a user that exists in database with changed details");
+    Logger.getLogger(getClass()).info(
+        "  Procedure 6: authenticate a user that exists in database with changed details");
 
     // save the email, modify it, re-retrieve, and verify change persisted
     String userEmail = user.getEmail();
@@ -153,8 +151,8 @@ public class SecurityServiceRestNormalUseTest extends SecurityTestSupport {
     // authenticate the user and verify email overwritten
     viewerUserNameAuthToken =
         service.authenticate(viewerUserName, viewerUserPassword).getAuthToken();
-    assertTrue(viewerUserNameAuthToken != null
-        && !viewerUserNameAuthToken.isEmpty());
+    assertTrue(
+        viewerUserNameAuthToken != null && !viewerUserNameAuthToken.isEmpty());
     user = service.getUser(viewerUserName, adminAuthToken);
     assertTrue(user.getEmail().equals(userEmail));
 
@@ -213,7 +211,7 @@ public class SecurityServiceRestNormalUseTest extends SecurityTestSupport {
         (UserJpa) service.getUser(testUser.getUserName(), adminAuthToken);
     UserPreferences newUserPrefs = testUser.getUserPreferences();
     assertNotNull(newUserPrefs);
-    assertEquals(new Long(5), newUserPrefs.getLastProjectId());
+    assertEquals(Long.valueOf(5), newUserPrefs.getLastProjectId());
 
     // PROCEDURE 3: Remove User Preferences
     service.removeUserPreferences(newUserPrefs.getId(), adminAuthToken);
@@ -262,7 +260,8 @@ public class SecurityServiceRestNormalUseTest extends SecurityTestSupport {
       UserPreferencesJpa updatedPrefs =
           (UserPreferencesJpa) testUser.getUserPreferences();
       assertNotNull(prefs);
-      assertEquals(new Long(lastProjId + 1), updatedPrefs.getLastProjectId());
+      assertEquals(Long.valueOf(lastProjId + 1),
+          updatedPrefs.getLastProjectId());
 
       // Revert to original value
       prefs.setLastProjectId(lastProjId);
@@ -272,10 +271,10 @@ public class SecurityServiceRestNormalUseTest extends SecurityTestSupport {
       UserPreferencesJpa revertedPrefs =
           (UserPreferencesJpa) testUser.getUserPreferences();
       assertNotNull(prefs);
-      assertEquals(new Long(lastProjId), revertedPrefs.getLastProjectId());
+      assertEquals(Long.valueOf(lastProjId), revertedPrefs.getLastProjectId());
     } else {
       // Set user-pref field to be not null
-      prefs.setLastProjectId(new Long(5));
+      prefs.setLastProjectId(Long.valueOf(5));
       service.updateUserPreferences(prefs, adminAuthToken);
 
       // verify expected change made
@@ -283,7 +282,7 @@ public class SecurityServiceRestNormalUseTest extends SecurityTestSupport {
       UserPreferencesJpa updatedPrefs =
           (UserPreferencesJpa) testUser.getUserPreferences();
       assertNotNull(prefs);
-      assertEquals(new Long(5), updatedPrefs.getLastProjectId());
+      assertEquals(Long.valueOf(5), updatedPrefs.getLastProjectId());
 
       // Revert to original value
       prefs.setLastProjectId(null);
@@ -330,7 +329,8 @@ public class SecurityServiceRestNormalUseTest extends SecurityTestSupport {
 
     try {
       user = service.getUserForAuthToken(badAuthToken);
-      fail("Bad Token should return a REST status of 500 and thus throw exception.");
+      fail(
+          "Bad Token should return a REST status of 500 and thus throw exception.");
     } catch (Exception e) {
       user = null;
     }
@@ -359,9 +359,8 @@ public class SecurityServiceRestNormalUseTest extends SecurityTestSupport {
     assertTrue(adminUserFound);
 
     // Verify retrieval of no users via bad projectId value query
-    users =
-        service.findUsersForQuery("projectAnyRole:1234567890d", null,
-            adminAuthToken);
+    users = service.findUsersForQuery("projectAnyRole:1234567890d", null,
+        adminAuthToken);
     assertTrue(users.getCount() == 0);
 
     // Verify failure when accessing via bad key query
