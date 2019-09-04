@@ -1,5 +1,5 @@
 /*
- *    Copyright 2016 West Coast Informatics, LLC
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.rest.impl;
 
@@ -11,6 +11,8 @@ import org.ihtsdo.otf.refset.jpa.services.RootServiceJpa;
 
 /**
  * Listener for shutting down session factory.
+ *
+ * @see SessionFactoryShutdownEvent
  */
 public class SessionFactoryShutdownListener implements ServletContextListener {
 
@@ -34,8 +36,7 @@ public class SessionFactoryShutdownListener implements ServletContextListener {
   @Override
   public void contextDestroyed(ServletContextEvent sce) {
     // Close the factory
-    try {
-      LocalService service = new LocalService();
+    try (LocalService service = new LocalService();) {
       service.getFactory().close();
     } catch (Exception e) {
       // n/a
