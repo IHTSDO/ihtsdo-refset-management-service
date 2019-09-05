@@ -92,7 +92,6 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
    */
   public SnowowlTerminologyHandler() throws Exception {
     super();
-    //TODO - should only get genericUserCookies for SNOWOWL-SE, or for SNOWOWL as well?
     getGenericUserCookies();
   }
 
@@ -920,7 +919,7 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     concept.setLastModifiedBy(terminology);
     concept.setModuleId(doc.get("moduleId").asText());
     concept.setDefinitionStatusId(doc.get("definitionStatus").asText());
-    concept.setName(doc.get("preferredSynonym").asText());
+    concept.setName(doc.get("preferredSynonym").get("term") == null ? doc.get("preferredSynonym").asText() : doc.get("preferredSynonym").get("term").asText());
 
     concept.setPublishable(true);
     concept.setPublished(true);
@@ -1004,7 +1003,7 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
           rel.setLastModified(new Date());
         }
         rel.setModuleId(relNode.get("moduleId").asText());
-        rel.setTypeId(relNode.get("type").get("fsn").asText()
+        rel.setTypeId((relNode.get("type").get("fsn").get("term") == null ? relNode.get("type").get("fsn").asText() :relNode.get("type").get("fsn").get("term").asText())
             .replaceFirst(" \\([a-zA-Z0-9 ]*\\)", ""));
         // Skip "isa" rels
         if (rel.getTypeId().equals("Is a")) {
@@ -1026,7 +1025,7 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
         } else {
           destination.setId(1L);
         }
-        destination.setName(relNode.get("target").get("fsn").asText());
+        destination.setName(relNode.get("target").get("fsn").get("term") == null ? relNode.get("target").get("fsn").asText() : relNode.get("target").get("fsn").get("term").asText());
         destination.setDefinitionStatusId(
             relNode.get("target").get("definitionStatus").asText());
         rel.setDestinationConcept(destination);
@@ -1316,7 +1315,7 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
       // moduleId is not provided
       concept.setModuleId(null);
       concept.setDefinitionStatusId(entry.get("definitionStatus").asText());
-      concept.setName(entry.get("fsn").asText());
+      concept.setName(entry.get("fsn").get("term") == null ? entry.get("fsn").asText() : entry.get("fsn").get("term").asText());
 
       concept.setPublishable(true);
       concept.setPublished(true);
@@ -1386,7 +1385,7 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
       // no moduleId supplied
       concept.setModuleId(entry.get("moduleId").asText());
       concept.setDefinitionStatusId(entry.get("definitionStatus").asText());
-      concept.setName(entry.get("fsn").asText());
+      concept.setName(entry.get("fsn").get("term") == null ? entry.get("fsn").asText() : entry.get("fsn").get("term").asText());
       concept.setLeaf(entry.get("isLeafInferred").asText().equals("true"));
 
       concept.setPublishable(true);
