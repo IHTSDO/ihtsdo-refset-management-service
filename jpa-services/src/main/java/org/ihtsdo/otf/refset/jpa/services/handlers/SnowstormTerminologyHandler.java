@@ -18,7 +18,11 @@ import java.util.Properties;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.client.Invocation.Builder;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status.Family;
 
@@ -89,7 +93,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
    */
   public SnowstormTerminologyHandler() throws Exception {
     super();
-
+    getGenericUserCookies();
   }
 
   /** The accept. */
@@ -114,6 +118,10 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
   /** The headers. */
   private Map<String, String> headers;
 
+  /** The generic user cookies. */
+  private String genericUserCookie = null;
+  
+  
   /* see superclass */
   @Override
   public TerminologyHandler copy() throws Exception {
@@ -134,7 +142,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
 
     final Response response =
         target.request(accept).header("Authorization", authHeader)
-            .header("Cookie", getCookieHeader()).get();
+            .header("Cookie", genericUserCookie != null ? genericUserCookie : getCookieHeader()).get();
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -200,7 +208,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     final Response response =
         target.request(accept).header("Authorization", authHeader)
             .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
-            .header("Cookie", getCookieHeader()).get();
+            .header("Cookie", genericUserCookie != null ? genericUserCookie : getCookieHeader()).get();
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -239,7 +247,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     Response response =
         target.request(accept).header("Authorization", authHeader)
             .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
-            .header("Cookie", getCookieHeader()).get();
+            .header("Cookie", genericUserCookie != null ? genericUserCookie : getCookieHeader()).get();
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -277,7 +285,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
 
     response = target.request(accept).header("Authorization", authHeader)
         .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
-        .header("Cookie", getCookieHeader()).get();
+        .header("Cookie", genericUserCookie != null ? genericUserCookie : getCookieHeader()).get();
     resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -329,7 +337,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     Response response =
         target.request(accept).header("Authorization", authHeader)
             .header("Accept-Language", getAcceptLanguage(terminology, version))
-            .header("Cookie", getCookieHeader()).get();
+            .header("Cookie", genericUserCookie != null ? genericUserCookie : getCookieHeader()).get();
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -436,7 +444,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     Response response =
         target.request(accept).header("Authorization", authHeader)
             .header("Accept-Language", getAcceptLanguage(terminology, version))
-            .header("Cookie", getCookieHeader()).get();
+            .header("Cookie", genericUserCookie != null ? genericUserCookie : getCookieHeader()).get();
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -537,7 +545,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
           /* + (total - initialMaxLimit) */ + "&searchAfter=" + searchAfter + "&expand=pt()");
       response = target.request(accept).header("Authorization", authHeader)
           .header("Accept-Language", getAcceptLanguage(terminology, version))
-          .header("Cookie", getCookieHeader()).get();
+          .header("Cookie", genericUserCookie != null ? genericUserCookie : getCookieHeader()).get();
       resultString = response.readEntity(String.class);
       if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
         // n/a
@@ -600,7 +608,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     Response response =
         target.request(accept).header("Authorization", authHeader)
             .header("Accept-Language", getAcceptLanguage(terminology, version))
-            .header("Cookie", getCookieHeader()).get();
+            .header("Cookie", genericUserCookie != null ? genericUserCookie : getCookieHeader()).get();
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -638,7 +646,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     final Response response =
         target.request(accept).header("Authorization", authHeader)
             .header("Accept-Language", getAcceptLanguage(terminology, version))
-            .header("Cookie", getCookieHeader()).get();
+            .header("Cookie", genericUserCookie != null ? genericUserCookie : getCookieHeader()).get();
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -900,7 +908,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     Response response =
         target.request(accept).header("Authorization", authHeader)
             .header("Accept-Language", getAcceptLanguage(terminology, version))
-            .header("Cookie", getCookieHeader()).get();
+            .header("Cookie", genericUserCookie != null ? genericUserCookie : getCookieHeader()).get();
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -1006,7 +1014,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     final Response response =
         target.request(accept).header("Authorization", authHeader)
             .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
-            .header("Cookie", getCookieHeader()).get();
+            .header("Cookie", genericUserCookie != null ? genericUserCookie : getCookieHeader()).get();
 
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -1152,7 +1160,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     final Response response =
         target.request(accept).header("Authorization", authHeader)
             .header("Accept-Language", getAcceptLanguage(terminology, version))
-            .header("Cookie", getCookieHeader()).get();
+            .header("Cookie", genericUserCookie != null ? genericUserCookie : getCookieHeader()).get();
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -1214,7 +1222,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     final Response response =
         target.request(accept).header("Authorization", authHeader)
             .header("Accept-Language", getAcceptLanguage(terminology, version))
-            .header("Cookie", getCookieHeader()).get();
+            .header("Cookie", genericUserCookie != null ? genericUserCookie : getCookieHeader()).get();
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -1333,7 +1341,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     Response response =
         target.request(accept).header("Authorization", authHeader)
             .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
-            .header("Cookie", getCookieHeader()).get();
+            .header("Cookie", genericUserCookie != null ? genericUserCookie : getCookieHeader()).get();
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -1385,7 +1393,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     Response response =
         target.request(accept).header("Authorization", authHeader)
             .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
-            .header("Cookie", getCookieHeader()).get();
+            .header("Cookie", genericUserCookie != null ? genericUserCookie : getCookieHeader()).get();
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -1433,7 +1441,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     Response response =
         target.request(accept).header("Authorization", authHeader)
             .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
-            .header("Cookie", getCookieHeader()).get();
+            .header("Cookie", genericUserCookie != null ? genericUserCookie : getCookieHeader()).get();
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() != Family.SUCCESSFUL) {
       throw new LocalException(
@@ -1503,7 +1511,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     final Response response =
         target.request(accept).header("Authorization", authHeader)
             .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
-            .header("Cookie", getCookieHeader()).get();
+            .header("Cookie", genericUserCookie != null ? genericUserCookie : getCookieHeader()).get();
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -1524,4 +1532,28 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     return requiredLanguageList;
   }
 
+  private void getGenericUserCookies() throws Exception {
+    final String userName=ConfigUtility.getConfigProperties().getProperty("terminology.handler.SNOWOWL-MS.genericUserName");
+    final String password=ConfigUtility.getConfigProperties().getProperty("terminology.handler.SNOWOWL-MS.genericUserPassword");
+    final String imsUrl = ConfigUtility.getConfigProperties().getProperty("terminology.handler.SNOWOWL-MS.authenticationUrl");
+
+    Client client = ClientBuilder.newClient();
+    WebTarget target = client.target(imsUrl + "/authenticate");
+    Builder builder = target.request(MediaType.APPLICATION_JSON);
+    
+    Response response = builder.post(Entity.json("{ \"login\": \"" + userName
+        + "\", \"password\": \"" + password + "\" }"));    
+    if (response.getStatusInfo().getFamily() != Family.SUCCESSFUL) {
+      throw new LocalException("Authentication of generic user failed. "
+          + response.toString());
+    }
+    Map<String, NewCookie> genericUserCookies = response.getCookies();
+    StringBuilder sb = new StringBuilder();
+    for(String key : genericUserCookies.keySet()){
+      sb.append(genericUserCookies.get(key));
+      sb.append(";");
+    }
+    genericUserCookie=sb.toString();
+  }  
+  
 }
