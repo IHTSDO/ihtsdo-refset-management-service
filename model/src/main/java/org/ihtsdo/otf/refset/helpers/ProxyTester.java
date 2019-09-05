@@ -1,5 +1,5 @@
-/**
- * Copyright 2015 West Coast Informatics, LLC
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.helpers;
 
@@ -96,7 +96,7 @@ public class ProxyTester {
     // Verify there is a no-argument constructor
     Object o = null;
     try {
-      o = clazz.newInstance();
+      o = clazz.getDeclaredConstructor().newInstance();
     } catch (Exception e) {
       throw new Exception("Class " + clazz
           + " unexpectedly does not have a no-argument constructor");
@@ -217,15 +217,16 @@ public class ProxyTester {
     int initializer) throws Exception {
     Object proxy = makeProxy(argType, initializer);
     // Logger.getLogger(getClass()).debug(
-    // "  " + set.getName() + " = " + proxy.toString());
+    // " " + set.getName() + " = " + proxy.toString());
     try {
       set.invoke(o, new Object[] {
-        proxy
+          proxy
       });
     } catch (InvocationTargetException e) {
       e.printStackTrace();
-      throw new RuntimeException("Setter " + set.getDeclaringClass().getName()
-          + "." + set.getName() + " threw " + e.getTargetException().toString());
+      throw new RuntimeException(
+          "Setter " + set.getDeclaringClass().getName() + "." + set.getName()
+              + " threw " + e.getTargetException().toString());
     } catch (IllegalArgumentException e) {
       Logger.getLogger(getClass()).debug("o=" + o.getClass().getName());
       Logger.getLogger(getClass()).debug("proxy=" + proxy.getClass().getName());
@@ -245,7 +246,7 @@ public class ProxyTester {
    * @throws Exception the exception
    */
   @SuppressWarnings({
-    "rawtypes"
+      "rawtypes"
   })
   protected Object makeProxy(Class<?> type, int initializer) throws Exception {
     // Return anything passed in first
@@ -256,19 +257,19 @@ public class ProxyTester {
     if (type == String.class)
       return "" + initializer;
     if (type == Date.class)
-      return new Date(10L+initializer);
+      return new Date(10L + initializer);
     if (type == Boolean.class || type == boolean.class)
-      return new Boolean((initializer & 1) == 0);
+      return Boolean.valueOf((initializer & 1) == 0);
     if (type == Integer.class || type == int.class)
-      return new Integer(initializer);
+      return Integer.valueOf(initializer);
     if (type == Long.class || type == long.class)
-      return new Long(initializer);
+      return Long.valueOf(initializer);
     if (type == Double.class || type == double.class)
-      return new Double((initializer * 1.0) / 100);
+      return Double.valueOf((initializer * 1.0) / 100);
     if (type == Float.class || type == float.class)
-      return new Float((initializer * 1.0) / 100);
+      return Float.valueOf((initializer * 1.0f) / 100);
     if (type == Character.class || type == char.class)
-      return new Character((char) ('a' + initializer));
+      return Character.valueOf((char) ('a' + initializer));
     if (type == BigDecimal.class)
       return new BigDecimal(initializer);
     if (type == Set.class) {
@@ -297,7 +298,7 @@ public class ProxyTester {
     /* Use JDK dynamic proxy if the argument is an interface. */
     if (type.isInterface())
       return Proxy.newProxyInstance(type.getClassLoader(), new Class[] {
-        type
+          type
       }, new DummyInvocationHandler());
 
     /* Get the CGLib classes we need. */
@@ -309,15 +310,16 @@ public class ProxyTester {
       callbackClass = Class.forName("net.sf.cglib.proxy.Callback");
       fixedValueClass = Class.forName("net.sf.cglib.proxy.FixedValue");
     } catch (ClassNotFoundException e) {
-      throw new ClassNotFoundException("Need cglib to make a dummy "
-          + type.getName() + ". Make sure cglib.jar is on " + "your classpath.");
+      throw new ClassNotFoundException(
+          "Need cglib to make a dummy " + type.getName()
+              + ". Make sure cglib.jar is on " + "your classpath.");
     }
 
     /* Make a dummy callback (proxies within proxies!) */
     Object callback;
     callback =
         Proxy.newProxyInstance(callbackClass.getClassLoader(), new Class[] {
-          fixedValueClass
+            fixedValueClass
         }, new DummyInvocationHandler());
 
     Method createMethod = enhancerClass.getMethod("create", new Class[] {
@@ -343,6 +345,6 @@ public class ProxyTester {
   private Object makeEnum(Class<?> clazz1, int initializer) throws Exception {
     Method m = clazz1.getMethod("values", new Class[0]);
     Object[] o = (Object[]) m.invoke(null, new Object[0]);
-    return o[initializer-1];
+    return o[initializer - 1];
   }
 }

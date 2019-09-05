@@ -1,9 +1,6 @@
 /*
  *    Copyright 2019 West Coast Informatics, LLC
  */
-/*
- * 
- */
 package org.ihtsdo.otf.refset.jpa.services.rest;
 
 import org.ihtsdo.otf.refset.Project;

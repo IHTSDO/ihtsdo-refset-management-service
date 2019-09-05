@@ -72,11 +72,6 @@ import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
 
-// TODO: Auto-generated Javadoc
-/**
- * REST implementation for {@link ProjectServiceRest}..
- */
-
 /**
  * Reference implementation of {@link ProjectServiceRest}. Includes hibernate
  * tags for MEME database.

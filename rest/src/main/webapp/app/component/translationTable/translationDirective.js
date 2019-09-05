@@ -836,6 +836,17 @@ tsApp
                   }
                 });
               }
+              
+              // Need both a $scope version and a non one for modals.
+              $scope.changeRole = function(role) {
+                changeRole(role);
+              }
+              
+              function changeRole(role) {
+                if ($scope.projects.role === 'AUTHOR') {
+                  $scope.projects.role = role;
+                }
+              }
 
               // Refresh lookup progress
               $scope.refreshLookupProgress = function(translation) {
@@ -2100,9 +2111,7 @@ tsApp
 
                 // Handle continue import
                 $scope.continueImport = function(file, wfStatus) {
-
                   if (type === 'Translation') {
-                    
                     if ($scope.selectedIoHandler.id === 'EXCEL') {
                       wfStatus = 'REVIEW_NEW';
                     }
@@ -2117,6 +2126,9 @@ tsApp
                             $scope.warnings = data.warnings;
                             $scope.comments = data.comments;
                             startLookup(translation);
+                            if ($scope.selectedIoHandler.id === 'EXCEL') {
+                              changeRole('REVIEWER')
+                            } 
                           },
                           // Failure - show error
                           function(data) {
