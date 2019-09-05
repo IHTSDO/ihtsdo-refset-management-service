@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 West Coast Informatics, LLC
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.test.rest;
 
@@ -191,7 +191,8 @@ public class SecurityServiceRestDegenerateUseTest extends SecurityTestSupport {
       user.setId(null);
       service.updateUser((UserJpa) user, authToken);
 
-      fail("Updating user with null hibernate id did not throw expected exception");
+      fail(
+          "Updating user with null hibernate id did not throw expected exception");
 
     } catch (Exception e) {
       // do nothing
@@ -229,7 +230,7 @@ public class SecurityServiceRestDegenerateUseTest extends SecurityTestSupport {
     // Delete user with null id
     // TEST: Should throw exception
     try {
-      service.removeUser(new Long(null), authToken);
+      service.removeUser(Long.valueOf(null), authToken);
       fail("DELETE user with null id did not throw expected exception");
     } catch (Exception e) {
       // do nothing

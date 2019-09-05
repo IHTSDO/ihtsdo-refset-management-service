@@ -350,34 +350,36 @@ public class BrowserTerminologyHandlerTest extends JpaSupport {
   @Test
   public void testEdgeCases() throws Exception {
     Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
-    ProjectService service = new ProjectServiceJpa();
 
-    // Bogus ids, term server produces failures
-    try {
-      Concept c = service.getTerminologyHandler(project, null)
-          .getConcept("12345", "abc", "20150131");
-      assertNull(c);
-    } catch (Exception e) {
-      fail("unexpected exception");
-    }
+    try (ProjectService service = new ProjectServiceJpa();) {
 
-    ConceptList list = service.getTerminologyHandler(project, null)
-        .getConceptChildren("12345", "abc", "20150131");
-    assertEquals(0, list.getCount());
+      // Bogus ids, term server produces failures
+      try {
+        Concept c = service.getTerminologyHandler(project, null)
+            .getConcept("12345", "abc", "20150131");
+        assertNull(c);
+      } catch (Exception e) {
+        fail("unexpected exception");
+      }
 
-    list = service.getTerminologyHandler(project, null)
-        .getConceptParents("12345", "abc", "20150131");
-    assertEquals(0, list.getCount());
+      ConceptList list = service.getTerminologyHandler(project, null)
+          .getConceptChildren("12345", "abc", "20150131");
+      assertEquals(0, list.getCount());
 
-    try {
-      List<String> ids = new ArrayList<>();
-      ids.add("1234");
-      ids.add("5679");
-      list = service.getTerminologyHandler(project, null).getConcepts(ids,
-          "abc", "20150131", false);
-      fail("Exception expected.");
-    } catch (Exception e) {
-      // n/a, expected result
+      list = service.getTerminologyHandler(project, null)
+          .getConceptParents("12345", "abc", "20150131");
+      assertEquals(0, list.getCount());
+
+      try {
+        List<String> ids = new ArrayList<>();
+        ids.add("1234");
+        ids.add("5679");
+        list = service.getTerminologyHandler(project, null).getConcepts(ids,
+            "abc", "20150131", false);
+        fail("Exception expected.");
+      } catch (Exception e) {
+        // n/a, expected result
+      }
     }
 
   }
@@ -391,28 +393,29 @@ public class BrowserTerminologyHandlerTest extends JpaSupport {
   public void testDegenerateUse() throws Exception {
     Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
 
-    ProjectService service = new ProjectServiceJpa();
-    try {
-      Concept c = service.getTerminologyHandler(project, null).getConcept(null,
-          "abc", "def");
-      assertNull(c);
-    } catch (Exception e) {
-      fail("Unexpected failure");
-    }
+    try (ProjectService service = new ProjectServiceJpa();) {
+      try {
+        Concept c = service.getTerminologyHandler(project, null)
+            .getConcept(null, "abc", "def");
+        assertNull(c);
+      } catch (Exception e) {
+        fail("Unexpected failure");
+      }
 
-    try {
-      Concept c = service.getTerminologyHandler(project, null).getConcept("abc",
-          null, "def");
-      assertNull(c);
-    } catch (Exception e) {
-      fail("Unexpected failure");
-    }
+      try {
+        Concept c = service.getTerminologyHandler(project, null)
+            .getConcept("abc", null, "def");
+        assertNull(c);
+      } catch (Exception e) {
+        fail("Unexpected failure");
+      }
 
-    try {
-      service.getTerminologyHandler(project, null).getConcept("abcabc", "abc",
-          null);
-    } catch (Exception e) {
-      fail("Exception not expected.");
+      try {
+        service.getTerminologyHandler(project, null).getConcept("abcabc", "abc",
+            null);
+      } catch (Exception e) {
+        fail("Exception not expected.");
+      }
     }
 
   }
