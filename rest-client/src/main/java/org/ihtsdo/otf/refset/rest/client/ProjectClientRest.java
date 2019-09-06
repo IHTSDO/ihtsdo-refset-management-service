@@ -242,14 +242,20 @@ public class ProjectClientRest extends RootClientRest
 
   /* see superclass */
   @Override
-  public void luceneReindex(String indexedObjects, String authToken)
-    throws Exception {
+  public void luceneReindex(String indexedObjects,
+    Integer batchSizeToLoadObjects, Integer threadsToLoadObjects,
+    String authToken) throws Exception {
     Logger.getLogger(getClass())
         .debug("Project Client - lucene reindex " + indexedObjects);
 
     Client client = ClientBuilder.newClient();
+    String queryString = ((batchSizeToLoadObjects != null)
+        ? "batchSizeToLoadObjects=" + batchSizeToLoadObjects : "")
+        + ((threadsToLoadObjects != null)
+            ? "threadsToLoadObjects=" + threadsToLoadObjects : "");
     WebTarget target =
-        client.target(config.getProperty("base.url") + "/project/reindex");
+        client.target(config.getProperty("base.url") + "/project/reindex"
+            + (queryString.isEmpty() ? "&" + queryString : ""));
     Response response = target.request(MediaType.APPLICATION_XML)
         .header("Authorization", authToken).post(Entity.text(indexedObjects));
 
@@ -259,7 +265,6 @@ public class ProjectClientRest extends RootClientRest
       if (response.getStatus() != 204)
         throw new Exception("Unexpected status " + response.getStatus());
     }
-
   }
 
   /* see superclass */
@@ -843,7 +848,6 @@ public class ProjectClientRest extends RootClientRest
     return (StringList) ConfigUtility.getGraphForString(resultString,
         StringList.class);
   }
-  
 
   @Override
   public String translate(Long projectId, String text, String language,
