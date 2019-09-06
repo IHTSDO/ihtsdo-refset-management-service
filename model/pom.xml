@@ -23,7 +23,6 @@
       <artifactId>slf4j-log4j12</artifactId>
     </dependency>
 
-
     <!-- Mail -->
     <dependency>
       <groupId>com.sun.mail</groupId>
@@ -39,31 +38,7 @@
     <!-- Required for Jersey and JSON -->
     <dependency>
       <groupId>org.glassfish.jersey.core</groupId>
-      <artifactId>jersey-server</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.glassfish.jersey.core</groupId>
-      <artifactId>jersey-client</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.glassfish.jersey.core</groupId>
       <artifactId>jersey-common</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.glassfish.jersey.media</groupId>
-      <artifactId>jersey-media-jaxb</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.glassfish.jersey.media</groupId>
-      <artifactId>jersey-media-json-jackson</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.glassfish.jersey.containers</groupId>
-      <artifactId>jersey-container-servlet</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.glassfish.jersey.media</groupId>
-      <artifactId>jersey-media-multipart</artifactId>
     </dependency>
 
     <!-- jackson -->
@@ -80,17 +55,7 @@
       <artifactId>jackson-databind</artifactId>
     </dependency>
 
-    <dependency>
-      <groupId>com.wordnik</groupId>
-      <artifactId>swagger-jersey2-jaxrs_2.10</artifactId>
-    </dependency>
-
     <!-- javax -->
-    <dependency>
-      <groupId>javax.servlet</groupId>
-      <artifactId>javax.servlet-api</artifactId>
-      <scope>provided</scope>
-    </dependency>
     <dependency>
       <groupId>javax.ws.rs</groupId>
       <artifactId>javax.ws.rs-api</artifactId>
@@ -113,14 +78,6 @@
     <dependency>
       <groupId>org.glassfish.jaxb</groupId>
       <artifactId>jaxb-runtime</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.sun.xml.bind</groupId>
-      <artifactId>jaxb-impl</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.sun.xml.bind</groupId>
-      <artifactId>jaxb-core</artifactId>
     </dependency>
 
     <dependency>
