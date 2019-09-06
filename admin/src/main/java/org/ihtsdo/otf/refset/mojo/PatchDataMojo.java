@@ -322,7 +322,7 @@ public class PatchDataMojo extends AbstractMojo {
               securityService.authenticate(properties.getProperty("admin.user"),
                   properties.getProperty("admin.password")).getAuthToken();
           ProjectServiceRestImpl contentService = new ProjectServiceRestImpl();
-          contentService.luceneReindex(null, authToken);
+          contentService.luceneReindex(null, null, null, authToken);
         }
       }
 
@@ -800,7 +800,7 @@ public class PatchDataMojo extends AbstractMojo {
             securityService.authenticate(properties.getProperty("admin.user"),
                 properties.getProperty("admin.password")).getAuthToken();
         ProjectServiceRestImpl contentService = new ProjectServiceRestImpl();
-        contentService.luceneReindex("ConceptRefsetMemberJpa", authToken);
+        contentService.luceneReindex("ConceptRefsetMemberJpa", null, null, authToken);
       }
     }
   }

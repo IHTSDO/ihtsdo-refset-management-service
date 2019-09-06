@@ -130,7 +130,6 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     }
   }
 
-
   /* see superclass */
   @Override
   @GET
@@ -179,7 +178,6 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     }
     return null;
   }
-
 
   /* see superclass */
   @Override
@@ -238,7 +236,6 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     return null;
   }
 
-
   /* see superclass */
   @Override
   @POST
@@ -282,7 +279,6 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     }
   }
 
-
   /* see superclass */
   @Override
   @POST
@@ -324,7 +320,6 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
       securityService.close();
     }
   }
-
 
   /* see superclass */
   @Override
@@ -382,7 +377,6 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     }
 
   }
-
 
   /* see superclass */
   @Override
@@ -499,7 +493,6 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
 
   }
 
-
   /* see superclass */
   @Override
   @GET
@@ -528,7 +521,6 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     }
 
   }
-
 
   /* see superclass */
   @Override
@@ -560,7 +552,6 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
 
   }
 
-
   /* see superclass */
   @Override
   @POST
@@ -569,6 +560,8 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
   @ApiOperation(value = "Reindex specified objects", notes = "Recomputes lucene indexes for the specified comma-separated objects")
   public void luceneReindex(
     @ApiParam(value = "Comma-separated list of objects to reindex, e.g. ConceptJpa (optional)", required = false) String indexedObjects,
+    @ApiParam(value = "Batch size of load objects to index (optional).", required = false) @QueryParam("batchSizeToLoadObjects") Integer batchSizeToLoadObjects,
+    @ApiParam(value = "Number of threads to load objects (optional)", required = false) @QueryParam("threadsToLoadObjects") Integer threadsToLoadObjects,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass())
@@ -582,6 +575,8 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     try {
       authorizeApp(securityService, authToken, "reindex", UserRole.ADMIN);
       algo.setIndexedObjects(indexedObjects);
+      algo.setBatchSizeToLoadObjects(batchSizeToLoadObjects);
+      algo.setThreadsToLoadObjects(threadsToLoadObjects);
       algo.compute();
       algo.close();
       // Final logging messages
@@ -595,9 +590,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
       algo.close();
       securityService.close();
     }
-
   }
-
 
   /* see superclass */
   @Override
@@ -677,7 +670,6 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     return null;
   }
 
-
   /* see superclass */
   @Override
   @GET
@@ -712,7 +704,6 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     }
     return null;
   }
-
 
   /* see superclass */
   @Override
@@ -753,7 +744,6 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     return null;
   }
 
-
   /* see superclass */
   @Override
   @POST
@@ -792,7 +782,6 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     return null;
   }
 
-
   /* see superclass */
   @Override
   @GET
@@ -828,7 +817,6 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     return null;
   }
 
-
   /* see superclass */
   @Override
   @GET
@@ -855,7 +843,6 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     }
     return null;
   }
-
 
   /* see superclass */
   @Override
@@ -900,7 +887,6 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     }
 
   }
-
 
   /* see superclass */
   @Override
@@ -976,7 +962,6 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     }
 
   }
-
 
   /* see superclass */
   @Override
@@ -1133,7 +1118,6 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
 
   }
 
-
   /* see superclass */
   @Override
   @GET
@@ -1170,7 +1154,6 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     }
     return null;
   }
-
 
   /* see superclass */
   @GET
@@ -1226,7 +1209,6 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     }
     return null;
   }
-
 
   /* see superclass */
   @GET
@@ -1326,7 +1308,6 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
       securityService.close();
     }
   }
-
 
   /* see superclass */
   @Override

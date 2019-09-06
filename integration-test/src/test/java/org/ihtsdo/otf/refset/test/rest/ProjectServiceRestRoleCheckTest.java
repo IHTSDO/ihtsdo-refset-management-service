@@ -263,10 +263,10 @@ public class ProjectServiceRestRoleCheckTest extends ProjectTestSupport {
     Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
 
     /* Test force full re-indexing of all Lucene indices */
-    projectService.luceneReindex(null, adminAuthToken);
+    projectService.luceneReindex(null, null, null, adminAuthToken);
 
     /* Test force re-indexing for only two specific Lucene indices */
-    projectService.luceneReindex("UserJpa, ConceptJpa", adminAuthToken);
+    projectService.luceneReindex("UserJpa, ConceptJpa", null, null, adminAuthToken);
   }
 
   /**

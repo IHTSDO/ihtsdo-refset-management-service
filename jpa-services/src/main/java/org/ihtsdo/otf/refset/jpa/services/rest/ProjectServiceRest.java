@@ -140,11 +140,14 @@ public interface ProjectServiceRest {
    * Lucene reindex.
    *
    * @param indexedObjects the indexed objects
+   * @param batchSizeToLoadObjects the batch size to load objects
+   * @param threadsToLoadObjects the threads to load objects
    * @param authToken the auth token
    * @throws Exception the exception
    */
-  public void luceneReindex(String indexedObjects, String authToken)
-    throws Exception;
+  public void luceneReindex(String indexedObjects,
+    Integer batchSizeToLoadObjects, Integer threadsToLoadObjects,
+    String authToken) throws Exception;
 
   /**
    * Find projects.
