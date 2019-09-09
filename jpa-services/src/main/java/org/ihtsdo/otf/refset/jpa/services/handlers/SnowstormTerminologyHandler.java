@@ -416,7 +416,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
 
       concept.setActive(conceptNode.get("active").asText().equals("true"));
       concept.setTerminologyId(conceptNode.get("id").asText());
-      concept.setLastModified(ConfigUtility.DATE_FORMAT
+      concept.setLastModified(conceptNode.get("effectiveTime") == null ? null : ConfigUtility.DATE_FORMAT
           .parse(conceptNode.get("effectiveTime").asText()));
       concept.setLastModifiedBy(terminology);
       concept.setModuleId(conceptNode.get("moduleId").asText());
@@ -464,7 +464,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
 
         concept.setActive(conceptNode.get("active").asText().equals("true"));
         concept.setTerminologyId(conceptNode.get("id").asText());
-        concept.setLastModified(ConfigUtility.DATE_FORMAT
+        concept.setLastModified(conceptNode.get("effectiveTime") == null ? null : ConfigUtility.DATE_FORMAT
             .parse(conceptNode.get("effectiveTime").asText()));
         concept.setLastModifiedBy(terminology);
         concept.setModuleId(conceptNode.get("moduleId").asText());
