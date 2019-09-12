@@ -41,8 +41,11 @@ import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.ProjectList;
 import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.helpers.TerminologyList;
+import org.ihtsdo.otf.refset.helpers.TranslationExtensionLanguage;
+import org.ihtsdo.otf.refset.helpers.TranslationExtensionLanguageList;
 import org.ihtsdo.otf.refset.helpers.UserList;
 import org.ihtsdo.otf.refset.jpa.ProjectJpa;
+import org.ihtsdo.otf.refset.jpa.TranslationExtensionLanguageJpa;
 import org.ihtsdo.otf.refset.jpa.UserJpa;
 import org.ihtsdo.otf.refset.jpa.algo.LuceneReindexAlgorithm;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptListJpa;
@@ -50,11 +53,13 @@ import org.ihtsdo.otf.refset.jpa.helpers.DescriptionTypeListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ProjectListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.TerminologyListJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.TranslationExtensionLanguageListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.UserListJpa;
 import org.ihtsdo.otf.refset.jpa.services.ProjectServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.RefsetServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.TranslationServiceJpa;
+import org.ihtsdo.otf.refset.jpa.services.handlers.SnowstormTerminologyHandler;
 import org.ihtsdo.otf.refset.jpa.services.rest.ProjectServiceRest;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.Description;
@@ -420,6 +425,17 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
         } catch (Exception e) {
           throw new LocalException("Project has invalid exclusion clause");
         }
+      }
+      
+      if (project.getTranslationExtensionLanguages() != null
+          && project.getTranslationExtensionLanguages().size() > 0) {
+        project.getTranslationExtensionLanguages().forEach(tel -> {
+          tel.setLastModifiedBy(userName);
+          ((TranslationExtensionLanguageJpa) tel).setProjectId(project.getId());
+        });
+      }
+      else { //remove
+        project.getTranslationExtensionLanguages().clear();
       }
 
       // The map adapter for UserRoleMap only loads usernames and we need the
@@ -1349,87 +1365,47 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
   /* see superclass */
   @Override
   @GET
-  @Path("/{projectId}/translationExtentions")
-  @ApiOperation(value = "Get a list of strings.", notes = "Get a list of available translation language extensions for a project.", response = StringList.class)
-  public StringList getBranches(
-    @ApiParam(value = "Project id, e.g. 12345", required = true) @PathParam("projectId") Long projectId,
-    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
-
-    Logger.getLogger(getClass()).info("RESTful GET call (Project): " + projectId
-        + "/{projectId}/translationExtentions");
-    StringList translationExtentions = new StringList();
-
-    try (final ProjectService projectService =
-        new ProjectServiceJpa(getHeaders(headers))) {
-
-      authorizeApp(securityService, authToken,
-          "translationExtentions get branches", UserRole.VIEWER);
-
-      final Project project = projectService.getProject(projectId);
-
-      final PfsParameter pfs = new PfsParameterJpa();
-      pfs.setStartIndex(0);
-
-      final List<String> sl =
-          projectService.getTerminologyHandler(project, getHeaders(headers))
-              .getTranslationExtensions();
-
-      translationExtentions.setObjects(sl);
-      translationExtentions.setTotalCount((sl != null) ? sl.size() : 0);
-
-    } catch (Exception e) {
-      Logger.getLogger(getClass()).error("ERROR: ", e);
-      throw new LocalException(
-          "Error getting branches project id " + projectId);
-    } finally {
-      securityService.close();
-    }
-
-    return translationExtentions;
-  }
-
-  /* see superclass */
-  @Override
-  @GET
-  @Path("/translationExtentions")
+  @Path("/translationExtensionLanguages")
   @ApiOperation(value = "Get a list of strings.", notes = "Get a list of available translation language extensions for a terminology handler.", response = StringList.class)
-  public StringList getBranches(
-    @ApiParam(value = "Terminology Handler Key e.g. SNOWOWL-SE", required = true) @QueryParam("terminologyHandlerKey") String terminologyHandlerKey,
-    @ApiParam(value = "Terminology Handler URL e.g. https://ms-authoring.ihtsdotools.org/snowowl/snomed-ct/v2", required = true) @QueryParam("terminologyHandlerUrl") String terminologyHandlerUrl,
+  public TranslationExtensionLanguageList getTranslationExtensionLanguages(
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(getClass()).info("RESTful GET call (Project): "
-        + "/translationExtentions/" + terminologyHandlerKey);
-    StringList translationExtentions = new StringList();
+    Logger.getLogger(getClass())
+        .info("RESTful GET call (Project): " + "/translationExtensions");
+
+    TranslationExtensionLanguageList translationExtensionLanguageList =
+        new TranslationExtensionLanguageListJpa();
 
     try (final ProjectService projectService =
         new ProjectServiceJpa(getHeaders(headers))) {
 
       authorizeApp(securityService, authToken,
-          "translationExtentions get branches", UserRole.VIEWER);
+          "translationExtensions get branches", UserRole.VIEWER);
 
-      final PfsParameter pfs = new PfsParameterJpa();
-      pfs.setStartIndex(0);
+      // force to snowstorm
+      final SnowstormTerminologyHandler handler =
+          new SnowstormTerminologyHandler();
+      handler.setUrl(ConfigUtility.getConfigProperties()
+          .getProperty("terminology.handler.SNOWSTORM.defaultUrl"));
+      handler.setApiKey(ConfigUtility.getConfigProperties()
+          .getProperty("terminology.handler.SNOWSTORM.apiKey"));
 
-      final TerminologyHandler handler = projectService.getTerminologyHandler(
-          terminologyHandlerKey, terminologyHandlerUrl, getHeaders(headers));
-      final List<String> sl = handler.getTranslationExtensions();
+      List<TranslationExtensionLanguage> extensionLanguages =
+          handler.getAvailableTranslationExtensionLanguages();
 
-      translationExtentions.setObjects(sl);
-      translationExtentions.setTotalCount((sl != null) ? sl.size() : 0);
+      translationExtensionLanguageList.setObjects(extensionLanguages);
+      translationExtensionLanguageList.setTotalCount(
+          (extensionLanguages != null) ? extensionLanguages.size() : 0);
 
     } catch (Exception e) {
       Logger.getLogger(getClass()).error("ERROR: ", e);
-      throw new LocalException(
-          "Error getting branches for terminology handler key "
-              + terminologyHandlerKey + " with URL " + terminologyHandlerUrl);
+      throw new LocalException("Error getting branches for terminology.");
     } finally {
       securityService.close();
     }
 
-    return translationExtentions;
+    return translationExtensionLanguageList;
   }
 
   /**

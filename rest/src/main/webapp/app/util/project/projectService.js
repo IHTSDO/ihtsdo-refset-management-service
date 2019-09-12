@@ -193,7 +193,7 @@ tsApp
 
         // update project
         this.updateProject = function(project) {
-          console.debug();
+          console.debug('  updateProject = ', project);
           var deferred = $q.defer();
 
           // Add project
@@ -216,7 +216,7 @@ tsApp
 
         // remove project
         this.removeProject = function(project) {
-          console.debug();
+          console.debug('  removeProject = ', project);
           var deferred = $q.defer();
 
           // Add project
@@ -761,42 +761,19 @@ tsApp
           }
         };
         // end
-        
-        //for existing projects
-        this.getAvailableBranchesByProject = function(projectId) {
-          var deferred = $q.defer();
-
-          // Assign user to project
-          gpService.increment();
-          $http.get(
-            projectUrl + projectId + '/translationExtentions').then(
-          // success
-          function(response) {
-            console.debug('  branches = ', response.data);
-            gpService.decrement();
-            deferred.resolve(response.data);
-          },
-          // error
-          function(response) {
-            utilService.handleError(response);
-            gpService.decrement();
-            deferred.reject(response.data);
-          });
-          return deferred.promise;
-        }; // end getBranches
-        
+                
         // for new projects
-        this.getAvailableBranchesByTerminologyHandler = function(terminologyHandlerKey, terminologyHandlerUrl) {
+        this.getAvailableBranchesByTerminologyHandler = function() {
           var deferred = $q.defer();
-
+          console.debug("getAvailableBranchesByTerminologyHandler");
+          
           // Assign user to project
           gpService.increment();
           $http.get(
-            projectUrl + 'translationExtentions?terminologyHandlerKey=' 
-              + terminologyHandlerKey + "&terminologyHandlerUrl=" + terminologyHandlerUrl).then(
+            projectUrl + 'translationExtensionLanguages').then(
           // success
           function(response) {
-            console.debug('  branches = ', response.data);
+            console.debug('  available translation extension languages = ', response.data);
             gpService.decrement();
             deferred.resolve(response.data);
           },

@@ -49,8 +49,7 @@ public class ProjectServiceJpa extends RootServiceJpa
   /** The terminology handler for a specific handler/URL combination. */
   private static Map<String, TerminologyHandler> instantiatedTerminologyHandlers =
       new HashMap<>();
-  
-  
+
   static {
     try {
       if (config == null)
@@ -275,6 +274,9 @@ public class ProjectServiceJpa extends RootServiceJpa
     if (project.getUserRoleMap() != null) {
       project.getUserRoleMap().size();
     }
+    if (project.getTranslationExtensionLanguages() != null) {
+      project.getTranslationExtensionLanguages().size();
+    }
   }
 
   /* see superclass */
@@ -327,20 +329,25 @@ public class ProjectServiceJpa extends RootServiceJpa
           "No terminology handler exists for the specified key: "
               + project.getTerminologyHandlerKey());
     }
-    
-    if (instantiatedTerminologyHandlers.containsKey(project.getTerminologyHandlerKey()  + "|" +  project.getTerminologyHandlerUrl())) {
-      return instantiatedTerminologyHandlers.get(project.getTerminologyHandlerKey()  + "|" +  project.getTerminologyHandlerUrl());
-    }    
-    
+
+    if (instantiatedTerminologyHandlers
+        .containsKey(project.getTerminologyHandlerKey() + "|"
+            + project.getTerminologyHandlerUrl())) {
+      return instantiatedTerminologyHandlers
+          .get(project.getTerminologyHandlerKey() + "|"
+              + project.getTerminologyHandlerUrl());
+    }
+
     final TerminologyHandler handler =
         terminologyHandlers.get(project.getTerminologyHandlerKey()).copy();
     handler.setUrl(project.getTerminologyHandlerUrl());
     handler.setHeaders(headers);
-    
-    instantiatedTerminologyHandlers.put(project.getTerminologyHandlerKey()  + "|" +  project.getTerminologyHandlerUrl(), handler);
+
+    instantiatedTerminologyHandlers.put(project.getTerminologyHandlerKey() + "|"
+        + project.getTerminologyHandlerUrl(), handler);
     return handler;
   }
-  
+
   /* see superclass */
   @Override
   public TerminologyHandler getTerminologyHandler(String terminologyHandlerKey,
@@ -352,17 +359,20 @@ public class ProjectServiceJpa extends RootServiceJpa
           "No terminology handler exists for the specified key: "
               + terminologyHandlerKey);
     }
-    
-    if (instantiatedTerminologyHandlers.containsKey(terminologyHandlerKey + "|" + terminologyHandlerUrl)) {
-      return instantiatedTerminologyHandlers.get(terminologyHandlerKey + "|" + terminologyHandlerUrl);
-    }     
-    
+
+    if (instantiatedTerminologyHandlers
+        .containsKey(terminologyHandlerKey + "|" + terminologyHandlerUrl)) {
+      return instantiatedTerminologyHandlers
+          .get(terminologyHandlerKey + "|" + terminologyHandlerUrl);
+    }
+
     final TerminologyHandler handler =
         terminologyHandlers.get(terminologyHandlerKey).copy();
     handler.setUrl(terminologyHandlerUrl);
     handler.setHeaders(headers);
-    
-    instantiatedTerminologyHandlers.put(terminologyHandlerKey + "|" + terminologyHandlerUrl, handler);    
+
+    instantiatedTerminologyHandlers
+        .put(terminologyHandlerKey + "|" + terminologyHandlerUrl, handler);
     return handler;
   }
 
