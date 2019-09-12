@@ -59,10 +59,7 @@ public class LuceneReindexAlgorithm extends RootServiceJpa
   /** The full text entity manager. */
   private FullTextEntityManager fullTextEntityManager;
 
-  /** Sort objects. */
-  private static boolean ASC = true;
-
-  /** The desc. */
+  /** Sort object to index by size descending or ascending. */
   private static boolean DESC = false;
 
   /**
