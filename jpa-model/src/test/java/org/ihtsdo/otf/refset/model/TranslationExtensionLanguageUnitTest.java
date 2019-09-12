@@ -7,6 +7,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.Project;
+import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.helpers.CopyConstructorTester;
 import org.ihtsdo.otf.refset.helpers.EqualsHashcodeTester;
 import org.ihtsdo.otf.refset.helpers.GetterSetterTester;
@@ -14,7 +15,6 @@ import org.ihtsdo.otf.refset.helpers.ProxyTester;
 import org.ihtsdo.otf.refset.helpers.TranslationExtensionLanguage;
 import org.ihtsdo.otf.refset.jpa.ProjectJpa;
 import org.ihtsdo.otf.refset.jpa.TranslationExtensionLanguageJpa;
-import org.ihtsdo.otf.refset.rf2.Concept;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
