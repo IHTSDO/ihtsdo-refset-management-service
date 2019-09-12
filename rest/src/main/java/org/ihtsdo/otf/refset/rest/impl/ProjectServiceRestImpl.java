@@ -4,10 +4,12 @@
 package org.ihtsdo.otf.refset.rest.impl;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -426,15 +428,14 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
           throw new LocalException("Project has invalid exclusion clause");
         }
       }
-      
+
       if (project.getTranslationExtensionLanguages() != null
           && project.getTranslationExtensionLanguages().size() > 0) {
         project.getTranslationExtensionLanguages().forEach(tel -> {
           tel.setLastModifiedBy(userName);
           ((TranslationExtensionLanguageJpa) tel).setProjectId(project.getId());
         });
-      }
-      else { //remove
+      } else { // remove
         project.getTranslationExtensionLanguages().clear();
       }
 
@@ -697,25 +698,36 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     Logger.getLogger(getClass())
         .info("RESTful POST call (Project): /terminology/global");
 
-    final ProjectService projectService = new ProjectServiceJpa();
-    try {
+    try (final ProjectService projectService = new ProjectServiceJpa();) {
       authorizeApp(securityService, authToken, "get all terminology editions",
           UserRole.VIEWER);
       final TerminologyList list = new TerminologyListJpa();
-      for (Project project : projectService.getProjects().getObjects()) {
-        final List<Terminology> editions =
-            projectService.getTerminologyHandler(project, getHeaders(headers))
-                .getTerminologyEditions();
-        for (Terminology t : editions) {
-          list.addObject(t);
+      final List<Project> projects = projectService.getProjects().getObjects();
+      final List<Terminology> terminologyList = new ArrayList<>();
+      
+      //make multiple calls in parallel
+      projects.parallelStream().map(project -> {
+        try {
+          return 
+              projectService.getTerminologyHandler(project, getHeaders(headers))
+                  .getTerminologyEditions();
+        } catch (Exception e) {
+          Logger.getLogger(getClass()).error("Error getting terminology", e);
+          e.printStackTrace();
         }
-      }
+        return null;
+      }).forEach(terminology -> {
+        terminology.forEach(t -> terminologyList.add(t));
+      });
+      
+      //get unique values
+      terminologyList.parallelStream().distinct().forEach(t -> list.addObject(t));
+
       list.setTotalCount(list.getCount());
       return list;
     } catch (Exception e) {
       handleException(e, "trying to get all terminologies");
     } finally {
-      projectService.close();
       securityService.close();
     }
     return null;
