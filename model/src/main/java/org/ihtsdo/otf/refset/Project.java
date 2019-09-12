@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.ihtsdo.otf.refset.helpers.Searchable;
+import org.ihtsdo.otf.refset.helpers.TranslationExtensionLanguage;
 
 /**
  * Generically represents an editing project.
@@ -194,34 +195,36 @@ public interface Project extends Searchable {
    * @param workflowPath the new workflow path
    */
   public void setWorkflowPath(String workflowPath);
-  
-  
-  /**
-   * Returns the translation extensions.
-   *
-   * @return the translation extensions
-   */
-  public List<String> getTranslationExtensions();
-  
-  /**
-   * Sets the translation extensions.
-   *
-   * @param translationExtensions the translation extensions
-   */
-  public void setTranslationExtensions(List<String> translationExtensions);
 
   /**
-   * Adds the translation extension.
+   * Returns the translation extension languages.
    *
-   * @param translationExtensions the translation extensions
+   * @return the translation extension languages
    */
-  public void addTranslationExtension(String translationExtensions);
+  public List<TranslationExtensionLanguage> getTranslationExtensionLanguages();
 
   /**
-   * Removes the translation extension.
+   * Sets the translation extension languages.
    *
-   * @param translationExtensions the translation extensions
+   * @param translationExtensionLanguages the translation extension languages
    */
-  public void removeTranslationExtension(String translationExtensions);
+  public void setTranslationExtensionLanguages(
+    List<TranslationExtensionLanguage> translationExtensionLanguage);
+
+  /**
+   * Adds the translation extension language.
+   *
+   * @param translationExtensionLanguage the translation extension language
+   */
+  public void addTranslationExtensionLanguage(
+    TranslationExtensionLanguage translationExtensionLanguage);
+
+  /**
+   * Removes the translation extension language.
+   *
+   * @param translationExtensionLanguage the translation extension language
+   */
+  public void removeTranslationExtensionLanguage(
+    TranslationExtensionLanguage translationExtensionLanguage);
 
 }

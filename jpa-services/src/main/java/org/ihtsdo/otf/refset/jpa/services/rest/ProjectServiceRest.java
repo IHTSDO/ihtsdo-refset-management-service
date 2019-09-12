@@ -10,6 +10,7 @@ import org.ihtsdo.otf.refset.helpers.KeyValuePairList;
 import org.ihtsdo.otf.refset.helpers.ProjectList;
 import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.helpers.TerminologyList;
+import org.ihtsdo.otf.refset.helpers.TranslationExtensionLanguageList;
 import org.ihtsdo.otf.refset.helpers.UserList;
 import org.ihtsdo.otf.refset.jpa.ProjectJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
@@ -353,25 +354,12 @@ public interface ProjectServiceRest {
     throws Exception;
 
   /**
-   * Returns the branches.
+   * Returns the translation extension languages.
    *
-   * @param projectId the project id
    * @param authToken the auth token
-   * @return the branches
+   * @return the translation extension languages
    * @throws Exception the exception
    */
-  public StringList getBranches(Long projectId, String authToken)
-    throws Exception;
-
-  /**
-   * Returns the branches.
-   *
-   * @param terminologyHandlerKey the terminology handler key
-   * @param terminologyHandlerUrl the terminology handler url
-   * @param authToken the auth token
-   * @return the branches
-   * @throws Exception the exception
-   */
-  public StringList getBranches(String terminologyHandlerKey,
-    String terminologyHandlerUrl, String authToken) throws Exception;
+  public TranslationExtensionLanguageList getTranslationExtensionLanguages(
+    String authToken) throws Exception;
 }

@@ -626,26 +626,32 @@ tsApp
               });
           };
           
-          $scope.getAvailableBranchesByTerminologyHandler = function(terminologyHandlerKey, terminologyHandlerUrl) {
-            projectService.getAvailableBranchesByTerminologyHandler(terminologyHandlerKey, terminologyHandlerUrl).then(
+          $scope.getAvailableBranchesByTerminologyHandler = function() {
+            projectService.getAvailableBranchesByTerminologyHandler().then(
               function(data) {
                 $scope.translationBranches = data;
-              }
+               }
             );
           };
+          
+          $scope.getAvailableBranchesByTerminologyHandler();
 
           $scope.addTranslationExtension = function(selectedOption) {
-            if (!$scope.project.translationExtensions){
-              $scope.project.translationExtensions = [];
-              $scope.project.translationExtensions.push(selectedOption);
-            } else if (!$scope.project.translationExtensions.includes(selectedOption)) {
-              $scope.project.translationExtensions.push(selectedOption);
+            if (!$scope.project.translationExtensionLanguages){
+              $scope.project.translationExtensionLanguages = [];
+              $scope.project.translationExtensionLanguages.push(selectedOption);
+            } else if (!$scope.project.translationExtensionLanguages.includes(selectedOption)) {
+              if (!$scope.project.translationExtensionLanguages.some(
+                  tel => tel.branch === selectedOption.branch  
+                  && tel.languageCode === selectedOption.languageCode)) {
+                    $scope.project.translationExtensionLanguages.push(selectedOption);
+              }
             }
           };
 
           $scope.removeTranslationExtension = function(selectedOption) {
-            $scope.project.translationExtensions = 
-              $scope.project.translationExtensions.filter(so => so !== selectedOption);
+            $scope.project.translationExtensionLanguages = 
+              $scope.project.translationExtensionLanguages.filter(so => so !== selectedOption);
           };
 
           // Terminology handler selection
@@ -654,9 +660,7 @@ tsApp
             $scope.project.terminologyHandlerUrl = handler.value;
             $scope.terminologies = [];
             $scope.translationBranches = [];
-            $scope.getAvailableBranchesByTerminologyHandler(
-              $scope.project.terminologyHandlerKey, 
-              $scope.project.terminologyHandlerUrl);
+            $scope.getAvailableBranchesByTerminologyHandler();
           }
 
           // Test the handler URL, if successful, mark as such
@@ -877,28 +881,32 @@ tsApp
             });
           };
           $scope.getTerminologyEditions();
-          
-          $scope.getAvailableBranchesByProject = function(projectId) {
-            projectService.getAvailableBranchesByProject(projectId).then(
+                    
+          $scope.getAvailableBranchesByTerminologyHandler = function() {
+            projectService.getAvailableBranchesByTerminologyHandler().then(
               function(data) {
                 $scope.translationBranches = data;
               }
             );
           };
-          $scope.getAvailableBranchesByProject($scope.project.id);
-          
+          $scope.getAvailableBranchesByTerminologyHandler();
+                    
           $scope.addTranslationExtension = function(selectedOption) {
-            if (!$scope.project.translationExtensions){
-              $scope.project.translationExtensions = [];
-              $scope.project.translationExtensions.push(selectedOption);
-            } else if (!$scope.project.translationExtensions.includes(selectedOption)) {
-              $scope.project.translationExtensions.push(selectedOption);
+            if (!$scope.project.translationExtensionLanguages){
+              $scope.project.translationExtensionLanguages = [];
+              $scope.project.translationExtensionLanguages.push(selectedOption);
+            } else if (!$scope.project.translationExtensionLanguages.includes(selectedOption)) {
+              if (!$scope.project.translationExtensionLanguages.some(
+                  tel => tel.branch === selectedOption.branch  
+                  && tel.languageCode === selectedOption.languageCode)) {
+                    $scope.project.translationExtensionLanguages.push(selectedOption);
+              }
             }
           };
           
           $scope.removeTranslationExtension = function(selectedOption) {
-            $scope.project.translationExtensions = 
-              $scope.project.translationExtensions.filter(so => so !== selectedOption);
+            $scope.project.translationExtensionLanguages = 
+              $scope.project.translationExtensionLanguages.filter(so => so !== selectedOption);
           };
 
           // Get $scope.modules
@@ -976,7 +984,7 @@ tsApp
               window.alert('The workflow path cannot be blank');
               return;
             }
-
+            
             project.validationChecks = [];
             for (var i = 0; i < $scope.validationChecks.length; i++) {
               if ($scope.selectedChecks.indexOf($scope.validationChecks[i].value) != -1) {
@@ -991,6 +999,10 @@ tsApp
             // copy clause - don't allow negation - it's implicitly negated
             project.exclusionClause = $scope.clause == null ? null : $scope.clause.value;
             // Update project - this will validate the expression
+            for(var i=0; i < project.translationExtensionLanguages.length; i++) {
+              project.translationExtensionLanguages[i].projectId = project.id;
+            }
+            
             projectService.updateProject(project).then(
             // Success
             function(data) {
