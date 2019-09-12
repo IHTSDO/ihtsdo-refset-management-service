@@ -68,14 +68,14 @@ public interface TerminologyHandler extends Configurable {
    * Resolve expression.
    *
    * @param expr the expr
-   * @param terminolgy the terminolgy
+   * @param terminology the terminology
    * @param version the version
    * @param pfs the pfs
    * @param descriptions the descriptions
    * @return the concept list
    * @throws Exception the exception
    */
-  public ConceptList resolveExpression(String expr, String terminolgy,
+  public ConceptList resolveExpression(String expr, String terminology,
     String version, PfsParameter pfs, boolean descriptions) throws Exception;
 
   /**
