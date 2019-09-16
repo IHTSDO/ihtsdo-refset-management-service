@@ -701,13 +701,13 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
       final TerminologyList list = new TerminologyListJpa();
       final List<Project> projects = projectService.getProjects().getObjects();
       final List<Terminology> terminologyList = new ArrayList<>();
-      
-      //make multiple calls in parallel
+
+      // make multiple calls in parallel
       projects.parallelStream().map(project -> {
         try {
-          return 
-              projectService.getTerminologyHandler(project, getHeaders(headers))
-                  .getTerminologyEditions();
+          return projectService
+              .getTerminologyHandler(project, getHeaders(headers))
+              .getTerminologyEditions();
         } catch (Exception e) {
           Logger.getLogger(getClass()).error("Error getting terminology", e);
           e.printStackTrace();
@@ -716,9 +716,10 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
       }).forEach(terminology -> {
         terminology.forEach(t -> terminologyList.add(t));
       });
-      
-      //get unique values
-      terminologyList.parallelStream().distinct().forEach(t -> list.addObject(t));
+
+      // get unique values
+      terminologyList.parallelStream().distinct()
+          .forEach(t -> list.addObject(t));
 
       list.setTotalCount(list.getCount());
       return list;
@@ -1461,8 +1462,11 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     final ConceptList list = translationService.findConceptsForTranslation(null,
         query.toString(), null);
 
+    // TODO HANDLE DUPLICATE TRANSLATIONS (text + language code + PT/SYN)
+
     // Add all descriptions to the concept
     final Set<String> descIdsSeen = new HashSet<>();
+    final Set<String> descNameLangType = new HashSet<>();
     for (Concept conceptTranslated : list.getObjects()) {
 
       // Where the terminologyId matches but not the id, skip it
@@ -1502,10 +1506,14 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
         // encountered. Though the point of descriptions from other
         // "user prefs" translations is merely to get some idea of other names
         // not to have 100% precision
-        //
-        if (!descIdsSeen.contains(desc.getTerminologyId())) {
+        // 
+        if (!descIdsSeen.contains(desc.getTerminologyId())
+            && descNameLangType.contains(desc.getConcept().getName() + "|"
+                + desc.getTerm() + "|" + desc.getLanguageCode())) {
           concept.getDescriptions().add(desc);
           descIdsSeen.add(desc.getTerminologyId());
+          descNameLangType.add(desc.getConcept().getName() + "|"
+              + desc.getTerm() + "|" + desc.getLanguageCode());
         }
       }
     }
