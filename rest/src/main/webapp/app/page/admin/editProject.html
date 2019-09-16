@@ -131,12 +131,12 @@
         </td>
         <td>
           <select ng-model="selectedTranslationExtension"
-            ng-options="item for item in translationBranches.strings"
+            ng-options="item as (item.branch.substring(item.branch.lastIndexOf('/')+1) + ' | ' + item.languageCode) for item in translationBranches.translationExtensionLanguages"
             ></select>
           <button class="btn btn-xs btn-primary"
             ng-click="addTranslationExtension(selectedTranslationExtension);">Add</button>
           <span>
-            <div ng-repeat="tb in project.translationExtensions">{{tb}}
+            <div ng-repeat="tb in project.translationExtensionLanguages">{{tb.branch.substring(tb.branch.lastIndexOf('/')+1)}} | {{tb.languageCode}}
               <i class="noul material-icons md-18" ng-click="removeTranslationExtension(tb)">delete</i>
             </div>
           </span>

@@ -29,6 +29,7 @@ import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
+import org.ihtsdo.otf.refset.helpers.TranslationExtensionLanguage;
 import org.ihtsdo.otf.refset.jpa.TerminologyJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
@@ -1185,36 +1186,26 @@ public class BrowserTerminologyHandler extends AbstractTerminologyHandler {
   }
 
   /* see superclass */
-@Override
+  @Override
   public List<String> getBranches(String terminology, String version)
     throws Exception {
-	// TODO Auto-generated method stub
-	return null;
-}
+    return null;
+  }
 
   /* see superclass */
   @Override
   public List<String> getRequiredLanguageRefsets(String terminology,
     String version) throws Exception {
     return new ArrayList<>();
-}
+  }
 
   /* see superclass */
   @Override
-  public List<String> getTranslationExtensions() throws Exception {
+  public List<TranslationExtensionLanguage> getAvailableTranslationExtensionLanguages()
+    throws Exception {
     Logger.getLogger(getClass())
-        .info("  get translation extensions from branches - " + url);
-
-    final List<String> translationExtentions = new ArrayList<>();
-    final List<Terminology> terminologyEditions = getTerminologyEditions();
-
-    if (terminologyEditions != null && !terminologyEditions.isEmpty()) {
-      for (int i = 0; i < terminologyEditions.size(); i++) {
-        translationExtentions.add(terminologyEditions.get(i).getName());
-      }
-    }
-
-    return translationExtentions;
+        .info("  get translation extensions languages from branches - " + url);
+    return null;
   }
 
 }

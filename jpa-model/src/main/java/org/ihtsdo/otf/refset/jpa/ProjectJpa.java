@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.persistence.CascadeType;
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
@@ -33,8 +34,6 @@ import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import org.apache.lucene.analysis.core.WhitespaceAnalyzer;
-import org.hibernate.annotations.LazyCollection;
-import org.hibernate.annotations.LazyCollectionOption;
 import org.hibernate.envers.Audited;
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Analyzer;
@@ -51,6 +50,7 @@ import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.UserRole;
+import org.ihtsdo.otf.refset.helpers.TranslationExtensionLanguage;
 import org.ihtsdo.otf.refset.jpa.helpers.UserMapUserNameBridge;
 import org.ihtsdo.otf.refset.jpa.helpers.UserRoleBridge;
 import org.ihtsdo.otf.refset.jpa.helpers.UserRoleMapAdapter;
@@ -153,12 +153,9 @@ public class ProjectJpa implements Project {
   @CollectionTable(name = "project_validation_checks")
   private List<String> validationChecks = new ArrayList<>();
 
-  /** The translation extensions. */
-  @Column(nullable = true)
-  @ElementCollection(fetch = FetchType.LAZY)
-  @LazyCollection(LazyCollectionOption.FALSE)
-  @CollectionTable(name = "project_translation_extensions")
-  private List<String> translationExtensions = new ArrayList<>();
+  /** The translation preferred languages for suggestions */
+  @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, targetEntity = TranslationExtensionLanguageJpa.class, orphanRemoval = true)
+  private List<TranslationExtensionLanguage> translationExtensionLanguages;
 
   /**
    * Instantiates an empty {@link ProjectJpa}.
@@ -190,6 +187,12 @@ public class ProjectJpa implements Project {
     feedbackEmail = project.getFeedbackEmail();
     exclusionClause = project.getExclusionClause();
     userRoleMap = new HashMap<>(project.getUserRoleMap());
+    translationExtensionLanguages =
+        new ArrayList<TranslationExtensionLanguage>();
+    for (TranslationExtensionLanguage t : project
+        .getTranslationExtensionLanguages()) {
+      translationExtensionLanguages.add(new TranslationExtensionLanguageJpa(t));
+    }
     refsets = new ArrayList<Refset>();
     for (Refset refset : project.getRefsets()) {
       refsets.add(new RefsetJpa(refset));
@@ -230,7 +233,7 @@ public class ProjectJpa implements Project {
 
   /* see superclass */
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
-  @DateBridge(resolution=Resolution.SECOND)
+  @DateBridge(resolution = Resolution.SECOND)
   @SortableField
   @Override
   public Date getLastModified() {
@@ -530,31 +533,39 @@ public class ProjectJpa implements Project {
   }
 
   /* see superclass */
-  @XmlElement
+  @XmlElement(type = TranslationExtensionLanguageJpa.class)
   @Override
-  public List<String> getTranslationExtensions() {
-    if (this.translationExtensions == null) {
-      this.translationExtensions = new ArrayList<String>();
+  public List<TranslationExtensionLanguage> getTranslationExtensionLanguages() {
+    if (this.translationExtensionLanguages == null) {
+      this.translationExtensionLanguages =
+          new ArrayList<TranslationExtensionLanguage>();
     }
-    return translationExtensions;
+    return this.translationExtensionLanguages;
   }
 
   /* see superclass */
   @Override
-  public void setTranslationExtensions(List<String> translationExtensions) {
-    this.translationExtensions = translationExtensions;
+  public void setTranslationExtensionLanguages(
+    List<TranslationExtensionLanguage> translationExtensionLanguages) {
+    this.translationExtensionLanguages = translationExtensionLanguages;
   }
 
   /* see superclass */
   @Override
-  public void addTranslationExtension(String translationExtensions) {
-    this.translationExtensions.add(translationExtensions);
+  public void addTranslationExtensionLanguage(
+    TranslationExtensionLanguage translationExtensionLanguage) {
+    if (this.translationExtensionLanguages == null) {
+      this.translationExtensionLanguages =
+          new ArrayList<TranslationExtensionLanguage>();
+    }
+    this.translationExtensionLanguages.add(translationExtensionLanguage);
   }
 
   /* see superclass */
   @Override
-  public void removeTranslationExtension(String translationExtensions) {
-    this.translationExtensions.remove(translationExtensions);
+  public void removeTranslationExtensionLanguage(
+    TranslationExtensionLanguage translationExtensionLanguage) {
+    this.translationExtensionLanguages.remove(translationExtensionLanguage);
   }
 
   /* see superclass */
@@ -637,8 +648,8 @@ public class ProjectJpa implements Project {
         + ", terminologyHandlerKey=" + terminologyHandlerKey + ", workflowPath="
         + workflowPath + ", exclusionClause=" + exclusionClause
         + ", userRoleMap=" + userRoleMap + ", validationChecks="
-        + validationChecks + ", translationExtensions=" + translationExtensions
-        + "]";
+        + validationChecks + ", translationExtensionLanguages="
+        + translationExtensionLanguages + "]";
   }
 
 }

@@ -145,7 +145,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
       // Handle reindexing database if mode is set
       if (mode != null && mode.equals("create")) {
         ProjectServiceRestImpl contentService = new ProjectServiceRestImpl();
-        contentService.luceneReindex(null, authToken);
+        contentService.luceneReindex(null, null, null, authToken);
       }
 
       boolean serverRunning = ConfigUtility.isServerActive();

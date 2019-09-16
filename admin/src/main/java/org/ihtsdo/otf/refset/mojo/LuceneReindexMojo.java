@@ -23,15 +23,28 @@ import org.ihtsdo.otf.refset.services.SecurityService;
  * See admin/pom.xml for sample usage
  *
  */
-@Mojo( name = "reindex", defaultPhase = LifecyclePhase.PACKAGE)
+@Mojo(name = "reindex", defaultPhase = LifecyclePhase.PACKAGE)
 public class LuceneReindexMojo extends AbstractMojo {
 
   /**
    * The specified objects to index.
    *
    */
-  @Parameter	
+  @Parameter
   private String indexedObjects;
+
+  /**
+   * Batch size to load objects for Full Text Entity Manager. Default is 100.
+   */
+  @Parameter
+  private Integer batchSizeToLoadObjects;
+
+  /**
+   * Threads used for loading objects for Full Text Entity Manager. Default is
+   * 4.
+   */
+  @Parameter
+  private Integer threadsToLoadObjects;
 
   /**
    * Whether to run this mojo against an active server.
@@ -58,8 +71,8 @@ public class LuceneReindexMojo extends AbstractMojo {
 
       boolean serverRunning = ConfigUtility.isServerActive();
 
-      getLog().info(
-          "Server status detected:  " + (!serverRunning ? "DOWN" : "UP"));
+      getLog()
+          .info("Server status detected:  " + (!serverRunning ? "DOWN" : "UP"));
 
       if (serverRunning && !server) {
         throw new MojoFailureException(
@@ -82,13 +95,15 @@ public class LuceneReindexMojo extends AbstractMojo {
         getLog().info("Running directly");
 
         ProjectServiceRestImpl contentService = new ProjectServiceRestImpl();
-        contentService.luceneReindex(indexedObjects, authToken);
+        contentService.luceneReindex(indexedObjects, batchSizeToLoadObjects,
+            threadsToLoadObjects, authToken);
 
       } else {
         getLog().info("Running against server");
 
         ProjectClientRest client = new ProjectClientRest(properties);
-        client.luceneReindex(indexedObjects, authToken);
+        client.luceneReindex(indexedObjects, batchSizeToLoadObjects,
+            threadsToLoadObjects, authToken);
       }
 
     } catch (Exception e) {
