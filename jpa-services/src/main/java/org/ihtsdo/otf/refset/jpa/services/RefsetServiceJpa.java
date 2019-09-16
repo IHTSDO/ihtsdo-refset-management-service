@@ -1032,6 +1032,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
                 new Exception("Unable to load refset after too many tries");
             ExceptionHandler.handleException(e,
                 "looking up refset member names - " + refsetId, null);
+            refsetService.close();
             throw e;
           }
         }
@@ -1183,11 +1184,11 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
           refset.setLookupInProgress(false);
           refsetService.updateRefset(refset);
           refsetService.commit();
-          refsetService.close();
         }
         lookupProgressMap.remove(refsetId);
         Logger.getLogger(RefsetServiceJpa.this.getClass())
             .info("Finished lookupMemberNamesThread - " + refsetId);
+        refsetService.close();
       } catch (Exception e) {
         try {
           ExceptionHandler.handleException(e, label, null);

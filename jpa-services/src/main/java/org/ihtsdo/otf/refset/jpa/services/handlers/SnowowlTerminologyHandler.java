@@ -11,6 +11,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -31,7 +32,9 @@ import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
+import org.ihtsdo.otf.refset.helpers.TranslationExtensionLanguage;
 import org.ihtsdo.otf.refset.jpa.TerminologyJpa;
+import org.ihtsdo.otf.refset.jpa.TranslationExtensionLanguageJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.services.RootServiceJpa;
@@ -49,7 +52,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.net.InternetDomainName;
 
-// TODO: Auto-generated Javadoc
 /**
  * Default implementation of {@link TerminologyHandler}. Leverages the IHTSDO
  * terminology server to the extent possible for interacting with terminology
@@ -67,7 +69,9 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
   private static Map<String, String> tvLanguageMap = new HashMap<>();
 
   private static Date terminologiesForURLexpirationDate = new Date();
-  private static Map<String,List<Terminology>> terminologiesForURL = new HashMap<>();
+
+  private static Map<String, List<Terminology>> terminologiesForURL =
+      new HashMap<>();
 
   /** The ids to ignore. */
   private static List<String> idsToIgnore = new ArrayList<>();
@@ -116,8 +120,7 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
 
   /** The generic user cookies. */
   private String genericUserCookie = null;
-  
-  
+
   /* see superclass */
   @Override
   public TerminologyHandler copy() throws Exception {
@@ -134,11 +137,13 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     final String localVersion = version == null ? "MAIN" : version;
     final Client client = ClientBuilder.newClient();
     final WebTarget target = client.target(url + "/branches/" + localVersion);
-    
-    final Response response =
-        target.request(accept).header("Authorization", authHeader)
-            .header("Cookie", genericUserCookie != null ? genericUserCookie : getCookieHeader()).get();
-    
+
+    final Response response = target.request(accept)
+        .header("Authorization", authHeader)
+        .header("Cookie",
+            genericUserCookie != null ? genericUserCookie : getCookieHeader())
+        .get();
+
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -180,21 +185,22 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
   @Override
   public List<Terminology> getTerminologyEditions() throws Exception {
     Logger.getLogger(getClass()).info("  get terminology editions ");
-    
-    // Check if the terminologiesForURL cache is expired and needs to be cleared and re-read
-    if(new Date().after(terminologiesForURLexpirationDate)) {
+
+    // Check if the terminologiesForURL cache is expired and needs to be cleared
+    // and re-read
+    if (new Date().after(terminologiesForURLexpirationDate)) {
       terminologiesForURL.clear();
-      
-      //Set the new expiration date for tomorrow
+
+      // Set the new expiration date for tomorrow
       Calendar now = Calendar.getInstance();
-      now.add(Calendar.HOUR,24);
+      now.add(Calendar.HOUR, 24);
       terminologiesForURLexpirationDate = now.getTime();
     }
-    
-    if(terminologiesForURL.containsKey(url)) {
+
+    if (terminologiesForURL.containsKey(url)) {
       return terminologiesForURL.get(url);
-    }    
-    
+    }
+
     final List<Terminology> result = new ArrayList<>();
 
     // Make a webservice call to SnowOwl to get branches
@@ -207,10 +213,12 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     WebTarget target =
         client.target(url + "/branches?" + "limit=" + localPfs.getMaxResults());
 
-    Response response =
-        target.request(accept).header("Authorization", authHeader)
-            .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
-            .header("Cookie", genericUserCookie != null ? genericUserCookie : getCookieHeader()).get();
+    Response response = target.request(accept)
+        .header("Authorization", authHeader)
+        .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
+        .header("Cookie",
+            genericUserCookie != null ? genericUserCookie : getCookieHeader())
+        .get();
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -250,9 +258,9 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
       }
     });
 
-    //Add to static map, so it doesn't need to be looked up again
+    // Add to static map, so it doesn't need to be looked up again
     terminologiesForURL.put(url, result);
-    
+
     return result;
   }
 
@@ -270,10 +278,12 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     WebTarget target =
         client.target(url + "/branches?" + "limit=" + localPfs.getMaxResults());
 
-    Response response =
-        target.request(accept).header("Authorization", authHeader)
-            .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
-            .header("Cookie", genericUserCookie != null ? genericUserCookie : getCookieHeader()).get();
+    Response response = target.request(accept)
+        .header("Authorization", authHeader)
+        .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
+        .header("Cookie",
+            genericUserCookie != null ? genericUserCookie : getCookieHeader())
+        .get();
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -290,8 +300,8 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     List<Terminology> branches = new ArrayList<>();
     for (final JsonNode branchNode : doc.get("items")) {
       String path = branchNode.get("path").asText();
-      if ((edition.equals("SNOMEDCT") && !path.contains("SNOMEDCT-")) || 
-          (edition.contains("SNOMEDCT-") && path.contains(edition))) {
+      if ((edition.equals("SNOMEDCT") && !path.contains("SNOMEDCT-"))
+          || (edition.contains("SNOMEDCT-") && path.contains(edition))) {
         final Terminology tmlgy = new TerminologyJpa();
         tmlgy.setTerminology(edition);
         tmlgy.setVersion(path);
@@ -316,10 +326,12 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     WebTarget target = client.target(
         url + "/" + version + "/concepts/" + conceptId + "?expand=members()");
 
-    Response response =
-        target.request(accept).header("Authorization", authHeader)
-            .header("Accept-Language", getAcceptLanguage(terminology, version))
-            .header("Cookie", genericUserCookie != null ? genericUserCookie : getCookieHeader()).get();
+    Response response = target.request(accept)
+        .header("Authorization", authHeader)
+        .header("Accept-Language", getAcceptLanguage(terminology, version))
+        .header("Cookie",
+            genericUserCookie != null ? genericUserCookie : getCookieHeader())
+        .get();
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -435,10 +447,12 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
 
     WebTarget target = client.target(url + "/branches/" + version);
 
-    Response response =
-        target.request(accept).header("Authorization", authHeader)
-            .header("Accept-Language", getAcceptLanguage(terminology, version))
-            .header("Cookie", genericUserCookie != null ? genericUserCookie : getCookieHeader()).get();
+    Response response = target.request(accept)
+        .header("Authorization", authHeader)
+        .header("Accept-Language", getAcceptLanguage(terminology, version))
+        .header("Cookie",
+            genericUserCookie != null ? genericUserCookie : getCookieHeader())
+        .get();
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -526,10 +540,12 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
             + "&limit=" + Math.min(initialMaxLimit, localPfs.getMaxResults())
             + "&expand=pt()" + (descriptions ? ",descriptions()" : ""));
 
-    Response response =
-        target.request(accept).header("Authorization", authHeader)
-            .header("Accept-Language", getAcceptLanguage(terminology, version))
-            .header("Cookie", genericUserCookie != null ? genericUserCookie : getCookieHeader()).get();
+    Response response = target.request(accept)
+        .header("Authorization", authHeader)
+        .header("Accept-Language", getAcceptLanguage(terminology, version))
+        .header("Cookie",
+            genericUserCookie != null ? genericUserCookie : getCookieHeader())
+        .get();
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -675,7 +691,9 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
           + "&expand=pt()" + (descriptions ? ",descriptions()" : ""));
       response = target.request(accept).header("Authorization", authHeader)
           .header("Accept-Language", getAcceptLanguage(terminology, version))
-          .header("Cookie", genericUserCookie != null ? genericUserCookie : getCookieHeader()).get();
+          .header("Cookie",
+              genericUserCookie != null ? genericUserCookie : getCookieHeader())
+          .get();
       resultString = response.readEntity(String.class);
       if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
         // n/a
@@ -782,10 +800,12 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     WebTarget target = client.target(url + "/" + version + "/concepts?ecl="
         + URLEncoder.encode(expr, "UTF-8").replaceAll(" ", "%20") + "&limit=1");
 
-    Response response =
-        target.request(accept).header("Authorization", authHeader)
-            .header("Accept-Language", getAcceptLanguage(terminology, version))
-            .header("Cookie", genericUserCookie != null ? genericUserCookie : getCookieHeader()).get();
+    Response response = target.request(accept)
+        .header("Authorization", authHeader)
+        .header("Accept-Language", getAcceptLanguage(terminology, version))
+        .header("Cookie",
+            genericUserCookie != null ? genericUserCookie : getCookieHeader())
+        .get();
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -812,8 +832,8 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
   @Override
   public Concept getFullConcept(String terminologyId, String terminology,
     String version) throws Exception {
-    Logger.getLogger(getClass()).info(
-        "  get full concept: " + terminologyId + "- " + url + ", " + terminology + ", " + version);
+    Logger.getLogger(getClass()).info("  get full concept: " + terminologyId
+        + "- " + url + ", " + terminology + ", " + version);
     // TODO resolve this date conversion 20150131 -> 2015-01-31
     // version = "MAIN/2015-01-31";
     // Make a webservice call to SnowOwl to get concept
@@ -821,11 +841,13 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     final WebTarget target = client
         .target(url + "/browser/" + version + "/concepts/" + terminologyId);
 
-    final Response response =
-        target.request("application/vnd.org.ihtsdo.browser+json")
-            .header("Authorization", authHeader)
-            .header("Accept-Language", getAcceptLanguage(terminology, version))
-            .header("Cookie", genericUserCookie != null ? genericUserCookie : getCookieHeader()).get();
+    final Response response = target
+        .request("application/vnd.org.ihtsdo.browser+json")
+        .header("Authorization", authHeader)
+        .header("Accept-Language", getAcceptLanguage(terminology, version))
+        .header("Cookie",
+            genericUserCookie != null ? genericUserCookie : getCookieHeader())
+        .get();
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -919,7 +941,9 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     concept.setLastModifiedBy(terminology);
     concept.setModuleId(doc.get("moduleId").asText());
     concept.setDefinitionStatusId(doc.get("definitionStatus").asText());
-    concept.setName(doc.get("preferredSynonym").get("term") == null ? doc.get("preferredSynonym").asText() : doc.get("preferredSynonym").get("term").asText());
+    concept.setName(doc.get("preferredSynonym").get("term") == null
+        ? doc.get("preferredSynonym").asText()
+        : doc.get("preferredSynonym").get("term").asText());
 
     concept.setPublishable(true);
     concept.setPublished(true);
@@ -1003,8 +1027,10 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
           rel.setLastModified(new Date());
         }
         rel.setModuleId(relNode.get("moduleId").asText());
-        rel.setTypeId((relNode.get("type").get("fsn").get("term") == null ? relNode.get("type").get("fsn").asText() :relNode.get("type").get("fsn").get("term").asText())
-            .replaceFirst(" \\([a-zA-Z0-9 ]*\\)", ""));
+        rel.setTypeId((relNode.get("type").get("fsn").get("term") == null
+            ? relNode.get("type").get("fsn").asText()
+            : relNode.get("type").get("fsn").get("term").asText())
+                .replaceFirst(" \\([a-zA-Z0-9 ]*\\)", ""));
         // Skip "isa" rels
         if (rel.getTypeId().equals("Is a")) {
           continue;
@@ -1025,7 +1051,9 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
         } else {
           destination.setId(1L);
         }
-        destination.setName(relNode.get("target").get("fsn").get("term") == null ? relNode.get("target").get("fsn").asText() : relNode.get("target").get("fsn").get("term").asText());
+        destination.setName(relNode.get("target").get("fsn").get("term") == null
+            ? relNode.get("target").get("fsn").asText()
+            : relNode.get("target").get("fsn").get("term").asText());
         destination.setDefinitionStatusId(
             relNode.get("target").get("definitionStatus").asText());
         rel.setDestinationConcept(destination);
@@ -1126,10 +1154,12 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
                 + URLEncoder.encode(localQuery, "UTF-8").replaceAll(" ", "%20")
                 + "?expand=pt()");
 
-    final Response response =
-        target.request(accept).header("Authorization", authHeader)
-            .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
-            .header("Cookie", genericUserCookie != null ? genericUserCookie : getCookieHeader()).get();
+    final Response response = target.request(accept)
+        .header("Authorization", authHeader)
+        .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
+        .header("Cookie",
+            genericUserCookie != null ? genericUserCookie : getCookieHeader())
+        .get();
 
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -1273,11 +1303,13 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     final Client client = ClientBuilder.newClient();
     final WebTarget target = client.target(url + "/browser/" + version
         + "/concepts/" + terminologyId + "/parents");
-    final Response response =
-        target.request("application/vnd.org.ihtsdo.browser+json")
-            .header("Authorization", authHeader)
-            .header("Accept-Language", getAcceptLanguage(terminology, version))
-            .header("Cookie", genericUserCookie != null ? genericUserCookie : getCookieHeader()).get();
+    final Response response = target
+        .request("application/vnd.org.ihtsdo.browser+json")
+        .header("Authorization", authHeader)
+        .header("Accept-Language", getAcceptLanguage(terminology, version))
+        .header("Cookie",
+            genericUserCookie != null ? genericUserCookie : getCookieHeader())
+        .get();
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -1315,7 +1347,8 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
       // moduleId is not provided
       concept.setModuleId(null);
       concept.setDefinitionStatusId(entry.get("definitionStatus").asText());
-      concept.setName(entry.get("fsn").get("term") == null ? entry.get("fsn").asText() : entry.get("fsn").get("term").asText());
+      concept.setName(entry.get("fsn").get("term") == null
+          ? entry.get("fsn").asText() : entry.get("fsn").get("term").asText());
 
       concept.setPublishable(true);
       concept.setPublished(true);
@@ -1336,11 +1369,13 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     final Client client = ClientBuilder.newClient();
     final WebTarget target = client.target(url + "/browser/" + version
         + "/concepts/" + terminologyId + "/children?form=inferred");
-    final Response response =
-        target.request("application/vnd.org.ihtsdo.browser+json")
-            .header("Authorization", authHeader)
-            .header("Accept-Language", getAcceptLanguage(terminology, version))
-            .header("Cookie", genericUserCookie != null ? genericUserCookie : getCookieHeader()).get();
+    final Response response = target
+        .request("application/vnd.org.ihtsdo.browser+json")
+        .header("Authorization", authHeader)
+        .header("Accept-Language", getAcceptLanguage(terminology, version))
+        .header("Cookie",
+            genericUserCookie != null ? genericUserCookie : getCookieHeader())
+        .get();
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -1385,7 +1420,8 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
       // no moduleId supplied
       concept.setModuleId(entry.get("moduleId").asText());
       concept.setDefinitionStatusId(entry.get("definitionStatus").asText());
-      concept.setName(entry.get("fsn").get("term") == null ? entry.get("fsn").asText() : entry.get("fsn").get("term").asText());
+      concept.setName(entry.get("fsn").get("term") == null
+          ? entry.get("fsn").asText() : entry.get("fsn").get("term").asText());
       concept.setLeaf(entry.get("isLeafInferred").asText().equals("true"));
 
       concept.setPublishable(true);
@@ -1446,15 +1482,17 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     localPfs.setStartIndex(0);
     localPfs.setMaxResults(200);
 
-    WebTarget target = client.target(url + "/" + version
-        + "/concepts?ecl=" + URLEncoder.encode("<900000000000506000", "UTF-8")
-            .replaceAll(" ", "%20")
+    WebTarget target = client.target(url
+        + "/" + version + "/concepts?ecl=" + URLEncoder
+            .encode("<900000000000506000", "UTF-8").replaceAll(" ", "%20")
         + "&limit=" + localPfs.getMaxResults() + "&expand=fsn()");
 
-    Response response =
-        target.request(accept).header("Authorization", authHeader)
-            .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
-            .header("Cookie", genericUserCookie != null ? genericUserCookie : getCookieHeader()).get();
+    Response response = target.request(accept)
+        .header("Authorization", authHeader)
+        .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
+        .header("Cookie",
+            genericUserCookie != null ? genericUserCookie : getCookieHeader())
+        .get();
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -1529,10 +1567,12 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     WebTarget target = client.target(url + "/" + version + "/branches?"
         + "limit=" + localPfs.getMaxResults());
 
-    Response response =
-        target.request(accept).header("Authorization", authHeader)
-            .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
-            .header("Cookie", genericUserCookie != null ? genericUserCookie : getCookieHeader()).get();
+    Response response = target.request(accept)
+        .header("Authorization", authHeader)
+        .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
+        .header("Cookie",
+            genericUserCookie != null ? genericUserCookie : getCookieHeader())
+        .get();
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -1557,73 +1597,86 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
 
     return branches;
   }
-  
+
   private void getGenericUserCookies() throws Exception {
-    final String userName=ConfigUtility.getConfigProperties().getProperty("terminology.handler.SNOWOWL-MS.genericUserName");
-    final String password=ConfigUtility.getConfigProperties().getProperty("terminology.handler.SNOWOWL-MS.genericUserPassword");
-    final String imsUrl = ConfigUtility.getConfigProperties().getProperty("terminology.handler.SNOWOWL-MS.authenticationUrl");
+    final String userName = ConfigUtility.getConfigProperties()
+        .getProperty("terminology.handler.SNOWOWL-MS.genericUserName");
+    final String password = ConfigUtility.getConfigProperties()
+        .getProperty("terminology.handler.SNOWOWL-MS.genericUserPassword");
+    final String imsUrl = ConfigUtility.getConfigProperties()
+        .getProperty("terminology.handler.SNOWOWL-MS.authenticationUrl");
 
     Client client = ClientBuilder.newClient();
     WebTarget target = client.target(imsUrl + "/authenticate");
     Builder builder = target.request(MediaType.APPLICATION_JSON);
-    
+
     Response response = builder.post(Entity.json("{ \"login\": \"" + userName
-        + "\", \"password\": \"" + password + "\" }"));    
+        + "\", \"password\": \"" + password + "\" }"));
     if (response.getStatusInfo().getFamily() != Family.SUCCESSFUL) {
-      throw new LocalException("Authentication of generic user failed. "
-          + response.toString());
+      throw new LocalException(
+          "Authentication of generic user failed. " + response.toString());
     }
     Map<String, NewCookie> genericUserCookies = response.getCookies();
     StringBuilder sb = new StringBuilder();
-    for(String key : genericUserCookies.keySet()){
+    for (String key : genericUserCookies.keySet()) {
       sb.append(genericUserCookies.get(key));
       sb.append(";");
     }
-    genericUserCookie=sb.toString();
+    genericUserCookie = sb.toString();
   }
 
-/* see superclass */
+  /* see superclass */
   @Override
-  public List<String> getTranslationExtensions() throws Exception {
+  public List<TranslationExtensionLanguage> getAvailableTranslationExtensionLanguages()
+    throws Exception {
     Logger.getLogger(getClass())
-        .info("  get traslation extensions from branches - " + url);
-    // Make a webservice call to SnowOwl to get branches
+        .info("  get translation extensions languages from branches - " + url);
+    // Make a webservice call to Snowowl to get branches and languages
     final Client client = ClientBuilder.newClient();
 
-    PfsParameter localPfs = new PfsParameterJpa();
+    final List<TranslationExtensionLanguage> translationExtensionLanguageList =
+        new ArrayList<>();
+
+    final PfsParameter localPfs = new PfsParameterJpa();
     localPfs.setStartIndex(0);
     localPfs.setMaxResults(1000);
 
-    WebTarget target =
-        client.target(url + "/branches?" + "limit=" + localPfs.getMaxResults());
+    final WebTarget target = client
+        .target(url + "/codesystems?" + "limit=" + localPfs.getMaxResults());
 
-    Response response =
-        target.request(accept).header("Authorization", authHeader)
-            .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
-            .header("Cookie", genericUserCookie != null ? genericUserCookie : getCookieHeader()).get();
-    String resultString = response.readEntity(String.class);
+    final Response response = target.request(accept)
+        .header("Authorization", authHeader)
+        .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
+        .header("Cookie",
+            genericUserCookie != null ? genericUserCookie : getCookieHeader())
+        .get();
+    final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() != Family.SUCCESSFUL) {
       throw new LocalException(
           "Unexpected terminology server failure. Message = " + resultString);
     }
 
-    ObjectMapper mapper = new ObjectMapper();
-    JsonNode doc = mapper.readTree(resultString);
-
-    List<String> translationExtentions = new ArrayList<>();
+    final ObjectMapper mapper = new ObjectMapper();
+    final JsonNode doc = mapper.readTree(resultString);
 
     for (final JsonNode branchNode : doc.get("items")) {
-      String path = branchNode.get("path").asText();
+      String branchPath = branchNode.get("branchPath").asText();
 
-      if (path != null) {
-        path = path.substring(path.lastIndexOf('/') + 1);
-        if (!translationExtentions.contains(path) && path.contains("SNOMED")) {
-          translationExtentions.add(path);
+      if (branchPath != null && branchPath.contains("SNOMED")) {
+        for (Iterator<String> language =
+            branchNode.get("languages").fieldNames(); language.hasNext();) {
+          final String lang = language.next();
+          if (!"en".equalsIgnoreCase(lang)) {
+            final TranslationExtensionLanguage tel =
+                new TranslationExtensionLanguageJpa();
+            tel.setBranch(branchPath);
+            tel.setLanguageCode(lang);
+            translationExtensionLanguageList.add(tel);
+          }
         }
       }
     }
-
-    return translationExtentions;
+    return translationExtensionLanguageList;
   }
 
 }

@@ -151,7 +151,7 @@
               ng-repeat="ts in translationSuggestions.translationSuggestions">
               <td>{{ts.suggestion}}</td>
               <td>{{ts.languageCode}}</td>
-              <td><small>({{ts.source}})</small></td>
+              <td><small>({{ts.source.substring(ts.source.lastIndexOf("/")+1)}})</small></td>
               <td>
                 <button class="btn btn-xs btn-primary"
                   ng-click="addAutoDescription(kvp.value);" title="Add description">Add</button>

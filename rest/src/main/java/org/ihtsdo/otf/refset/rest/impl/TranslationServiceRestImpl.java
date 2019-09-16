@@ -27,7 +27,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
@@ -55,6 +54,7 @@ import org.ihtsdo.otf.refset.helpers.KeyValuesMap;
 import org.ihtsdo.otf.refset.helpers.LanguageDescriptionTypeList;
 import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.StringList;
+import org.ihtsdo.otf.refset.helpers.TranslationExtensionLanguage;
 import org.ihtsdo.otf.refset.helpers.TranslationList;
 import org.ihtsdo.otf.refset.helpers.TranslationSuggestion;
 import org.ihtsdo.otf.refset.helpers.TranslationSuggestionImpl;
@@ -78,6 +78,7 @@ import org.ihtsdo.otf.refset.jpa.services.ReleaseServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.TranslationServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.WorkflowServiceJpa;
+import org.ihtsdo.otf.refset.jpa.services.handlers.SnowstormTerminologyHandler;
 import org.ihtsdo.otf.refset.jpa.services.rest.TranslationServiceRest;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.Description;
@@ -3296,7 +3297,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
   @Override
   @GET
   @Path("/refset/{refsetId}/concept/{conceptId}")
-  @ApiOperation(value = "Translation suggesttion list", notes = "Gets translation suggestions for a concept based on project configuration.", response = TranslationSuggestionList.class)
+  @ApiOperation(value = "Translation suggestion list", notes = "Gets translation suggestions for a concept based on project configuration.", response = TranslationSuggestionList.class)
   public TranslationSuggestionList getTranslationSuggestionsForConcept(
     @ApiParam(value = "Refset id, e.g. 2", required = true) @PathParam("refsetId") Long refsetId,
     @ApiParam(value = "Concept id, e.g. 2", required = true) @PathParam("conceptId") Long conceptId,
@@ -3304,7 +3305,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
     throws Exception {
 
     Logger.getLogger(getClass()).info("RESTful GET call (Translation): ");
-    TranslationSuggestionList translationSuggestions =
+    TranslationSuggestionList translationSuggestionsList =
         new TranslationSuggestionList();
 
     try (final RefsetService refsetService =
@@ -3315,58 +3316,35 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
 
       final Refset refset = refsetService.getRefset(refsetId);
       final Project project = refset.getProject();
-      final List<String> translationExtensions =
-          project.getTranslationExtensions();
-
-      if (translationExtensions == null || translationExtensions.isEmpty()) {
+      
+      final List<TranslationExtensionLanguage> translationExtensionLanguages = project.getTranslationExtensionLanguages();
+     
+      if (translationExtensionLanguages == null || translationExtensionLanguages.isEmpty()) {
         Logger.getLogger(getClass()).debug("No translation Extensions.");
-        return translationSuggestions;
+        return translationSuggestionsList;
       }
 
-      TerminologyHandler handler =
-          refsetService.getTerminologyHandler(project, getHeaders(headers));
-      String refsetVersion = refset.getVersion();
-      Concept concept;
-
-      // SNOWOWL, SNOWSTORM
-      if (handler.getName().toLowerCase().contains("snow")) {
-        for (String te : translationExtensions) {
-          if (StringUtils.countMatches(refsetVersion, "/") > 1) {
-            refsetVersion = refsetVersion.substring(0,
-                refsetVersion.indexOf('/', refsetVersion.indexOf('/') + 1))
-                + '/';
-            Logger.getLogger(getClass()).info("Getting concepts for "
-                + refsetVersion + te + " concept:" + conceptId);
-            concept = handler.getFullConcept(Long.toString(conceptId), null,
-                refsetVersion + te);
-            if (concept != null && concept.getDescriptions() != null) {
-              for (Description d : concept.getDescriptions()) {
-                if (!"en".equalsIgnoreCase(d.getLanguageCode())) {
-                  TranslationSuggestion ts = new TranslationSuggestionImpl();
-                  ts.setSuggestion(d.getTerm());
-                  ts.setLanguageCode(d.getLanguageCode());
-                  ts.setSource(te);
-                  translationSuggestions.addTranslationSuggestion(ts);
-                }
-              }
-            }
-          }
-        }
-      } else if (handler.getName().toLowerCase().contains("browser")) {
-        for (String te : translationExtensions) {
-          Logger.getLogger(getClass())
-              .info("Getting concepts for " + te + " concept:" + conceptId);
-          concept = handler.getFullConcept(Long.toString(conceptId),
-              refset.getTerminology(), refset.getVersion());
-          if (concept != null && concept.getDescriptions() != null) {
-            for (Description d : concept.getDescriptions()) {
-              if (!"en".equalsIgnoreCase(d.getLanguageCode())) {
-                TranslationSuggestion ts = new TranslationSuggestionImpl();
-                ts.setSuggestion(d.getTerm());
-                ts.setLanguageCode(d.getLanguageCode());
-                ts.setSource(te);
-                translationSuggestions.addTranslationSuggestion(ts);
-              }
+      // force to snowstorm
+      final SnowstormTerminologyHandler handler =
+          new SnowstormTerminologyHandler();
+      handler.setUrl(ConfigUtility.getConfigProperties()
+          .getProperty("terminology.handler.SNOWSTORM.defaultUrl"));
+      handler.setApiKey(ConfigUtility.getConfigProperties()
+          .getProperty("terminology.handler.SNOWSTORM.apiKey"));
+      
+      for (TranslationExtensionLanguage te : translationExtensionLanguages) {
+        Logger.getLogger(getClass()).info(
+            "Getting concepts for " + te.getBranch() + " concept:" + conceptId);
+        final Concept concept = handler.getFullConcept(Long.toString(conceptId), null,
+            te.getBranch());
+        if (concept != null && concept.getDescriptions() != null) {
+          for (Description d : concept.getDescriptions()) {
+            if (!"en".equalsIgnoreCase(d.getLanguageCode())) {
+              TranslationSuggestion ts = new TranslationSuggestionImpl();
+              ts.setSuggestion(d.getTerm());
+              ts.setLanguageCode(d.getLanguageCode());
+              ts.setSource(te.getBranch());
+              translationSuggestionsList.addTranslationSuggestion(ts);
             }
           }
         }
@@ -3381,7 +3359,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
       securityService.close();
     }
 
-    return translationSuggestions;
+    return translationSuggestionsList;
   }
 
   private ValidationResult importTranslationDescriptions(

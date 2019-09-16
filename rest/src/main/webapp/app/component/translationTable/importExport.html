@@ -42,24 +42,6 @@
           </div>
         </td>
       </tr>
-      <tr ng-show="operation == 'Import' && selectedIoHandler.ioType == 'API'">
-        <td class="col-md-4 col-xs-4">
-          <b>Term Server load</b>
-        </td>
-        <td class="col-md-8 col-xs-8">
-          <div class="row">
-            <span class="col-md-8 col-xs-8">
-              <input type="radio" ng-model="selectedAction" value="REVIEW_NEW">&nbsp;For Review
-              &nbsp;&nbsp;&nbsp;
-              <input type="radio" ng-model="selectedAction" value="READY_FOR_PUBLICATION">&nbsp;Finished
-            </span>
-
-          </div>
-          <div class="row">
-            
-          </div>
-        </td>
-      </tr>
       <tr ng-show="!file && type != 'Translation'">
         <td>&nbsp;</td>
         <td ng-show="type == 'Spelling Dictionary'">Format is a file with
@@ -115,7 +97,7 @@
   <button class="btn btn-xs btn-primary" ng-disabled="!file"
     ng-show="operation == 'Import' && selectedIoHandler.ioType == 'FILE' && errors.length == 0 && comments.length == 0 && type == 'Translation'"
     ng-click="import(file, selectedAction);">Import</button>
-  <button class="btn btn-xs btn-primary" ng-disabled="!selectedAction"
+  <button class="btn btn-xs btn-primary"
     ng-show="operation == 'Import' && selectedIoHandler.ioType == 'API' && errors.length == 0 && comments.length == 0 && type == 'Translation'"
     ng-click="import(null, selectedAction);">Import</button>
     

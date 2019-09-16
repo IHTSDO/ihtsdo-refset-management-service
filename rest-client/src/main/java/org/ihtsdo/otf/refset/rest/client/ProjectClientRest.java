@@ -30,6 +30,7 @@ import org.ihtsdo.otf.refset.jpa.helpers.DescriptionTypeListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ProjectListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.TerminologyListJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.TranslationExtensionLanguageListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.UserListJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.ProjectServiceRest;
 import org.ihtsdo.otf.refset.rf2.Concept;
@@ -242,14 +243,20 @@ public class ProjectClientRest extends RootClientRest
 
   /* see superclass */
   @Override
-  public void luceneReindex(String indexedObjects, String authToken)
-    throws Exception {
+  public void luceneReindex(String indexedObjects,
+    Integer batchSizeToLoadObjects, Integer threadsToLoadObjects,
+    String authToken) throws Exception {
     Logger.getLogger(getClass())
         .debug("Project Client - lucene reindex " + indexedObjects);
 
     Client client = ClientBuilder.newClient();
+    String queryString = ((batchSizeToLoadObjects != null)
+        ? "batchSizeToLoadObjects=" + batchSizeToLoadObjects : "")
+        + ((threadsToLoadObjects != null)
+            ? "threadsToLoadObjects=" + threadsToLoadObjects : "");
     WebTarget target =
-        client.target(config.getProperty("base.url") + "/project/reindex");
+        client.target(config.getProperty("base.url") + "/project/reindex"
+            + (queryString.isEmpty() ? "&" + queryString : ""));
     Response response = target.request(MediaType.APPLICATION_XML)
         .header("Authorization", authToken).post(Entity.text(indexedObjects));
 
@@ -259,7 +266,6 @@ public class ProjectClientRest extends RootClientRest
       if (response.getStatus() != 204)
         throw new Exception("Unexpected status " + response.getStatus());
     }
-
   }
 
   /* see superclass */
@@ -796,14 +802,13 @@ public class ProjectClientRest extends RootClientRest
 
   /* see superclass */
   @Override
-  public StringList getBranches(Long projectId, String authToken)
-    throws Exception {
-    Logger.getLogger(getClass()).debug("Refset Client - getBranches ");
-    validateNotEmpty(projectId, "projectId");
+  public TranslationExtensionLanguageListJpa getTranslationExtensionLanguages(
+    String authToken) throws Exception {
+    Logger.getLogger(getClass()).debug("Refset Client - getTranslationExtensionLanguages ");
 
     Client client = ClientBuilder.newClient();
-    WebTarget target = client.target(config.getProperty("base.url") + "/"
-        + projectId + "/translationExtentions");
+    WebTarget target = client.target(
+        config.getProperty("base.url") + "/translationExtensionLanguages");
 
     Response response = target.request(MediaType.APPLICATION_XML)
         .header("Authorization", authToken).get();
@@ -814,37 +819,12 @@ public class ProjectClientRest extends RootClientRest
     }
 
     // converting to object
-    return (StringList) ConfigUtility.getGraphForString(resultString,
-        StringList.class);
+    return (TranslationExtensionLanguageListJpa) ConfigUtility
+        .getGraphForString(resultString,
+            TranslationExtensionLanguageListJpa.class);
   }
 
   /* see superclass */
-  @Override
-  public StringList getBranches(String terminologyHandlerKey,
-    String terminologyHandlerUrl, String authToken) throws Exception {
-    Logger.getLogger(getClass()).debug("Refset Client - getBranches ");
-    validateNotEmpty(terminologyHandlerKey, "terminologyHandlerKey");
-
-    Client client = ClientBuilder.newClient();
-    WebTarget target = client.target(config.getProperty("base.url")
-        + "/translationExtentions&terminologyHandlerKey="
-        + terminologyHandlerKey + "&terminologyHandlerUrl="
-        + terminologyHandlerUrl);
-
-    Response response = target.request(MediaType.APPLICATION_XML)
-        .header("Authorization", authToken).get();
-
-    String resultString = response.readEntity(String.class);
-    if (response.getStatusInfo().getFamily() != Family.SUCCESSFUL) {
-      throw new Exception(response.toString());
-    }
-
-    // converting to object
-    return (StringList) ConfigUtility.getGraphForString(resultString,
-        StringList.class);
-  }
-  
-
   @Override
   public String translate(Long projectId, String text, String language,
     String authToken) throws Exception {

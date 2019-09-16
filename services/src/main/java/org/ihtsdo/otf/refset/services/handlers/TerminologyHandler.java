@@ -10,9 +10,9 @@ import org.ihtsdo.otf.refset.Terminology;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.Configurable;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
+import org.ihtsdo.otf.refset.helpers.TranslationExtensionLanguage;
 import org.ihtsdo.otf.refset.rf2.Concept;
 
-// TODO: Auto-generated Javadoc
 /**
  * Generically represents a handler for accessing terminology objects.
  */
@@ -68,14 +68,14 @@ public interface TerminologyHandler extends Configurable {
    * Resolve expression.
    *
    * @param expr the expr
-   * @param terminolgy the terminolgy
+   * @param terminology the terminology
    * @param version the version
    * @param pfs the pfs
    * @param descriptions the descriptions
    * @return the concept list
    * @throws Exception the exception
    */
-  public ConceptList resolveExpression(String expr, String terminolgy,
+  public ConceptList resolveExpression(String expr, String terminology,
     String version, PfsParameter pfs, boolean descriptions) throws Exception;
 
   /**
@@ -245,7 +245,7 @@ public interface TerminologyHandler extends Configurable {
    */
   public List<String> getLanguages(String terminology, String version)
     throws Exception;
-  
+
   /**
    * Gets the branches.
    *
@@ -255,7 +255,7 @@ public interface TerminologyHandler extends Configurable {
    * @throws Exception the exception
    */
   public List<String> getBranches(String terminology, String version)
-		    throws Exception;
+    throws Exception;
 
   /**
    * Translate.
@@ -278,11 +278,13 @@ public interface TerminologyHandler extends Configurable {
   public List<String> getRequiredLanguageRefsets(String terminology,
     String version) throws Exception;
 
+
   /**
-   * Returns the translation extensions.
+   * Returns the available translation extension languages.
    *
-   * @return the translation extensions
+   * @return the available translation extension languages
    * @throws Exception the exception
    */
-  public List<String> getTranslationExtensions() throws Exception;
+  public List<TranslationExtensionLanguage> getAvailableTranslationExtensionLanguages()
+    throws Exception;
 }

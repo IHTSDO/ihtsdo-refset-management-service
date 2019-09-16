@@ -2047,7 +2047,8 @@ tsApp
                   }
 
                   if (type == 'Translation') {
-                    if ($scope.selectedIoHandler.id === 'EXCEL') {
+                    if ($scope.selectedIoHandler.id === 'EXCEL' 
+                      || $scope.selectedIoHandler.id === 'TERMSERVER') {
                       action = 'REVIEW_NEW';
                     }
                       
@@ -2112,7 +2113,8 @@ tsApp
                 // Handle continue import
                 $scope.continueImport = function(file, wfStatus) {
                   if (type === 'Translation') {
-                    if ($scope.selectedIoHandler.id === 'EXCEL') {
+                    if ($scope.selectedIoHandler.id === 'EXCEL' 
+                      || $scope.selectedIoHandler.id === 'TERMSERVER') {
                       wfStatus = 'REVIEW_NEW';
                     }
                     
@@ -2126,7 +2128,8 @@ tsApp
                             $scope.warnings = data.warnings;
                             $scope.comments = data.comments;
                             startLookup(translation);
-                            if ($scope.selectedIoHandler.id === 'EXCEL') {
+                            if ($scope.selectedIoHandler.id === 'EXCEL' 
+                              || $scope.selectedIoHandler.id === 'TERMSERVER') {
                               changeRole('REVIEWER')
                             } 
                           },
