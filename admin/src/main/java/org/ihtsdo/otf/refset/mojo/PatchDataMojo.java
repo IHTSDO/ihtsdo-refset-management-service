@@ -299,6 +299,18 @@ public class PatchDataMojo extends AbstractMojo {
         fullReindex = true;
       }
 
+      // Patch 20190916
+      // Update browser url to snowstorm and update refset and terminology
+      // versions to snowstorm version formating
+      // This is an interim step prior to the rest of the Refset Enhancmement being published
+      if ("20190916".compareTo(start) >= 0 && "20190916".compareTo(end) <= 0) {
+        getLog().info(
+            "Processing patch 20190916 - Updating browser to snowstorm APIs"); // Patch
+
+        patch20190916(translationService);
+        fullReindex = true;
+      }      
+      
       // Patch 20190728
       // Patch to populate the new field in ConceptRefsetMemberJpa (synonyms)
       // Done once per production system. Only need to reindex one thing, so
@@ -429,6 +441,102 @@ public class PatchDataMojo extends AbstractMojo {
 
   }
 
+  /**
+   * Patch 20190916.
+   *
+   * @param translationService the translation service
+   * @throws Exception the exception
+   */
+  private void patch20190916(TranslationService translationService)
+      throws Exception {
+      int ct = 0;
+      translationService.setTransactionPerOperation(false);
+      translationService.beginTransaction();
+      for (Project prj : translationService.getProjects().getObjects()) {
+        Project project = translationService.getProject(prj.getId());
+        if (project.getTerminologyHandlerKey().equals("BROWSER")) {
+          ct++;
+          project.setTerminologyHandlerUrl(
+              "https://prod-browser.ihtsdotools.org/snowstorm/snomed-ct/v2");
+          if (project.getTerminology().equals("se-edition")) {
+            project.setTerminology("SNOMEDCT-SE");
+          } else if (project.getTerminology().equals("nl-edition")) {
+            project.setTerminology("SNOMEDCT-NL");
+          } else if (project.getTerminology().equals("ca-edition")) {
+            project.setTerminology("SNOMEDCT-CA");
+          } else {
+            project.setTerminology("SNOMEDCT");
+          }
+          project.setTerminologyHandlerKey("SNOWSTORM");
+          translationService.updateProject(project);
+
+          if (ct % 100 == 0) {
+            getLog().info("projects updated  ct = " + ct);
+            translationService.commitClearBegin();
+          }
+        }
+      }
+      getLog().info("projects updated final ct = " + ct);
+      ct = 0;
+      for (Translation trans : translationService.getTranslations()
+          .getObjects()) {
+        Translation translation =
+            translationService.getTranslation(trans.getId());
+        if ((translation.getProject().getTerminologyHandlerKey().equals("BROWSER") || translation.getProject().getTerminologyHandlerKey().equals("SNOWSTORM"))
+            && translation.getVersion().length() == 8) {
+          ct++;
+          String old_version = translation.getVersion();
+          translation.setVersion("" + old_version.substring(0, 4) + "-"
+              + old_version.substring(4, 6) + "-" + old_version.substring(6, 8));
+          if (translation.getTerminology().equals("se-edition")) {
+            translation.setTerminology("SNOMEDCT-SE");
+          } else if (translation.getTerminology().equals("nl-edition")) {
+            translation.setTerminology("SNOMEDCT-NL");
+          } else if (translation.getTerminology().equals("ca-edition")) {
+            translation.setTerminology("SNOMEDCT-CA");
+          } else {
+            translation.setTerminology("SNOMEDCT");
+          }
+          translationService.updateTranslation(translation);
+
+          if (ct % 100 == 0) {
+            getLog().info("translations updated  ct = " + ct);
+            translationService.commitClearBegin();
+          }
+        }
+      }
+      getLog().info("translations updated final ct = " + ct);
+      ct = 0;
+      for (Refset ref : translationService.getRefsets().getObjects()) {
+        Refset refset = translationService.getRefset(ref.getId());
+        if ((refset.getProject().getTerminologyHandlerKey().equals("BROWSER") || refset.getProject().getTerminologyHandlerKey().equals("SNOWSTORM"))
+            && refset.getVersion().length() == 8) {
+          ct++;
+          String old_version = refset.getVersion();
+          refset.setVersion("" + old_version.substring(0, 4) + "-"
+              + old_version.substring(4, 6) + "-" + old_version.substring(6, 8));
+          if (refset.getTerminology().equals("se-edition")) {
+            refset.setTerminology("SNOMEDCT-SE");
+          } else if (refset.getTerminology().equals("nl-edition")) {
+            refset.setTerminology("SNOMEDCT-NL");
+          } else if (refset.getTerminology().equals("ca-edition")) {
+            refset.setTerminology("SNOMEDCT-CA");
+          } else {
+            refset.setTerminology("SNOMEDCT");
+          }
+          translationService.updateRefset(refset);
+
+          if (ct % 100 == 0) {
+            getLog().info("refsets updated ct = " + ct);
+            translationService.commitClearBegin();
+          }
+        }
+      }
+      getLog().info("refsets updated final ct = " + ct);
+      translationService.commit();
+    }
+
+  
   /**
    * Patch 20180316.
    *
