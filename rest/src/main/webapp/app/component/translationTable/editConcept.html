@@ -96,23 +96,29 @@
                     spellcheck="false" ng-model="description.term"
                     ui-tinymce="tinymceOptions"
                     ng-model-options="{ debounce: 300 }"
-                    ng-change="getSuggestions()"></textarea>
+                    ng-change="getSuggestions()"
+                    ng-disabled="description.editable == false"></textarea>
                 </div>
+                <br/>
+                Editable: {{description.editable}}<br/>
+                Desc: {{description.editable}}<br/>                
               </td>
               <td>
                 <select ng-model="description.type"
-                  ng-options="type.name for type in getDescriptionTypes()">
+                  ng-options="type.name for type in getDescriptionTypes()"
+                  ng-disabled="description.editable == false">
                 </select> <br /> <select style="margin-top: 5px; width: 115px"
                   ng-model="description.caseSignificanceId"
-                  ng-options="item.key as item.value for item in caseSignificanceTypes | orderBy:'item.key'">
+                  ng-options="item.key as item.value for item in caseSignificanceTypes | orderBy:'item.key'"
+                  ng-disabled="description.editable == false">
                 </select>
               </td>
               <td>
                 <!-- remove description -->
-                <i ng-click="removeDescription($index)"
+                <i ng-show="description.editable" ng-click="removeDescription($index)"
                   title="Remove description" class="noul material-icons md-18">delete</i>
                 <!-- Add all words -->
-                <i ng-show="hasSuggestions(description)"
+                <i ng-show="hasSuggestions(description)" 
                   ng-click="addAllSpellingEntries(description)"
                   title="Add all words" class="noul-red material-icons md-18">add</i>
               </td>

@@ -924,7 +924,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
       final User user = securityService.getUser(userName);
 
       return importTranslationDescriptions(translationService, translationId,
-          ioHandlerInfoId, user, in, workflowStatus);
+          ioHandlerInfoId, user, in, workflowStatus, true);
 
     } catch (Exception e) {
 
@@ -969,7 +969,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
       final User user = securityService.getUser(userName);
 
       return importTranslationDescriptions(translationService, translationId,
-          handlerName, user, getHeaders(headers), workflowStatus);
+          handlerName, user, getHeaders(headers), workflowStatus, false);
 
     } catch (Exception e) {
 
@@ -3316,10 +3316,12 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
 
       final Refset refset = refsetService.getRefset(refsetId);
       final Project project = refset.getProject();
-      
-      final List<TranslationExtensionLanguage> translationExtensionLanguages = project.getTranslationExtensionLanguages();
-     
-      if (translationExtensionLanguages == null || translationExtensionLanguages.isEmpty()) {
+
+      final List<TranslationExtensionLanguage> translationExtensionLanguages =
+          project.getTranslationExtensionLanguages();
+
+      if (translationExtensionLanguages == null
+          || translationExtensionLanguages.isEmpty()) {
         Logger.getLogger(getClass()).debug("No translation Extensions.");
         return translationSuggestionsList;
       }
@@ -3331,12 +3333,12 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
           .getProperty("terminology.handler.SNOWSTORM.defaultUrl"));
       handler.setApiKey(ConfigUtility.getConfigProperties()
           .getProperty("terminology.handler.SNOWSTORM.apiKey"));
-      
+
       for (TranslationExtensionLanguage te : translationExtensionLanguages) {
         Logger.getLogger(getClass()).info(
             "Getting concepts for " + te.getBranch() + " concept:" + conceptId);
-        final Concept concept = handler.getFullConcept(Long.toString(conceptId), null,
-            te.getBranch());
+        final Concept concept = handler.getFullConcept(Long.toString(conceptId),
+            null, te.getBranch());
         if (concept != null && concept.getDescriptions() != null) {
           for (Description d : concept.getDescriptions()) {
             if (!"en".equalsIgnoreCase(d.getLanguageCode())) {
@@ -3365,26 +3367,26 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
   private ValidationResult importTranslationDescriptions(
     TranslationService translationService, Long translationId,
     String ioHandlerInfoId, User user, InputStream inputStream,
-    WorkflowStatus workflowStatus) throws Exception {
+    WorkflowStatus workflowStatus, boolean isEditable) throws Exception {
 
     return importTranslationDescriptions(translationService, translationId,
-        ioHandlerInfoId, user, inputStream, null, workflowStatus);
+        ioHandlerInfoId, user, inputStream, null, workflowStatus, isEditable);
   }
 
   private ValidationResult importTranslationDescriptions(
     TranslationService translationService, Long translationId,
     String ioHandlerInfoId, User user, Map<String, String> headers,
-    WorkflowStatus workflowStatus) throws Exception {
+    WorkflowStatus workflowStatus, boolean isEditable) throws Exception {
 
     return importTranslationDescriptions(translationService, translationId,
-        ioHandlerInfoId, user, null, headers, workflowStatus);
+        ioHandlerInfoId, user, null, headers, workflowStatus, isEditable);
   }
 
   private ValidationResult importTranslationDescriptions(
     TranslationService translationService, Long translationId,
     String ioHandlerInfoId, User user, InputStream inputStream,
-    Map<String, String> headers, WorkflowStatus workflowStatus)
-    throws Exception {
+    Map<String, String> headers, WorkflowStatus workflowStatus,
+    boolean isEditable) throws Exception {
 
     translationService.setTransactionPerOperation(false);
     translationService.beginTransaction();
@@ -3544,6 +3546,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
             description.setPublishable(true);
             description.setPublished(false);
             description.setConcept(origConcept);
+            description.setEditable(isEditable);
             description.setLastModifiedBy(user.getUserName());
             origConcept.getDescriptions().add(description);
             // Copy the result to detach it - otherwise they share the same
@@ -3644,6 +3647,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
             origDesc.setModuleId(description.getModuleId());
             origDesc.setTypeId(description.getTypeId());
             origDesc.setEffectiveTime(description.getEffectiveTime());
+            origDesc.setEditable(isEditable);
 
             // Technically, these fields should yield new identity
             if (!origDesc.getTerm().equals(description.getTerm())) {
