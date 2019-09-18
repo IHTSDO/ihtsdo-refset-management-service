@@ -25,6 +25,7 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.ihtsdo.otf.refset.ConceptRefsetMemberSynonym;
 import org.ihtsdo.otf.refset.DefinitionClause;
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
@@ -36,6 +37,7 @@ import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
+import org.ihtsdo.otf.refset.jpa.ConceptRefsetMemberSynonymJpa;
 import org.ihtsdo.otf.refset.jpa.DefinitionClauseJpa;
 import org.ihtsdo.otf.refset.jpa.ProjectJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
@@ -583,12 +585,17 @@ public class GenerateSampleDataMojo extends AbstractMojo {
       // test 2
       RefsetJpa test2 = makeRefset("test2", null, Refset.Type.EXTENSIONAL,
           project1, "222222", "1000124", author1, false);
-      List<String> synonymList =
-          Arrays.asList("Pigmented dermatofibrosarcoma protuberans",
-              "Bednar tumor", "Bednar tumour");
       ConceptRefsetMemberJpa test2member1 = makeRefsetMember(test2, "62621002",
-          "Bednar tumor", synonymList, Refset.MemberType.MEMBER, "en-edition",
+          "Bednar tumor", Refset.MemberType.MEMBER, "en-edition",
           "20150131", "731000124108", "62621002", author1.getName(), author1);
+      //TODO - fix adding synonyms
+//      ConceptRefsetMemberSynonym synonym = new ConceptRefsetMemberSynonymJpa("Pigmented dermatofibrosarcoma protuberans", "en", "PT", test2member1);
+//      return (ConceptRefsetMemberJpa) new RefsetServiceRestImpl()
+//          .addConceptRefsetMemberSynonym(member, auth.getAuthToken());
+//      
+//          Arrays.asList(,
+//              new ConceptRefsetMemberSynonymJpa("Bednar tumor", "en", "SY", test2member1), new ConceptRefsetMemberSynonymJpa("Bednar tumour", "en", "SY", test2member1));
+
       new WorkflowServiceRestImpl().performWorkflowAction(project1.getId(),
           test2.getId(), "author1", "AUTHOR", "ASSIGN", author1.getAuthToken());
 
@@ -779,17 +786,18 @@ public class GenerateSampleDataMojo extends AbstractMojo {
       RefsetJpa test12 = makeRefset("test12", null, Refset.Type.EXTENSIONAL,
           project1, "121212121212", "1000124", author1, false);
 
-      synonymList = Arrays.asList("Specific enzyme deficiency");
+      //TODO - fix adding synonyms
+//      synonymList = Arrays.asList("Specific enzyme deficiency");
       ConceptRefsetMemberJpa test12member1 = makeRefsetMember(test12,
-          "129456006", "Specific enzyme deficiency (disorder)", synonymList,
-          Refset.MemberType.MEMBER, "en-edition", "20150131", "731000124108",
+          "129456006", "Specific enzyme deficiency (disorder)", Refset.MemberType.MEMBER, "en-edition", "20150131", "731000124108",
           "129456006", author1.getName(), author1);
 
-      synonymList = Arrays.asList("Deficiency of O-acetylserine (thiol)-lyase",
-          "Deficiency of cysteine synthase");
+      //TODO - fix adding synonyms      
+//      synonymList = Arrays.asList("Deficiency of O-acetylserine (thiol)-lyase",
+//          "Deficiency of cysteine synthase");
       ConceptRefsetMemberJpa test12member2 = makeRefsetMember(test12,
           "124627000", "Deficiency of O-acetylserine (thiol)-lyase (disorder) ",
-          synonymList, Refset.MemberType.MEMBER, "en-edition", "20150131",
+          Refset.MemberType.MEMBER, "en-edition", "20150131",
           "731000124108", "124627000", author1.getName(), author1);
       new WorkflowServiceRestImpl().performWorkflowAction(project1.getId(),
           test12.getId(), "author1", "AUTHOR", "ASSIGN",
@@ -913,8 +921,7 @@ public class GenerateSampleDataMojo extends AbstractMojo {
    */
   @SuppressWarnings("static-method")
   private ConceptRefsetMemberJpa makeRefsetMember(Refset refset,
-    String conceptId, String conceptName, List<String> synonyms,
-    Refset.MemberType memberType, String terminology, String version,
+    String conceptId, String conceptName, Refset.MemberType memberType, String terminology, String version,
     String moduleId, String terminologyId, String lastModifiedBy, User auth)
     throws Exception {
     final ConceptRefsetMemberJpa member = new ConceptRefsetMemberJpa();
@@ -928,7 +935,6 @@ public class GenerateSampleDataMojo extends AbstractMojo {
     member.setRefset(refset);
     member.setActive(true);
     member.setConceptActive(true);
-    member.setSynonyms(synonyms);
 
     return (ConceptRefsetMemberJpa) new RefsetServiceRestImpl()
         .addRefsetMember(member, auth.getAuthToken());

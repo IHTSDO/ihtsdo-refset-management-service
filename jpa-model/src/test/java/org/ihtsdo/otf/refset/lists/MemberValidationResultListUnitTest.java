@@ -63,10 +63,8 @@ public class MemberValidationResultListUnitTest
     r2.setId(2L);
     ConceptRefsetMember m1 = new ConceptRefsetMemberJpa();
     m1.setId(1L);
-    m1.getSynonyms().add("testWord1");
     ConceptRefsetMember m2 = new ConceptRefsetMemberJpa();
     m2.setId(2L);
-    m2.getSynonyms().add("testWord2");
     m1.setRefset(r1);
     m2.setRefset(r2);
     o1.setMember(m1);

@@ -4,7 +4,6 @@
 package org.ihtsdo.otf.refset.jpa.services;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -23,6 +22,7 @@ import org.hibernate.envers.AuditReader;
 import org.hibernate.envers.AuditReaderFactory;
 import org.hibernate.envers.query.AuditEntity;
 import org.hibernate.envers.query.AuditQuery;
+import org.ihtsdo.otf.refset.ConceptRefsetMemberSynonym;
 import org.ihtsdo.otf.refset.DefinitionClause;
 import org.ihtsdo.otf.refset.Note;
 import org.ihtsdo.otf.refset.Project;
@@ -40,6 +40,7 @@ import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.RefsetList;
 import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
 import org.ihtsdo.otf.refset.jpa.ConceptRefsetMemberNoteJpa;
+import org.ihtsdo.otf.refset.jpa.ConceptRefsetMemberSynonymJpa;
 import org.ihtsdo.otf.refset.jpa.IoHandlerInfoJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetNoteJpa;
@@ -470,6 +471,11 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
     for (final Note note : member.getNotes()) {
       removeNote(note.getId(), ConceptRefsetMemberNoteJpa.class);
     }
+    
+    // Remove synonyms
+    for (final ConceptRefsetMemberSynonym synonym : member.getSynonyms()) {
+      removeConceptRefsetMemberSynonym(synonym.getId());
+    }    
 
     // Remove the component
     removeHasLastModified(id, ConceptRefsetMemberJpa.class);
@@ -823,6 +829,34 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
 
   /* see superclass */
   @Override
+  public ConceptRefsetMemberSynonym addConceptRefsetMemberSynonym(
+    ConceptRefsetMemberSynonym synonym) throws Exception {
+    Logger.getLogger(getClass())
+        .debug("Refset Service - add synonym " + synonym);
+
+    // Add component
+    ConceptRefsetMemberSynonym newSynonym = addObject(synonym);
+
+    // do not inform listeners
+    return newSynonym;
+
+  }
+
+  /* see superclass */
+  @Override
+  public void removeConceptRefsetMemberSynonym(Long id) throws Exception {
+    Logger.getLogger(getClass()).debug("Refset Service - remove synonym " + id);
+
+    final ConceptRefsetMemberSynonymJpa synonym =
+        getObject(id, ConceptRefsetMemberSynonymJpa.class);
+    if (synonym != null) {
+      removeObject(synonym, ConceptRefsetMemberSynonymJpa.class);
+    }
+    // Do not inform listeners
+  }
+
+  /* see superclass */
+  @Override
   public ReleaseInfo getCurrentRefsetReleaseInfo(String terminologyId,
     Long projectId) throws Exception {
     Logger.getLogger(getClass())
@@ -1148,8 +1182,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
                     refsetService.getMember(memberMap.get(termId).getId());
                 member.setConceptName(
                     TerminologyHandler.UNABLE_TO_DETERMINE_NAME);
-                member.setSynonyms(
-                    Arrays.asList(TerminologyHandler.UNABLE_TO_DETERMINE_NAME));
+                member.setSynonyms(null);
                 refsetService.updateMember(member);
 
               }
@@ -1159,8 +1192,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
                 final ConceptRefsetMember member = memberMap.get(termId);
                 member.setConceptName(
                     TerminologyHandler.UNABLE_TO_DETERMINE_NAME);
-                member.setSynonyms(
-                    Arrays.asList(TerminologyHandler.UNABLE_TO_DETERMINE_NAME));
+                member.setSynonyms(null);
               }
             }
 
@@ -1620,7 +1652,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
   /* see superclass */
   public void populateMemberSynonyms(ConceptRefsetMember member,
     Concept concept, Refset refset) throws Exception {
-    member.setSynonyms(new ArrayList<String>());
+    member.setSynonyms(new ArrayList<ConceptRefsetMemberSynonym>());
 
     populateMemberSynonymsFromConcept(member, concept);
 
@@ -1643,7 +1675,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
   public void populateMemberSynonyms(ConceptRefsetMember member,
     Concept concept, Refset refset, TerminologyHandler handler)
     throws Exception {
-    member.setSynonyms(new ArrayList<String>());
+    member.setSynonyms(new ArrayList<ConceptRefsetMemberSynonym>());
 
     populateMemberSynonymsFromConcept(member, concept);
 
@@ -1654,7 +1686,24 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
       for (Description d : fullCon.getDescriptions()) {
         if (d.isActive() && !d.getTypeId().equals("900000000000550004") // DEFINITION_DESC_SCTID
             && !member.getSynonyms().contains(d.getTerm())) {
-          member.getSynonyms().add(d.getTerm());
+          ConceptRefsetMemberSynonym synonym =
+              new ConceptRefsetMemberSynonymJpa();
+          synonym.setSynonym(d.getTerm());
+          synonym.setLanguage(d.getLanguageCode());
+          if("900000000000003001".equals(d.getTypeId())) {
+            synonym.setTermType("FSN");
+          }
+          else {
+            if("900000000000548007".equals(d.getLanguageRefsetMembers().get(0).getAcceptabilityId())) {
+              synonym.setTermType("PT");
+            }
+            else {
+              synonym.setTermType("SY");
+            }
+          }
+          synonym.setMember(member);
+          addConceptRefsetMemberSynonym(synonym);
+          member.getSynonyms().add(synonym);
         }
       }
     }
@@ -1665,13 +1714,31 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
    *
    * @param member the member
    * @param concept the concept
+   * @throws Exception the exception
    */
   private void populateMemberSynonymsFromConcept(ConceptRefsetMember member,
-    Concept concept) {
+    Concept concept) throws Exception {
     for (Description d : concept.getDescriptions()) {
       if (d.isActive() && !d.getTypeId().equals("900000000000550004") // DEFINITION_DESC_SCTID
           && !member.getSynonyms().contains(d.getTerm())) {
-        member.getSynonyms().add(d.getTerm());
+        ConceptRefsetMemberSynonym synonym =
+            new ConceptRefsetMemberSynonymJpa();
+        synonym.setSynonym(d.getTerm());
+        synonym.setLanguage(d.getLanguageCode());
+        if("900000000000003001".equals(d.getTypeId())) {
+          synonym.setTermType("FSN");
+        }
+        else {
+          if("900000000000548007".equals(d.getLanguageRefsetMembers().get(0).getAcceptabilityId())) {
+            synonym.setTermType("PT");
+          }
+          else {
+            synonym.setTermType("SY");
+          }
+        }
+        synonym.setMember(member);
+        addConceptRefsetMemberSynonym(synonym);
+        member.getSynonyms().add(synonym);
       }
     }
   }

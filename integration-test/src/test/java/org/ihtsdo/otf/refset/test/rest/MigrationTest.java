@@ -254,10 +254,11 @@ public class MigrationTest extends RestSupport {
     ConceptRefsetMemberJpa inclusion = new ConceptRefsetMemberJpa();
     inclusion.setRefset(janRefset);
     inclusion.setConceptId("88324004");
-    inclusion.setSynonyms(Arrays.asList(
-        "Antibody-dependent cell-mediated lympholysis", "Abcil phenomena",
-        "Antibody-dependent cell-mediated lympholysis, function (observable entity)",
-        "Antibody-dependent cell-mediated lympholysis, function"));
+    //TODO - fix synonyms
+//    inclusion.setSynonyms(Arrays.asList(
+//        "Antibody-dependent cell-mediated lympholysis", "Abcil phenomena",
+//        "Antibody-dependent cell-mediated lympholysis, function (observable entity)",
+//        "Antibody-dependent cell-mediated lympholysis, function"));
     inclusion.setMemberType(Refset.MemberType.INCLUSION);
     refsetService.addRefsetInclusion(inclusion, false, adminAuthToken);
 
@@ -267,8 +268,9 @@ public class MigrationTest extends RestSupport {
     inclusion = new ConceptRefsetMemberJpa();
     inclusion.setRefset(janRefset);
     inclusion.setConceptId("91356001");
-    inclusion.setSynonyms(
-        Arrays.asList("Carbuncle of face", "Carbuncle of face (disorder)"));
+    //TODO - fix synonyms
+//    inclusion.setSynonyms(
+//        Arrays.asList("Carbuncle of face", "Carbuncle of face (disorder)"));
     inclusion.setMemberType(Refset.MemberType.INCLUSION);
     refsetService.addRefsetInclusion(inclusion, false, adminAuthToken);
 

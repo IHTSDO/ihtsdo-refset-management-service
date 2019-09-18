@@ -932,92 +932,92 @@ public class PatchDataMojo extends AbstractMojo {
     *  - Not identical to the ConceptName field
     *  - Length is less than or equal to 256 characters
     */
-    TerminologyHandler termHandler =
-        refsetService.getTerminologyHandler(project, null);
-
-    for (Refset refset : project.getRefsets()) {
-      getLog().info("Working on members in refset (" + refset.getId() + "): "
-          + refset.getName() + " with " + refset.getMembers().size()
-          + " members");
-
-      int count = 0;
-      for (ConceptRefsetMember member : refset.getMembers()) {
-        String conId = member.getConceptId();
-
-        if (!conceptSynonymsMapCache.keySet().contains(conId)) {
-          // Lookup synonyms and add to member
-          Map<String, List<String>> versionSynonymsMap = new HashMap<>();
-          conceptSynonymsMapCache.put(conId, versionSynonymsMap);
-        }
-
-        if (!conceptSynonymsMapCache.get(conId)
-            .containsKey(refset.getVersion())) {
-          List<String> synonyms = new ArrayList<>();
-          conceptSynonymsMapCache.get(conId).put(refset.getVersion(), synonyms);
-        }
-
-        if (conceptSynonymsMapCache.get(conId).get(refset.getVersion())
-            .isEmpty()) {
-          List<String> synonyms =
-              conceptSynonymsMapCache.get(conId).get(refset.getVersion());
-
-          try {
-            // Identify Concept's synonyms
-            final Concept con = termHandler.getFullConcept(conId,
-                refset.getTerminology(), refset.getVersion());
-
-            for (Description d : con.getDescriptions()) {
-              if (d.isActive() && !d.getTypeId().equals("900000000000550004") // DEFINITION
-                  && !synonyms.contains(d.getTerm())) {
-                if (d.getTerm().length() > 256) {
-                  throw new Exception("Description '" + d.getTerm()
-                      + "' is longer than permitted lenght of 256. It's size is: "
-                      + d.getTerm().length());
-                }
-                synonyms.add(d.getTerm());
-              }
-            }
-
-            member.setSynonyms(synonyms);
-            refsetService.updateMember(member);
-          } catch (NullPointerException e) {
-            // Have Concept Id that doesn't exist on terminology server
-            getLog().info("Concept id '" + conId + "' not found");
-          }
-        } else {
-          // Have previously completed the Lookup of synonyms. Just need to add
-          // them to member
-          member.setSynonyms(
-              conceptSynonymsMapCache.get(conId).get(refset.getVersion()));
-          refsetService.updateMember(member);
-        }
-
-        // Commit every 50 to minimize memory utilization
-        if (++count % 50 == 0) {
-          getLog().info("Completed " + count + " out of the "
-              + refset.getMembers().size() + " members to process");
-          try {
-            refsetService.commitClearBegin();
-          } catch (Exception e) {
-            getLog().info(
-                "Failed on committing batch of 50 synonyms with error message: "
-                    + e.getMessage());
-            refsetService.setTransactionPerOperation(false);
-            refsetService.beginTransaction();
-          }
-        }
-      }
-
-      // Commit to catch final (and less-than-fifty) members
-      try {
-        refsetService.commitClearBegin();
-      } catch (Exception e) {
-        getLog().info(
-            "Failed on committing final batch of synonyms with error message: "
-                + e.getMessage());
-      }
-
-      getLog().info(" Completed refset: " + refset.getName());
-    }
+//    TerminologyHandler termHandler =
+//        refsetService.getTerminologyHandler(project, null);
+//
+//    for (Refset refset : project.getRefsets()) {
+//      getLog().info("Working on members in refset (" + refset.getId() + "): "
+//          + refset.getName() + " with " + refset.getMembers().size()
+//          + " members");
+//
+//      int count = 0;
+//      for (ConceptRefsetMember member : refset.getMembers()) {
+//        String conId = member.getConceptId();
+//
+//        if (!conceptSynonymsMapCache.keySet().contains(conId)) {
+//          // Lookup synonyms and add to member
+//          Map<String, List<String>> versionSynonymsMap = new HashMap<>();
+//          conceptSynonymsMapCache.put(conId, versionSynonymsMap);
+//        }
+//
+//        if (!conceptSynonymsMapCache.get(conId)
+//            .containsKey(refset.getVersion())) {
+//          List<String> synonyms = new ArrayList<>();
+//          conceptSynonymsMapCache.get(conId).put(refset.getVersion(), synonyms);
+//        }
+//
+//        if (conceptSynonymsMapCache.get(conId).get(refset.getVersion())
+//            .isEmpty()) {
+//          List<String> synonyms =
+//              conceptSynonymsMapCache.get(conId).get(refset.getVersion());
+//
+//          try {
+//            // Identify Concept's synonyms
+//            final Concept con = termHandler.getFullConcept(conId,
+//                refset.getTerminology(), refset.getVersion());
+//
+//            for (Description d : con.getDescriptions()) {
+//              if (d.isActive() && !d.getTypeId().equals("900000000000550004") // DEFINITION
+//                  && !synonyms.contains(d.getTerm())) {
+//                if (d.getTerm().length() > 256) {
+//                  throw new Exception("Description '" + d.getTerm()
+//                      + "' is longer than permitted lenght of 256. It's size is: "
+//                      + d.getTerm().length());
+//                }
+//                synonyms.add(d.getTerm());
+//              }
+//            }
+//
+//            member.setSynonyms(synonyms);
+//            refsetService.updateMember(member);
+//          } catch (NullPointerException e) {
+//            // Have Concept Id that doesn't exist on terminology server
+//            getLog().info("Concept id '" + conId + "' not found");
+//          }
+//        } else {
+//          // Have previously completed the Lookup of synonyms. Just need to add
+//          // them to member
+//          member.setSynonyms(
+//              conceptSynonymsMapCache.get(conId).get(refset.getVersion()));
+//          refsetService.updateMember(member);
+//        }
+//
+//        // Commit every 50 to minimize memory utilization
+//        if (++count % 50 == 0) {
+//          getLog().info("Completed " + count + " out of the "
+//              + refset.getMembers().size() + " members to process");
+//          try {
+//            refsetService.commitClearBegin();
+//          } catch (Exception e) {
+//            getLog().info(
+//                "Failed on committing batch of 50 synonyms with error message: "
+//                    + e.getMessage());
+//            refsetService.setTransactionPerOperation(false);
+//            refsetService.beginTransaction();
+//          }
+//        }
+//      }
+//
+//      // Commit to catch final (and less-than-fifty) members
+//      try {
+//        refsetService.commitClearBegin();
+//      } catch (Exception e) {
+//        getLog().info(
+//            "Failed on committing final batch of synonyms with error message: "
+//                + e.getMessage());
+//      }
+//
+//      getLog().info(" Completed refset: " + refset.getName());
+//    }
   }
 }
