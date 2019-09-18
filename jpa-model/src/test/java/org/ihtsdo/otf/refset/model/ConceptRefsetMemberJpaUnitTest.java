@@ -9,12 +9,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.ihtsdo.otf.refset.ConceptRefsetMemberSynonym;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.helpers.CopyConstructorTester;
 import org.ihtsdo.otf.refset.helpers.EqualsHashcodeTester;
 import org.ihtsdo.otf.refset.helpers.GetterSetterTester;
 import org.ihtsdo.otf.refset.helpers.ProxyTester;
 import org.ihtsdo.otf.refset.helpers.XmlSerializationTester;
+import org.ihtsdo.otf.refset.jpa.ConceptRefsetMemberSynonymJpa;
 import org.ihtsdo.otf.refset.jpa.ProjectJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.IndexedFieldTester;
@@ -75,9 +77,8 @@ public class ConceptRefsetMemberJpaUnitTest extends ModelUnitSupport {
     r1.setProject(new ProjectJpa());
     r2.setProject(new ProjectJpa());
 
-    l1 = new ArrayList<String>();
-    l1.add("testWord1");
-    l1.add("testWord2");
+    l1 = new ArrayList<ConceptRefsetMemberSynonym>();
+    l1.add(new ConceptRefsetMemberSynonymJpa("Test1","en","PT",null));
 
     l2 = (List) new ArrayList();
     l2.add(null);
@@ -194,7 +195,6 @@ public class ConceptRefsetMemberJpaUnitTest extends ModelUnitSupport {
     // Test analyzed fields
     IndexedFieldTester tester = new IndexedFieldTester(object);
     tester.include("conceptName");
-    tester.include("synonyms");
     assertTrue(tester.testAnalyzedIndexedFields());
 
     // Test non analyzed fields

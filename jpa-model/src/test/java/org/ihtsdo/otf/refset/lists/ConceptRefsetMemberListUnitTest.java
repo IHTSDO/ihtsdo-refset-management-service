@@ -53,14 +53,12 @@ public class ConceptRefsetMemberListUnitTest
     o1.setConceptId("1");
     o1.setRefset(new RefsetJpa());
     o1.getRefset().setId(1L);
-    o1.getSynonyms().add("testWord1");
     o2 = new ConceptRefsetMemberJpa();
     o2.setId(2L);
     o2.setTerminologyId("2");
     o2.setConceptId("2");
     o2.setRefset(new RefsetJpa());
     o2.getRefset().setId(2L);
-    o2.getSynonyms().add("testWord2");
   }
 
   /**

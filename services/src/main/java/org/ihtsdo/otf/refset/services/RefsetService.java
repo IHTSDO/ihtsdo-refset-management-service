@@ -6,6 +6,7 @@ package org.ihtsdo.otf.refset.services;
 import java.util.Date;
 import java.util.List;
 
+import org.ihtsdo.otf.refset.ConceptRefsetMemberSynonym;
 import org.ihtsdo.otf.refset.Note;
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
@@ -251,6 +252,24 @@ public interface RefsetService extends ReleaseService {
    * @throws Exception the exception
    */
   public void removeNote(Long id, Class<? extends Note> type) throws Exception;
+
+  /**
+   * Adds the concept refset member synonym.
+   *
+   * @param synonym the synonym
+   * @return the concept refset member synonym
+   * @throws Exception the exception
+   */
+  public ConceptRefsetMemberSynonym addConceptRefsetMemberSynonym(
+    ConceptRefsetMemberSynonym synonym) throws Exception;
+
+  /**
+   * Removes the concept refset member synonym.
+   *
+   * @param id the id
+   * @throws Exception the exception
+   */
+  public void removeConceptRefsetMemberSynonym(Long id) throws Exception;
 
   /**
    * Returns the current release info for refset.

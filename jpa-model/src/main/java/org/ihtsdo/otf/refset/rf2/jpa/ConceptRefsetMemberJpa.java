@@ -6,9 +6,7 @@ package org.ihtsdo.otf.refset.rf2.jpa;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.persistence.CollectionTable;
 import javax.persistence.Column;
-import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -35,9 +33,10 @@ import org.hibernate.search.bridge.builtin.EnumBridge;
 import org.hibernate.search.bridge.builtin.LongBridge;
 import org.ihtsdo.otf.refset.Note;
 import org.ihtsdo.otf.refset.Refset;
+import org.ihtsdo.otf.refset.ConceptRefsetMemberSynonym;
 import org.ihtsdo.otf.refset.jpa.ConceptRefsetMemberNoteJpa;
+import org.ihtsdo.otf.refset.jpa.ConceptRefsetMemberSynonymJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
-import org.ihtsdo.otf.refset.jpa.helpers.CollectionToCsvBridge;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 
 /**
@@ -81,12 +80,17 @@ public class ConceptRefsetMemberJpa extends AbstractComponent
   @IndexedEmbedded(targetElement = ConceptRefsetMemberNoteJpa.class)
   private List<Note> notes = new ArrayList<>();
 
-  /** The synonyms. */
-  @ElementCollection
-  @Column(name = "synonym", nullable = true)
-  @CollectionTable(name = "concept_refset_members_synonyms")
-  private List<String> synonyms;
+//  /** The synonyms. */
+//  @ElementCollection
+//  @Column(name = "synonym", nullable = true)
+//  @CollectionTable(name = "concept_refset_members_synonyms")
+//  private List<String> synonyms;
 
+  /** The synonym. */
+  @OneToMany(mappedBy = "member", targetEntity = ConceptRefsetMemberSynonymJpa.class)
+  @IndexedEmbedded(targetElement = ConceptRefsetMemberSynonymJpa.class)
+  private List<ConceptRefsetMemberSynonym> synonyms = new ArrayList<>();  
+  
   /**
    * Instantiates an empty {@link ConceptRefsetMemberJpa}.
    */
@@ -212,22 +216,42 @@ public class ConceptRefsetMemberJpa extends AbstractComponent
     this.conceptName = conceptName;
   }
 
-  /* see superclass */
-  @Field(bridge = @FieldBridge(impl = CollectionToCsvBridge.class), index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+//  /* see superclass */
+//  @Field(bridge = @FieldBridge(impl = CollectionToCsvBridge.class), index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+//  @Override
+//  public List<String> getSynonyms() {
+//    if (synonyms == null) {
+//      synonyms = new ArrayList<>();
+//    }
+//    return synonyms;
+//  }
+//
+//  /* see superclass */
+//  @Override
+//  public void setSynonyms(List<String> synonyms) {
+//    this.synonyms = synonyms;
+//  }
+
+  @XmlElement(type = ConceptRefsetMemberSynonymJpa.class)
   @Override
-  public List<String> getSynonyms() {
+  public List<ConceptRefsetMemberSynonym> getSynonyms() {
     if (synonyms == null) {
-      synonyms = new ArrayList<>();
+      synonyms = new ArrayList<ConceptRefsetMemberSynonym>();
     }
     return synonyms;
   }
 
   /* see superclass */
+  /**
+   * Sets the notes.
+   *
+   * @param notes the notes
+   */
   @Override
-  public void setSynonyms(List<String> synonyms) {
+  public void setSynonyms(List<ConceptRefsetMemberSynonym> synonyms) {
     this.synonyms = synonyms;
   }
-
+  
   /* see superclass */
   /**
    * Indicates whether or not concept active is the case.
@@ -367,7 +391,6 @@ public class ConceptRefsetMemberJpa extends AbstractComponent
     return "ConceptRefsetMemberJpa [id =" + getId() + ", refset.id="
         + (refset == null ? "" : refset.getId()) + ", conceptId=" + conceptId
         + ", conceptName=" + conceptName + ", type=" + memberType
-        + ", conceptActive=" + conceptActive + ", synonyms=" + getSynonyms()
-        + "]";
+        + ", conceptActive=" + conceptActive + "]";
   }
 }
