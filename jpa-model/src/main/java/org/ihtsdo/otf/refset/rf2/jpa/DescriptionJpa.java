@@ -70,6 +70,9 @@ public class DescriptionJpa extends AbstractComponent implements Description {
   // @IndexedEmbedded(targetElement = LanguageRefsetMemberJpa.class)
   private List<LanguageRefsetMember> languageRefsetMembers = null;
 
+  @Column(nullable = false)
+  private boolean editable = true;
+
   /**
    * Instantiates an empty {@link Description}.
    */
@@ -90,6 +93,7 @@ public class DescriptionJpa extends AbstractComponent implements Description {
     languageCode = description.getLanguageCode();
     term = description.getTerm();
     typeId = description.getTypeId();
+    editable = description.getEditable();
 
     if (deepCopy) {
       languageRefsetMembers = new ArrayList<>();
@@ -261,6 +265,19 @@ public class DescriptionJpa extends AbstractComponent implements Description {
   }
 
   /* see superclass */
+  @XmlElement
+  @Override
+  public boolean getEditable() {
+    return editable;
+  }
+
+  /* see superclass */
+  @Override
+  public void setEditable(boolean editable) {
+    this.editable = editable;
+  }
+
+  /* see superclass */
   @Override
   public String toString() {
     return "DescriptionJpa [id= " + getId() + ", term=" + term
@@ -284,6 +301,7 @@ public class DescriptionJpa extends AbstractComponent implements Description {
         prime * result + ((languageCode == null) ? 0 : languageCode.hashCode());
     result = prime * result + ((term == null) ? 0 : term.hashCode());
     result = prime * result + ((typeId == null) ? 0 : typeId.hashCode());
+    result = prime * result + (editable ? 1231 : 1237);
 
     return result;
   }
@@ -327,6 +345,8 @@ public class DescriptionJpa extends AbstractComponent implements Description {
         return false;
     } else if (!typeId.equals(other.typeId))
       return false;
+    if (editable != other.editable)
+      return false;    
 
     return true;
   }

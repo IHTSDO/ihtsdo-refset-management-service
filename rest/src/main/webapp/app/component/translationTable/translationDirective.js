@@ -859,7 +859,7 @@ tsApp
                   // If all lookups in progress are at 100%, stop interval
                   var found = true;
                   for ( var key in $scope.translationLookupProgress) {
-                    if ($scope.translationLookupProgress[key] < 100) {
+                    if ($scope.translationLookupProgress[key] < 100 && $scope.translationLookupProgress[key] != -1) {
                       found = false;
                       break;
                     }
@@ -2047,9 +2047,8 @@ tsApp
                   }
 
                   if (type == 'Translation') {
-                    if ($scope.selectedIoHandler.id === 'EXCEL' 
-                      || $scope.selectedIoHandler.id === 'TERMSERVER') {
-                      action = 'REVIEW_NEW';
+                    if ($scope.selectedIoHandler.id === 'EXCEL') {
+                      action = 'FINISHED';
                     }
                       
                     translationService.beginImportConcepts($scope.translation.id,
@@ -2115,7 +2114,7 @@ tsApp
                   if (type === 'Translation') {
                     if ($scope.selectedIoHandler.id === 'EXCEL' 
                       || $scope.selectedIoHandler.id === 'TERMSERVER') {
-                      wfStatus = 'REVIEW_NEW';
+                      wfStatus = 'FINISHED';
                     }
                     
                     if ($scope.selectedIoHandler.ioType === 'FILE') {
@@ -2128,8 +2127,7 @@ tsApp
                             $scope.warnings = data.warnings;
                             $scope.comments = data.comments;
                             startLookup(translation);
-                            if ($scope.selectedIoHandler.id === 'EXCEL' 
-                              || $scope.selectedIoHandler.id === 'TERMSERVER') {
+                            if ($scope.selectedIoHandler.id === 'EXCEL') {
                               changeRole('REVIEWER')
                             } 
                           },
