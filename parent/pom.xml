@@ -500,12 +500,12 @@
     <repository>
       <id>ihtsdo-public-nexus</id>
       <name>IHTSDO Public Nexus Releases</name>
-      <url>https://maven3.ihtsdotools.org/repository/maven_releases/</url>
+      <url>https://maven3.ihtsdotools.org/repository/maven-releases/</url>
     </repository>
     <repository>
       <id>ihtsdo-public-nexus-snapshot</id>
       <name>IHTSDO Public Nexus Snapshots</name>
-      <url>https://maven3.ihtsdotools.org/repository/maven_snapshots/</url>
+      <url>https://maven3.ihtsdotools.org/repository/maven-snapshots/</url>
     </repository>
   </repositories>
 
@@ -513,12 +513,12 @@
     <repository>
       <id>ihtsdo-public-nexus</id>
       <name>IHTSDO Public Nexus Releases</name>
-      <url>https://maven3.ihtsdotools.org/repository/maven_releases/</url>
+      <url>https://maven3.ihtsdotools.org/repository/maven-releases/</url>
     </repository>
     <snapshotRepository>
       <id>ihtsdo-public-nexus</id>
       <name>IHTSDO Public Nexus Snapshots</name>
-      <url>https://maven3.ihtsdotools.org/repository/maven_snapshots/</url>
+      <url>https://maven3.ihtsdotools.org/repository/maven-snapshots/</url>
     </snapshotRepository>
   </distributionManagement>
 
