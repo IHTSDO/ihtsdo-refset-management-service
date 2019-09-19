@@ -42,6 +42,7 @@ import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.ProjectList;
+import org.ihtsdo.otf.refset.jpa.services.ProjectServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.RefsetServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.TranslationServiceJpa;
@@ -51,11 +52,11 @@ import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.rf2.Description;
 import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
+import org.ihtsdo.otf.refset.services.ProjectService;
 import org.ihtsdo.otf.refset.services.RefsetService;
 import org.ihtsdo.otf.refset.services.SecurityService;
 import org.ihtsdo.otf.refset.services.TranslationService;
 import org.ihtsdo.otf.refset.services.WorkflowService;
-import org.ihtsdo.otf.refset.services.handlers.TerminologyHandler;
 import org.ihtsdo.otf.refset.workflow.TrackingRecord;
 import org.ihtsdo.otf.refset.workflow.TrackingRecordJpa;
 import org.ihtsdo.otf.refset.workflow.TrackingRecordList;
@@ -322,6 +323,16 @@ public class PatchDataMojo extends AbstractMojo {
         patch20190728(workflowService, refsetService, fullReindex);
       }
 
+      // Patch 20190917
+      // Update terminology handlers in project
+      if ("20190917".compareTo(start) >= 0 && "20190917".compareTo(end) <= 0) {
+        getLog().info(
+            "Processing patch 20190917 - Update terminology handlers in project"); // Patch
+
+        patch20190917(fullReindex);
+      }
+      
+
       // Reindex
       if (fullReindex) {
         getLog().info("  Reindex");
@@ -371,7 +382,7 @@ public class PatchDataMojo extends AbstractMojo {
         } else {
           project.setTerminology("SNOMEDCT");
         }
-        project.setTerminologyHandlerKey("SNOWSTORM");
+        project.setTerminologyHandlerKey("PUBLIC-BROWSER");
         translationService.updateProject(project);
 
         if (ct % 100 == 0) {
@@ -1019,5 +1030,58 @@ public class PatchDataMojo extends AbstractMojo {
 //
 //      getLog().info(" Completed refset: " + refset.getName());
 //    }
+  }
+  
+  private void patch20190917(boolean fullReindex) {
+    
+    try(ProjectService projectService = new ProjectServiceJpa();) {
+    
+      projectService.setTransactionPerOperation(false);
+      projectService.beginTransaction();
+      
+      projectService.getProjects().getObjects().forEach(project -> {
+        
+        //TODO: set project.setTerminologyHandlerUrl too? 
+        if ("BROWSER".equalsIgnoreCase(project.getTerminologyHandlerKey()) ||
+            "SNOWSTORM".equalsIgnoreCase(project.getTerminologyHandlerKey())) {
+          project.setTerminologyHandlerKey("PUBLIC-BROWSER");
+          project.setTerminologyHandlerUrl("https://prod-browser.ihtsdotools.org/snowstorm/snomed-ct/v2");
+        }
+        else if ("SNOWOWL".equalsIgnoreCase(project.getTerminologyHandlerKey())) {
+          project.setTerminologyHandlerKey("AUTHORING-INTL");
+        }
+        else if ("SNOWOWL-MS".equalsIgnoreCase(project.getTerminologyHandlerKey())) {
+          project.setTerminologyHandlerKey("MANAGED-SERVICE");
+        }
+        
+        getLog()
+        .info("  project = " + project.getId() + ", " + project.getName());
+        try {
+          projectService.updateProject(project);
+        } catch (Exception e) {
+          getLog().error("patch20190915 : Failed to update project " + project.getId(), e);
+        }
+      });
+      
+      projectService.commit();
+      
+      if (!fullReindex) {
+        getLog().info("  Projects");
+
+        // login as "admin", use token
+        final Properties properties = ConfigUtility.getConfigProperties();
+        try (final SecurityService securityService = new SecurityServiceJpa();) {
+          String authToken =
+              securityService.authenticate(properties.getProperty("admin.user"),
+                  properties.getProperty("admin.password")).getAuthToken();
+          ProjectServiceRestImpl contentService = new ProjectServiceRestImpl();
+          contentService.luceneReindex("ProjectJpa", null, null, authToken);
+        }
+      }      
+      
+    } catch (Exception e) {
+      getLog().error("patch20190915 : Failed to update all projects", e);
+    }
+    
   }
 }

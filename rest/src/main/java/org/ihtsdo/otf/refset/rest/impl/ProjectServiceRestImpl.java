@@ -1397,9 +1397,9 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
       final SnowstormTerminologyHandler handler =
           new SnowstormTerminologyHandler();
       handler.setUrl(ConfigUtility.getConfigProperties()
-          .getProperty("terminology.handler.SNOWSTORM.defaultUrl"));
+          .getProperty("terminology.handler.PUBLIC-BROWSER.defaultUrl"));
       handler.setApiKey(ConfigUtility.getConfigProperties()
-          .getProperty("terminology.handler.SNOWSTORM.apiKey"));
+          .getProperty("terminology.handler.PUBLIC-BROWSER.apiKey"));
 
       List<TranslationExtensionLanguage> extensionLanguages =
           handler.getAvailableTranslationExtensionLanguages();
@@ -1461,8 +1461,6 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     // Get all concepts matching translation queries
     final ConceptList list = translationService.findConceptsForTranslation(null,
         query.toString(), null);
-
-    // TODO HANDLE DUPLICATE TRANSLATIONS (text + language code + PT/SYN)
 
     // Add all descriptions to the concept
     final Set<String> descIdsSeen = new HashSet<>();

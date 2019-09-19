@@ -1524,6 +1524,100 @@ tsApp.service('refsetService', [
       });
       return deferred.promise;
     };
-
+    
+    // common filter used by controllers
+    this.filterTerminologyVersions =
+      function(terminologyHandler, selectedTerminology, unfilteredVersions) {
+      
+      var versions = [];
+      
+      for (var i = 0; i < unfilteredVersions[selectedTerminology].length ; i++) {
+        var path = unfilteredVersions[selectedTerminology][i];
+        var key = null;
+        
+        if (terminologyHandler === 'MANAGED-SERVICE') {
+          if (path.indexOf("SNOMEDCT-") != -1) {           
+            
+            //key is first non-date after MAIN
+            for(var k of path.substring(path.indexOf('/')+1).split('/')) {
+              if (!utilService.isValidDate(k.substring(0,10)) && k != selectedTerminology) {
+                  // valid paths have to end with the identified key
+                  //the first non-date after MAIN is the project, but subsequent folders are tasks and we should not point to those
+                  if (path.endsWith(k)){
+                      key = k;
+                      break;
+                  }
+                  else{
+                      break;
+                  }
+              }
+            }
+          // International edition, parse international version
+          } else {
+            for(var k of path.substring(path.indexOf('/')+1).split('/')) {
+              if (utilService.isValidDate(k) & k != selectedTerminology) {
+                key = k;
+                break;
+              }
+            }
+          }
+        }
+        else if (terminologyHandler === 'PUBLIC-BROWSER') {
+          if (path.indexOf("SNOMEDCT-") != -1) {           
+            
+            //key is first date after MAIN
+            for(var k of path.substring(path.indexOf('/')+1).split('/')) {
+              if (utilService.isValidDate(k.substring(0,10))) {
+                key = k;
+                break;
+              }
+            }
+          // International edition, parse international version
+          } else {
+            for(var k of path.substring(path.indexOf('/')+1).split('/')) {
+              if (utilService.isValidDate(k) & k != selectedTerminology) {
+                key = k;
+                break;
+              }
+            }
+          }
+        }        
+        else if (terminologyHandler === 'AUTHORING-INTL') {          
+          var keys = path.substring(path.indexOf('/')+1).split('/');
+          for(var k of keys) {
+            if (keys.length == 1 && utilService.isValidDate(k)) {
+              key = k;
+              break;
+            }
+          }                  
+        }
+        
+        if (key != null) {
+          var vsn = {
+            key : key,
+            path : path
+          }
+          var found = false;
+          if (versions.indexOf(vsn) == -1) {
+            for (var j = 0; j < versions.length; j++) {
+              // determine if key is already used
+              if (versions[j].key == vsn.key) {
+                found = true;
+                if (vsn.path > versions[j].path) {
+                  // replace with more recent path for that key
+                  versions[j].path = vsn.path;
+                  break;
+                }
+              }
+            }
+            if (!found) {
+              versions.push(vsn);
+            }
+          }
+        }
+      }// end for loop
+      return versions;
+    };
+    
     // end
   } ]);
