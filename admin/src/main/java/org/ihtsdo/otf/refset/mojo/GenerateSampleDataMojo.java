@@ -10,7 +10,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -25,7 +24,6 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
-import org.ihtsdo.otf.refset.ConceptRefsetMemberSynonym;
 import org.ihtsdo.otf.refset.DefinitionClause;
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
@@ -37,7 +35,6 @@ import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
-import org.ihtsdo.otf.refset.jpa.ConceptRefsetMemberSynonymJpa;
 import org.ihtsdo.otf.refset.jpa.DefinitionClauseJpa;
 import org.ihtsdo.otf.refset.jpa.ProjectJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
@@ -287,9 +284,9 @@ public class GenerateSampleDataMojo extends AbstractMojo {
           "https://sct-rest.ihtsdotools.org/api");
       makeProject("Project 12", null, admin, "BROWSER",
           "https://sct-rest.ihtsdotools.org/api");
-      ProjectJpa project13 = makeProject("Project 13", null, admin, "SNOWOWL",
+      ProjectJpa project13 = makeProject("Project 13", null, admin, "AUTHORING-INTL",
           "http://local.ihtsdotools.org:8081/snowowl");
-      ProjectJpa project14 = makeProject("Project 14", null, admin, "SNOWOWL",
+      ProjectJpa project14 = makeProject("Project 14", null, admin, "AUTHORING-INTL",
           "http://local.ihtsdotools.org:8081/snowowl-se");
 
       //

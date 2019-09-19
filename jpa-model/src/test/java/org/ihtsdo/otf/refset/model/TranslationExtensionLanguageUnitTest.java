@@ -5,16 +5,22 @@ package org.ihtsdo.otf.refset.model;
 
 import static org.junit.Assert.assertTrue;
 
+import java.util.Date;
+
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.Project;
+import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.helpers.CopyConstructorTester;
 import org.ihtsdo.otf.refset.helpers.EqualsHashcodeTester;
 import org.ihtsdo.otf.refset.helpers.GetterSetterTester;
 import org.ihtsdo.otf.refset.helpers.ProxyTester;
 import org.ihtsdo.otf.refset.helpers.TranslationExtensionLanguage;
+import org.ihtsdo.otf.refset.helpers.XmlSerializationTester;
 import org.ihtsdo.otf.refset.jpa.ProjectJpa;
 import org.ihtsdo.otf.refset.jpa.TranslationExtensionLanguageJpa;
+import org.ihtsdo.otf.refset.jpa.TranslationJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.NullableFieldTester;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -90,6 +96,9 @@ public class TranslationExtensionLanguageUnitTest extends ModelUnitSupport {
     tester.include("lastModified");
     tester.include("lastModifiedBy");
 
+    tester.proxy(TranslationExtensionLanguage.class, 1, t1);
+    tester.proxy(TranslationExtensionLanguage.class, 2, t2);
+
     tester.proxy(Project.class, 1, p1);
     tester.proxy(Project.class, 2, p2);
 
@@ -112,6 +121,10 @@ public class TranslationExtensionLanguageUnitTest extends ModelUnitSupport {
     CopyConstructorTester tester = new CopyConstructorTester(object);
     tester.proxy(Project.class, 1, p1);
     tester.proxy(Project.class, 2, p2);
+
+    tester.proxy(TranslationExtensionLanguage.class, 1, t1);
+    tester.proxy(TranslationExtensionLanguage.class, 2, t2);
+
     assertTrue(tester.testCopyConstructor(TranslationExtensionLanguage.class));
   }
 
@@ -122,7 +135,13 @@ public class TranslationExtensionLanguageUnitTest extends ModelUnitSupport {
    */
   @Test
   public void testModelNotNullField022() throws Exception {
-    // n/a
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
+    NullableFieldTester tester = new NullableFieldTester(object);
+    tester.include("branch");
+    tester.include("languageCode");
+    tester.include("lastModified");
+    tester.include("lastModifiedBy");
+    assertTrue(tester.testNotNullFields());
   }
 
   /**
