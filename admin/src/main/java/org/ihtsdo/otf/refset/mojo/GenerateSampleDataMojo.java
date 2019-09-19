@@ -285,9 +285,9 @@ public class GenerateSampleDataMojo extends AbstractMojo {
           "https://sct-rest.ihtsdotools.org/api");
       makeProject("Project 12", null, admin, "BROWSER",
           "https://sct-rest.ihtsdotools.org/api");
-      ProjectJpa project13 = makeProject("Project 13", null, admin, "SNOWOWL",
+      ProjectJpa project13 = makeProject("Project 13", null, admin, "AUTHORING-INTL",
           "http://local.ihtsdotools.org:8081/snowowl");
-      ProjectJpa project14 = makeProject("Project 14", null, admin, "SNOWOWL",
+      ProjectJpa project14 = makeProject("Project 14", null, admin, "AUTHORING-INTL",
           "http://local.ihtsdotools.org:8081/snowowl-se");
 
       //

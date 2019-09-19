@@ -1600,11 +1600,11 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
 
   private void getGenericUserCookies() throws Exception {
     final String userName = ConfigUtility.getConfigProperties()
-        .getProperty("terminology.handler.SNOWOWL-MS.genericUserName");
+        .getProperty("terminology.handler.MANAGED-SERVICE.genericUserName");
     final String password = ConfigUtility.getConfigProperties()
-        .getProperty("terminology.handler.SNOWOWL-MS.genericUserPassword");
+        .getProperty("terminology.handler.MANAGED-SERVICE.genericUserPassword");
     final String imsUrl = ConfigUtility.getConfigProperties()
-        .getProperty("terminology.handler.SNOWOWL-MS.authenticationUrl");
+        .getProperty("terminology.handler.MANAGED-SERVICE.authenticationUrl");
 
     Client client = ClientBuilder.newClient();
     WebTarget target = client.target(imsUrl + "/authenticate");

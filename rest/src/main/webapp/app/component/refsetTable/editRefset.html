@@ -79,16 +79,27 @@
         </td>
         <td>
           <select ng-model="refset.version" 
-            ng-options="item.path as item.key for item in versions | orderBy:'key'"></select>
+            ng-options="item.path as item.key for item in versions | orderBy:'-key'"></select>
+          
+          <button class="btn btn-xs btn-warning" ng-show="refset.version && project.terminologyHandlerKey === 'PUBLIC-BROWSER'"
+            ng-click="refset.version=''">Clear</button>
+          <button class="btn btn-xs btn-primary"
+            ng-show="refset.version && versionNotInPicklist() && project.terminologyHandlerKey === 'PUBLIC-BROWSER'"
+            ng-click="testTerminologyVersion();">Test</button>
+          &nbsp;&nbsp;
+          <span flag-icon obj="refset"></span>
         </td>
       </tr>
-      <tr>
+      
+      <tr ng-show="project.terminologyHandlerKey !== 'PUBLIC-BROWSER'">
         <td>
           <b>Terminology Path</b>
         </td>
         <td>
-          <input style="width: 252px" ng-model="refset.version" list="versions"
+          <input style="width: 352px" ng-model="refset.version" list="versions"
             placeholder="e.g. MAIN" ng-change="resetValidVersion();" />
+          <br/>
+          <br/>
           <button class="btn btn-xs btn-warning" ng-show="refset.version"
             ng-click="refset.version=''">Clear</button>
           <button class="btn btn-xs btn-primary"

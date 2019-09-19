@@ -1720,7 +1720,6 @@ tsApp
 
                 // Determine whether the refset version is in the list
                 $scope.versionNotInPicklist = function() {
-                  console.debug('xxx', $scope.refset.version, $scope.versions);
                   for (var i = 0; i < $scope.versions.length; i++) {
                     if ($scope.versions[i] == $scope.refset.version) {
                       $scope.validVersion = 'true';
@@ -1732,55 +1731,8 @@ tsApp
 
                 // Handle terminology selected
                 $scope.terminologySelected = function(terminology) {
-                  
-                  $scope.versions = [];
-                  for (var i = 0; i < $scope.localMetadata.versions[terminology].length ; i++) {
-                    var path = $scope.localMetadata.versions[terminology][i];
-                    var key;
-                    // Edition, parse edition version/ project
-                    if (path.indexOf("SNOMEDCT-") != -1) {
-                      var tmp = path.substring(path.indexOf('SNOMEDCT-'));
-                      if (tmp.indexOf('/')) {
-                        key = tmp.substring(tmp.indexOf('/') + 1);
-                      } else {
-                        key = tmp;
-                      }
-                      // remove task data
-                      if (key.indexOf('/') != -1) {
-                        // account for dual edition projects such as SNOMEDCT-ES/SNOMEDCT-UY
-                        var res = path.match(/SNOMEDCT-/g);
-                        if (res.length == 1) {
-                          key = key.substring(0, key.lastIndexOf('/'));
-                          path = path.substring(0, path.lastIndexOf('/'));
-                        }
-                      }
-                    // International edition, parse international version
-                    } else {
-                      key = path.substring(path.indexOf('/') + 1);
-                    }
-                    var vsn = {
-                      key : key,
-                      path : path
-                    }
-                    var found = false;
-                    if ($scope.versions.indexOf(vsn) == -1) {
-                      for (var j = 0; j < $scope.versions.length; j++) {
-                        // determine if key is already used
-                        if ($scope.versions[j].key == vsn.key) {
-                          found = true;
-                          if (vsn.path > $scope.versions[j].path) {
-                            // replace with more recent path for that key
-                            $scope.versions[j].path = vsn.path;
-                            break;
-                          }
-                        }
-                      }
-                      if (!found) {
-                        $scope.versions.push(vsn);
-                      }
-                    }
-                  }
-
+                  $scope.versions = refsetService.filterTerminologyVersions(
+                    $scope.project.terminologyHandlerKey, terminology, $scope.metadata.versions);
                 };
 
                 // Handle version selected
@@ -2991,7 +2943,6 @@ tsApp
                 $scope.metadata = metadata;
                 $scope.validVersion = null;
                 $scope.terminologies = metadata.terminologies;
-                console.debug('xxx', $scope.project.terminology, $scope.metadata);
                 /*$scope.metadataVersions = $scope.metadata.versions[refset.terminology] ? angular
                   .copy($scope.metadata.versions[refset.terminology].sort().reverse()) : [];*/
                 $scope.filters = filters;
@@ -3058,55 +3009,8 @@ tsApp
                 
                 // Handle terminology selected
                 $scope.terminologySelected = function(terminology) {
-                  
-                  $scope.versions = [];
-                  for (var i = 0; i < $scope.metadata.versions[terminology].length ; i++) {
-                    var path = $scope.metadata.versions[terminology][i];
-                    var key;
-                    // Edition, parse edition version/ project
-                    if (path.indexOf("SNOMEDCT-") != -1) {
-                      var tmp = path.substring(path.indexOf('SNOMEDCT-'));
-                      if (tmp.indexOf('/')) {
-                        key = tmp.substring(tmp.indexOf('/') + 1);
-                      } else {
-                        key = tmp;
-                      }
-                      // remove task data
-                      if (key.indexOf('/') != -1) {
-                        // account for dual edition projects such as SNOMEDCT-ES/SNOMEDCT-UY
-                        var res = path.match(/SNOMEDCT-/g);
-                        if (res.length == 1) {
-                          key = key.substring(0, key.lastIndexOf('/'));
-                          path = path.substring(0, path.lastIndexOf('/'));
-                        }
-                      }
-                    // International edition, parse international version
-                    } else {
-                      key = path.substring(path.indexOf('/') + 1);
-                    }
-                    var vsn = {
-                      key : key,
-                      path : path
-                    }
-                    var found = false;
-                    if ($scope.versions.indexOf(vsn) == -1) {
-                      for (var j = 0; j < $scope.versions.length; j++) {
-                        // determine if key is already used
-                        if ($scope.versions[j].key == vsn.key) {
-                          found = true;
-                          if (vsn.path > $scope.versions[j].path) {
-                            // replace with more recent path for that key
-                            $scope.versions[j].path = vsn.path;
-                            break;
-                          }
-                        }
-                      }
-                      if (!found) {
-                        $scope.versions.push(vsn);
-                      }
-                    }
-                  }
-
+                  $scope.versions = refsetService.filterTerminologyVersions(
+                    $scope.project.terminologyHandlerKey, terminology, $scope.metadata.versions);
                 };
 
                 // Handle version selected
@@ -3298,59 +3202,9 @@ tsApp
                 }
 
                 // Handle terminology selected
-               $scope.terminologySelected = function(terminology) {
-                  
-                  $scope.versions = [];
-                  if (!$scope.metadata.versions[terminology]) {
-                    return;
-                  }
-                  for (var i = 0; i < $scope.metadata.versions[terminology].length ; i++) {
-                    var path = $scope.metadata.versions[terminology][i];
-                    var key;
-                    // Edition, parse edition version/ project
-                    if (path.indexOf("SNOMEDCT-") != -1) {
-                      var tmp = path.substring(path.indexOf('SNOMEDCT-'));
-                      if (tmp.indexOf('/')) {
-                        key = tmp.substring(tmp.indexOf('/') + 1);
-                      } else {
-                        key = tmp;
-                      }
-                      // remove task data
-                      if (key.indexOf('/') != -1) {
-                        // account for dual edition projects such as SNOMEDCT-ES/SNOMEDCT-UY
-                        var res = path.match(/SNOMEDCT-/g);
-                        if (res.length == 1) {
-                          key = key.substring(0, key.lastIndexOf('/'));
-                          path = path.substring(0, path.lastIndexOf('/'));
-                        }
-                      }
-                    // International edition, parse international version
-                    } else {
-                      key = path.substring(path.indexOf('/') + 1);
-                    }
-                    var vsn = {
-                      key : key,
-                      path : path
-                    }
-                    var found = false;
-                    if ($scope.versions.indexOf(vsn) == -1) {
-                      for (var j = 0; j < $scope.versions.length; j++) {
-                        // determine if key is already used
-                        if ($scope.versions[j].key == vsn.key) {
-                          found = true;
-                          if (vsn.path > $scope.versions[j].path) {
-                            // replace with more recent path for that key
-                            $scope.versions[j].path = vsn.path;
-                            break;
-                          }
-                        }
-                      }
-                      if (!found) {
-                        $scope.versions.push(vsn);
-                      }
-                    }
-                  }
-
+                $scope.terminologySelected = function(terminology) {
+                  $scope.versions = refsetService.filterTerminologyVersions(
+                    $scope.project.terminologyHandlerKey, terminology, $scope.metadata.versions);
                 };
 
                 // Handle version selected
@@ -3842,57 +3696,9 @@ tsApp
 
                 // Handle terminology selected
                 $scope.terminologySelected = function(terminology) {
-                   
-                   $scope.versions = [];
-                   for (var i = 0; i < $scope.metadata.versions[terminology].length ; i++) {
-                     var path = $scope.metadata.versions[terminology][i];
-                     var key;
-                     // Edition, parse edition version/ project
-                     if (path.indexOf("SNOMEDCT-") != -1) {
-                       var tmp = path.substring(path.indexOf('SNOMEDCT-'));
-                       if (tmp.indexOf('/')) {
-                         key = tmp.substring(tmp.indexOf('/') + 1);
-                       } else {
-                         key = tmp;
-                       }
-                       // remove task data
-                       if (key.indexOf('/') != -1) {
-                         // account for dual edition projects such as SNOMEDCT-ES/SNOMEDCT-UY
-                         var res = path.match(/SNOMEDCT-/g);
-                         if (res.length == 1) {
-                           key = key.substring(0, key.lastIndexOf('/'));
-                           path = path.substring(0, path.lastIndexOf('/'));
-                         }
-                       }
-                     // International edition, parse international version
-                     } else {
-                       key = path.substring(path.indexOf('/') + 1);
-                     }
-                     var vsn = {
-                       key : key,
-                       path : path
-                     }
-                     var found = false;
-                     if ($scope.versions.indexOf(vsn) == -1) {
-                       for (var j = 0; j < $scope.versions.length; j++) {
-                         // determine if key is already used
-                         if ($scope.versions[j].key == vsn.key) {
-                           found = true;
-                           if (vsn.path > $scope.versions[j].path) {
-                             // replace with more recent path for that key
-                             $scope.versions[j].path = vsn.path;
-                             break;
-                           }
-                         }
-                       }
-                       if (!found) {
-                         $scope.versions.push(vsn);
-                       }
-                     }
-                   }
-
-                 };
-                
+                  $scope.versions = refsetService.filterTerminologyVersions(
+                    $scope.project.terminologyHandlerKey, terminology, $scope.metadata.versions);
+                };                
 
                 // Table sorting mechanism
                 $scope.setSortField = function(table, field, object) {
