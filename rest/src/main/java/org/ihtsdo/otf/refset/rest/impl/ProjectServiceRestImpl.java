@@ -1462,8 +1462,6 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     final ConceptList list = translationService.findConceptsForTranslation(null,
         query.toString(), null);
 
-    // TODO HANDLE DUPLICATE TRANSLATIONS (text + language code + PT/SYN)
-
     // Add all descriptions to the concept
     final Set<String> descIdsSeen = new HashSet<>();
     final Set<String> descNameLangType = new HashSet<>();
