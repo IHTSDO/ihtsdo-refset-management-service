@@ -275,7 +275,7 @@ public class RefsetTestSupport extends RestSupport {
     member.setConceptActive(true);
     member.setConceptId(id);
     member.setConceptName(name);
-    member.setSynonyms(Arrays.asList(name));
+    member.setSynonyms(null);
     member.setEffectiveTime(new Date());
     member.setMemberType(Refset.MemberType.MEMBER);
     member.setModuleId(refset.getModuleId());
