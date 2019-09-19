@@ -3928,7 +3928,7 @@ tsApp
                 };
 
                 // Initialize
-                $scope.terminologySelected($scope.project.terminology);
+                $scope.terminologySelected($scope.refset.terminology);
                 
                 // Close migration dialog
                 $scope.close = function(refset) {
