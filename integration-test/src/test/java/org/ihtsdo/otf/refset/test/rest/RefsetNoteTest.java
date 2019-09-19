@@ -277,7 +277,7 @@ public class RefsetNoteTest extends RestSupport {
 
     // Get members
     ConceptRefsetMemberList list =
-        refsetService.findRefsetMembersForQuery(refset.getId(), "", false, null,
+        refsetService.findRefsetMembersForQuery(refset.getId(), "", null, false, null,
             authToken);
     assertFalse(list.getObjects().isEmpty());
 
@@ -297,7 +297,7 @@ public class RefsetNoteTest extends RestSupport {
     member =
         refsetService
             .findRefsetMembersForQuery(refset.getId(),
-                "conceptId:" + memberConceptId, false, null, authToken).getObjects()
+                "conceptId:" + memberConceptId, null, false, null, authToken).getObjects()
             .get(0);
     assertEquals(1, member.getNotes().size());
     assertEquals("TEST NOTE", member.getNotes().get(0).getValue());
@@ -311,7 +311,7 @@ public class RefsetNoteTest extends RestSupport {
     member =
         refsetService
             .findRefsetMembersForQuery(refset.getId(),
-                "conceptId:" + memberConceptId, false, null, authToken).getObjects()
+                "conceptId:" + memberConceptId, null, false, null, authToken).getObjects()
             .get(0);
     assertEquals(2, member.getNotes().size());
 
@@ -325,7 +325,7 @@ public class RefsetNoteTest extends RestSupport {
     member =
         refsetService
             .findRefsetMembersForQuery(refset.getId(),
-                "conceptId:" + memberConceptId, false, null, authToken).getObjects()
+                "conceptId:" + memberConceptId, null, false, null, authToken).getObjects()
             .get(0);
     assertTrue(refset.getNotes().isEmpty());
   }

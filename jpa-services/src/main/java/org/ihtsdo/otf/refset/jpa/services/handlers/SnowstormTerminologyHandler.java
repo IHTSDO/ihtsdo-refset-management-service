@@ -1217,7 +1217,10 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
       // moduleId is not provided
       concept.setModuleId(null);
       concept.setDefinitionStatusId(entry.get("definitionStatus").asText());
-      concept.setName(entry.get("fsn").get("term").asText());
+      JsonNode fsn = entry.get("fsn");
+      String term = fsn == null ? ""
+          : fsn.get("term") == null ? "" : fsn.get("term").asText();
+      concept.setName(term);
 
       concept.setPublishable(true);
       concept.setPublished(true);
@@ -1288,7 +1291,10 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
       // no moduleId supplied
       concept.setModuleId(entry.get("moduleId").asText());
       concept.setDefinitionStatusId(entry.get("definitionStatus").asText());
-      concept.setName(entry.get("fsn").get("term").asText());
+      JsonNode fsn = entry.get("fsn");
+      String term = fsn == null ? ""
+          : fsn.get("term") == null ? "" : fsn.get("term").asText();
+      concept.setName(term);
       concept.setLeaf(entry.get("isLeafInferred").asText().equals("true"));
 
       concept.setPublishable(true);

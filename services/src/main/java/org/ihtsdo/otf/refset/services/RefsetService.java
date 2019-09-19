@@ -467,4 +467,15 @@ public interface RefsetService extends ReleaseService {
   public void populateMemberSynonyms(ConceptRefsetMember member,
     Concept concept, Refset refset) throws Exception;
 
+  /**
+   * Returns the display name for member.
+   *
+   * @param memberId the member id
+   * @param language the language
+   * @return the display name for member
+   * @throws Exception the exception
+   */
+  public String getDisplayNameForMember(Long memberId, String language)
+    throws Exception;
+
 }

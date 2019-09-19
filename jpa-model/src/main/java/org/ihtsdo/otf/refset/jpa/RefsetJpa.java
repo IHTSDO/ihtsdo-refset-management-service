@@ -198,9 +198,6 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   @IndexedEmbedded(targetElement = RefsetNoteJpa.class)
   private List<Note> notes = new ArrayList<>();
 
-  /**  The preferred display language for the refset's members. */
-  @Column(nullable = false)
-  private String preferredLanguage = "en";
 
   /**
    * Instantiates an empty {@link RefsetJpa}.
@@ -235,7 +232,6 @@ public class RefsetJpa extends AbstractComponent implements Refset {
     workflowStatus = refset.getWorkflowStatus();
     project = refset.getProject();
     localSet = refset.isLocalSet();
-    preferredLanguage = refset.getPreferredLanguage();
     enabledFeedbackEvents = new HashSet<>(refset.getEnabledFeedbackEvents());
     for (DefinitionClause definitionClause : refset.getDefinitionClauses()) {
       getDefinitionClauses().add(new DefinitionClauseJpa(definitionClause));
@@ -807,17 +803,6 @@ public class RefsetJpa extends AbstractComponent implements Refset {
     this.revision = revision;
   }
 
-  /* see superclass */
-  @Override
-  public String getPreferredLanguage() {
-    return preferredLanguage;
-  }
-
-  /* see superclass */
-  @Override
-  public void setPreferredLanguage(String preferredLanguage) {
-    this.preferredLanguage = preferredLanguage;
-  }
 
   /* see superclass */
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
@@ -855,8 +840,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
     // not version
     result = prime * result + ((name == null) ? 0 : name.hashCode());
     result = prime * result + ((namespace == null) ? 0 : namespace.hashCode());
-    result = prime * result
-        + ((preferredLanguage == null) ? 0 : preferredLanguage.hashCode());
+
     result = prime * result + ((domain == null) ? 0 : domain.hashCode());
     result = prime * result + ((project == null) ? 0 : project.hashCode());
     result = prime * result + ((type == null) ? 0 : type.hashCode());
@@ -917,11 +901,6 @@ public class RefsetJpa extends AbstractComponent implements Refset {
         return false;
     } else if (!namespace.equals(other.namespace))
       return false;
-    if (preferredLanguage == null) {
-      if (other.preferredLanguage != null)
-        return false;
-    } else if (!preferredLanguage.equals(other.preferredLanguage))
-      return false;
     if (domain == null) {
       if (other.domain != null)
         return false;
@@ -950,8 +929,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
         + ", namespace=" + namespace + ", definitionClauses="
         + definitionClauses + ", extUrl=" + externalUrl + ", workflowStatus="
         + workflowStatus + ", domain=" + domain + ", project="
-        + (project == null ? null : project.getId()) + ", localSet=" + localSet
-        + ", preferredLanguage=" + preferredLanguage + "]";
+        + (project == null ? null : project.getId()) + ", localSet=" + localSet +  "]";
   }
 
 }
