@@ -1435,24 +1435,13 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       }
 
       // Look up concept name and active
-      if (member.getConceptName() == null
-          || !refset.getPreferredLanguage().equals("en")) {
+      if (member.getConceptName() == null) {
         final Concept concept = refsetService
             .getTerminologyHandler(refset.getProject(), getHeaders(headers))
             .getFullConcept(member.getConceptId(), refset.getTerminology(),
                 refset.getVersion());
         if (concept != null) {
           member.setConceptName(concept.getName());
-          for (Description desc : concept.getDescriptions()) {
-            for (LanguageRefsetMember lrm : desc.getLanguageRefsetMembers()) {
-              if (lrm.getAcceptabilityId().equals("900000000000548007")) {
-                if (desc.getLanguageCode().equals(refset.getPreferredLanguage())
-                    && desc.getTypeId().equals("900000000000013009")) {
-                  member.setConceptName(desc.getTerm());
-                }
-              }
-            }
-          }
           member.setConceptActive(concept.isActive());
 //          refsetService.populateMemberSynonyms(member, concept, refset);
         } else {
@@ -1681,6 +1670,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
   public ConceptRefsetMemberList findRefsetMembersForQuery(
     @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
     @ApiParam(value = "Query", required = false) @QueryParam("query") String query,
+    @ApiParam(value = "Language, e.g. es", required = false) @QueryParam("language") String language,
     @ApiParam(value = "Translated, e.g. true/false/null", required = false) @QueryParam("translated") Boolean translated,
     @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
@@ -1688,7 +1678,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
 
     Logger.getLogger(getClass())
         .info("RESTful call (Refset): find members for query, refsetId:"
-            + refsetId + " query:" + query + " " + pfs + " " + translated);
+            + refsetId + " query:" + query + " language:" + language + pfs + " " + translated);
 
     final RefsetService refsetService =
         new RefsetServiceJpa(getHeaders(headers));
@@ -1710,6 +1700,12 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         final ConceptRefsetMemberList list =
             refsetService.findMembersForRefset(refsetId, query, pfs);
         for (ConceptRefsetMember member : list.getObjects()) {
+          if (language != null && !language.isEmpty() && !language.contentEquals("en")) {
+            String displayName = refsetService.getDisplayNameForMember(member.getId(), language);
+            if (displayName != null) {
+              member.setConceptName(displayName);
+            }
+          }
           refsetService.handleLazyInit(member);
         }
         return list;

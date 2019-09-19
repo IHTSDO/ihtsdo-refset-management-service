@@ -405,7 +405,7 @@ public class RefsetClientRest extends RootClientRest
   /* see superclass */
   @Override
   public ConceptRefsetMemberList findRefsetMembersForQuery(Long refsetId,
-    String query, Boolean translated, PfsParameterJpa pfs, String authToken)
+    String query, String language, Boolean translated, PfsParameterJpa pfs, String authToken)
     throws Exception {
     Logger.getLogger(getClass())
         .debug("Refset Client - find refset members for query " + refsetId

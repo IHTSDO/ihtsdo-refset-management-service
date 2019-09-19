@@ -600,6 +600,25 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
     }
   }
 
+  @Override
+  public String getDisplayNameForMember(Long memberId, String language)
+    throws Exception {
+    Logger.getLogger(getClass())
+        .debug("Refset Service - get display name for refset member " + memberId);
+    final javax.persistence.Query query =
+        manager.createQuery("select a from ConceptRefsetMemberSynonymJpa a where "
+            + "a.member.id = :memberId and a.language = :language and a.termType = 'PT'");
+    try {
+      query.setParameter("memberId", memberId);
+      query.setParameter("language", language);
+      final ConceptRefsetMemberSynonym synonym = (ConceptRefsetMemberSynonym)query.getSingleResult();
+      return synonym.getSynonym();
+      
+    } catch (NoResultException e) {
+      return null;
+    }
+  }
+  
   /* see superclass */
   @Override
   public StagedRefsetChange getStagedRefsetChangeFromStaged(Long stagedRefsetId)
@@ -771,12 +790,23 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
         member.setId(null);
         // Clear notes
         member.getNotes().clear();
+        List<ConceptRefsetMemberSynonym> synonymList = new ArrayList<>();
+        synonymList.addAll(member.getSynonyms());
         member.getSynonyms().clear();
+        
         if (member.getEffectiveTime() == null)
           member.setEffectiveTime(effectiveTime);
         refsetCopy.getMembers().add(member);
-        addMember(member);
 
+        addMember(member);
+        for (ConceptRefsetMemberSynonym synonym : synonymList) {
+          synonym.setMember(member);
+          synonym.setId(null);
+          addConceptRefsetMemberSynonym(synonym);
+          member.getSynonyms().add(synonym);
+        }
+        updateMember(member);
+        
         // Log and commit on intervals if not using transaction per operation
         if (!getTransactionPerOperation()) {
           logAndCommit(++objectCt, RootService.logCt, RootService.commitCt);
@@ -1108,7 +1138,6 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
           int i = 0;
           final String terminology = refset.getTerminology();
           final String version = refset.getVersion();
-          final String preferredLanguage = refset.getPreferredLanguage();
 
           // Execute for all members
           boolean missingConcepts = false;
@@ -1141,24 +1170,10 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
               termIds.remove(con.getTerminologyId());
 
               // Reread the member as we don't know if it has changed
-              if (saveMembers && !preferredLanguage.isEmpty()) {
+              if (saveMembers) {
                 final ConceptRefsetMember member = refsetService
                     .getMember(memberMap.get(con.getTerminologyId()).getId());
                 member.setConceptName(con.getName());
-                // set concept name to highest ranked provided language
-                // available given the concept's descriptions
-                // type must be 'PT'
-                for (Description desc : con.getDescriptions()) {
-                  for (LanguageRefsetMember lrm : desc
-                      .getLanguageRefsetMembers()) {
-                    if (lrm.getAcceptabilityId().equals("900000000000548007")) {
-                      if (desc.getLanguageCode().equals(preferredLanguage)
-                          && desc.getTypeId().equals("900000000000013009")) {
-                        member.setConceptName(desc.getTerm());
-                      }
-                    }
-                  }
-                }
                 populateMemberSynonyms(member, con, refset, handler);
                 refsetService.updateMember(member);
               }

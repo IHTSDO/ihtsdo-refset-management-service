@@ -501,17 +501,5 @@ public interface Refset extends Component, Searchable {
    */
   public void setTranslated(boolean translated);
 
-  /**
-   * Sets the preferred language.
-   *
-   * @param preferredLanguage the preferred language
-   */
-  public void setPreferredLanguage(String preferredLanguage);
 
-  /**
-   * Returns the preferred language.
-   *
-   * @return the preferred language
-   */
-  public String getPreferredLanguage();
 }

@@ -619,23 +619,25 @@
             ng-click="startLookup(selected.refset); $event.stopPropagation()"
             ng-show="(requiresNameLookup && !selected.refset.lookupInProgress)"
             title="Restart name lookup" class="noul material-icons md-18">play_arrow</i>
-          <select ng-model="selected.refset.preferredLanguage" ng-show="!isDirectory() && isSnowowl"
-            title="Select preferred language" style="font-size: 12;"
-            ng-options="item as item for item in requiredLanguages"
-            ng-change="submitRefset(selected.refset);startLookup(selected.refset);"></select>
+          
         </span>
       </h4>
       <div>
         <div>
-          <span class="info-text"
-            ng-show="selected.refset.members.totalCount > 10"
+          <span class="info-text"            
             style="float: right; margin-top: 4px">
-            Page size: <select ng-model="paging['member'].pageSize"
+            <span ng-show="selected.refset.members.totalCount > 10">Page size: </span><select ng-model="paging['member'].pageSize" 
+              ng-show="selected.refset.members.totalCount > 10"
               title="Page Size"
               ng-change="paging['member'].page = 1; getMembers(selected.refset)"
               ng-options="item.value as item.name for item in pageSizes">
             </select>
+            <select ng-model="preferredLanguage" ng-show="selected.refset.members.totalCount >= 1"
+            title="Select preferred language" style="font-size: 12;"
+            ng-options="item as item for item in requiredLanguages"
+            ng-change="submitRefset(selected.refset);getMembers(selected.refset);"></select>
           </span>
+          
           <uib-pagination items-per-page="paging['member'].pageSize"
             max-size="5" boundary-links="true" class="pagination-sm"
             previous-text="&lsaquo;" next-text="&rsaquo;" first-text="&laquo;"

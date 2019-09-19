@@ -388,7 +388,7 @@ tsApp.service('refsetService', [
     };
 
     // find members for refset
-    this.findRefsetMembersForQuery = function(refsetId, query, pfs, translated) {
+    this.findRefsetMembersForQuery = function(refsetId, query, pfs, translated, language) {
       console.debug('findRefsetMembersForQuery');
       var deferred = $q.defer();
 
@@ -396,7 +396,7 @@ tsApp.service('refsetService', [
       gpService.increment();
       $http.post(
         refsetUrl + 'members?refsetId=' + refsetId + '&query=' + utilService.prepQuery(query)
-          + (translated != null ? '&translated=' + translated : ''), utilService.prepPfs(pfs))
+           + (language != null ? '&language=' + language : '') + (translated != null ? '&translated=' + translated : ''), utilService.prepPfs(pfs))
         .then(
         // success
         function(response) {

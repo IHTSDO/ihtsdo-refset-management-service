@@ -63,6 +63,7 @@ tsApp
               $scope.showDuplicatesExport = false;
               $scope.conceptIds = [];
               $scope.showImportFromExistingProject = false;
+              $scope.preferredLanguage = 'en';
               
               // Page metadata
               var memberTypes = [ 'Member', 'Exclusion', 'Inclusion', 'Active', 'Inactive',
@@ -436,6 +437,7 @@ tsApp
                 var pfs = prepPfs();
                 var value = $scope.paging['member'].typeFilter;
                 var translated;
+                var language = $scope.preferredLanguage;
 
                 if (value == 'Translated') {
                   translated = true;
@@ -444,7 +446,7 @@ tsApp
                 }
 
                 refsetService.findRefsetMembersForQuery(refset.id, $scope.paging['member'].filter,
-                  pfs, translated).then(
+                  pfs, translated, language).then(
                   // Success
                   function(data) {
                     refset.members = data.members;

@@ -1,5 +1,5 @@
-/**
- * Copyright 2015 West Coast Informatics, LLC
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 /*
  * 
@@ -226,6 +226,7 @@ public interface RefsetServiceRest {
    *
    * @param refsetId the refset id
    * @param query the query
+   * @param language the language
    * @param translated the translated
    * @param pfs the pfs
    * @param authToken the auth token
@@ -233,7 +234,7 @@ public interface RefsetServiceRest {
    * @throws Exception the exception
    */
   public ConceptRefsetMemberList findRefsetMembersForQuery(Long refsetId,
-    String query, Boolean translated, PfsParameterJpa pfs, String authToken)
+    String query, String language, Boolean translated, PfsParameterJpa pfs, String authToken)
     throws Exception;
 
   /**
@@ -723,5 +724,6 @@ public interface RefsetServiceRest {
    */
   public void startLookupMemberNames(Long refsetId, Boolean background,
     String authToken) throws Exception;
+
 
 }

@@ -111,10 +111,13 @@ public class ConceptRefsetMemberJpa extends AbstractComponent
     conceptName = member.getConceptName();
     conceptActive = member.isConceptActive();
     memberType = member.getMemberType();
-    synonyms = new ArrayList<>(member.getSynonyms());
     for (Note note : member.getNotes()) {
       getNotes().add(
           new ConceptRefsetMemberNoteJpa((ConceptRefsetMemberNoteJpa) note));
+    }
+    for (ConceptRefsetMemberSynonym synonym : member.getSynonyms()) {
+      getSynonyms().add(
+          new ConceptRefsetMemberSynonymJpa((ConceptRefsetMemberSynonymJpa) synonym));
     }
   }
 
