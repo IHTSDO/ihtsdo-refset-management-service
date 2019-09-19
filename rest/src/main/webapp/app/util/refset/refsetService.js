@@ -1535,13 +1535,39 @@ tsApp.service('refsetService', [
         var path = unfilteredVersions[selectedTerminology][i];
         var key = null;
         
-        if (terminologyHandler === 'MANAGED-SERVICE' 
-          && terminologyHandler === 'PUBLIC-BROWSER') {
+        if (terminologyHandler === 'MANAGED-SERVICE') {
           if (path.indexOf("SNOMEDCT-") != -1) {           
             
             //key is first non-date after MAIN
             for(var k of path.substring(path.indexOf('/')+1).split('/')) {
               if (!utilService.isValidDate(k.substring(0,10)) && k != selectedTerminology) {
+                  // valid paths have to end with the identified key
+                  //the first non-date after MAIN is the project, but subsequent folders are tasks and we should not point to those
+                  if (path.endsWith(k)){
+                      key = k;
+                      break;
+                  }
+                  else{
+                      break;
+                  }
+              }
+            }
+          // International edition, parse international version
+          } else {
+            for(var k of path.substring(path.indexOf('/')+1).split('/')) {
+              if (utilService.isValidDate(k) & k != selectedTerminology) {
+                key = k;
+                break;
+              }
+            }
+          }
+        }
+        else if (terminologyHandler === 'PUBLIC-BROWSER') {
+          if (path.indexOf("SNOMEDCT-") != -1) {           
+            
+            //key is first date after MAIN
+            for(var k of path.substring(path.indexOf('/')+1).split('/')) {
+              if (utilService.isValidDate(k.substring(0,10))) {
                 key = k;
                 break;
               }
@@ -1555,7 +1581,7 @@ tsApp.service('refsetService', [
               }
             }
           }
-        }
+        }        
         else if (terminologyHandler === 'AUTHORING-INTL') {          
           var keys = path.substring(path.indexOf('/')+1).split('/');
           for(var k of keys) {
