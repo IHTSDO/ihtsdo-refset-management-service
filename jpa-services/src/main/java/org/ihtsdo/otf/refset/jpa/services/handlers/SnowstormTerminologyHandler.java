@@ -1571,6 +1571,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
       requiredLanguageList.add(language.substring(language.indexOf('"') + 1,
           language.indexOf(':') - 1));
     }
+    Collections.sort(requiredLanguageList);
     return requiredLanguageList;
   }
 
