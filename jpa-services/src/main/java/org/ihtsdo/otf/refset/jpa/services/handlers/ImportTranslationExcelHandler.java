@@ -61,7 +61,7 @@ public class ImportTranslationExcelHandler extends ImportExportAbstract
   private static final int TYPE = 5;
 
   /** The Constant LANGUAGE_REFERENCE_SET. */
-  private static final int LANGUAGE_REFERENCE_SET = 6;
+  //private static final int LANGUAGE_REFERENCE_SET = 6;
 
   /** The Constant ACCEPTABILITY. */
   private static final int ACCEPTABILITY = 7;

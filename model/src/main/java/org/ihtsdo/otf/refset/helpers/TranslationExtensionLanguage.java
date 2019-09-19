@@ -51,7 +51,7 @@ public interface TranslationExtensionLanguage extends HasLastModified {
    *
    * @param brancg the branch
    */
-  public void setBranch(String brancg);
+  public void setBranch(String branch);
   
   /**
    * Returns the language code.
