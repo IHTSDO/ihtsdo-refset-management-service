@@ -3330,9 +3330,9 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
       final SnowstormTerminologyHandler handler =
           new SnowstormTerminologyHandler();
       handler.setUrl(ConfigUtility.getConfigProperties()
-          .getProperty("terminology.handler.SNOWSTORM.defaultUrl"));
+          .getProperty("terminology.handler.PUBLIC-BROWSER.defaultUrl"));
       handler.setApiKey(ConfigUtility.getConfigProperties()
-          .getProperty("terminology.handler.SNOWSTORM.apiKey"));
+          .getProperty("terminology.handler.PUBLIC-BROWSER.apiKey"));
 
       for (TranslationExtensionLanguage te : translationExtensionLanguages) {
         Logger.getLogger(getClass()).info(
