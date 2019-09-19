@@ -57,7 +57,6 @@ import org.ihtsdo.otf.refset.services.RefsetService;
 import org.ihtsdo.otf.refset.services.SecurityService;
 import org.ihtsdo.otf.refset.services.TranslationService;
 import org.ihtsdo.otf.refset.services.WorkflowService;
-import org.ihtsdo.otf.refset.services.handlers.TerminologyHandler;
 import org.ihtsdo.otf.refset.workflow.TrackingRecord;
 import org.ihtsdo.otf.refset.workflow.TrackingRecordJpa;
 import org.ihtsdo.otf.refset.workflow.TrackingRecordList;
