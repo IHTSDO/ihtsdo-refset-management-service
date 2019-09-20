@@ -470,8 +470,20 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     ObjectMapper mapper = new ObjectMapper();
     JsonNode doc = mapper.readTree(resultString);
 
+    // If this branch doesn't have the metadata tag
     if (doc.get("metadata") == null) {
       return new ArrayList<>();
+    }
+    // If metadata is present but empty, try one level higher (if possible)
+    // until one is found.
+    if (doc.get("metadata").toString().equals("{}")) {
+      if (version.contains("/")) {
+        final String higherVersion =
+            version.substring(0,version.lastIndexOf("/"));
+        return (getRequiredLanguageRefsets(terminology, higherVersion));
+      } else {
+        return new ArrayList<>();
+      }
     }
     List<String> requiredLanguageList = new ArrayList<>();
     final JsonNode metadata = doc.get("metadata");
