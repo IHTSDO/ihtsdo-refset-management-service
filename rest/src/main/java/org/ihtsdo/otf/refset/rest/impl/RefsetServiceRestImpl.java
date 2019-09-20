@@ -412,9 +412,11 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
           member.setRefset(refset);
           member.setActive(true);
           member.setConceptActive(true);
-          refsetService.populateMemberSynonyms(member, concept, refset);
           member.setLastModifiedBy(userName);
-          list.addObject(refsetService.addMember(member));
+          ConceptRefsetMember newMember = refsetService.addMember(member);
+          refsetService.populateMemberSynonyms(newMember, concept, refset);
+          refsetService.updateMember(newMember);
+          list.addObject(newMember);
         }
       }
       addLogEntry(refsetService, userName, "ADD members for expression",
