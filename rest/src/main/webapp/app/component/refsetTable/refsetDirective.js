@@ -1734,7 +1734,7 @@ tsApp
                 // Handle terminology selected
                 $scope.terminologySelected = function(terminology) {
                   $scope.versions = refsetService.filterTerminologyVersions(
-                    $scope.project.terminologyHandlerKey, terminology, $scope.metadata.versions);
+                    $scope.project.terminologyHandlerKey, terminology, $scope.localMetadata.versions);
                 };
 
                 // Handle version selected
