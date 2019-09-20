@@ -1174,7 +1174,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
                 final ConceptRefsetMember member = refsetService
                     .getMember(memberMap.get(con.getTerminologyId()).getId());
                 member.setConceptName(con.getName());
-                populateMemberSynonyms(member, con, refset, handler);
+                populateMemberSynonyms(member, con, refset, refsetService, handler);
                 refsetService.updateMember(member);
               }
 
@@ -1184,7 +1184,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
                     memberMap.get(con.getTerminologyId());
                 member.setConceptName(con.getName());
                 member.setConceptActive(con.isActive());
-                populateMemberSynonyms(member, con, refset, handler);
+                populateMemberSynonyms(member, con, refset, refsetService, handler);
               }
             }
 
@@ -1352,7 +1352,6 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
         member.setPublished(concept.isPublished());
         member.setConceptId(concept.getTerminologyId());
         member.setConceptName(concept.getName());
-        populateMemberSynonyms(member, concept, refset, handler);
         member.setMemberType(Refset.MemberType.MEMBER);
         member.setModuleId(concept.getModuleId());
         member.setRefset(refset);
@@ -1360,7 +1359,9 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
         member.setTerminologyId(null);
         member.setId(null);
         member.setLastModifiedBy(refset.getLastModifiedBy());
-        addMember(member);
+        ConceptRefsetMember newMember = addMember(member);
+        populateMemberSynonyms(newMember, concept, refset, this, handler);
+
       }
     }
 
@@ -1666,10 +1667,10 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
 
   /* see superclass */
   public void populateMemberSynonyms(ConceptRefsetMember member,
-    Concept concept, Refset refset) throws Exception {
+    Concept concept, Refset refset, RefsetService refsetService) throws Exception {
     member.setSynonyms(new ArrayList<ConceptRefsetMemberSynonym>());
 
-    populateMemberSynonymsFromConcept(member, concept);
+    populateMemberSynonymsFromConcept(member, concept, refsetService);
 
     if (member.getSynonyms().isEmpty()) {
       TerminologyHandler handler = null;
@@ -1681,18 +1682,18 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
         handler = getTerminologyHandler(refset.getProject(), headers);
       }
 
-      populateMemberSynonyms(member, concept, refset, handler);
+      populateMemberSynonyms(member, concept, refset, refsetService, handler);
     }
   }
 
   /* see superclass */
   @Override
   public void populateMemberSynonyms(ConceptRefsetMember member,
-    Concept concept, Refset refset, TerminologyHandler handler)
+    Concept concept, Refset refset, RefsetService refsetService, TerminologyHandler handler)
     throws Exception {
     member.setSynonyms(new ArrayList<ConceptRefsetMemberSynonym>());
 
-    populateMemberSynonymsFromConcept(member, concept);
+    populateMemberSynonymsFromConcept(member, concept, refsetService);
 
     if (member.getSynonyms().isEmpty()) {
       final Concept fullCon = handler.getFullConcept(concept.getTerminologyId(),
@@ -1717,7 +1718,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
             }
           }
           synonym.setMember(member);
-          addConceptRefsetMemberSynonym(synonym);
+          refsetService.addConceptRefsetMemberSynonym(synonym);
           member.getSynonyms().add(synonym);
         }
       }
@@ -1732,7 +1733,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
    * @throws Exception the exception
    */
   private void populateMemberSynonymsFromConcept(ConceptRefsetMember member,
-    Concept concept) throws Exception {
+    Concept concept, RefsetService refsetService) throws Exception {
     for (Description d : concept.getDescriptions()) {
       if (d.isActive() && !d.getTypeId().equals("900000000000550004") // DEFINITION_DESC_SCTID
           && !member.getSynonyms().contains(d.getTerm())) {
@@ -1752,7 +1753,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
           }
         }
         synonym.setMember(member);
-        addConceptRefsetMemberSynonym(synonym);
+        refsetService.addConceptRefsetMemberSynonym(synonym);
         member.getSynonyms().add(synonym);
       }
     }

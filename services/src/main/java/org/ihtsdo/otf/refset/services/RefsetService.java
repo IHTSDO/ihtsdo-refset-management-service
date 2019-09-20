@@ -444,11 +444,12 @@ public interface RefsetService extends ReleaseService {
    * @param member the member
    * @param concept the concept
    * @param refset the refset
+   * @param refsetService the refset service
    * @param handler the handler
    * @throws Exception the exception
    */
   public void populateMemberSynonyms(ConceptRefsetMember member,
-    Concept concept, Refset refset, TerminologyHandler handler)
+    Concept concept, Refset refset, RefsetService refsetService, TerminologyHandler handler)
     throws Exception;
 
   /**
@@ -462,10 +463,11 @@ public interface RefsetService extends ReleaseService {
    * @param member the member
    * @param concept the concept
    * @param refset the refset
+   * @param refsetService the refset service
    * @throws Exception the exception
    */
   public void populateMemberSynonyms(ConceptRefsetMember member,
-    Concept concept, Refset refset) throws Exception;
+    Concept concept, Refset refset, RefsetService refsetService) throws Exception;
 
   /**
    * Returns the display name for member.
