@@ -2748,6 +2748,7 @@ tsApp
                 $scope.refset = refset;
                 $scope.memberIdList = '';
                 $scope.ids = [];
+                $scope.save = [];
                 $scope.added = [];
                 $scope.exists = [];
                 $scope.removed = [];
@@ -2756,6 +2757,7 @@ tsApp
                 $scope.errors = [];
                 $scope.warnings = [];
                 $scope.comments = [];
+                
 
                 // Used for enabling/disabling in UI
                 $scope.hasResults = function() {
@@ -2774,10 +2776,62 @@ tsApp
                       + 'Break your list up into 2000 entry chunks.');
                     return;
                   }
-                  for (var i = 0; i < $scope.ids.length; i++) {
-                    var conceptId = $scope.ids[i];
-                    includeMember(refset, conceptId);
-                  }
+                  // Pull all of the members in the refset, so we can make sure not to create duplicates
+                  var alreadyPresentConceptIds = [];
+
+                  refsetService.findRefsetMembersForQuery(refset.id, '', {
+                    startIndex : 0
+                  }).then(
+                  // Success
+                  function(data) {
+                      for(var i = 0; i < data.members.length; i++) {
+                        alreadyPresentConceptIds.push(data.members[i].conceptId)
+                      }  
+                      //Now check that list against the list we're attempting to add
+                      for (var i = 0; i < $scope.ids.length; i++) {
+                        var conceptId = $scope.ids[i];
+                        // check that concept id is only digits before proceeding
+                        var reg = /^\d+$/;
+                        if (!reg.test(conceptId)) {
+                        $scope.invalid.push(conceptId);
+                        }
+                        // check if the concept id already exists in the refset
+                        else if(alreadyPresentConceptIds.includes(conceptId)){
+                          $scope.exists.push(conceptId);
+                        }
+                        else {
+                              var member = {
+                                active : true,
+                                conceptId : conceptId,
+                                memberType : 'MEMBER',
+                                moduleId : refset.moduleId,
+                                refsetId : refset.id
+                              };
+                              $scope.save.push(member);
+                            }
+                      }
+                      if($scope.save.length>0){
+                        refsetService.addRefsetMembers($scope.save).then(
+                          // Success
+                          function(data) {
+                            for(var i = 0; i < data.members.length; i++) {
+                              $scope.added.push(data.members[i].conceptId)
+                            }
+                            console.debug("members added ", data.members.length);
+                            $scope.save = [];  // clear
+                          },
+                          // Error
+                          function(data) {
+                            $scope.save = []; // clear
+                            handleError($scope.errors, data);
+                          }
+                        );                        
+                      }
+                  },
+                  // Error
+                  function(data) {
+                    handleError($scope.errors, data);
+                  });      
                 };
 
                 // find member and add if not exists
