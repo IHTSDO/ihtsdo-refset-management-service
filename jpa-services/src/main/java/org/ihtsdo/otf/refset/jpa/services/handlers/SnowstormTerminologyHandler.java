@@ -898,7 +898,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
   /* see superclass */
   @Override
   public ConceptList getConcepts(List<String> terminologyIds,
-    String terminology, String version, boolean definition) throws Exception {
+    String terminology, String version, boolean descriptions) throws Exception {
 
     final StringBuilder query = new StringBuilder();
     for (final String terminologyId : terminologyIds) {
