@@ -332,6 +332,18 @@ public class PatchDataMojo extends AbstractMojo {
         patch20190917(fullReindex);
       }
       
+      // Patch current PROD setup to new JDK-11 Refset Enhancement setup
+      if ("20190923".compareTo(start) >= 0 && "20190923".compareTo(end) <= 0) {
+        getLog().info(
+            "Processing patch 20190923 - Update PROD database to Refset Enhancement setup"); // Patch
+
+        patch20190923(translationService);
+        fullReindex = true;        
+      }
+      
+      
+      
+      
 
       // Reindex
       if (fullReindex) {
@@ -1084,4 +1096,71 @@ public class PatchDataMojo extends AbstractMojo {
     }
     
   }
+
+  private void patch20190923(TranslationService translationService)
+      throws Exception {
+      int ct = 0;
+      translationService.setTransactionPerOperation(false);
+      translationService.beginTransaction();
+      for (Project prj : translationService.getProjects().getObjects()) {
+        Project project = translationService.getProject(prj.getId());
+        if (project.getTerminologyHandlerKey().equals("SNOWSTORM")) {
+          ct++;
+          project.setTerminologyHandlerKey("PUBLIC-BROWSER");
+          translationService.updateProject(project);
+
+          if (ct % 100 == 0) {
+            getLog().info("projects updated  ct = " + ct);
+            translationService.commitClearBegin();
+          }
+        }
+        else if ("SNOWOWL".equalsIgnoreCase(project.getTerminologyHandlerKey())) {
+          project.setTerminologyHandlerKey("AUTHORING-INTL");
+        }
+        else if ("SNOWOWL-SE".equalsIgnoreCase(project.getTerminologyHandlerKey())) {
+          project.setTerminologyHandlerKey("MANAGED-SERVICE");
+        }        
+      }
+      getLog().info("projects updated final ct = " + ct);
+      ct = 0;
+      for (Translation trans : translationService.getTranslations()
+          .getObjects()) {
+        Translation translation =
+            translationService.getTranslation(trans.getId());
+        if (translation.getProject().getTerminologyHandlerKey().equals("PUBLIC-BROWSER")
+            && translation.getVersion().length() == 10) {
+          ct++;
+          String old_version = translation.getVersion();
+          translation.setVersion("MAIN/" + old_version);
+          translationService.updateTranslation(translation);
+
+          if (ct % 100 == 0) {
+            getLog().info("translations updated  ct = " + ct);
+            translationService.commitClearBegin();
+          }
+        }
+      }
+      getLog().info("translations updated final ct = " + ct);
+      ct = 0;
+      for (Refset ref : translationService.getRefsets().getObjects()) {
+        Refset refset = translationService.getRefset(ref.getId());
+        if (refset.getProject().getTerminologyHandlerKey().equals("PUBLIC-BROWSER")
+            && refset.getVersion().length() == 8) {
+          ct++;
+          String old_version = refset.getVersion();
+          refset.setVersion("MAIN/" + old_version);
+          translationService.updateRefset(refset);
+
+          if (ct % 100 == 0) {
+            getLog().info("refsets updated ct = " + ct);
+            translationService.commitClearBegin();
+          }
+        }
+      }
+      getLog().info("refsets updated final ct = " + ct);
+      translationService.commit();
+
+    }
+  
+
 }
