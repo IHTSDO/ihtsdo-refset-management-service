@@ -337,8 +337,7 @@ public class PatchDataMojo extends AbstractMojo {
         getLog().info(
             "Processing patch 20190923 - Update PROD database to Refset Enhancement setup"); // Patch
 
-        patch20190923(translationService);
-        fullReindex = true;        
+        patch20190923(translationService, fullReindex);
       }
       
       
@@ -1097,7 +1096,7 @@ public class PatchDataMojo extends AbstractMojo {
     
   }
 
-  private void patch20190923(TranslationService translationService)
+  private void patch20190923(TranslationService translationService, boolean fullReindex)
       throws Exception {
       int ct = 0;
       translationService.setTransactionPerOperation(false);
@@ -1145,7 +1144,7 @@ public class PatchDataMojo extends AbstractMojo {
       for (Refset ref : translationService.getRefsets().getObjects()) {
         Refset refset = translationService.getRefset(ref.getId());
         if (refset.getProject().getTerminologyHandlerKey().equals("PUBLIC-BROWSER")
-            && refset.getVersion().length() == 8) {
+            && refset.getVersion().length() == 10) {
           ct++;
           String old_version = refset.getVersion();
           refset.setVersion("MAIN/" + old_version);
@@ -1160,6 +1159,21 @@ public class PatchDataMojo extends AbstractMojo {
       getLog().info("refsets updated final ct = " + ct);
       translationService.commit();
 
+      if (!fullReindex) {
+        getLog().info("  Projects, Translations, Refsets");
+
+        // login as "admin", use token
+        final Properties properties = ConfigUtility.getConfigProperties();
+        try (final SecurityService securityService = new SecurityServiceJpa();) {
+          String authToken =
+              securityService.authenticate(properties.getProperty("admin.user"),
+                  properties.getProperty("admin.password")).getAuthToken();
+          ProjectServiceRestImpl contentService = new ProjectServiceRestImpl();
+          contentService.luceneReindex("ProjectJpa,TranslationJpa,RefsetJpa", null, null, authToken);
+        }
+      }      
+      
+      
     }
   
 
