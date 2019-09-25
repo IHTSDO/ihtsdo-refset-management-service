@@ -38,9 +38,14 @@
     <javax.websocket.version>1.1</javax.websocket.version>
     <javax.ws.rs.version>2.1.1</javax.ws.rs.version>
     <javax.xml.bind.version>2.3.1</javax.xml.bind.version>
+<!-- 
     <jaxb.core.version>2.3.0.1</jaxb.core.version>
     <jaxb.impl.version>2.3.2</jaxb.impl.version>
     <jaxb.runtime.version>2.3.2</jaxb.runtime.version>
+ -->
+    <jaxb.core.version>2.2.11</jaxb.core.version>
+    <jaxb.impl.version>2.2.11</jaxb.impl.version>
+    <jaxb.runtime.version>2.2.11</jaxb.runtime.version>
     <jersey.core.version>2.29</jersey.core.version>
     <jersey.media.version>2.29</jersey.media.version>
     <junit.version>4.12</junit.version>
