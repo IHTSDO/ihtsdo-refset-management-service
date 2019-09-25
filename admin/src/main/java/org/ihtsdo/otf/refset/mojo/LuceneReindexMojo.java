@@ -3,7 +3,10 @@
  */
 package org.ihtsdo.otf.refset.mojo;
 
+import java.text.MessageFormat;
 import java.util.Properties;
+
+import javax.xml.bind.annotation.XmlSchema;
 
 import org.apache.log4j.Logger;
 import org.apache.maven.plugin.AbstractMojo;
@@ -63,6 +66,9 @@ public class LuceneReindexMojo extends AbstractMojo {
   /* see superclass */
   @Override
   public void execute() throws MojoFailureException {
+
+    setupBindInfoPackage();
+    
     try {
       getLog().info("Lucene reindexing called via mojo.");
       getLog().info("  Indexed objects : " + indexedObjects);
@@ -113,4 +119,31 @@ public class LuceneReindexMojo extends AbstractMojo {
 
   }
 
+  void setupBindInfoPackage() {
+    String nsuri = "http://www.hibernate.org/xsd/orm/hbm";
+    String packageInfoClassName = "org.hibernate.boot.jaxb.hbm.spi.package-info";
+    try {
+        final Class<?> packageInfoClass = Class
+                .forName(packageInfoClassName);
+        final XmlSchema xmlSchema = packageInfoClass
+                .getAnnotation(XmlSchema.class);
+        if (xmlSchema == null) {
+            this.getLog().warn(MessageFormat.format(
+                    "Class [{0}] is missing the [{1}] annotation. Processing bindings will probably fail.",
+                    packageInfoClassName, XmlSchema.class.getName()));
+        } else {
+            final String namespace = xmlSchema.namespace();
+            if (nsuri.equals(namespace)) {
+                this.getLog().warn(MessageFormat.format(
+                        "Namespace of the [{0}] annotation does not match [{1}]. Processing bindings will probably fail.",
+                        XmlSchema.class.getName(), nsuri));
+            }
+        }
+    } catch (ClassNotFoundException cnfex) {
+        this.getLog().warn(MessageFormat.format(
+                "Class [{0}] could not be found. Processing bindings will probably fail.",
+                packageInfoClassName), cnfex);
+    }
+}  
+  
 }
