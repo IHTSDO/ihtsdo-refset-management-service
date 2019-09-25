@@ -11,7 +11,7 @@
     <relativePath>../parent</relativePath>
   </parent>
 
-  <artifactId>refset-admin</artifactId>
+  <artifactId>refset-admin-test</artifactId>
   <name>IHTSDO refset management service admin project</name>
   <description>Maven-based administration tools.</description>
   <packaging>maven-plugin</packaging>
