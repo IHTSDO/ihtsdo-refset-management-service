@@ -72,6 +72,7 @@ public class UpdateDbMojo extends AbstractMojo {
   void setupBindInfoPackage() {
     String nsuri = "http://www.hibernate.org/xsd/orm/hbm";
     String packageInfoClassName = "org.hibernate.boot.jaxb.hbm.spi.package-info";
+    getLog().info("  runing setup bind info package");
     try {
         final Class<?> packageInfoClass = Class
                 .forName(packageInfoClassName);
