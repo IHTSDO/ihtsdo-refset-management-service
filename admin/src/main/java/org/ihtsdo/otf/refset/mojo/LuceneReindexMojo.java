@@ -67,12 +67,14 @@ public class LuceneReindexMojo extends AbstractMojo {
   @Override
   public void execute() throws MojoFailureException {
 
-    setupBindInfoPackage();
     
     try {
       getLog().info("Lucene reindexing called via mojo.");
       getLog().info("  Indexed objects : " + indexedObjects);
       getLog().info("  Expect server up: " + server);
+      
+      setupBindInfoPackage();
+      
       Properties properties = ConfigUtility.getConfigProperties();
 
       boolean serverRunning = ConfigUtility.isServerActive();
