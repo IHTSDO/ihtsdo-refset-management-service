@@ -99,9 +99,7 @@
                     ng-change="getSuggestions()"
                     ng-disabled="description.editable == false"></textarea>
                 </div>
-                <br/>
-                Editable: {{description.editable}}<br/>
-                Desc: {{description.editable}}<br/>                
+                <br/>            
               </td>
               <td>
                 <select ng-model="description.type"
@@ -160,7 +158,7 @@
               <td><small>({{ts.source.substring(ts.source.lastIndexOf("/")+1)}})</small></td>
               <td>
                 <button class="btn btn-xs btn-primary"
-                  ng-click="addAutoDescription(kvp.value);" title="Add description">Add</button>
+                  ng-click="addAutoDescription(ts.suggestion);" title="Add description">Add</button>
               </td>
             </tr>
           </tbody>
