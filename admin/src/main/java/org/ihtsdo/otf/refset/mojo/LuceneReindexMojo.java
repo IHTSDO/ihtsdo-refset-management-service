@@ -67,7 +67,7 @@ public class LuceneReindexMojo extends AbstractMojo {
   @Override
   public void execute() throws MojoFailureException {
 
-    setupBindInfoPackage();
+//    setupBindInfoPackage();
     
     try {
       getLog().info("Lucene reindexing called via mojo.");
