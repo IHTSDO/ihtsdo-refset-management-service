@@ -4,7 +4,7 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <!-- Module Metadata TEST FOR PUSHING PURPOSES-->
+  <!-- Module Metadata TEST FOR PUSHING PURPOSES -->
 
   <groupId>org.ihtsdo.otf.refset</groupId>
   <artifactId>refset-parent</artifactId>
@@ -38,23 +38,22 @@
     <javax.websocket.version>1.1</javax.websocket.version>
     <javax.ws.rs.version>2.1.1</javax.ws.rs.version>
     <javax.xml.bind.version>2.3.1</javax.xml.bind.version>
- 
-    <jaxb.core.version>2.3.0.1</jaxb.core.version>
-    <jaxb.impl.version>2.3.2</jaxb.impl.version>
-    <jaxb.runtime.version>2.3.2</jaxb.runtime.version>
 
-<!--
-    <jaxb.core.version>2.2.11</jaxb.core.version>
-    <jaxb.impl.version>2.2.11</jaxb.impl.version>
-    <jaxb.runtime.version>2.2.11</jaxb.runtime.version>
--->
+    <jaxb.runtime.version>2.4.0-b180608.0325</jaxb.runtime.version>
+
+    <!-- <jaxb.core.version>2.2.11</jaxb.core.version> <jaxb.impl.version>2.2.11</jaxb.impl.version> 
+      <jaxb.runtime.version>2.2.11</jaxb.runtime.version> -->
+    <java.version>11</java.version>
+    <maven.compiler.source>${java.version}</maven.compiler.source>
+    <maven.compiler.target>${java.version}</maven.compiler.target>
+
     <jersey.core.version>2.29</jersey.core.version>
     <jersey.media.version>2.29</jersey.media.version>
     <junit.version>4.12</junit.version>
     <lucene.version>5.5.5</lucene.version>
     <maven.antrun.plugin.version>1.7</maven.antrun.plugin.version>
     <maven.build.helper.plugin.version>1.9.1</maven.build.helper.plugin.version>
-    <maven.compiler.plugin.version>3.8.0</maven.compiler.plugin.version>
+    <!-- <maven.compiler.plugin.version>3.8.0</maven.compiler.plugin.version> -->
     <maven.dependency.plugin.version>3.1.1</maven.dependency.plugin.version>
     <maven.invoker.version>3.0.1</maven.invoker.version>
     <maven.jgitflow.plugin.version>1.0-m1.1</maven.jgitflow.plugin.version>
@@ -417,10 +416,17 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
-          <version>${maven.compiler.plugin.version}</version>
+          <version>3.8.0</version>
           <configuration>
-            <release>11</release>
+            <release>${java.version}</release>
           </configuration>
+          <dependencies>
+            <dependency>
+              <groupId>org.ow2.asm</groupId>
+              <artifactId>asm</artifactId>
+              <version>6.2</version>
+            </dependency>
+          </dependencies>
         </plugin>
 
         <plugin>
@@ -513,6 +519,11 @@
       <id>ihtsdo-public-nexus-snapshot</id>
       <name>IHTSDO Public Nexus Snapshots</name>
       <url>https://maven3.ihtsdotools.org/repository/maven-snapshots/</url>
+    </repository>
+    <repository>
+      <id>jvnet-nexus-staging</id>
+      <url>http://maven.java.net/content/repositories/staging/</url>
+      <layout>default</layout>
     </repository>
   </repositories>
 
