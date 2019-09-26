@@ -113,7 +113,7 @@
               </td>
               <td>
                 <!-- remove description -->
-                <i ng-show="description.editable" ng-click="removeDescription($index)"
+                <i ng-show="description.editable == true || description.editable == null" ng-click="removeDescription($index)"
                   title="Remove description" class="noul material-icons md-18">delete</i>
                 <!-- Add all words -->
                 <i ng-show="hasSuggestions(description)" 
