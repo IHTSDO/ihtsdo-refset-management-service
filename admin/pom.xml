@@ -129,6 +129,7 @@
           <plugin>
             <groupId>org.ihtsdo.otf.refset</groupId>
             <artifactId>refset-admin</artifactId>
+<!--     
             <dependencies>
               <dependency>
                 <groupId>javax.activation</groupId>
@@ -156,6 +157,7 @@
     <version>1.2.0</version>
 </dependency>              
             </dependencies>
+            -->
             <version>${project.version}</version>
             <executions>
               <execution>
