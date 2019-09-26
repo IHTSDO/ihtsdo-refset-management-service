@@ -31,7 +31,7 @@
           </td>
           <td>
             <select ng-model="newVersion"
-              ng-options="item.path as item.key for item in versions | orderBy:'key'"></select>
+              ng-options="item.path as item.key for item in versions | orderBy:'-key'"></select>
           </td>
         </tr>
         <tr>
