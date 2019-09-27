@@ -88,6 +88,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     idsToIgnore.add("900000000000508004");
     idsToIgnore.add("608771002");
     idsToIgnore.add("46011000052107");
+    idsToIgnore.add("21000146109");
 
   }
 
@@ -522,8 +523,12 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
 
       concept.setActive(conceptNode.get("active").asText().equals("true"));
       concept.setTerminologyId(conceptNode.get("id").asText());
+      if(conceptNode.has("effectiveTime")) {
       concept.setLastModified(ConfigUtility.DATE_FORMAT
-          .parse(conceptNode.get("effectiveTime").asText()));
+          .parse(conceptNode.get("effectiveTime").asText()));}
+      else {
+        concept.setLastModified(new Date());
+      }      
       concept.setLastModifiedBy(terminology);
       concept.setModuleId(conceptNode.get("moduleId").asText());
       concept

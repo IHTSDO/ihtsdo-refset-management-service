@@ -630,8 +630,12 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
 
       concept.setActive(conceptNode.get("active").asText().equals("true"));
       concept.setTerminologyId(conceptNode.get("id").asText());
+      if(conceptNode.has("effectiveTime")) {
       concept.setLastModified(ConfigUtility.DATE_FORMAT
-          .parse(conceptNode.get("effectiveTime").asText()));
+          .parse(conceptNode.get("effectiveTime").asText()));}
+      else {
+        concept.setLastModified(new Date());
+      }
       concept.setLastModifiedBy(terminology);
       concept.setModuleId(conceptNode.get("moduleId").asText());
       concept
