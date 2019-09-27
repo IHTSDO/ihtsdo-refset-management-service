@@ -18,7 +18,6 @@ import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
@@ -520,8 +519,6 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   /* see superclass */
   @XmlTransient
   @Override
-  @ManyToOne( fetch = FetchType.EAGER )
-  @JoinColumn(name = "project_id", nullable = false )  
   public Project getProject() {
     return project;
   }
