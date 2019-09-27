@@ -8,7 +8,7 @@ import org.ihtsdo.otf.refset.Project;
 /**
  * The Class TranslationExtensionLanguage.
  */
-public interface TranslationExtensionLanguage extends HasLastModified {
+public interface TranslationExtensionLanguage extends HasId {
   
   
   /**

@@ -46,7 +46,7 @@ public class TranslationExtensionLanguageJpa
     implements TranslationExtensionLanguage {
 
   /** The concept. */
-  @ManyToOne(targetEntity = ProjectJpa.class)
+  @ManyToOne(targetEntity = ProjectJpa.class, optional = false)
   private Project project;
 
   /** The id. */
@@ -62,15 +62,6 @@ public class TranslationExtensionLanguageJpa
   /** The language code. */
   @Column(nullable = false, length = 5)
   private String languageCode;
-
-  /** The last modified. */
-  @Column(nullable = false)
-  @Temporal(TemporalType.TIMESTAMP)
-  private Date lastModified = new Date();
-
-  /** The last modified. */
-  @Column(nullable = false)
-  private String lastModifiedBy;
 
   /**
    * Instantiates an empty {@link TranslationExtensionLanguageJpa}.
@@ -97,8 +88,6 @@ public class TranslationExtensionLanguageJpa
     id = translationExtensionLanguage.getId();
     branch = translationExtensionLanguage.getBranch();
     languageCode = translationExtensionLanguage.getLanguageCode();
-    lastModified = translationExtensionLanguage.getLastModified();
-    lastModifiedBy = translationExtensionLanguage.getLastModifiedBy();
   }
 
   /* see superclass */
@@ -135,30 +124,6 @@ public class TranslationExtensionLanguageJpa
   @Override
   public void setLanguageCode(String languageCode) {
     this.languageCode = languageCode;
-  }
-
-  /* see superclass */
-  @Override
-  public Date getLastModified() {
-    return lastModified;
-  }
-
-  /* see superclass */
-  @Override
-  public void setLastModified(Date lastModified) {
-    this.lastModified = lastModified;
-  }
-
-  /* see superclass */
-  @Override
-  public String getLastModifiedBy() {
-    return lastModifiedBy;
-  }
-
-  /* see superclass */
-  @Override
-  public void setLastModifiedBy(String lastModifiedBy) {
-    this.lastModifiedBy = lastModifiedBy;
   }
 
   /**
@@ -215,10 +180,6 @@ public class TranslationExtensionLanguageJpa
     result = prime * result + ((id == null) ? 0 : id.hashCode());
     result =
         prime * result + ((languageCode == null) ? 0 : languageCode.hashCode());
-    result =
-        prime * result + ((lastModified == null) ? 0 : lastModified.hashCode());
-    result = prime * result
-        + ((lastModifiedBy == null) ? 0 : lastModifiedBy.hashCode());
     return result;
   }
 
@@ -247,25 +208,13 @@ public class TranslationExtensionLanguageJpa
         return false;
     } else if (!languageCode.equals(other.languageCode))
       return false;
-    if (lastModified == null) {
-      if (other.lastModified != null)
-        return false;
-    } else if (!lastModified.equals(other.lastModified))
-      return false;
-    if (lastModifiedBy == null) {
-      if (other.lastModifiedBy != null)
-        return false;
-    } else if (!lastModifiedBy.equals(other.lastModifiedBy))
-      return false;
     return true;
   }
 
   @Override
   public String toString() {
-    return "TranslationExtensionLanguageJpa [" + "project=" + project + ", id="
-        + id + ", branch=" + branch + ", languageCode=" + languageCode
-        + ", lastModified=" + lastModified + ", lastModifiedBy="
-        + lastModifiedBy + "]";
+    return "TranslationExtensionLanguageJpa [" + "project=" + project.getId() + ", id="
+        + id + ", branch=" + branch + ", languageCode=" + languageCode + "]";
   }
 
 }

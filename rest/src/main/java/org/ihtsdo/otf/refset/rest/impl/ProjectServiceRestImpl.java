@@ -366,6 +366,14 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
         }
       }
 
+      // If any TranslationExtensionLanguageJpa objects are included, they need
+      // to be explicitly attached to the project (the object received from the
+      // client doesn't have the project set correctly)
+      for (TranslationExtensionLanguage tel : project
+          .getTranslationExtensionLanguages()) {
+        tel.setProject(project);
+      }
+
       // Add project
       project.setLastModifiedBy(userName);
       Project newProject = projectService.addProject(project);
@@ -429,7 +437,6 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
       if (project.getTranslationExtensionLanguages() != null
           && project.getTranslationExtensionLanguages().size() > 0) {
         project.getTranslationExtensionLanguages().forEach(tel -> {
-          tel.setLastModifiedBy(userName);
           ((TranslationExtensionLanguageJpa) tel).setProjectId(project.getId());
         });
       } else { // remove
@@ -1504,7 +1511,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
         // encountered. Though the point of descriptions from other
         // "user prefs" translations is merely to get some idea of other names
         // not to have 100% precision
-        // 
+        //
         if (!descIdsSeen.contains(desc.getTerminologyId())
             && descNameLangType.contains(desc.getConcept().getName() + "|"
                 + desc.getTerm() + "|" + desc.getLanguageCode())) {
