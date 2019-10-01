@@ -24,7 +24,6 @@ import java.io.FileInputStream;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
-import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.IoHandlerInfo;
@@ -41,7 +40,7 @@ import org.ihtsdo.otf.refset.services.SecurityService;
  * @goal delta-translation
  * @phase package
  */
-public class DeltaTranslationMojo extends AbstractMojo {
+public class DeltaTranslationMojo extends AbstractRttMojo {
 
   /**
    * File for import.
@@ -84,6 +83,8 @@ public class DeltaTranslationMojo extends AbstractMojo {
       getLog().info("  translationId = " + translationId);
       getLog().info("  importer = " + importer);
 
+      setupBindInfoPackage();
+
       if (!new File(file).exists()) {
         throw new Exception("Specified file does not exist - " + file);
       }
@@ -93,8 +94,8 @@ public class DeltaTranslationMojo extends AbstractMojo {
 
       // Verify server is not up
       boolean serverRunning = ConfigUtility.isServerActive();
-      getLog().info(
-          "Server status detected:  " + (!serverRunning ? "DOWN" : "UP"));
+      getLog()
+          .info("Server status detected:  " + (!serverRunning ? "DOWN" : "UP"));
       // if (serverRunning) {
       // throw new Exception(
       // "Server must not be running to perform delta translation import");
