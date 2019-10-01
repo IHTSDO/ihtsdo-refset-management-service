@@ -1,5 +1,5 @@
-/**
- * Copyright 2015 West Coast Informatics, LLC
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 /**
  * Copyright (c) 2012 International Health Terminology Standards Development
@@ -20,7 +20,6 @@
 package org.ihtsdo.otf.refset.mojo;
 
 import org.apache.log4j.Logger;
-import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
 
 /**
@@ -31,7 +30,7 @@ import org.apache.maven.plugin.MojoFailureException;
  * @goal ad-hoc
  * @phase package
  */
-public class AdHocMojo extends AbstractMojo {
+public class AdHocMojo extends AbstractRttMojo {
 
   /**
    * Mode - for recreating db.
@@ -49,7 +48,10 @@ public class AdHocMojo extends AbstractMojo {
   public void execute() throws MojoFailureException {
     try {
       getLog().info("Ad Hoc Mojo");
-      // getLog().info("  mode = " + mode);
+      // getLog().info(" mode = " + mode);
+
+      setupBindInfoPackage();
+
       // TBD
 
     } catch (Exception e) {
