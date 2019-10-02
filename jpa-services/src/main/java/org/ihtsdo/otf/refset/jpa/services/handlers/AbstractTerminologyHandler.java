@@ -278,7 +278,6 @@ public abstract class AbstractTerminologyHandler implements TerminologyHandler {
           if (e.getCause() instanceof SocketTimeoutException
               || e.getCause() instanceof ConnectException && i < maxTries) {
             i++;
-            Logger.getLogger(getClass()).info("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX " + i + " of " + maxTries);
           } else {
             break;
           }
