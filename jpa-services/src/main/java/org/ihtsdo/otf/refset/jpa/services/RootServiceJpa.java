@@ -18,6 +18,7 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 import javax.persistence.NoResultException;
 import javax.persistence.Persistence;
+import javax.persistence.PersistenceUnit;
 
 import org.apache.log4j.Logger;
 import org.apache.lucene.queryparser.classic.ParseException;
@@ -42,6 +43,7 @@ public abstract class RootServiceJpa implements RootService {
   protected boolean lastModifiedFlag = true;
 
   /** The factory. */
+  @PersistenceUnit
   protected static EntityManagerFactory factory = null;
   static {
     Logger.getLogger(RootServiceJpa.class)

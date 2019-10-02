@@ -213,9 +213,14 @@ public class ImportTranslationTermServerHandler extends ImportExportAbstract
    * @return the list
    */
   private List<Concept> createTranslations(Translation translation,
-    Set<Concept> conceptList) {
+    Set<Concept> conceptList) throws Exception {
 
     final Map<String, Concept> conceptCache = new HashMap<>();
+    
+    final Map<String, String> caseSignificanceToId = new HashMap<>();
+    caseSignificanceToId.put("CASE_SENSITIVE", "900000000000017005");
+    caseSignificanceToId.put("CASE_INSENSITIVE", "900000000000448009");
+    caseSignificanceToId.put("INITIAL_CHARACTER_CASE_INSENSITIVE", "900000000000020002");
 
     for (Concept sourceConcept : conceptList) {
 
@@ -232,8 +237,13 @@ public class ImportTranslationTermServerHandler extends ImportExportAbstract
           description.setLanguageCode(originalDescription.getLanguageCode());
           description.setTypeId(originalDescription.getTypeId());
           description.setTerm(originalDescription.getTerm());
+          if(caseSignificanceToId.containsKey(originalDescription.getCaseSignificanceId())) {
           description.setCaseSignificanceId(
-              originalDescription.getCaseSignificanceId());
+              caseSignificanceToId.get(originalDescription.getCaseSignificanceId()));
+          }
+          else {
+            throw new Exception ("Case significance value of " + originalDescription.getCaseSignificanceId() + " is not handled.");
+          }
 
           Concept concept = null;
           if (!conceptCache.containsKey(sourceConcept.getTerminologyId())) {

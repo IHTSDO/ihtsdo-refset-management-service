@@ -30,7 +30,6 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.apache.log4j.Logger;
-import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -71,7 +70,7 @@ import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
  * 
  */
 @Mojo(name = "patch", defaultPhase = LifecyclePhase.PACKAGE)
-public class PatchDataMojo extends AbstractMojo {
+public class PatchDataMojo extends AbstractRttMojo {
 
   /** The start. */
   @Parameter
@@ -207,6 +206,8 @@ public class PatchDataMojo extends AbstractMojo {
   @Override
   public void execute() throws MojoFailureException {
 
+    setupBindInfoPackage();
+
     try (final WorkflowService workflowService = new WorkflowServiceJpa();
         final TranslationService translationService =
             new TranslationServiceJpa();
@@ -303,15 +304,16 @@ public class PatchDataMojo extends AbstractMojo {
       // Patch 20190916
       // Update browser url to snowstorm and update refset and terminology
       // versions to snowstorm version formating
-      // This is an interim step prior to the rest of the Refset Enhancmement being published
+      // This is an interim step prior to the rest of the Refset Enhancmement
+      // being published
       if ("20190916".compareTo(start) >= 0 && "20190916".compareTo(end) <= 0) {
         getLog().info(
             "Processing patch 20190916 - Updating browser to snowstorm APIs"); // Patch
 
         patch20190916(translationService);
         fullReindex = true;
-      }      
-      
+      }
+
       // Patch 20190728
       // Patch to populate the new field in ConceptRefsetMemberJpa (synonyms)
       // Done once per production system. Only need to reindex one thing, so
@@ -331,7 +333,7 @@ public class PatchDataMojo extends AbstractMojo {
 
         patch20190917(fullReindex);
       }
-      
+
       // Patch current PROD setup to new JDK-11 Refset Enhancement setup
       if ("20190923".compareTo(start) >= 0 && "20190923".compareTo(end) <= 0) {
         getLog().info(
@@ -339,10 +341,6 @@ public class PatchDataMojo extends AbstractMojo {
 
         patch20190923(translationService, fullReindex);
       }
-      
-      
-      
-      
 
       // Reindex
       if (fullReindex) {
@@ -470,95 +468,97 @@ public class PatchDataMojo extends AbstractMojo {
    * @throws Exception the exception
    */
   private void patch20190916(TranslationService translationService)
-      throws Exception {
-      int ct = 0;
-      translationService.setTransactionPerOperation(false);
-      translationService.beginTransaction();
-      for (Project prj : translationService.getProjects().getObjects()) {
-        Project project = translationService.getProject(prj.getId());
-        if (project.getTerminologyHandlerKey().equals("BROWSER")) {
-          ct++;
-          project.setTerminologyHandlerUrl(
-              "https://prod-browser.ihtsdotools.org/snowstorm/snomed-ct/v2");
-          if (project.getTerminology().equals("se-edition")) {
-            project.setTerminology("SNOMEDCT-SE");
-          } else if (project.getTerminology().equals("nl-edition")) {
-            project.setTerminology("SNOMEDCT-NL");
-          } else if (project.getTerminology().equals("ca-edition")) {
-            project.setTerminology("SNOMEDCT-CA");
-          } else {
-            project.setTerminology("SNOMEDCT");
-          }
-          project.setTerminologyHandlerKey("SNOWSTORM");
-          translationService.updateProject(project);
+    throws Exception {
+    int ct = 0;
+    translationService.setTransactionPerOperation(false);
+    translationService.beginTransaction();
+    for (Project prj : translationService.getProjects().getObjects()) {
+      Project project = translationService.getProject(prj.getId());
+      if (project.getTerminologyHandlerKey().equals("BROWSER")) {
+        ct++;
+        project.setTerminologyHandlerUrl(
+            "https://prod-browser.ihtsdotools.org/snowstorm/snomed-ct/v2");
+        if (project.getTerminology().equals("se-edition")) {
+          project.setTerminology("SNOMEDCT-SE");
+        } else if (project.getTerminology().equals("nl-edition")) {
+          project.setTerminology("SNOMEDCT-NL");
+        } else if (project.getTerminology().equals("ca-edition")) {
+          project.setTerminology("SNOMEDCT-CA");
+        } else {
+          project.setTerminology("SNOMEDCT");
+        }
+        project.setTerminologyHandlerKey("SNOWSTORM");
+        translationService.updateProject(project);
 
-          if (ct % 100 == 0) {
-            getLog().info("projects updated  ct = " + ct);
-            translationService.commitClearBegin();
-          }
+        if (ct % 100 == 0) {
+          getLog().info("projects updated  ct = " + ct);
+          translationService.commitClearBegin();
         }
       }
-      getLog().info("projects updated final ct = " + ct);
-      ct = 0;
-      for (Translation trans : translationService.getTranslations()
-          .getObjects()) {
-        Translation translation =
-            translationService.getTranslation(trans.getId());
-        if ((translation.getProject().getTerminologyHandlerKey().equals("BROWSER") || translation.getProject().getTerminologyHandlerKey().equals("SNOWSTORM"))
-            && translation.getVersion().length() == 8) {
-          ct++;
-          String old_version = translation.getVersion();
-          translation.setVersion("" + old_version.substring(0, 4) + "-"
-              + old_version.substring(4, 6) + "-" + old_version.substring(6, 8));
-          if (translation.getTerminology().equals("se-edition")) {
-            translation.setTerminology("SNOMEDCT-SE");
-          } else if (translation.getTerminology().equals("nl-edition")) {
-            translation.setTerminology("SNOMEDCT-NL");
-          } else if (translation.getTerminology().equals("ca-edition")) {
-            translation.setTerminology("SNOMEDCT-CA");
-          } else {
-            translation.setTerminology("SNOMEDCT");
-          }
-          translationService.updateTranslation(translation);
-
-          if (ct % 100 == 0) {
-            getLog().info("translations updated  ct = " + ct);
-            translationService.commitClearBegin();
-          }
-        }
-      }
-      getLog().info("translations updated final ct = " + ct);
-      ct = 0;
-      for (Refset ref : translationService.getRefsets().getObjects()) {
-        Refset refset = translationService.getRefset(ref.getId());
-        if ((refset.getProject().getTerminologyHandlerKey().equals("BROWSER") || refset.getProject().getTerminologyHandlerKey().equals("SNOWSTORM"))
-            && refset.getVersion().length() == 8) {
-          ct++;
-          String old_version = refset.getVersion();
-          refset.setVersion("" + old_version.substring(0, 4) + "-"
-              + old_version.substring(4, 6) + "-" + old_version.substring(6, 8));
-          if (refset.getTerminology().equals("se-edition")) {
-            refset.setTerminology("SNOMEDCT-SE");
-          } else if (refset.getTerminology().equals("nl-edition")) {
-            refset.setTerminology("SNOMEDCT-NL");
-          } else if (refset.getTerminology().equals("ca-edition")) {
-            refset.setTerminology("SNOMEDCT-CA");
-          } else {
-            refset.setTerminology("SNOMEDCT");
-          }
-          translationService.updateRefset(refset);
-
-          if (ct % 100 == 0) {
-            getLog().info("refsets updated ct = " + ct);
-            translationService.commitClearBegin();
-          }
-        }
-      }
-      getLog().info("refsets updated final ct = " + ct);
-      translationService.commit();
     }
+    getLog().info("projects updated final ct = " + ct);
+    ct = 0;
+    for (Translation trans : translationService.getTranslations()
+        .getObjects()) {
+      Translation translation =
+          translationService.getTranslation(trans.getId());
+      if ((translation.getProject().getTerminologyHandlerKey().equals("BROWSER")
+          || translation.getProject().getTerminologyHandlerKey()
+              .equals("SNOWSTORM"))
+          && translation.getVersion().length() == 8) {
+        ct++;
+        String old_version = translation.getVersion();
+        translation.setVersion("" + old_version.substring(0, 4) + "-"
+            + old_version.substring(4, 6) + "-" + old_version.substring(6, 8));
+        if (translation.getTerminology().equals("se-edition")) {
+          translation.setTerminology("SNOMEDCT-SE");
+        } else if (translation.getTerminology().equals("nl-edition")) {
+          translation.setTerminology("SNOMEDCT-NL");
+        } else if (translation.getTerminology().equals("ca-edition")) {
+          translation.setTerminology("SNOMEDCT-CA");
+        } else {
+          translation.setTerminology("SNOMEDCT");
+        }
+        translationService.updateTranslation(translation);
 
-  
+        if (ct % 100 == 0) {
+          getLog().info("translations updated  ct = " + ct);
+          translationService.commitClearBegin();
+        }
+      }
+    }
+    getLog().info("translations updated final ct = " + ct);
+    ct = 0;
+    for (Refset ref : translationService.getRefsets().getObjects()) {
+      Refset refset = translationService.getRefset(ref.getId());
+      if ((refset.getProject().getTerminologyHandlerKey().equals("BROWSER")
+          || refset.getProject().getTerminologyHandlerKey().equals("SNOWSTORM"))
+          && refset.getVersion().length() == 8) {
+        ct++;
+        String old_version = refset.getVersion();
+        refset.setVersion("" + old_version.substring(0, 4) + "-"
+            + old_version.substring(4, 6) + "-" + old_version.substring(6, 8));
+        if (refset.getTerminology().equals("se-edition")) {
+          refset.setTerminology("SNOMEDCT-SE");
+        } else if (refset.getTerminology().equals("nl-edition")) {
+          refset.setTerminology("SNOMEDCT-NL");
+        } else if (refset.getTerminology().equals("ca-edition")) {
+          refset.setTerminology("SNOMEDCT-CA");
+        } else {
+          refset.setTerminology("SNOMEDCT");
+        }
+        translationService.updateRefset(refset);
+
+        if (ct % 100 == 0) {
+          getLog().info("refsets updated ct = " + ct);
+          translationService.commitClearBegin();
+        }
+      }
+    }
+    getLog().info("refsets updated final ct = " + ct);
+    translationService.commit();
+  }
+
   /**
    * Patch 20180316.
    *
@@ -930,7 +930,8 @@ public class PatchDataMojo extends AbstractMojo {
             securityService.authenticate(properties.getProperty("admin.user"),
                 properties.getProperty("admin.password")).getAuthToken();
         ProjectServiceRestImpl contentService = new ProjectServiceRestImpl();
-        contentService.luceneReindex("ConceptRefsetMemberJpa", null, null, authToken);
+        contentService.luceneReindex("ConceptRefsetMemberJpa", null, null,
+            authToken);
       }
     }
   }
@@ -954,227 +955,231 @@ public class PatchDataMojo extends AbstractMojo {
     *  - Not identical to the ConceptName field
     *  - Length is less than or equal to 256 characters
     */
-//    TerminologyHandler termHandler =
-//        refsetService.getTerminologyHandler(project, null);
-//
-//    for (Refset refset : project.getRefsets()) {
-//      getLog().info("Working on members in refset (" + refset.getId() + "): "
-//          + refset.getName() + " with " + refset.getMembers().size()
-//          + " members");
-//
-//      int count = 0;
-//      for (ConceptRefsetMember member : refset.getMembers()) {
-//        String conId = member.getConceptId();
-//
-//        if (!conceptSynonymsMapCache.keySet().contains(conId)) {
-//          // Lookup synonyms and add to member
-//          Map<String, List<String>> versionSynonymsMap = new HashMap<>();
-//          conceptSynonymsMapCache.put(conId, versionSynonymsMap);
-//        }
-//
-//        if (!conceptSynonymsMapCache.get(conId)
-//            .containsKey(refset.getVersion())) {
-//          List<String> synonyms = new ArrayList<>();
-//          conceptSynonymsMapCache.get(conId).put(refset.getVersion(), synonyms);
-//        }
-//
-//        if (conceptSynonymsMapCache.get(conId).get(refset.getVersion())
-//            .isEmpty()) {
-//          List<String> synonyms =
-//              conceptSynonymsMapCache.get(conId).get(refset.getVersion());
-//
-//          try {
-//            // Identify Concept's synonyms
-//            final Concept con = termHandler.getFullConcept(conId,
-//                refset.getTerminology(), refset.getVersion());
-//
-//            for (Description d : con.getDescriptions()) {
-//              if (d.isActive() && !d.getTypeId().equals("900000000000550004") // DEFINITION
-//                  && !synonyms.contains(d.getTerm())) {
-//                if (d.getTerm().length() > 256) {
-//                  throw new Exception("Description '" + d.getTerm()
-//                      + "' is longer than permitted lenght of 256. It's size is: "
-//                      + d.getTerm().length());
-//                }
-//                synonyms.add(d.getTerm());
-//              }
-//            }
-//
-//            member.setSynonyms(synonyms);
-//            refsetService.updateMember(member);
-//          } catch (NullPointerException e) {
-//            // Have Concept Id that doesn't exist on terminology server
-//            getLog().info("Concept id '" + conId + "' not found");
-//          }
-//        } else {
-//          // Have previously completed the Lookup of synonyms. Just need to add
-//          // them to member
-//          member.setSynonyms(
-//              conceptSynonymsMapCache.get(conId).get(refset.getVersion()));
-//          refsetService.updateMember(member);
-//        }
-//
-//        // Commit every 50 to minimize memory utilization
-//        if (++count % 50 == 0) {
-//          getLog().info("Completed " + count + " out of the "
-//              + refset.getMembers().size() + " members to process");
-//          try {
-//            refsetService.commitClearBegin();
-//          } catch (Exception e) {
-//            getLog().info(
-//                "Failed on committing batch of 50 synonyms with error message: "
-//                    + e.getMessage());
-//            refsetService.setTransactionPerOperation(false);
-//            refsetService.beginTransaction();
-//          }
-//        }
-//      }
-//
-//      // Commit to catch final (and less-than-fifty) members
-//      try {
-//        refsetService.commitClearBegin();
-//      } catch (Exception e) {
-//        getLog().info(
-//            "Failed on committing final batch of synonyms with error message: "
-//                + e.getMessage());
-//      }
-//
-//      getLog().info(" Completed refset: " + refset.getName());
-//    }
+    // TerminologyHandler termHandler =
+    // refsetService.getTerminologyHandler(project, null);
+    //
+    // for (Refset refset : project.getRefsets()) {
+    // getLog().info("Working on members in refset (" + refset.getId() + "): "
+    // + refset.getName() + " with " + refset.getMembers().size()
+    // + " members");
+    //
+    // int count = 0;
+    // for (ConceptRefsetMember member : refset.getMembers()) {
+    // String conId = member.getConceptId();
+    //
+    // if (!conceptSynonymsMapCache.keySet().contains(conId)) {
+    // // Lookup synonyms and add to member
+    // Map<String, List<String>> versionSynonymsMap = new HashMap<>();
+    // conceptSynonymsMapCache.put(conId, versionSynonymsMap);
+    // }
+    //
+    // if (!conceptSynonymsMapCache.get(conId)
+    // .containsKey(refset.getVersion())) {
+    // List<String> synonyms = new ArrayList<>();
+    // conceptSynonymsMapCache.get(conId).put(refset.getVersion(), synonyms);
+    // }
+    //
+    // if (conceptSynonymsMapCache.get(conId).get(refset.getVersion())
+    // .isEmpty()) {
+    // List<String> synonyms =
+    // conceptSynonymsMapCache.get(conId).get(refset.getVersion());
+    //
+    // try {
+    // // Identify Concept's synonyms
+    // final Concept con = termHandler.getFullConcept(conId,
+    // refset.getTerminology(), refset.getVersion());
+    //
+    // for (Description d : con.getDescriptions()) {
+    // if (d.isActive() && !d.getTypeId().equals("900000000000550004") //
+    // DEFINITION
+    // && !synonyms.contains(d.getTerm())) {
+    // if (d.getTerm().length() > 256) {
+    // throw new Exception("Description '" + d.getTerm()
+    // + "' is longer than permitted lenght of 256. It's size is: "
+    // + d.getTerm().length());
+    // }
+    // synonyms.add(d.getTerm());
+    // }
+    // }
+    //
+    // member.setSynonyms(synonyms);
+    // refsetService.updateMember(member);
+    // } catch (NullPointerException e) {
+    // // Have Concept Id that doesn't exist on terminology server
+    // getLog().info("Concept id '" + conId + "' not found");
+    // }
+    // } else {
+    // // Have previously completed the Lookup of synonyms. Just need to add
+    // // them to member
+    // member.setSynonyms(
+    // conceptSynonymsMapCache.get(conId).get(refset.getVersion()));
+    // refsetService.updateMember(member);
+    // }
+    //
+    // // Commit every 50 to minimize memory utilization
+    // if (++count % 50 == 0) {
+    // getLog().info("Completed " + count + " out of the "
+    // + refset.getMembers().size() + " members to process");
+    // try {
+    // refsetService.commitClearBegin();
+    // } catch (Exception e) {
+    // getLog().info(
+    // "Failed on committing batch of 50 synonyms with error message: "
+    // + e.getMessage());
+    // refsetService.setTransactionPerOperation(false);
+    // refsetService.beginTransaction();
+    // }
+    // }
+    // }
+    //
+    // // Commit to catch final (and less-than-fifty) members
+    // try {
+    // refsetService.commitClearBegin();
+    // } catch (Exception e) {
+    // getLog().info(
+    // "Failed on committing final batch of synonyms with error message: "
+    // + e.getMessage());
+    // }
+    //
+    // getLog().info(" Completed refset: " + refset.getName());
+    // }
   }
-  
+
   private void patch20190917(boolean fullReindex) {
-    
-    try(ProjectService projectService = new ProjectServiceJpa();) {
-    
+
+    try (ProjectService projectService = new ProjectServiceJpa();) {
+
       projectService.setTransactionPerOperation(false);
       projectService.beginTransaction();
-      
+
       projectService.getProjects().getObjects().forEach(project -> {
-        
-        //TODO: set project.setTerminologyHandlerUrl too? 
-        if ("BROWSER".equalsIgnoreCase(project.getTerminologyHandlerKey()) ||
-            "SNOWSTORM".equalsIgnoreCase(project.getTerminologyHandlerKey())) {
+
+        // TODO: set project.setTerminologyHandlerUrl too?
+        if ("BROWSER".equalsIgnoreCase(project.getTerminologyHandlerKey())
+            || "SNOWSTORM"
+                .equalsIgnoreCase(project.getTerminologyHandlerKey())) {
           project.setTerminologyHandlerKey("PUBLIC-BROWSER");
-          project.setTerminologyHandlerUrl("https://prod-browser.ihtsdotools.org/snowstorm/snomed-ct/v2");
-        }
-        else if ("SNOWOWL".equalsIgnoreCase(project.getTerminologyHandlerKey())) {
+          project.setTerminologyHandlerUrl(
+              "https://prod-browser.ihtsdotools.org/snowstorm/snomed-ct/v2");
+        } else if ("SNOWOWL"
+            .equalsIgnoreCase(project.getTerminologyHandlerKey())) {
           project.setTerminologyHandlerKey("AUTHORING-INTL");
-        }
-        else if ("SNOWOWL-MS".equalsIgnoreCase(project.getTerminologyHandlerKey())) {
+        } else if ("SNOWOWL-MS"
+            .equalsIgnoreCase(project.getTerminologyHandlerKey())) {
           project.setTerminologyHandlerKey("MANAGED-SERVICE");
         }
-        
+
         getLog()
-        .info("  project = " + project.getId() + ", " + project.getName());
+            .info("  project = " + project.getId() + ", " + project.getName());
         try {
           projectService.updateProject(project);
         } catch (Exception e) {
-          getLog().error("patch20190915 : Failed to update project " + project.getId(), e);
+          getLog().error(
+              "patch20190915 : Failed to update project " + project.getId(), e);
         }
       });
-      
+
       projectService.commit();
-      
+
       if (!fullReindex) {
         getLog().info("  Projects");
 
         // login as "admin", use token
         final Properties properties = ConfigUtility.getConfigProperties();
-        try (final SecurityService securityService = new SecurityServiceJpa();) {
+        try (
+            final SecurityService securityService = new SecurityServiceJpa();) {
           String authToken =
               securityService.authenticate(properties.getProperty("admin.user"),
                   properties.getProperty("admin.password")).getAuthToken();
           ProjectServiceRestImpl contentService = new ProjectServiceRestImpl();
           contentService.luceneReindex("ProjectJpa", null, null, authToken);
         }
-      }      
-      
+      }
+
     } catch (Exception e) {
       getLog().error("patch20190915 : Failed to update all projects", e);
     }
-    
+
   }
 
-  private void patch20190923(TranslationService translationService, boolean fullReindex)
-      throws Exception {
-      int ct = 0;
-      translationService.setTransactionPerOperation(false);
-      translationService.beginTransaction();
-      for (Project prj : translationService.getProjects().getObjects()) {
-        Project project = translationService.getProject(prj.getId());
-        if (project.getTerminologyHandlerKey().equals("SNOWSTORM")) {
-          ct++;
-          project.setTerminologyHandlerKey("PUBLIC-BROWSER");
-          translationService.updateProject(project);
+  private void patch20190923(TranslationService translationService,
+    boolean fullReindex) throws Exception {
+    int ct = 0;
+    translationService.setTransactionPerOperation(false);
+    translationService.beginTransaction();
+    for (Project prj : translationService.getProjects().getObjects()) {
+      Project project = translationService.getProject(prj.getId());
+      if (project.getTerminologyHandlerKey().equals("SNOWSTORM")) {
+        ct++;
+        project.setTerminologyHandlerKey("PUBLIC-BROWSER");
+        translationService.updateProject(project);
 
-          if (ct % 100 == 0) {
-            getLog().info("projects updated  ct = " + ct);
-            translationService.commitClearBegin();
-          }
+        if (ct % 100 == 0) {
+          getLog().info("projects updated  ct = " + ct);
+          translationService.commitClearBegin();
         }
-        else if ("SNOWOWL".equalsIgnoreCase(project.getTerminologyHandlerKey())) {
-          project.setTerminologyHandlerKey("AUTHORING-INTL");
-        }
-        else if ("SNOWOWL-SE".equalsIgnoreCase(project.getTerminologyHandlerKey())) {
-          project.setTerminologyHandlerKey("MANAGED-SERVICE");
-        }        
+      } else if ("SNOWOWL"
+          .equalsIgnoreCase(project.getTerminologyHandlerKey())) {
+        project.setTerminologyHandlerKey("AUTHORING-INTL");
+      } else if ("SNOWOWL-SE"
+          .equalsIgnoreCase(project.getTerminologyHandlerKey())) {
+        project.setTerminologyHandlerKey("MANAGED-SERVICE");
       }
-      getLog().info("projects updated final ct = " + ct);
-      ct = 0;
-      for (Translation trans : translationService.getTranslations()
-          .getObjects()) {
-        Translation translation =
-            translationService.getTranslation(trans.getId());
-        if (translation.getProject().getTerminologyHandlerKey().equals("PUBLIC-BROWSER")
-            && translation.getVersion().length() == 10) {
-          ct++;
-          String old_version = translation.getVersion();
-          translation.setVersion("MAIN/" + old_version);
-          translationService.updateTranslation(translation);
-
-          if (ct % 100 == 0) {
-            getLog().info("translations updated  ct = " + ct);
-            translationService.commitClearBegin();
-          }
-        }
-      }
-      getLog().info("translations updated final ct = " + ct);
-      ct = 0;
-      for (Refset ref : translationService.getRefsets().getObjects()) {
-        Refset refset = translationService.getRefset(ref.getId());
-        if (refset.getProject().getTerminologyHandlerKey().equals("PUBLIC-BROWSER")
-            && refset.getVersion().length() == 10) {
-          ct++;
-          String old_version = refset.getVersion();
-          refset.setVersion("MAIN/" + old_version);
-          translationService.updateRefset(refset);
-
-          if (ct % 100 == 0) {
-            getLog().info("refsets updated ct = " + ct);
-            translationService.commitClearBegin();
-          }
-        }
-      }
-      getLog().info("refsets updated final ct = " + ct);
-      translationService.commit();
-
-      if (!fullReindex) {
-        getLog().info("  Projects, Translations, Refsets");
-
-        // login as "admin", use token
-        final Properties properties = ConfigUtility.getConfigProperties();
-        try (final SecurityService securityService = new SecurityServiceJpa();) {
-          String authToken =
-              securityService.authenticate(properties.getProperty("admin.user"),
-                  properties.getProperty("admin.password")).getAuthToken();
-          ProjectServiceRestImpl contentService = new ProjectServiceRestImpl();
-          contentService.luceneReindex("ProjectJpa,TranslationJpa,RefsetJpa", null, null, authToken);
-        }
-      }      
-      
-      
     }
-  
+    getLog().info("projects updated final ct = " + ct);
+    ct = 0;
+    for (Translation trans : translationService.getTranslations()
+        .getObjects()) {
+      Translation translation =
+          translationService.getTranslation(trans.getId());
+      if (translation.getProject().getTerminologyHandlerKey().equals(
+          "PUBLIC-BROWSER") && translation.getVersion().length() == 10) {
+        ct++;
+        String old_version = translation.getVersion();
+        translation.setVersion("MAIN/" + old_version);
+        translationService.updateTranslation(translation);
+
+        if (ct % 100 == 0) {
+          getLog().info("translations updated  ct = " + ct);
+          translationService.commitClearBegin();
+        }
+      }
+    }
+    getLog().info("translations updated final ct = " + ct);
+    ct = 0;
+    for (Refset ref : translationService.getRefsets().getObjects()) {
+      Refset refset = translationService.getRefset(ref.getId());
+      if (refset.getProject().getTerminologyHandlerKey()
+          .equals("PUBLIC-BROWSER") && refset.getVersion().length() == 10) {
+        ct++;
+        String old_version = refset.getVersion();
+        refset.setVersion("MAIN/" + old_version);
+        translationService.updateRefset(refset);
+
+        if (ct % 100 == 0) {
+          getLog().info("refsets updated ct = " + ct);
+          translationService.commitClearBegin();
+        }
+      }
+    }
+    getLog().info("refsets updated final ct = " + ct);
+    translationService.commit();
+
+    if (!fullReindex) {
+      getLog().info("  Projects, Translations, Refsets");
+
+      // login as "admin", use token
+      final Properties properties = ConfigUtility.getConfigProperties();
+      try (final SecurityService securityService = new SecurityServiceJpa();) {
+        String authToken =
+            securityService.authenticate(properties.getProperty("admin.user"),
+                properties.getProperty("admin.password")).getAuthToken();
+        ProjectServiceRestImpl contentService = new ProjectServiceRestImpl();
+        contentService.luceneReindex("ProjectJpa,TranslationJpa,RefsetJpa",
+            null, null, authToken);
+      }
+    }
+
+  }
 
 }

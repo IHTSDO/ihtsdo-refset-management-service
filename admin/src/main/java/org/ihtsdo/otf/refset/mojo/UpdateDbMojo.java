@@ -6,7 +6,6 @@ package org.ihtsdo.otf.refset.mojo;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
-import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -20,13 +19,13 @@ import org.ihtsdo.otf.refset.jpa.services.RootServiceJpa;
  * See admin/pom.xml for sample usage
  * 
  */
-@Mojo( name = "updatedb", defaultPhase = LifecyclePhase.PACKAGE)
-public class UpdateDbMojo extends AbstractMojo {
+@Mojo(name = "updatedb", defaultPhase = LifecyclePhase.PACKAGE)
+public class UpdateDbMojo extends AbstractRttMojo {
 
   /**
    * Mode: create or update
    */
-  @Parameter( required = true )	
+  @Parameter(required = true)
   public String mode;
 
   /**
@@ -41,7 +40,10 @@ public class UpdateDbMojo extends AbstractMojo {
   public void execute() throws MojoFailureException {
     getLog().info("Start updating database schema...");
     getLog().info("  mode = " + mode);
+
     try {
+      setupBindInfoPackage();
+
       if (!mode.equals("update") && !mode.equals("create")) {
         throw new Exception("Mode has illegal value: " + mode);
       }

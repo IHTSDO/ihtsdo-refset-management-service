@@ -1,5 +1,5 @@
-/**
- * Copyright 2015 West Coast Informatics, LLC
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 /**
  * Copyright (c) 2012 International Health Terminology Standards Development
@@ -24,7 +24,6 @@ import java.io.File;
 import java.io.FileReader;
 
 import org.apache.log4j.Logger;
-import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -41,13 +40,13 @@ import org.ihtsdo.otf.refset.services.SecurityService;
  * 
  * See admin/pom.xml for sample usage
  */
-@Mojo( name = "load-uat-users", defaultPhase = LifecyclePhase.PACKAGE)
-public class LoadUatUsersMojo extends AbstractMojo {
+@Mojo(name = "load-uat-users", defaultPhase = LifecyclePhase.PACKAGE)
+public class LoadUatUsersMojo extends AbstractRttMojo {
 
   /**
    * UAT Users file.
    */
-  @Parameter	
+  @Parameter
   private String file;
 
   /**
@@ -63,6 +62,8 @@ public class LoadUatUsersMojo extends AbstractMojo {
     try {
       getLog().info("Load UAT users");
       getLog().info("  file = " + file);
+
+      setupBindInfoPackage();
 
       final SecurityService service = new SecurityServiceJpa();
       final BufferedReader in =

@@ -201,40 +201,14 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
       handleException(new Exception("Required parameter has a null value"), "");
     }
 
-    final ProjectService projectService = new ProjectServiceJpa();
     try {
-      // Check if user is either an ADMIN overall or an AUTHOR on this project
 
-      String authUser = null;
-      try {
-        authUser = authorizeApp(securityService, authToken,
-            "unassign user from project", UserRole.ADMIN);
-      } catch (Exception e) {
-        // now try to validate project role
-        authUser = authorizeProject(projectService, projectId, securityService,
-            authToken, "unassign user from project", UserRole.AUTHOR);
-      }
+      List<String> userNames = new ArrayList<>(List.of(userName));
+      return unassignUsers(projectId, authToken, userNames);
 
-      User user = securityService.getUser(userName);
-      User userCopy = new UserJpa(user);
-      Project project = projectService.getProject(projectId);
-      Project projectCopy = new ProjectJpa(project);
-
-      project.getUserRoleMap().remove(userCopy);
-      project.setLastModifiedBy(authUser);
-      projectService.updateProject(project);
-
-      user.getProjectRoleMap().remove(projectCopy);
-      securityService.updateUser(user);
-
-      addLogEntry(projectService, authUser, "UNASSIGN user from project",
-          projectId, projectId, userName);
-
-      return project;
     } catch (Exception e) {
       handleException(e, "trying to unassign user from project");
     } finally {
-      projectService.close();
       securityService.close();
     }
     return null;
@@ -366,6 +340,14 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
         }
       }
 
+      // If any TranslationExtensionLanguageJpa objects are included, they need
+      // to be explicitly attached to the project (the object received from the
+      // client doesn't have the project set correctly)
+      for (TranslationExtensionLanguage tel : project
+          .getTranslationExtensionLanguages()) {
+        tel.setProject(project);
+      }
+
       // Add project
       project.setLastModifiedBy(userName);
       Project newProject = projectService.addProject(project);
@@ -429,7 +411,6 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
       if (project.getTranslationExtensionLanguages() != null
           && project.getTranslationExtensionLanguages().size() > 0) {
         project.getTranslationExtensionLanguages().forEach(tel -> {
-          tel.setLastModifiedBy(userName);
           ((TranslationExtensionLanguageJpa) tel).setProjectId(project.getId());
         });
       } else { // remove
@@ -489,9 +470,12 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
       if (project == null) {
         throw new LocalException("Invalid project id: " + projectId);
       }
+      final List<String> userNames = new ArrayList<>();
       for (final User user : project.getUserRoleMap().keySet()) {
-        unassignUserFromProject(projectId, user.getUserName(), authToken);
+        userNames.add(user.getUserName());
       }
+      unassignUsers(projectId, authToken, userNames);
+
       // Create service and configure transaction scope
       projectService.removeProject(projectId);
 
@@ -1504,7 +1488,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
         // encountered. Though the point of descriptions from other
         // "user prefs" translations is merely to get some idea of other names
         // not to have 100% precision
-        // 
+        //
         if (!descIdsSeen.contains(desc.getTerminologyId())
             && descNameLangType.contains(desc.getConcept().getName() + "|"
                 + desc.getTerm() + "|" + desc.getLanguageCode())) {
@@ -1523,4 +1507,50 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
 
   }
 
+  // Shared method to remove users.
+  // Requires security service to be available.
+  private Project unassignUsers(Long projectId, String authToken,
+    List<String> userNameList) throws Exception {
+    // Test preconditions
+    if (projectId == null || userNameList == null) {
+      handleException(new Exception("Required parameter has a null value"), "");
+    }
+
+    try (final ProjectService projectService = new ProjectServiceJpa();) {
+      // Check if user is either an ADMIN overall or an AUTHOR on this project
+
+      String authUser = null;
+      try {
+        authUser = authorizeApp(securityService, authToken,
+            "unassign user from project", UserRole.ADMIN);
+      } catch (Exception e) {
+        // now try to validate project role
+        authUser = authorizeProject(projectService, projectId, securityService,
+            authToken, "unassign user from project", UserRole.AUTHOR);
+      }
+
+      final Project project = projectService.getProject(projectId);
+      final Project projectCopy = new ProjectJpa(project);
+
+      for (String userName : userNameList) {
+        final User user = securityService.getUser(userName);
+        final User userCopy = new UserJpa(user);
+
+        project.getUserRoleMap().remove(userCopy);
+        project.setLastModifiedBy(authUser);
+        projectService.updateProject(project);
+
+        user.getProjectRoleMap().remove(projectCopy);
+        securityService.updateUser(user);
+
+        addLogEntry(projectService, authUser, "UNASSIGN user from project",
+            projectId, projectId, userName);
+
+      }
+      return project;
+    } catch (Exception e) {
+      handleException(e, "trying to unassign user from project");
+      return null;
+    }
+  }
 }

@@ -3,10 +3,12 @@
  */
 package org.ihtsdo.otf.refset.mojo;
 
+import java.text.MessageFormat;
 import java.util.Properties;
 
+import javax.xml.bind.annotation.XmlSchema;
+
 import org.apache.log4j.Logger;
-import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -24,7 +26,7 @@ import org.ihtsdo.otf.refset.services.SecurityService;
  *
  */
 @Mojo(name = "reindex", defaultPhase = LifecyclePhase.PACKAGE)
-public class LuceneReindexMojo extends AbstractMojo {
+public class LuceneReindexMojo extends AbstractRttMojo {
 
   /**
    * The specified objects to index.
@@ -63,10 +65,14 @@ public class LuceneReindexMojo extends AbstractMojo {
   /* see superclass */
   @Override
   public void execute() throws MojoFailureException {
+
     try {
       getLog().info("Lucene reindexing called via mojo.");
       getLog().info("  Indexed objects : " + indexedObjects);
       getLog().info("  Expect server up: " + server);
+
+      setupBindInfoPackage();
+
       Properties properties = ConfigUtility.getConfigProperties();
 
       boolean serverRunning = ConfigUtility.isServerActive();

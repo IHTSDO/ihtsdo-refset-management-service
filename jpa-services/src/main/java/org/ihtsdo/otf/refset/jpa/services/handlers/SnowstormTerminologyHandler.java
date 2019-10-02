@@ -3,6 +3,7 @@
  */
 package org.ihtsdo.otf.refset.jpa.services.handlers;
 
+import java.net.ConnectException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -88,6 +89,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     idsToIgnore.add("900000000000508004");
     idsToIgnore.add("608771002");
     idsToIgnore.add("46011000052107");
+    idsToIgnore.add("21000146109");
 
   }
 
@@ -522,8 +524,12 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
 
       concept.setActive(conceptNode.get("active").asText().equals("true"));
       concept.setTerminologyId(conceptNode.get("id").asText());
-      concept.setLastModified(ConfigUtility.DATE_FORMAT
-          .parse(conceptNode.get("effectiveTime").asText()));
+      if (conceptNode.has("effectiveTime")) {
+        concept.setLastModified(ConfigUtility.DATE_FORMAT
+            .parse(conceptNode.get("effectiveTime").asText()));
+      } else {
+        concept.setLastModified(new Date());
+      }
       concept.setLastModifiedBy(terminology);
       concept.setModuleId(conceptNode.get("moduleId").asText());
       concept
@@ -650,28 +656,14 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
         + "- " + url + ", " + terminology + ", " + version);
     // TODO resolve this date conversion 20150131 -> 2015-01-31
     // version = "MAIN/2015-01-31";
-    // Make a webservice call to SnowOwl to get concept
+    // Make a webservice call to Snowstorm to get concept
     final Client client = ClientBuilder.newClient();
     final WebTarget target = client
         .target(url + "/browser/" + version + "/concepts/" + terminologyId);
-    final Response response = target.request(accept)
-        .header("Authorization", authHeader)
-        .header("Accept-Language", getAcceptLanguage(terminology, version))
-        .header("Cookie",
-            genericUserCookie != null ? genericUserCookie : getCookieHeader())
-        .get();
-    final String resultString = response.readEntity(String.class);
-    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-      // n/a
-    } else {
 
-      // Here's the messy part about trying to parse the return error message
-      if (resultString.contains("loop did not match anything")) {
-        return null;
-      }
-      throw new LocalException(
-          "Unexpected terminology server failure. Message = " + resultString);
-    }
+    final String resultString = retryWithDelay(target, 500, 3, accept,
+        authHeader, getAcceptLanguage(terminology, version),
+        genericUserCookie != null ? genericUserCookie : getCookieHeader());
 
     /**
      * <pre>
@@ -900,81 +892,89 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
   public ConceptList getConcepts(List<String> terminologyIds,
     String terminology, String version, boolean descriptions) throws Exception {
 
-    final StringBuilder query = new StringBuilder();
-    for (final String terminologyId : terminologyIds) {
-      // Only lookup stuff with actual digits
-      if (terminologyId.matches("[0-9]*")) {
-        if (query.length() != 0) {
-          query.append("&");
-        }
-        query.append("conceptIds=").append(terminologyId);
-      }
-    }
-
-    final Client client = ClientBuilder.newClient();
-
-    WebTarget target = client.target(url + "/" + version + "/concepts?" + query
-        + "&limit=" + terminologyIds.size());
-    Logger.getLogger(getClass()).info(url + "/" + version + "/concepts?" + query
-        + "&limit=" + terminologyIds.size());
-
-    Response response = target.request(accept)
-        .header("Authorization", authHeader)
-        .header("Accept-Language", getAcceptLanguage(terminology, version))
-        .header("Cookie",
-            genericUserCookie != null ? genericUserCookie : getCookieHeader())
-        .get();
-    String resultString = response.readEntity(String.class);
-    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-      // n/a
+    if (descriptions) {
+      ConceptList conceptList = new ConceptListJpa();
+      for (String terminologyId : terminologyIds)
+        conceptList
+            .addObject(getFullConcept(terminologyId, terminology, version));
+      return conceptList;
     } else {
-
-      // Here's the messy part about trying to parse the return error message
-      if (resultString.contains("loop did not match anything")) {
-        return new ConceptListJpa();
+      final StringBuilder query = new StringBuilder();
+      for (final String terminologyId : terminologyIds) {
+        // Only lookup stuff with actual digits
+        if (terminologyId.matches("[0-9]*")) {
+          if (query.length() != 0) {
+            query.append("&");
+          }
+          query.append("conceptIds=").append(terminologyId);
+        }
       }
 
-      throw new LocalException(
-          "Unexpected terminology server failure. Message = " + resultString);
-    }
+      final Client client = ClientBuilder.newClient();
 
-    ConceptList conceptList = new ConceptListJpa();
-    ObjectMapper mapper = new ObjectMapper();
-    JsonNode doc = mapper.readTree(resultString);
+      WebTarget target = client.target(url + "/" + version + "/concepts?"
+          + query + "&limit=" + terminologyIds.size());
+      Logger.getLogger(getClass()).info(url + "/" + version + "/concepts?"
+          + query + "&limit=" + terminologyIds.size());
 
-    // get total amount
-    final int total = doc.get("total").asInt();
-    // Get concepts returned in this call (up to 200)
-    if (doc.get("items") == null) {
+      Response response = target.request(accept)
+          .header("Authorization", authHeader)
+          .header("Accept-Language", getAcceptLanguage(terminology, version))
+          .header("Cookie",
+              genericUserCookie != null ? genericUserCookie : getCookieHeader())
+          .get();
+      String resultString = response.readEntity(String.class);
+      if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+        // n/a
+      } else {
+
+        // Here's the messy part about trying to parse the return error message
+        if (resultString.contains("loop did not match anything")) {
+          return new ConceptListJpa();
+        }
+
+        throw new LocalException(
+            "Unexpected terminology server failure. Message = " + resultString);
+      }
+
+      ConceptList conceptList = new ConceptListJpa();
+      ObjectMapper mapper = new ObjectMapper();
+      JsonNode doc = mapper.readTree(resultString);
+
+      // get total amount
+      final int total = doc.get("total").asInt();
+      // Get concepts returned in this call (up to 200)
+      if (doc.get("items") == null) {
+        return conceptList;
+      }
+      String searchAfter = "";
+      if (doc.findValue("searchAfter") != null) {
+        searchAfter = doc.findValue("searchAfter").asText();
+      }
+      for (final JsonNode conceptNode : doc.get("items")) {
+        final Concept concept = new ConceptJpa();
+
+        concept.setActive(conceptNode.get("active").asText().equals("true"));
+        concept.setTerminologyId(conceptNode.get("id").asText());
+        concept.setLastModified(ConfigUtility.DATE_FORMAT
+            .parse(conceptNode.get("effectiveTime").asText()));
+        concept.setLastModifiedBy(terminology);
+        concept.setModuleId(conceptNode.get("moduleId").asText());
+        concept.setDefinitionStatusId(
+            conceptNode.get("definitionStatus").asText());
+
+        // pt.term is the name
+        concept.setName(conceptNode.get("pt").get("term").asText());
+
+        concept.setPublishable(true);
+        concept.setPublished(true);
+
+        conceptList.addObject(concept);
+      }
+
+      conceptList.setTotalCount(total);
       return conceptList;
     }
-    String searchAfter = "";
-    if (doc.findValue("searchAfter") != null) {
-      searchAfter = doc.findValue("searchAfter").asText();
-    }
-    for (final JsonNode conceptNode : doc.get("items")) {
-      final Concept concept = new ConceptJpa();
-
-      concept.setActive(conceptNode.get("active").asText().equals("true"));
-      concept.setTerminologyId(conceptNode.get("id").asText());
-      concept.setLastModified(ConfigUtility.DATE_FORMAT
-          .parse(conceptNode.get("effectiveTime").asText()));
-      concept.setLastModifiedBy(terminology);
-      concept.setModuleId(conceptNode.get("moduleId").asText());
-      concept
-          .setDefinitionStatusId(conceptNode.get("definitionStatus").asText());
-
-      // pt.term is the name
-      concept.setName(conceptNode.get("pt").get("term").asText());
-
-      concept.setPublishable(true);
-      concept.setPublished(true);
-
-      conceptList.addObject(concept);
-    }
-
-    conceptList.setTotalCount(total);
-    return conceptList;
   }
 
   /* see superclass */

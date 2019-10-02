@@ -34,7 +34,6 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
-import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -83,7 +82,7 @@ import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
  * 
  */
 @Mojo(name = "sample-data2", defaultPhase = LifecyclePhase.PACKAGE)
-public class GenerateSampleData2Mojo extends AbstractMojo {
+public class GenerateSampleData2Mojo extends AbstractRttMojo {
 
   /** The assign names. */
   private Boolean assignNames;
@@ -113,9 +112,12 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
   /* see superclass */
   @Override
   public void execute() throws MojoFailureException {
+
     try {
       getLog().info("Generate sample data");
       getLog().info("  mode = " + mode);
+
+      setupBindInfoPackage();
 
       // Handle creating the database if the mode parameter is set
       Properties properties = ConfigUtility.getConfigProperties();
