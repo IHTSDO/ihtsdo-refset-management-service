@@ -1,5 +1,5 @@
-/**
- * Copyright 2015 West Coast Informatics, LLC
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 /**
  * Copyright (c) 2012 International Health Terminology Standards Development
@@ -22,7 +22,6 @@ package org.ihtsdo.otf.refset.mojo;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
-import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.IoHandlerInfo;
@@ -43,7 +42,7 @@ import org.ihtsdo.otf.refset.services.SecurityService;
  * @goal release-translation
  * @phase package
  */
-public class ReleaseTranslationMojo extends AbstractMojo {
+public class ReleaseTranslationMojo extends AbstractRttMojo {
 
   /**
    * Translation id.
@@ -54,10 +53,10 @@ public class ReleaseTranslationMojo extends AbstractMojo {
   private Long translationId;
 
   /**
-   * Effective time - YYYYMMDD
+   * Effective time - YYYYMMDD.
    *
-   * @required
-   * @parameter
+   * @required 
+   * @parameter 
    */
   private String effectiveTime;
 
@@ -85,6 +84,8 @@ public class ReleaseTranslationMojo extends AbstractMojo {
       getLog().info("  translationId = " + translationId);
       getLog().info("  effectiveTime = " + effectiveTime);
       getLog().info("  exporter = " + exporter);
+      
+      setupBindInfoPackage();
 
       final Properties properties = ConfigUtility.getConfigProperties();
       // Ensure name lookups are not in the background...
@@ -99,8 +100,8 @@ public class ReleaseTranslationMojo extends AbstractMojo {
 
       // Verify server is not up
       boolean serverRunning = ConfigUtility.isServerActive();
-      getLog().info(
-          "Server status detected:  " + (!serverRunning ? "DOWN" : "UP"));
+      getLog()
+          .info("Server status detected:  " + (!serverRunning ? "DOWN" : "UP"));
 
       // if (serverRunning) {
       // throw new Exception(
