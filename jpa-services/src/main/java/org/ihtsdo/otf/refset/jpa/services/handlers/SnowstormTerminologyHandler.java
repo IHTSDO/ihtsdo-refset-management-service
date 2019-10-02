@@ -3,6 +3,7 @@
  */
 package org.ihtsdo.otf.refset.jpa.services.handlers;
 
+import java.net.ConnectException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -655,28 +656,14 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
         + "- " + url + ", " + terminology + ", " + version);
     // TODO resolve this date conversion 20150131 -> 2015-01-31
     // version = "MAIN/2015-01-31";
-    // Make a webservice call to SnowOwl to get concept
+    // Make a webservice call to Snowstorm to get concept
     final Client client = ClientBuilder.newClient();
     final WebTarget target = client
         .target(url + "/browser/" + version + "/concepts/" + terminologyId);
-    final Response response = target.request(accept)
-        .header("Authorization", authHeader)
-        .header("Accept-Language", getAcceptLanguage(terminology, version))
-        .header("Cookie",
-            genericUserCookie != null ? genericUserCookie : getCookieHeader())
-        .get();
-    final String resultString = response.readEntity(String.class);
-    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-      // n/a
-    } else {
 
-      // Here's the messy part about trying to parse the return error message
-      if (resultString.contains("loop did not match anything")) {
-        return null;
-      }
-      throw new LocalException(
-          "Unexpected terminology server failure. Message = " + resultString);
-    }
+    final String resultString = retryWithDelay(target, 500, 3, accept,
+        authHeader, getAcceptLanguage(terminology, version),
+        genericUserCookie != null ? genericUserCookie : getCookieHeader());
 
     /**
      * <pre>
