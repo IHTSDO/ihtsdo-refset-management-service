@@ -32,13 +32,23 @@
           <div>
             <button style="margin-left: 15px" type="file" ngf-select
               ng-model="file" name="file"
-              ngf-pattern="'.txt,{{selectedIoHandler.fileTypeFilter}}'"
+              ngf-pattern="'{{selectedIoHandler.fileTypeFilter}}'"
+              accept="{{selectedIoHandler.fileTypeFilter}}"
               ngf-max-size="200MB">Browse for File</button>
             <br />
             <div ngf-drop ng-model="file" class="drop-box"
-              ngf-drag-over-class="'dragover'" ngf-max-size="200MB"
-              ngf-pattern="'.txt,{{selectedIoHandler.fileTypeFilter}}'">Drop
+              ngf-drag-over-class="'dragover'" 
+              ngf-max-size="200MB"
+              ngf-pattern="'{{selectedIoHandler.fileTypeFilter}}'"
+              accept="{{selectedIoHandler.fileTypeFilter}}"
+              ngf-model-invalid="invalidFiles" 
+              ngf-change="validateFile($invalidFiles)"
+              >Drop
               file here</div>
+              <div class="alert alert-danger alert-error" 
+                ng-show="(fileImportErrorMessage)">
+                {{fileImportErrorMessage}}
+              </div>
           </div>
         </td>
       </tr>
