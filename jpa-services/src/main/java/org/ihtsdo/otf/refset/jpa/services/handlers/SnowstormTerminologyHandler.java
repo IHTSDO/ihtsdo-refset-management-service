@@ -3,7 +3,7 @@
  */
 package org.ihtsdo.otf.refset.jpa.services.handlers;
 
-import java.net.ConnectException;
+import java.io.IOException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -26,6 +26,7 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.Response.Status.Family;
 
 import org.apache.log4j.Logger;
@@ -1183,6 +1184,8 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
+    } else if (response.getStatusInfo() == Status.BAD_REQUEST) {
+      throw new LocalException(getErrorMessage(resultString));
     } else {
       throw new LocalException(
           "Unexpected terminology server failure. Message = " + resultString);
@@ -1250,6 +1253,8 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
+    } else if (response.getStatusInfo() == Status.BAD_REQUEST) {
+      throw new LocalException(getErrorMessage(resultString));
     } else {
       throw new LocalException(
           "Unexpected terminology server failure. Message = " + resultString);
@@ -1374,8 +1379,9 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
+    } else if (response.getStatusInfo() == Status.BAD_REQUEST) {
+      throw new LocalException(getErrorMessage(resultString));
     } else {
-
       throw new LocalException(
           "Unexpected terminology server failure. Message = " + resultString);
     }
@@ -1600,6 +1606,26 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
       sb.append(";");
     }
     genericUserCookie = sb.toString();
+  }
+
+  /**
+   * Return message from API response.
+   * 
+   * @param jsonString JSON as string.
+   * @return error message.
+   * @throws IOException
+   */
+  private String getErrorMessage(String jsonString) throws IOException {
+    /**
+     * <pre>
+     * {"error":"BAD_REQUEST","message":"Branch 'MAIN/2018-05-31' does not exist."}
+     * </pre>
+     */
+
+    final ObjectMapper mapper = new ObjectMapper();
+    final JsonNode jsonNode = mapper.readTree(jsonString);
+
+    return jsonNode.get("message").asText();
   }
 
 }
