@@ -3346,7 +3346,9 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
               ts.setSuggestion(d.getTerm());
               ts.setLanguageCode(d.getLanguageCode());
               ts.setSource(te.getBranch());
-              translationSuggestionsList.addTranslationSuggestion(ts);
+              if (!translationSuggestionsList.contains(ts)) {
+                translationSuggestionsList.addTranslationSuggestion(ts);
+              }
             }
           }
         }
