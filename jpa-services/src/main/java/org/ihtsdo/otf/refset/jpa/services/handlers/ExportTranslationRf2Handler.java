@@ -63,9 +63,9 @@ public class ExportTranslationRf2Handler implements ExportTranslationHandler {
 
     // Use info from "translation" object to get file name right.
     String languageRefsetMemberFileName = "der2_cRefset_LanguageSnapshot-"
-        + translation.getLanguage() + "_" + translation.getVersion() + ".txt";
+        + translation.getLanguage() + "_" + translation.getVersion().replaceAll("/", "_") + ".txt";
     String descriptionFileName = "sct2_Description_Snapshot-"
-        + translation.getLanguage() + "_" + translation.getVersion() + ".txt";
+        + translation.getLanguage() + "_" + translation.getVersion().replaceAll("/", "_") + ".txt";
 
     // TODO: rewire this to just extract all descriptions, then all langauges
     // and call the exportDelta with those. then logic is the same
@@ -181,9 +181,9 @@ public class ExportTranslationRf2Handler implements ExportTranslationHandler {
 
     // Use info from "translation" object to get file name right.
     String languageRefsetMemberFileName = "der2_cRefset_LanguageDelta-"
-        + translation.getLanguage() + "_" + translation.getVersion() + ".txt";
+        + translation.getLanguage() + "_" + translation.getVersion().replaceAll("/", "_") + ".txt";
     String descriptionFileName = "sct2_Description_Delta-"
-        + translation.getLanguage() + "_" + translation.getVersion() + ".txt";
+        + translation.getLanguage() + "_" + translation.getVersion().replaceAll("/", "_") + ".txt";
 
     // Write descriptions and language refset entries
     // in SNOMED CT Structure to a .zip file
