@@ -8,6 +8,9 @@ package org.ihtsdo.otf.refset.workflow;
  */
 public enum WorkflowStatus {
 
+  /** The unassigned status. */
+  UNASSIGNED,
+
   /** The new status. */
   NEW,
 
