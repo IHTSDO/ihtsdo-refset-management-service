@@ -653,14 +653,16 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
   @Override
   public Concept getFullConcept(String terminologyId, String terminology,
     String version) throws Exception {
-    Logger.getLogger(getClass()).info("  get full concept: " + terminologyId
-        + "- " + url + ", " + terminology + ", " + version);
+
     // TODO resolve this date conversion 20150131 -> 2015-01-31
     // version = "MAIN/2015-01-31";
     // Make a webservice call to Snowstorm to get concept
     final Client client = ClientBuilder.newClient();
     final WebTarget target = client
         .target(url + "/browser/" + version + "/concepts/" + terminologyId);
+
+    Logger.getLogger(getClass()).info("  get full concept: " + terminologyId
+        + "- " + target.getUri().toString());
 
     final String resultString = retryWithDelay(target, 500, 3, accept,
         authHeader, getAcceptLanguage(terminology, version),
@@ -895,9 +897,15 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
 
     if (descriptions) {
       ConceptList conceptList = new ConceptListJpa();
-      for (String terminologyId : terminologyIds)
-        conceptList
-            .addObject(getFullConcept(terminologyId, terminology, version));
+      for (String terminologyId : terminologyIds) {
+        try {
+          conceptList
+              .addObject(getFullConcept(terminologyId, terminology, version));
+        } catch (Exception e) {
+          Logger.getLogger(getClass()).error(
+              "Failed to get concept " + terminologyId + ". " + e.getMessage());
+        }
+      }
       return conceptList;
     } else {
       final StringBuilder query = new StringBuilder();
@@ -915,8 +923,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
 
       WebTarget target = client.target(url + "/" + version + "/concepts?"
           + query + "&limit=" + terminologyIds.size());
-      Logger.getLogger(getClass()).info(url + "/" + version + "/concepts?"
-          + query + "&limit=" + terminologyIds.size());
+      Logger.getLogger(getClass()).info(target.getUri().toString());
 
       Response response = target.request(accept)
           .header("Authorization", authHeader)
