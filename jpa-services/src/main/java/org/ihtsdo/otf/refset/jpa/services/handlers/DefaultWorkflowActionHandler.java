@@ -1220,7 +1220,13 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     Map<String, Boolean> refsetAllowedMap = new HashMap<>();
 
     // Refset Admin Options
-    refsetAllowedMap.put("ASSIGN" + "ADMIN" + "*", true);
+    refsetAllowedMap.put("ASSIGN" + "ADMIN" + "NEW", true);
+    refsetAllowedMap.put("ASSIGN" + "ADMIN" + "EDITING_IN_PROGRESS", true);
+    refsetAllowedMap.put("ASSIGN" + "ADMIN" + "EDITING_DONE", true);
+    refsetAllowedMap.put("ASSIGN" + "ADMIN" + "REVIEW_NEW", true);
+    refsetAllowedMap.put("ASSIGN" + "ADMIN" + "REVIEW_IN_PROGRESS", true);
+    refsetAllowedMap.put("ASSIGN" + "ADMIN" + "REVIEW_DONE", true);
+    refsetAllowedMap.put("ASSIGN" + "ADMIN" + "READY_FOR_PUBLICATION", true);
     refsetAllowedMap.put("UNASSIGN" + "ADMIN" + "NEW", true);
     refsetAllowedMap.put("UNASSIGN" + "ADMIN" + "EDITING_IN_PROGRESS", true);
     refsetAllowedMap.put("UNASSIGN" + "ADMIN" + "EDITING_DONE", true);
