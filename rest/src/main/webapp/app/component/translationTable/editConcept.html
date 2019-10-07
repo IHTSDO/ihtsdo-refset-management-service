@@ -75,7 +75,6 @@
             ng-click="paging['descriptions'].filter = ''; getPagedDescriptions()"
             title="Click to clear filter text">Clear</button>
         </span>
-
         <table class="table">
           <thead>
             <tr>
@@ -89,7 +88,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr ng-repeat="description in pagedDescriptions">
+            <tr ng-repeat="(index, description) in pagedDescriptions">
               <td>
                 <div ng-class="{redborder: hasSuggestions(description)}">
                   <textarea id="tinymceId" title="Description term"
@@ -113,7 +112,8 @@
               </td>
               <td>
                 <!-- remove description -->
-                <i ng-show="description.editable == true || description.editable == null" ng-click="removeDescription($index)"
+                <i ng-show="description.editable == true || description.editable == null" 
+                  ng-click="removeDescription(index,paging['descriptions'].page)"
                   title="Remove description" class="noul material-icons md-18">delete</i>
                 <!-- Add all words -->
                 <i ng-show="hasSuggestions(description)" 
