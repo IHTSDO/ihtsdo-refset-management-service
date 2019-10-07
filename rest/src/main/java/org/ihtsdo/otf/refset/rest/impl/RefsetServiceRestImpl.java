@@ -387,9 +387,10 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         throw new LocalException(
             "Adding members based on an expression can only be done for EXTENSIONAL refsets.");
       }
-      final ConceptList resolvedFromExpression = refsetService
-          .getTerminologyHandler(refset.getProject(), getHeaders(headers))
-          .resolveExpression(refset.computeExpression(expression),
+      final TerminologyHandler terminologyHandler = refsetService
+          .getTerminologyHandler(refset.getProject(), getHeaders(headers));
+      final ConceptList resolvedFromExpression = 
+          terminologyHandler.resolveExpression(refset.computeExpression(expression),
               refset.getTerminology(), refset.getVersion(), null, false);
 
       final Set<String> conceptIds = new HashSet<>();
@@ -404,7 +405,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
           final ConceptRefsetMemberJpa member = new ConceptRefsetMemberJpa();
           // member.setTerminologyId(concept.getTerminologyId());
           member.setConceptId(concept.getTerminologyId());
-          member.setConceptName(concept.getName());
+          member.setConceptName(terminologyHandler.UNABLE_TO_DETERMINE_NAME);
           member.setMemberType(Refset.MemberType.MEMBER);
           member.setModuleId(concept.getModuleId());
           member.setRefset(refset);
@@ -412,8 +413,6 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
           member.setConceptActive(true);
           member.setLastModifiedBy(userName);
           ConceptRefsetMember newMember = refsetService.addMember(member);
-          refsetService.populateMemberSynonyms(newMember, concept, refset, refsetService);
-          refsetService.updateMember(newMember);
           list.addObject(newMember);
         }
       }
@@ -422,6 +421,10 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
           refset.getTerminologyId() + " = " + expression);
 
       refsetService.commit();
+      
+      // Lookup the refset name and synonyms
+      refsetService.lookupMemberNames(refsetId, "looking up names and synonyms for recently added members", true);     
+      
       return list;
     } catch (Exception e) {
       handleException(e, "trying to update a refset");
