@@ -3464,6 +3464,7 @@ tsApp
                         refsetService.addRefsetMember(member).then(
                         // Success
                         function(data) {
+                          member.id = data.id;
                           $scope.data.memberTypes[concept.terminologyId] = member;
                         },
                         // Error
@@ -3476,6 +3477,7 @@ tsApp
                         refsetService.addRefsetInclusion(member, false).then(
                         // Success
                         function(data) {
+                          member.id = data.id;
                           $scope.data.memberTypes[concept.terminologyId] = member;
                         },
                         // Error
