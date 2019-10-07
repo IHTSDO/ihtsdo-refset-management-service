@@ -266,14 +266,18 @@ public class ImportTranslationTermServerHandler extends ImportExportAbstract
             description.getLanguageRefsetMembers().add(lrm);
           }
 
-          Logger.getLogger(getClass()).debug("STOP");
-
         } // end language check
       } // end for description
     } // end for concept
 
-    Logger.getLogger(getClass()).debug("STOP");
-
+    if (conceptCache != null && conceptCache.size() > 0) {
+      validationResult.addComment(
+        conceptCache.size() + " descriptions successfully loaded.");
+    }  else {
+      validationResult.addComment(
+          "No descriptions found.");
+    }
+    
     return new ArrayList<>(conceptCache.values());
   }
 
