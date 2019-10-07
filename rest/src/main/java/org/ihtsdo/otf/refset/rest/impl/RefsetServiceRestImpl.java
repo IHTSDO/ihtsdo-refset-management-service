@@ -1441,7 +1441,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       }
 
       // Look up concept name and active
-      if (member.getConceptName() == null) {
+      if (member.getConceptName() == null || !member.getConceptName().contains("(")) {
         final Concept concept = refsetService
             .getTerminologyHandler(refset.getProject(), getHeaders(headers))
             .getFullConcept(member.getConceptId(), refset.getTerminology(),
