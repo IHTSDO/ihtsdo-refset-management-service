@@ -188,7 +188,6 @@
               ng-click="openEditTranslationModal(translation); $event.stopPropagation()"
               title="Edit" class="noul material-icons md-18">edit</i>
             <i
-              confirm="Are you sure you want to remove the translation ({{translation.name}})?"
               ng-click="removeTranslation(translation);" title="Remove"
               class="noul material-icons md-18">delete</i>
 
@@ -218,7 +217,6 @@
               ng-show="translation.workflowStatus == 'BETA' || translation.inPublicationProcess">
               <br />
               <button class="btn btn-xs btn-warning"
-                confirm="Are you sure you want to cancel the release process?"
                 ng-click="cancelAction(translation); $event.stopPropagation()"
                 title="Click to cancel release process">Cancel Release</button>
             </span>
@@ -867,8 +865,7 @@
             ng-click="openImportExportModal(selected.translation, 'Import', 'Translation');"
             title="Import translation concepts"
             class="noul material-icons md-18">file_upload</i>
-          <i
-            confirm="Are you sure you want to remove all the concepts of the translation ({{selected.translation.name}})?"
+          <i 
             ng-show="value == 'EDITING' && selected.translation.concepts.length > 0"
             ng-click="removeAllTranslationConcepts(selected.translation); "
             title="Remove all concepts" class="noul material-icons md-18">delete</i>
@@ -976,7 +973,6 @@
                 <!-- Remove -->
                 <i
                   ng-show="concept.workflowStatus == 'READY_FOR_PUBLICATION' || concept.workflowStatus == 'NEW'"
-                  confirm="Are you sure you want to remove the concept ({{concept.terminologyId}}, {{concept.name}})?"
                   ng-click="removeConcept(selected.translation,concept); $event.stopPropagation()"
                   title="Remove concept" class="noul material-icons md-18">delete</i>
                 <!-- Notes -->
