@@ -955,9 +955,9 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
     throws Exception {
     Logger.getLogger(getClass()).info("Release Service - lookup member names - "
         + refsetId + ", " + background);
-    // Only launch process if refset not already looked-up
+    // Only launch process if refset not already looked-up, or if a previous lookup failed
     if (ConfigUtility.isAssignNames()) {
-      if (!lookupProgressMap.containsKey(refsetId)) {
+      if (!lookupProgressMap.containsKey(refsetId) || (lookupProgressMap.containsKey(refsetId) && lookupProgressMap.get(refsetId).equals(-100))) {
         // Create new thread
         Runnable lookup = new LookupMemberNamesThread(refsetId, label);
         Thread t = new Thread(lookup);
@@ -1074,13 +1074,14 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
     /* see superclass */
     @Override
     public void run() {
+      RefsetService refsetService = null;
       try {
         Logger.getLogger(RefsetServiceJpa.this.getClass())
             .info("Starting lookupMemberNamesThread - " + refsetId);
         // Initialize Process
         lookupProgressMap.put(refsetId, 0);
 
-        RefsetServiceJpa refsetService = new RefsetServiceJpa();
+        refsetService = new RefsetServiceJpa();
 
         // Refset may not be ready yet in DB, wait for 250ms until ready
         Refset refset = null;
@@ -1235,7 +1236,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
         lookupProgressMap.remove(refsetId);
         Logger.getLogger(RefsetServiceJpa.this.getClass())
             .info("Finished lookupMemberNamesThread - " + refsetId);
-        refsetService.close();
+        
       } catch (Exception e) {
         try {
           ExceptionHandler.handleException(e, label, null);
@@ -1243,6 +1244,14 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
           // n/a
         }
         lookupProgressMap.put(refsetId, LOOKUP_ERROR_CODE);
+      }
+      finally {
+        try {
+          refsetService.close();
+        }
+        catch (Exception e) {
+          // n/a
+        }
       }
     }
   }
