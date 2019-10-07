@@ -78,6 +78,7 @@ import org.ihtsdo.otf.refset.jpa.services.ReleaseServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.TranslationServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.WorkflowServiceJpa;
+import org.ihtsdo.otf.refset.jpa.services.handlers.ImportTranslationTermServerHandler;
 import org.ihtsdo.otf.refset.jpa.services.handlers.SnowstormTerminologyHandler;
 import org.ihtsdo.otf.refset.jpa.services.rest.TranslationServiceRest;
 import org.ihtsdo.otf.refset.rf2.Concept;
@@ -3493,7 +3494,11 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
           // Mark as ready for publication as they are imported and can be
           // further worked on from there
           concept.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
-          concept.setLastModifiedBy(user.getUserName());
+          if (handler instanceof ImportTranslationTermServerHandler) {
+            concept.setLastModifiedBy("Term Server");
+          } else {
+            concept.setLastModifiedBy(user.getUserName());
+          }
           // Make a copy to detach it, otherwise they share the same description
           // lists
           origConcept =
@@ -3549,7 +3554,11 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
             description.setPublished(false);
             description.setConcept(origConcept);
             description.setEditable(isEditable);
-            description.setLastModifiedBy(user.getUserName());
+            if (handler instanceof ImportTranslationTermServerHandler) {
+              description.setLastModifiedBy("Term Server");
+            } else {
+              description.setLastModifiedBy(user.getUserName());
+            }
             origConcept.getDescriptions().add(description);
             // Copy the result to detach it - otherwise they share the same
             // member list
@@ -3589,6 +3598,11 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
               member.setPublished(false);
               member.setDescriptionId(origDesc.getTerminologyId());
               member.setLastModifiedBy(user.getUserName());
+              if (handler instanceof ImportTranslationTermServerHandler) {
+                member.setLastModifiedBy("Term Server");
+              } else {
+                member.setLastModifiedBy(user.getUserName());
+              }
               origMember = translationService.addLanguageRefsetMember(member,
                   translation.getTerminology());
               origDesc.getLanguageRefsetMembers().add(origMember);
@@ -3645,7 +3659,11 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
             // Update fields
             origDesc.setCaseSignificanceId(description.getCaseSignificanceId());
             origDesc.setLanguageCode(description.getLanguageCode());
-            origDesc.setLastModifiedBy(user.getUserName());
+            if (handler instanceof ImportTranslationTermServerHandler) {
+              origDesc.setLastModifiedBy("Term Server");
+            } else {
+              origDesc.setLastModifiedBy(user.getUserName());
+            }
             origDesc.setModuleId(description.getModuleId());
             origDesc.setTypeId(description.getTypeId());
             origDesc.setEffectiveTime(description.getEffectiveTime());
