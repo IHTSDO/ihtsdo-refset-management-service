@@ -449,6 +449,22 @@ tsApp
                   pfs, translated, language).then(
                   // Success
                   function(data) {
+                    // if this is a language lookup on page 1, check if there were any changes 
+                    if ($scope.preferredLanguage != 'en' && $scope.paging['member'].page == 1 && 
+                       refset.members && data.members) {
+                      var match = true;
+                      for (var i = 0; i < refset.members.length && i < data.members.length; i++) {
+                        if (refset.members[i].conceptName != data.members[i].conceptName) {
+                          match = false;
+                          break;
+                        }
+                      }
+                      // if no changes, alert user to expect english
+                      if (match) {
+                        $window.alert("Term is displayed in English if a " + $scope.preferredLanguage + " term isn’t available.");
+                      }
+                    }
+                    
                     refset.members = data.members;
                     refset.members.totalCount = data.totalCount;
                     $scope.requiresNameLookup = false;
