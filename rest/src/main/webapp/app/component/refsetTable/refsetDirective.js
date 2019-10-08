@@ -938,6 +938,7 @@ tsApp
                 function(data) {
                   // Cancel automated lookup on error
                   $interval.cancel($scope.lookupInterval);
+                  $scope.refsetLookupProgress[refset.id] = -1;
                 });
               };
 
