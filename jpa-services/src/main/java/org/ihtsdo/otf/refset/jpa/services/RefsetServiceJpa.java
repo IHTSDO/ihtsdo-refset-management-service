@@ -1360,7 +1360,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
         member.setConceptActive(concept.isActive());
         member.setPublished(concept.isPublished());
         member.setConceptId(concept.getTerminologyId());
-        member.setConceptName(concept.getName());
+        member.setConceptName(handler.UNABLE_TO_DETERMINE_NAME);
         member.setMemberType(Refset.MemberType.MEMBER);
         member.setModuleId(concept.getModuleId());
         member.setRefset(refset);
@@ -1369,10 +1369,12 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
         member.setId(null);
         member.setLastModifiedBy(refset.getLastModifiedBy());
         ConceptRefsetMember newMember = addMember(member);
-        populateMemberSynonyms(newMember, concept, refset, this, handler);
 
       }
     }
+    
+    // Lookup the refset name and synonyms
+    lookupMemberNames(refset.getId(), "looking up names and synonyms for recently added members", true);     
 
   }
 
