@@ -148,7 +148,12 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
             && EnumSet.of(WorkflowStatus.REVIEW_NEW,
                 WorkflowStatus.REVIEW_IN_PROGRESS, WorkflowStatus.REVIEW_DONE)
                 .contains(refset.getWorkflowStatus());
-        flag = authorFlag || reviewerFlag;
+        //If an admin is finishing a migration from a refset pulled directly from the release section
+        boolean adminFlag = projectRole == UserRole.ADMIN && record != null
+            && EnumSet
+                .of(WorkflowStatus.READY_FOR_PUBLICATION)
+                .contains(refset.getWorkflowStatus());
+        flag = authorFlag || reviewerFlag || adminFlag;
         break;
 
       case FINISH:
