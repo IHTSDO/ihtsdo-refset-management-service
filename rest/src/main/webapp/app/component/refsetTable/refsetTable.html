@@ -205,6 +205,17 @@
               ng-show="isAllowed('UNASSIGN', refset)"
               ng-click="unassign(refset,user.userName); $event.stopPropagation()"
               title="Unassign" class="noul material-icons md-18">assignment_return</i>
+            <span
+              ng-show="refset.lookupInProgress && refsetLookupProgress[refset.id] > -1 && refsetLookupProgress[refset.id] < 100">
+              <br />
+              <button class="btn btn-xs btn-warning"
+                ng-click="refreshLookupProgress(refset)"
+                title="Click to refresh lookup progress">
+                Refresh
+                <span ng-show="refsetLookupProgress[refset.id]">
+                  {{refsetLookupProgress[refset.id]}}%</span>
+              </button>
+            </span>
             <!-- ASSIGNED actions -->
           <td class="nobreak" ng-show="value == 'ASSIGNED'">
             <i ng-show="projects.role != 'ADMIN'"

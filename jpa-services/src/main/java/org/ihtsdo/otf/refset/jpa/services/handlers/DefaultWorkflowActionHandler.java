@@ -1,5 +1,5 @@
-/**
- * Copyright 2015 West Coast Informatics, LLC
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.jpa.services.handlers;
 
@@ -148,7 +148,12 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
             && EnumSet.of(WorkflowStatus.REVIEW_NEW,
                 WorkflowStatus.REVIEW_IN_PROGRESS, WorkflowStatus.REVIEW_DONE)
                 .contains(refset.getWorkflowStatus());
-        flag = authorFlag || reviewerFlag;
+        //If an admin is finishing a migration from a refset pulled directly from the release section
+        boolean adminFlag = projectRole == UserRole.ADMIN && record != null
+            && EnumSet
+                .of(WorkflowStatus.READY_FOR_PUBLICATION)
+                .contains(refset.getWorkflowStatus());
+        flag = authorFlag || reviewerFlag || adminFlag;
         break;
 
       case FINISH:
@@ -445,7 +450,8 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
 
     // Validate tracking record
     TrackingRecordList recordList = new TrackingRecordListJpa();
-    if (concept != null && concept.getId() != null) {
+    if (concept != null && concept.getId() != null
+        && !WorkflowStatus.UNASSIGNED.equals(concept.getWorkflowStatus())) {
       recordList = service
           .findTrackingRecordsForQuery("conceptId:" + concept.getId(), null);
     }
@@ -476,7 +482,8 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
         // role specific
         boolean authorFlag = projectRole == UserRole.AUTHOR && record == null
             && EnumSet
-                .of(WorkflowStatus.NEW, WorkflowStatus.READY_FOR_PUBLICATION)
+                .of(WorkflowStatus.NEW, WorkflowStatus.UNASSIGNED,
+                    WorkflowStatus.READY_FOR_PUBLICATION)
                 .contains(concept.getWorkflowStatus());
 
         boolean reviewerFlag = projectRole == UserRole.REVIEWER
@@ -620,6 +627,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
             skipUpdate = true;
             service.addConcept(concept);
           }
+
           // Create a tracking record, fill it out, and add it.
           TrackingRecord record2 = new TrackingRecordJpa();
           record2.getAuthors().add(user.getUserName());
@@ -635,6 +643,16 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
                 service.getConceptRevisionNumber(concept.getId()));
             concept.setRevision(true);
           }
+          // If the concept was previously assigned, update the workflow status
+          // depending on whether descriptions are present
+          else if (concept.getWorkflowStatus() == WorkflowStatus.UNASSIGNED) {
+            if (concept.getDescriptions().size() > 0) {
+              concept.setWorkflowStatus(WorkflowStatus.EDITING_IN_PROGRESS);
+            } else {
+              concept.setWorkflowStatus(WorkflowStatus.NEW);
+            }
+          }
+
           record = record2;
           service.addTrackingRecord(record2);
         }
@@ -663,14 +681,45 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
             // Read origin concept with a different service, then detach it
             final Concept originConcept =
                 getOriginConcept(concept.getId(), record.getOriginRevision());
-            service.syncConcept(concept.getId(), originConcept);
+
+            // If revision is due to pulling concept out of
+            // READY_FOR_PUBLICATION, return concept to that state
+            if (originConcept.getWorkflowStatus()
+                .equals(WorkflowStatus.READY_FOR_PUBLICATION)) {
+              service.syncConcept(concept.getId(), originConcept);
+            }
+            // If revision is due to reviewer feedback, move concept to
+            // UNASSIGNED
+            else if (EnumSet.of(WorkflowStatus.REVIEW_NEW,
+                WorkflowStatus.REVIEW_IN_PROGRESS, WorkflowStatus.REVIEW_DONE)
+                .contains(originConcept.getWorkflowStatus())) {
+              concept.setWorkflowStatus(WorkflowStatus.UNASSIGNED);
+              service.updateConcept(concept);
+            } else {
+              throw new Exception(
+                  "Unexpected workflow state detected when unassigning concept "
+                      + concept.getName());
+            }
+
             // signal to leave refset alone
             skipUpdate = true;
 
           }
+          // If the concept has descriptions or notes, don't remove the concept.
+          // Instead, set it to Unassigned
+          else if (concept.getDescriptions().size() > 0
+              || concept.getNotes().size() > 0) {
+            concept.setWorkflowStatus(WorkflowStatus.UNASSIGNED);
+            service.updateConcept(concept);
+          }
+
           // Remove tracking record
           service.removeTrackingRecord(record.getId());
-          if (!record.isRevision()) {
+
+          // Don't remove the concept if it was part of a revision or has
+          // descriptions or notes attached
+          if (!record.isRevision() && concept.getDescriptions().size() == 0
+              && concept.getNotes().size() == 0) {
             skipUpdate = true;
             service.removeConcept(concept.getId(), true);
           }
@@ -846,7 +895,12 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     String queryStr = "select a from ConceptRefsetMemberJpa a, RefsetJpa b "
         + "where b.id = :refsetId and a.refset = b " + "and a.conceptId NOT IN "
         + "(select d.terminologyId from TranslationJpa c, ConceptJpa d "
-        + " where c.refset = b AND d.translation = c AND c.id = :translationId )";
+        + " where c.refset = b AND d.translation = c AND c.id = :translationId)";
+
+    // Concepts that have been unassigned from an author
+    String queryStr2 = "select a from ConceptJpa a, TranslationJpa b "
+        + "where a.translation = b and a.workflowStatus = :unassigned "
+        + "and b.id = :translationId";
 
     List<ConceptRefsetMember> results = null;
     final ConceptListJpa list = new ConceptListJpa();
@@ -864,12 +918,27 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
       ctQuery.setParameter("refsetId", translation.getRefset().getId());
       ctQuery.setParameter("translationId", translation.getId());
 
+      Query ctQuery2 = ((RootServiceJpa) service).getEntityManager()
+          .createQuery("select count(*) from ConceptJpa a, TranslationJpa b "
+              + "where a.translation = b and a.workflowStatus = :unassigned "
+              + "and b.id = :translationId");
+      ctQuery2.setParameter("unassigned", WorkflowStatus.UNASSIGNED);
+      ctQuery2.setParameter("translationId", translation.getId());
+
       final Query query =
           ((RootServiceJpa) service).applyPfsToJqlQuery(queryStr, localPfs);
       query.setParameter("refsetId", translation.getRefset().getId());
       query.setParameter("translationId", translation.getId());
+
+      final Query query2 =
+          ((RootServiceJpa) service).applyPfsToJqlQuery(queryStr2, localPfs);
+      query2.setParameter("unassigned", WorkflowStatus.UNASSIGNED);
+      query2.setParameter("translationId", translation.getId());
+
       results = query.getResultList();
-      totalCount = ((Long) ctQuery.getSingleResult()).intValue();
+      list.getObjects().addAll(query2.getResultList());
+      totalCount = ((Long) ctQuery.getSingleResult()).intValue()
+          + ((Long) ctQuery2.getSingleResult()).intValue();
     }
 
     // Use applyPfsToList if there is a filter
@@ -884,7 +953,18 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
       results = query.getResultList();
       results = service.applyPfsToList(results, ConceptRefsetMember.class,
           totalCt, localPfs);
-      totalCount = totalCt[0];
+
+      final Query query2 =
+          ((RootServiceJpa) service).applyPfsToJqlQuery(queryStr2, null);
+      query2.setParameter("unassigned", WorkflowStatus.UNASSIGNED);
+      query2.setParameter("translationId", translation.getId());
+      int[] totalCt2 = new int[1];
+      List<Concept> conceptResultList = query2.getResultList();
+      conceptResultList = service.applyPfsToList(conceptResultList,
+          Concept.class, totalCt2, localPfs);
+      list.getObjects().addAll(conceptResultList);
+
+      totalCount = totalCt[0] + totalCt2[0];
     }
 
     // Repackage as a concept list
@@ -1145,7 +1225,13 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     Map<String, Boolean> refsetAllowedMap = new HashMap<>();
 
     // Refset Admin Options
-    refsetAllowedMap.put("ASSIGN" + "ADMIN" + "*", true);
+    refsetAllowedMap.put("ASSIGN" + "ADMIN" + "NEW", true);
+    refsetAllowedMap.put("ASSIGN" + "ADMIN" + "EDITING_IN_PROGRESS", true);
+    refsetAllowedMap.put("ASSIGN" + "ADMIN" + "EDITING_DONE", true);
+    refsetAllowedMap.put("ASSIGN" + "ADMIN" + "REVIEW_NEW", true);
+    refsetAllowedMap.put("ASSIGN" + "ADMIN" + "REVIEW_IN_PROGRESS", true);
+    refsetAllowedMap.put("ASSIGN" + "ADMIN" + "REVIEW_DONE", true);
+    refsetAllowedMap.put("ASSIGN" + "ADMIN" + "READY_FOR_PUBLICATION", true);
     refsetAllowedMap.put("UNASSIGN" + "ADMIN" + "NEW", true);
     refsetAllowedMap.put("UNASSIGN" + "ADMIN" + "EDITING_IN_PROGRESS", true);
     refsetAllowedMap.put("UNASSIGN" + "ADMIN" + "EDITING_DONE", true);
@@ -1235,6 +1321,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
 
     // Translation Author Options
     translationAllowedMap.put("ASSIGN" + "AUTHOR" + "NEW", true);
+    translationAllowedMap.put("ASSIGN" + "AUTHOR" + "UNASSIGNED", true);
     // translationAllowedMap.put("ASSIGN" + "AUTHOR" + "READY_FOR_PUBLICATION",
     // true);
     translationAllowedMap.put("UNASSIGN" + "AUTHOR" + "NEW", true);

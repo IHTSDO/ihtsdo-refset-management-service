@@ -11,7 +11,7 @@
     <div translation-info translation="translation" form="long"
       metadata="metadata"></div>
 
-    <table class="table">
+    <table class="table" style="table-layout: fixed"">
       <tr ng-show="type == 'Translation'">
         <td class="col-md-4 col-xs-4">
           <b>I/O Handler</b>
@@ -32,13 +32,23 @@
           <div>
             <button style="margin-left: 15px" type="file" ngf-select
               ng-model="file" name="file"
-              ngf-pattern="'.txt,{{selectedIoHandler.fileTypeFilter}}'"
+              ngf-pattern="'{{selectedIoHandler.fileTypeFilter}}'"
+              accept="{{selectedIoHandler.fileTypeFilter}}"
               ngf-max-size="200MB">Browse for File</button>
             <br />
             <div ngf-drop ng-model="file" class="drop-box"
-              ngf-drag-over-class="'dragover'" ngf-max-size="200MB"
-              ngf-pattern="'.txt,{{selectedIoHandler.fileTypeFilter}}'">Drop
+              ngf-drag-over-class="'dragover'" 
+              ngf-max-size="200MB"
+              ngf-pattern="'{{selectedIoHandler.fileTypeFilter}}'"
+              accept="{{selectedIoHandler.fileTypeFilter}}"
+              ngf-model-invalid="invalidFiles" 
+              ngf-change="validateFile($invalidFiles)"
+              >Drop
               file here</div>
+              <div class="alert alert-danger alert-error" 
+                ng-show="(fileImportErrorMessage)">
+                {{fileImportErrorMessage}}
+              </div>
           </div>
         </td>
       </tr>
@@ -52,7 +62,7 @@
       </tr>
       <tr ng-show="file">
         <td>Selected File</td>
-        <td>{{file.name}}</td>
+        <td style="word-wrap: break-word">{{file.name}}</td>
       </tr>
       <tr ng-show="comments.length > 0">
         <td colspan="2">
@@ -104,7 +114,7 @@
   <button class="btn btn-xs btn-primary" ng-disabled="!file && selectedIoHandler.ioType == 'FILE'"
     ng-show="operation == 'Import' && errors.length > 0 && type == 'Translation'"
     ng-click="continueImport(file, selectedAction);">Continue With Import</button>
-  <button class="btn btn-xs btn-warning" ng-show="comments.length == 0"
+  <button class="btn btn-xs btn-warning" ng-show="$scope.errors.length > 0 && comments.length == 0"
     ng-click="cancel()">Cancel</button>
   <button class="btn btn-xs btn-warning" ng-click="close()">Close</button>
 

@@ -957,10 +957,15 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     concept.setLastModifiedBy(terminology);
     concept.setModuleId(doc.get("moduleId").asText());
     concept.setDefinitionStatusId(doc.get("definitionStatus").asText());
-    concept.setName(doc.get("preferredSynonym").get("term") == null
-        ? doc.get("preferredSynonym").asText()
-        : doc.get("preferredSynonym").get("term").asText());
-
+    /*
+     * concept.setName(doc.get("preferredSynonym").get("term") == null ?
+     * doc.get("preferredSynonym").asText() :
+     * doc.get("preferredSynonym").get("term").asText());
+     */
+    JsonNode fsn = doc.get("fsn");
+    String term = fsn == null ? ""
+        : fsn.get("term") == null ? "" : fsn.get("term").asText();
+    concept.setName(term);
     concept.setPublishable(true);
     concept.setPublished(true);
 

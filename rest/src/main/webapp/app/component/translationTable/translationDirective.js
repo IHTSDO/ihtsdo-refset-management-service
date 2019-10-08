@@ -2000,6 +2000,7 @@ tsApp
                 $scope.comments = [];
                 $scope.importStarted = false;
                 $scope.importFinished = false;
+                $scope.fileImportErrorMessage = null;
                 if (type == 'Translation' && ($scope.query || $scope.pfs)) {
                   $scope.warnings
                     .push(operation + " is based on current search criteria and may not include all concepts.");
@@ -2153,6 +2154,14 @@ tsApp
                             handleError($scope.errors, data);
                           });
                     }
+                  }
+                };
+                
+                $scope.validateFile = function($invalidFiles){
+                  $scope.fileImportErrorMessage = null;
+                  if($invalidFiles && $invalidFiles.length > 0){
+                     $scope.fileImportErrorMessage = 
+                       "File must be " + $invalidFiles[0].$errorParam + ".";  
                   }
                 };
                 

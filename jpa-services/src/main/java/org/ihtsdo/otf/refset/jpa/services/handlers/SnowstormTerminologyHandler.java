@@ -3,7 +3,7 @@
  */
 package org.ihtsdo.otf.refset.jpa.services.handlers;
 
-import java.net.ConnectException;
+import java.io.IOException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -26,6 +26,7 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.Response.Status.Family;
 
 import org.apache.log4j.Logger;
@@ -652,14 +653,16 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
   @Override
   public Concept getFullConcept(String terminologyId, String terminology,
     String version) throws Exception {
-    Logger.getLogger(getClass()).info("  get full concept: " + terminologyId
-        + "- " + url + ", " + terminology + ", " + version);
+
     // TODO resolve this date conversion 20150131 -> 2015-01-31
     // version = "MAIN/2015-01-31";
     // Make a webservice call to Snowstorm to get concept
     final Client client = ClientBuilder.newClient();
     final WebTarget target = client
         .target(url + "/browser/" + version + "/concepts/" + terminologyId);
+
+    Logger.getLogger(getClass()).info("  get full concept: " + terminologyId
+        + "- " + target.getUri().toString());
 
     final String resultString = retryWithDelay(target, 500, 3, accept,
         authHeader, getAcceptLanguage(terminology, version),
@@ -894,9 +897,15 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
 
     if (descriptions) {
       ConceptList conceptList = new ConceptListJpa();
-      for (String terminologyId : terminologyIds)
-        conceptList
-            .addObject(getFullConcept(terminologyId, terminology, version));
+      for (String terminologyId : terminologyIds) {
+        try {
+          conceptList
+              .addObject(getFullConcept(terminologyId, terminology, version));
+        } catch (Exception e) {
+          Logger.getLogger(getClass()).error(
+              "Failed to get concept " + terminologyId + ". " + e.getMessage());
+        }
+      }
       return conceptList;
     } else {
       final StringBuilder query = new StringBuilder();
@@ -914,8 +923,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
 
       WebTarget target = client.target(url + "/" + version + "/concepts?"
           + query + "&limit=" + terminologyIds.size());
-      Logger.getLogger(getClass()).info(url + "/" + version + "/concepts?"
-          + query + "&limit=" + terminologyIds.size());
+      Logger.getLogger(getClass()).info(target.getUri().toString());
 
       Response response = target.request(accept)
           .header("Authorization", authHeader)
@@ -1080,7 +1088,9 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
                 .setDefinitionStatusId(entry.get("definitionStatus").asText());
             concept.setTerminologyId(conceptId);
             concept.setModuleId(entry.get("moduleId").asText());
-            concept.setName(fsn.get("term").asText());
+            String term = fsn == null ? ""
+                : fsn.get("term") == null ? "" : fsn.get("term").asText();
+            concept.setName(term);
             concept.setPublishable(true);
             concept.setPublished(true);
 
@@ -1115,7 +1125,10 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
       concept.setLastModifiedBy(terminology);
       concept.setModuleId(doc.get("moduleId").asText());
       concept.setDefinitionStatusId(doc.get("definitionStatus").asText());
-      concept.setName(doc.get("pt").get("term").asText());
+      JsonNode fsn = doc.get("fsn");
+      String term = fsn == null ? ""
+          : fsn.get("term") == null ? "" : fsn.get("term").asText();
+      concept.setName(term);
 
       concept.setPublishable(true);
       concept.setPublished(true);
@@ -1183,6 +1196,8 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
+    } else if (response.getStatusInfo() == Status.BAD_REQUEST) {
+      throw new LocalException(getErrorMessage(resultString));
     } else {
       throw new LocalException(
           "Unexpected terminology server failure. Message = " + resultString);
@@ -1250,6 +1265,8 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
+    } else if (response.getStatusInfo() == Status.BAD_REQUEST) {
+      throw new LocalException(getErrorMessage(resultString));
     } else {
       throw new LocalException(
           "Unexpected terminology server failure. Message = " + resultString);
@@ -1374,8 +1391,9 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
+    } else if (response.getStatusInfo() == Status.BAD_REQUEST) {
+      throw new LocalException(getErrorMessage(resultString));
     } else {
-
       throw new LocalException(
           "Unexpected terminology server failure. Message = " + resultString);
     }
@@ -1600,6 +1618,26 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
       sb.append(";");
     }
     genericUserCookie = sb.toString();
+  }
+
+  /**
+   * Return message from API response.
+   * 
+   * @param jsonString JSON as string.
+   * @return error message.
+   * @throws IOException
+   */
+  private String getErrorMessage(String jsonString) throws IOException {
+    /**
+     * <pre>
+     * {"error":"BAD_REQUEST","message":"Branch 'MAIN/2018-05-31' does not exist."}
+     * </pre>
+     */
+
+    final ObjectMapper mapper = new ObjectMapper();
+    final JsonNode jsonNode = mapper.readTree(jsonString);
+
+    return jsonNode.get("message").asText();
   }
 
 }
