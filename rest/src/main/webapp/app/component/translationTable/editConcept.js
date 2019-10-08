@@ -578,12 +578,18 @@ tsApp.controller('EditConceptModalCtrl', [
           : item.name == 'SY';
       })[0];
       $scope.conceptTranslated.descriptions.push(description);
+      if ($scope.conceptTranslated.descriptions.length > $scope.pageSize) {
+        $scope.paging['descriptions'].page = 
+          parseInt($scope.conceptTranslated.descriptions.length / $scope.pageSize) + 1;
+      }
       $scope.getPagedDescriptions();
     };
 
     // Remove description at specified index
-    $scope.removeDescription = function(index) {
-      $scope.conceptTranslated.descriptions.splice(index, 1);
+    $scope.removeDescription = function(index, page) {
+      page = (page == null ) ? 0 : page-1;
+      var itemToRemove = index + (page*$scope.pageSize);
+      $scope.conceptTranslated.descriptions.splice(itemToRemove, 1);
       $scope.getPagedDescriptions();
     };
 
