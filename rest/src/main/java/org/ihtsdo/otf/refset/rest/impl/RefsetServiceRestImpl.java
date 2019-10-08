@@ -6,6 +6,8 @@ package org.ihtsdo.otf.refset.rest.impl;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -1704,7 +1706,17 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
           query = query.toLowerCase();
         }
 
-        final ConceptRefsetMemberList list =
+        PfsParameter origPfs = new PfsParameterJpa(pfs);
+        // if sort by non-Eng language, need to get synonyms for entire refset
+        // list, not just requested page
+        if (pfs != null && pfs.getSortField() != null
+            && pfs.getSortField().contentEquals("conceptName")
+            && language != null && !language.isEmpty()) {
+          pfs.setMaxResults(-1);
+        }
+        
+        
+        ConceptRefsetMemberList list =
             refsetService.findMembersForRefset(refsetId, query, pfs);
         for (ConceptRefsetMember member : list.getObjects()) {
           if (language != null && !language.isEmpty()
@@ -1717,6 +1729,36 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
           }
           refsetService.handleLazyInit(member);
         }
+        
+        // if sort by non-Eng language, sort by display name
+        if (pfs != null && pfs.getSortField() != null
+            && pfs.getSortField().contentEquals("conceptName")
+            && language != null && !language.isEmpty()) {
+          Collections.sort(list.getObjects(),
+              new Comparator<ConceptRefsetMember>() {
+                @Override
+                public int compare(ConceptRefsetMember a1,
+                  ConceptRefsetMember a2) {
+                  if (pfs.isAscending()) {
+                    return a1.getConceptName()
+                      .compareToIgnoreCase(a2.getConceptName());
+                  } else {
+                    return a2.getConceptName()
+                        .compareToIgnoreCase(a1.getConceptName());
+                  }
+                }
+              });
+          
+          // correct to re-apply paging
+          ConceptRefsetMemberList subsetOfList =
+              new ConceptRefsetMemberListJpa();
+          for (int i = origPfs.getStartIndex(); i < origPfs.getStartIndex()
+              + origPfs.getMaxResults() && i < list.getTotalCount(); i++) {
+            subsetOfList.addObject(list.getObjects().get(i));
+          }
+          list.setObjects(subsetOfList.getObjects());
+        }
+        
         return list;
       } else if (translated != null) {
         final ConceptRefsetMemberList list = refsetService
