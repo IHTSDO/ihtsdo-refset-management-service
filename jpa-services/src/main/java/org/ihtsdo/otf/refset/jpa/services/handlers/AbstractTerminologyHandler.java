@@ -15,7 +15,6 @@ import java.net.URLEncoder;
 
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status.Family;
 
@@ -285,7 +284,7 @@ public abstract class AbstractTerminologyHandler implements TerminologyHandler {
       }
 
       output = response.readEntity(String.class);
-      
+
       if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
         // n/a
       } else {
@@ -297,7 +296,7 @@ public abstract class AbstractTerminologyHandler implements TerminologyHandler {
         throw new LocalException(
             "Unexpected terminology server failure. Message = " + output);
       }
-      
+
       response.close();
 
     } catch (Exception e) {
@@ -306,4 +305,5 @@ public abstract class AbstractTerminologyHandler implements TerminologyHandler {
     }
     return output;
   }
+
 }

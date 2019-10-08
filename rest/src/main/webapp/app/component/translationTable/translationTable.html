@@ -188,7 +188,6 @@
               ng-click="openEditTranslationModal(translation); $event.stopPropagation()"
               title="Edit" class="noul material-icons md-18">edit</i>
             <i
-              confirm="Are you sure you want to remove the translation ({{translation.name}})?"
               ng-click="removeTranslation(translation);" title="Remove"
               class="noul material-icons md-18">delete</i>
 
@@ -218,7 +217,6 @@
               ng-show="translation.workflowStatus == 'BETA' || translation.inPublicationProcess">
               <br />
               <button class="btn btn-xs btn-warning"
-                confirm="Are you sure you want to cancel the release process?"
                 ng-click="cancelAction(translation); $event.stopPropagation()"
                 title="Click to cancel release process">Cancel Release</button>
             </span>
@@ -566,14 +564,14 @@
     <table ng-show="selected.translation" class="table">
       <thead>
         <tr>
-          <th class="col-md-3 col-xs-3"
+          <th class="col-md-2 col-xs-2"
             ng-click="setSortField('available','terminologyId', selected.translation)">Concept
             Id<span ng-bind="getSortIndicator('available','terminologyId')"></span>
           </th>
-          <th ng-click="setSortField('available','name', selected.translation)">Name<span
+          <th class="col-md-6 col-xs-6" ng-click="setSortField('available','name', selected.translation)">Name<span
               ng-bind="getSortIndicator('available','name')"></span></th>
-          <th ng-if="projects.role.includes('REVIEW')">Author(s)</th>
-          <th class="col-md-4 col-xs-4" ng-show="projects.role != 'AUTHOR'">
+          <th class="col-md-1 col-xs-1" ng-if="projects.role.includes('REVIEW')">Author(s)</th>
+          <th class="col-md-2 col-xs-2" ng-show="projects.role != 'AUTHOR'">
             <span
               ng-click="setSortField('available','lastModified', selected.translation)">
               Last Modified
@@ -586,7 +584,7 @@
               <span ng-bind="getSortIndicator('available','workflowStatus')"></span>
             </span>
           </th>
-          <th class="col-md-2 col-xs-2"><span class="nobreak">
+          <th class="col-md-1 col-xs-1"><span class="nobreak">
               Actions
               <!-- Assign -->
               <i
@@ -867,8 +865,7 @@
             ng-click="openImportExportModal(selected.translation, 'Import', 'Translation');"
             title="Import translation concepts"
             class="noul material-icons md-18">file_upload</i>
-          <i
-            confirm="Are you sure you want to remove all the concepts of the translation ({{selected.translation.name}})?"
+          <i 
             ng-show="value == 'EDITING' && selected.translation.concepts.length > 0"
             ng-click="removeAllTranslationConcepts(selected.translation); "
             title="Remove all concepts" class="noul material-icons md-18">delete</i>
@@ -916,26 +913,26 @@
         <table ng-show="selected.translation" class="table">
           <thead class="table-select-row">
             <tr>
-              <th class="col-md-3 col-xs-3"
+              <th class="col-md-2 col-xs-2"
                 ng-click="setSortField('concept','terminologyId', selected.translation)">Concept
                 Id<span ng-bind="getSortIndicator('concept','terminologyId')"></span>
               </th>
-              <th class="col-md-4 col-xs-4"
+              <th class="col-md-6 col-xs-6"
                 ng-click="setSortField('concept','name', selected.translation)">Name<span
                   ng-bind="getSortIndicator('concept','name')"></span>
               </th>
               <th ng-show="!isDirectory() && value != 'RELEASE'"
-                class="col-md-3 col-xs-3"
+                class="col-md-2 col-xs-2"
                 ng-click="setSortField('concept','lastModified', selected.translation)">Last
                 Modified<span
                   ng-bind="getSortIndicator('concept','lastModified')"></span>
               </th>
               <th ng-show="isDirectory() || value == 'RELEASE'"
-                class="col-md-3 col-xs-3"
+                class="col-md-2 col-xs-2"
                 ng-click="setSortField('concept','effectiveTime', selected.translation)">Effective
                 Time<span ng-bind="getSortIndicator('concept','effectiveTime')"></span>
               </th>
-              <th ng-show="value == 'EDITING'">Actions <i
+              <th class="col-md-2 col-xs-2" ng-show="value == 'EDITING'">Actions <i
                   ng-show="selected.translation.concepts.totalCount > 0 && projects.role != 'ADMIN'"
                   ng-click="openBatchAssignConceptModal('Finished'); $event.stopPropagation()"
                   title="Assign batch" class="noul material-icons md-18">assignment_ind</i></th>
@@ -976,7 +973,6 @@
                 <!-- Remove -->
                 <i
                   ng-show="concept.workflowStatus == 'READY_FOR_PUBLICATION' || concept.workflowStatus == 'NEW'"
-                  confirm="Are you sure you want to remove the concept ({{concept.terminologyId}}, {{concept.name}})?"
                   ng-click="removeConcept(selected.translation,concept); $event.stopPropagation()"
                   title="Remove concept" class="noul material-icons md-18">delete</i>
                 <!-- Notes -->
