@@ -461,7 +461,7 @@ tsApp
                       }
                       // if no changes, alert user to expect english
                       if (match) {
-                        $window.alert("Term is displayed in English if a " + $scope.preferredLanguage + " term isn’t available.");
+                        $window.alert("Term is displayed in English if a '" + $scope.preferredLanguage + "' term isn’t available.");
                       }
                     }
                     

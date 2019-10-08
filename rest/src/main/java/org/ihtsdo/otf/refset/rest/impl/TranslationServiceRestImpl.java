@@ -78,6 +78,7 @@ import org.ihtsdo.otf.refset.jpa.services.ReleaseServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.TranslationServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.WorkflowServiceJpa;
+import org.ihtsdo.otf.refset.jpa.services.handlers.ImportTranslationExcelHandler;
 import org.ihtsdo.otf.refset.jpa.services.handlers.ImportTranslationTermServerHandler;
 import org.ihtsdo.otf.refset.jpa.services.handlers.SnowstormTerminologyHandler;
 import org.ihtsdo.otf.refset.jpa.services.rest.TranslationServiceRest;
@@ -101,6 +102,7 @@ import org.ihtsdo.otf.refset.services.handlers.SpellingCorrectionHandler;
 import org.ihtsdo.otf.refset.services.handlers.TerminologyHandler;
 import org.ihtsdo.otf.refset.services.handlers.WorkflowActionHandler;
 import org.ihtsdo.otf.refset.workflow.TrackingRecord;
+import org.ihtsdo.otf.refset.workflow.TrackingRecordList;
 import org.ihtsdo.otf.refset.workflow.WorkflowAction;
 import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 
@@ -3491,9 +3493,14 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
           concept.setName(TerminologyHandler.NAME_LOOKUP_IN_PROGRESS);
           concept.setActive(true);
           concept.setTranslation(translation);
-          // Mark as ready for publication as they are imported and can be
-          // further worked on from there
-          concept.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
+          // Excel imported concepts should go to Review Available work
+          if (handler instanceof ImportTranslationExcelHandler) {
+            workflowStatus = WorkflowStatus.REVIEW_NEW;
+          } else {
+            // Mark as ready for publication as they are imported and can be
+            // further worked on from there
+            concept.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
+          }
           if (handler instanceof ImportTranslationTermServerHandler) {
             concept.setLastModifiedBy("Term Server");
           } else {
