@@ -117,6 +117,11 @@
         <artifactId>refset-custom</artifactId>
         <version>${releaseVersion}</version>
       </dependency>
+      <dependency>
+        <groupId>org.ihtsdo.otf.refset</groupId>
+        <artifactId>refset-mojo</artifactId>
+        <version>${releaseVersion}</version>
+      </dependency>
 
       <!-- JPA dependencies -->
       <dependency>
@@ -534,7 +539,7 @@
       <url>https://maven3.ihtsdotools.org/repository/maven-releases/</url>
     </repository>
     <snapshotRepository>
-      <id>ihtsdo-public-nexus</id>
+      <id>ihtsdo-public-nexus-snapshot</id>
       <name>IHTSDO Public Nexus Snapshots</name>
       <url>https://maven3.ihtsdotools.org/repository/maven-snapshots/</url>
     </snapshotRepository>

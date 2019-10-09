@@ -26,6 +26,7 @@
     <module>rest-client</module>
     <module>integration-test</module>
     <module>examples</module>
+    <module>mojo</module>
   </modules>
 
   <!-- Distribution management -->
@@ -49,7 +50,7 @@
       <url>https://maven3.ihtsdotools.org/repository/maven-releases/</url>
     </repository>
     <snapshotRepository>
-      <id>ihtsdo-public-nexus</id>
+      <id>ihtsdo-public-nexus-snapshot</id>
       <name>IHTSDO Public Nexus Snapshots</name>
       <url>https://maven3.ihtsdotools.org/repository/maven-snapshots/</url>
     </snapshotRepository>
