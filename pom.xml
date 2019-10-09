@@ -7,7 +7,7 @@
   <!-- Module Metadata -->
   <groupId>org.ihtsdo.otf.refset</groupId>
   <artifactId>refset-aggregator</artifactId>
-  <version>1.2.3</version>
+  <version>1.2.4-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>IHTSDO refset management service</name>
   <description>Aggregator project.</description>
@@ -26,6 +26,7 @@
     <module>rest-client</module>
     <module>integration-test</module>
     <module>examples</module>
+    <module>mojo</module>
   </modules>
 
   <!-- Distribution management -->
