@@ -40,7 +40,7 @@
           <!-- Create the database schema (or create it) -->
           <plugin>
             <groupId>org.ihtsdo.otf.refset</groupId>
-            <artifactId>refset-admin</artifactId>
+            <artifactId>refset-mojo</artifactId>
             <version>${project.version}</version>
             <executions>
               <execution>
@@ -68,7 +68,7 @@
           <!-- Update the database schema (or create it) -->
           <plugin>
             <groupId>org.ihtsdo.otf.refset</groupId>
-            <artifactId>refset-admin</artifactId>
+            <artifactId>refset-mojo</artifactId>
             <version>${project.version}</version>
             <executions>
               <execution>
@@ -95,7 +95,7 @@
           <!-- Reindex -->
           <plugin>
             <groupId>org.ihtsdo.otf.refset</groupId>
-            <artifactId>refset-admin</artifactId>
+            <artifactId>refset-mojo</artifactId>
             <version>${project.version}</version>
             <executions>
               <execution>
@@ -126,7 +126,7 @@
           <!-- Generate sample data -->
           <plugin>
             <groupId>org.ihtsdo.otf.refset</groupId>
-            <artifactId>refset-admin</artifactId>
+            <artifactId>refset-mojo</artifactId>
             <version>${project.version}</version>
             <executions>
               <execution>
@@ -153,7 +153,7 @@
           <!-- Generate sample data -->
           <plugin>
             <groupId>org.ihtsdo.otf.refset</groupId>
-            <artifactId>refset-admin</artifactId>
+            <artifactId>refset-mojo</artifactId>
             <version>${project.version}</version>
             <executions>
               <execution>
@@ -180,7 +180,7 @@
           <!-- Generate sample data -->
           <plugin>
             <groupId>org.ihtsdo.otf.refset</groupId>
-            <artifactId>refset-admin</artifactId>
+            <artifactId>refset-mojo</artifactId>
             <version>${project.version}</version>
             <executions>
               <execution>
@@ -209,7 +209,7 @@
           <!-- Generate sample data -->
           <plugin>
             <groupId>org.ihtsdo.otf.refset</groupId>
-            <artifactId>refset-admin</artifactId>
+            <artifactId>refset-mojo</artifactId>
             <version>${project.version}</version>
             <executions>
               <execution>
@@ -234,7 +234,7 @@
         <plugins>
           <plugin>
             <groupId>org.ihtsdo.otf.refset</groupId>
-            <artifactId>refset-admin</artifactId>
+            <artifactId>refset-mojo</artifactId>
             <version>${project.version}</version>
             <executions>
               <execution>
@@ -272,7 +272,7 @@
           <!-- Update the database schema (or create it) -->
           <plugin>
             <groupId>org.ihtsdo.otf.refset</groupId>
-            <artifactId>refset-admin</artifactId>
+            <artifactId>refset-mojo</artifactId>
             <version>${project.version}</version>
             <executions>
               <execution>
