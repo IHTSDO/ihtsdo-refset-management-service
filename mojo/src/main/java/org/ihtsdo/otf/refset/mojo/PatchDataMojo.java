@@ -342,6 +342,15 @@ public class PatchDataMojo extends AbstractRttMojo {
         patch20190923(translationService, fullReindex);
       }
 
+      // Patch current PROD setup to new JDK-11 Refset Enhancement setup
+      // (updated due to changes made to PROD)
+      if ("20191009".compareTo(start) >= 0 && "20191009".compareTo(end) <= 0) {
+        getLog().info(
+            "Processing patch 20191009 - Update PROD database to Refset Enhancement setup"); // Patch
+
+        patch20191009(translationService, fullReindex);
+      }
+
       // Reindex
       if (fullReindex) {
         getLog().info("  Reindex");
@@ -1151,6 +1160,92 @@ public class PatchDataMojo extends AbstractRttMojo {
       Refset refset = translationService.getRefset(ref.getId());
       if (refset.getProject().getTerminologyHandlerKey()
           .equals("PUBLIC-BROWSER") && refset.getVersion().length() == 10) {
+        ct++;
+        String old_version = refset.getVersion();
+        refset.setVersion("MAIN/" + old_version);
+        translationService.updateRefset(refset);
+
+        if (ct % 100 == 0) {
+          getLog().info("refsets updated ct = " + ct);
+          translationService.commitClearBegin();
+        }
+      }
+    }
+    getLog().info("refsets updated final ct = " + ct);
+    translationService.commit();
+
+    if (!fullReindex) {
+      getLog().info("  Projects, Translations, Refsets");
+
+      // login as "admin", use token
+      final Properties properties = ConfigUtility.getConfigProperties();
+      try (final SecurityService securityService = new SecurityServiceJpa();) {
+        String authToken =
+            securityService.authenticate(properties.getProperty("admin.user"),
+                properties.getProperty("admin.password")).getAuthToken();
+        ProjectServiceRestImpl contentService = new ProjectServiceRestImpl();
+        contentService.luceneReindex("ProjectJpa,TranslationJpa,RefsetJpa",
+            null, null, authToken);
+      }
+    }
+
+  }
+
+  private void patch20191009(TranslationService translationService,
+    boolean fullReindex) throws Exception {
+    int ct = 0;
+    translationService.setTransactionPerOperation(false);
+    translationService.beginTransaction();
+    for (Project prj : translationService.getProjects().getObjects()) {
+      Project project = translationService.getProject(prj.getId());
+      if (project.getTerminologyHandlerKey().equals("SNOWSTORM")) {
+        ct++;
+        project.setTerminologyHandlerKey("PUBLIC-BROWSER");
+        translationService.updateProject(project);
+
+        if (ct % 100 == 0) {
+          getLog().info("projects updated  ct = " + ct);
+          translationService.commitClearBegin();
+        }
+      } else if ("SNOWOWL"
+          .equalsIgnoreCase(project.getTerminologyHandlerKey())) {
+        project.setTerminologyHandlerKey("AUTHORING-INTL");
+      } else if ("SNOWOWL-SE"
+          .equalsIgnoreCase(project.getTerminologyHandlerKey())) {
+        project.setTerminologyHandlerKey("MANAGED-SERVICE");
+      }
+    }
+    getLog().info("projects updated final ct = " + ct);
+    ct = 0;
+    for (Translation trans : translationService.getTranslations()
+        .getObjects()) {
+      Translation translation =
+          translationService.getTranslation(trans.getId());
+      if ((translation.getProject().getTerminologyHandlerKey()
+          .equals("PUBLIC-BROWSER")
+          || translation.getProject().getTerminologyHandlerKey()
+              .equals("AUTHORING-INTL"))
+          && translation.getVersion().length() == 10) {
+        ct++;
+        String old_version = translation.getVersion();
+        translation.setVersion("MAIN/" + old_version);
+        translationService.updateTranslation(translation);
+
+        if (ct % 100 == 0) {
+          getLog().info("translations updated  ct = " + ct);
+          translationService.commitClearBegin();
+        }
+      }
+    }
+    getLog().info("translations updated final ct = " + ct);
+    ct = 0;
+    for (Refset ref : translationService.getRefsets().getObjects()) {
+      Refset refset = translationService.getRefset(ref.getId());
+      if ((refset.getProject().getTerminologyHandlerKey()
+          .equals("PUBLIC-BROWSER")
+          || refset.getProject().getTerminologyHandlerKey()
+              .equals("AUTHORING-INTL"))
+          && refset.getVersion().length() == 10) {
         ct++;
         String old_version = refset.getVersion();
         refset.setVersion("MAIN/" + old_version);
