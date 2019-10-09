@@ -1,0 +1,65 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <!-- Module Metadata -->
+  <parent>
+    <groupId>org.ihtsdo.otf.refset</groupId>
+    <artifactId>refset-parent</artifactId>
+    <version>1.2.4-SNAPSHOT</version>
+    <relativePath>../parent</relativePath>
+  </parent>
+
+  <artifactId>refset-mojo</artifactId>
+  <name>IHTSDO refset management service mojo project</name>
+  <description>Maven-based mojos.</description>
+  <packaging>maven-plugin</packaging>
+
+  <!-- Mojo parameters -->
+  <properties>
+    <mode>do not create</mode>
+  </properties>
+
+  <dependencies>
+    <!-- Inter-module dependencies -->
+    <dependency>
+      <groupId>org.ihtsdo.otf.refset</groupId>
+      <artifactId>refset-jpa-model</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.ihtsdo.otf.refset</groupId>
+      <artifactId>refset-rest</artifactId>
+      <classifier>classes</classifier>
+    </dependency>
+    <dependency>
+      <groupId>org.ihtsdo.otf.refset</groupId>
+      <artifactId>refset-rest-client</artifactId>
+    </dependency>
+
+    <!-- Maven Plugin API -->
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-plugin-api</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.maven.plugin-tools</groupId>
+      <artifactId>maven-plugin-annotations</artifactId>
+    </dependency>
+
+    <!-- Logging -->
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-log4j12</artifactId>
+    </dependency>
+
+    <!-- Test -->
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+</project>

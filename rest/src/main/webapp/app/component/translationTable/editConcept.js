@@ -128,7 +128,9 @@ tsApp.controller('EditConceptModalCtrl', [
       $scope.editTranslation.authors.forEach(function(username) {
         securityService.getUserByUsername(username).then(
           function(data) {
+            if(!$scope.authorNames.includes(data.name, 0)){
            $scope.authorNames.push(data.name);
+            }
           });
       });
     }

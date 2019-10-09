@@ -759,6 +759,7 @@ tsApp
 
                     // Set the "last project" setting to this project
                     $scope.user.userPreferences.lastProjectId = projectId;
+                    $scope.user.userPreferences.lastProjectRole = 'AUTHOR';
                     securityService.updateUserPreferences($scope.user.userPreferences);
                     $uibModalInstance.close(data);
                   },
