@@ -14,7 +14,7 @@
   <artifactId>refset-admin</artifactId>
   <name>IHTSDO refset management service admin project</name>
   <description>Maven-based administration tools.</description>
-  <packaging>maven-plugin</packaging>
+  <packaging>pom</packaging>
 
   <!-- Mojo parameters -->
   <properties>
@@ -25,40 +25,7 @@
     <!-- Inter-module dependencies -->
     <dependency>
       <groupId>org.ihtsdo.otf.refset</groupId>
-      <artifactId>refset-jpa-model</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.ihtsdo.otf.refset</groupId>
-      <artifactId>refset-rest</artifactId>
-      <classifier>classes</classifier>
-    </dependency>
-    <dependency>
-      <groupId>org.ihtsdo.otf.refset</groupId>
-      <artifactId>refset-rest-client</artifactId>
-    </dependency>
-
-    <!-- Maven Plugin API -->
-    <dependency>
-      <groupId>org.apache.maven</groupId>
-      <artifactId>maven-plugin-api</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.maven.plugin-tools</groupId>
-      <artifactId>maven-plugin-annotations</artifactId>
-    </dependency>
-
-    <!-- Logging -->
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-log4j12</artifactId>
-    </dependency>
-
-    <!-- Test -->
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <scope>test</scope>
+      <artifactId>refset-mojo</artifactId>
     </dependency>
   </dependencies>
 
