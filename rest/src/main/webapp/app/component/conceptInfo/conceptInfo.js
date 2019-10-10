@@ -100,7 +100,7 @@ tsApp.directive('conceptInfo', [
             }
             projectService.getConceptParents($scope.projectId, concept.terminologyId,
               $scope.data.terminology, $scope.data.version,
-              ($scope.data.translation ? $scope.data.translation.id : null)).then(
+              ($scope.data.translation ? $scope.data.translation.id : null), 'error').then(
             // Success
             function(data) {
               $scope.parents = data.concepts;
@@ -121,7 +121,7 @@ tsApp.directive('conceptInfo', [
             // of children
             projectService.getConceptChildren($scope.projectId, concept.terminologyId,
               $scope.data.terminology, $scope.data.version,
-              ($scope.data.translation ? $scope.data.translation.id : null), {}).then(
+              ($scope.data.translation ? $scope.data.translation.id : null), {}, 'error').then(
             // Success
             function(data) {
               $scope.children = data.concepts;
@@ -140,7 +140,7 @@ tsApp.directive('conceptInfo', [
           $scope.getFullConcept = function(concept) {
             projectService.getFullConcept($scope.projectId, concept.terminologyId,
               $scope.data.terminology, $scope.data.version,
-              ($scope.data.translation ? $scope.data.translation.id : null)).then(
+              ($scope.data.translation ? $scope.data.translation.id : null), 'error').then(
               // Success
               function(data) {
                 // Needed to communicate phrase memory info back to the
@@ -158,14 +158,12 @@ tsApp.directive('conceptInfo', [
                   $scope.orderedRelationships = $scope.concept.relationships
                     .sort($scope.sortByRelationshipGroup);
                 }
-
               },
               // Error
               function(data) {
                 $scope.error = data;
                 utilService.clearError();
               });
-
           };
 
           // function for sorting an array by (string) field and direction
@@ -501,6 +499,8 @@ tsApp.directive('conceptInfo', [
             $scope.selfAndDescendants = '<<';
             $scope.descendants = '<';
             $scope.includeClause = member.terminologyId + ' | ' + member.name + ' |';
+            
+            // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
             // Add button
             $scope.add = function(refset, concept, value) {
