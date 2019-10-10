@@ -425,7 +425,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       refsetService.commit();
       
       // Lookup the refset name and synonyms
-      refsetService.lookupMemberNames(refsetId, "looking up names and synonyms for recently added members", true);     
+      refsetService.lookupMemberNames(refsetId, "looking up names and synonyms for recently added members", true, true);     
       
       return list;
     } catch (Exception e) {
@@ -770,7 +770,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       refsetService.commitClearBegin();
       
       // Lookup the refset name and synonyms
-      refsetService.lookupMemberNames(newRefset.getId(), "looking up names for cloned refset", true);
+      refsetService.lookupMemberNames(newRefset.getId(), "looking up names for cloned refset", true, true);
 
       return newRefset;
     } catch (Exception e) {
@@ -1575,7 +1575,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       if (ConfigUtility.isAssignNames()) {
         // Lookup member names should always happen after commit
         refsetService.lookupMemberNames(refset.getId(), "adding refset members",
-            ConfigUtility.isBackgroundLookup());
+            ConfigUtility.isBackgroundLookup(), true);
       }
 
     } catch (Exception e) {
@@ -2180,9 +2180,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       // Look up names/concept active for members of EXTENSIONAL
       if (refsetCopy.getType() == Refset.Type.EXTENSIONAL) {
 
-        // Look up members for this refset
+        // Look up members for this refset, but NOT synonyms (they'll be looked up later)
         refsetService.lookupMemberNames(refsetCopy.getId(), "begin migration",
-            ConfigUtility.isBackgroundLookup());
+            ConfigUtility.isBackgroundLookup(), false);
       }
 
       // Look up oldNotNew
@@ -2193,8 +2193,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         // Look up old members for the new refest id (e.g. new
         // terminology/version)
         // On cancel, we need to undo this.
+        // Only lookup up names, not synonyms
         refsetService.lookupMemberNames(refsetCopy.getId(), oldNotNew,
-            "begin migration", true, ConfigUtility.isBackgroundLookup());
+            "begin migration", true, ConfigUtility.isBackgroundLookup(), false);
       }
 
       addLogEntry(refsetService, userName, "BEGIN MIGRATION",
@@ -2460,7 +2461,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       refsetService.commitClearBegin();
       
       // Look up members and synonyms for this refset
-      refsetService.lookupMemberNames(refset.getId(), "finish migration", true);
+      refsetService.lookupMemberNames(refset.getId(), "finish migration", true, true);
       
       addLogEntry(refsetService, userName, "FINISH MIGRATION",
           refset.getProject().getId(), refset.getId(), refset.toString());
@@ -2542,7 +2543,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       // Lookup member names should always happen after commit
       if (ConfigUtility.isAssignNames()) {
         refsetService.lookupMemberNames(refset.getId(), oldNotNew,
-            "cancel migration", true, ConfigUtility.isBackgroundLookup());
+            "cancel migration", true, true, ConfigUtility.isBackgroundLookup());
       }
 
     } catch (Exception e) {
@@ -3516,7 +3517,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       if (ConfigUtility.isAssignNames()) {
         // Lookup member names should always happen after commit
         refsetService.lookupMemberNames(refsetId, "finish import members",
-            ConfigUtility.isBackgroundLookup());
+            ConfigUtility.isBackgroundLookup(), true);
       }
       return validationResult;
     } catch (Exception e) {
@@ -3979,7 +3980,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       // Launch lookup process in background thread
       refsetService.lookupMemberNames(refsetId,
           "requested from client " + userName,
-          background == null ? ConfigUtility.isBackgroundLookup() : background);
+          background == null ? ConfigUtility.isBackgroundLookup() : background, true);
     } catch (Exception e) {
       handleException(e,
           "trying to start the lookup of member names and statues");
