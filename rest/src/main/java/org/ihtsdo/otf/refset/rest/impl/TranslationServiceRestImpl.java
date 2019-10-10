@@ -102,7 +102,6 @@ import org.ihtsdo.otf.refset.services.handlers.SpellingCorrectionHandler;
 import org.ihtsdo.otf.refset.services.handlers.TerminologyHandler;
 import org.ihtsdo.otf.refset.services.handlers.WorkflowActionHandler;
 import org.ihtsdo.otf.refset.workflow.TrackingRecord;
-import org.ihtsdo.otf.refset.workflow.TrackingRecordList;
 import org.ihtsdo.otf.refset.workflow.WorkflowAction;
 import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 
@@ -3763,6 +3762,21 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
       addLogEntry(translationService, user.getUserName(),
           "FINISH IMPORT translation", translation.getProject().getId(),
           translation.getId(), translation + "\n  count = " + objectCt);
+
+      if (IoType.API == handler.getIoType()) {
+        if (conceptMap.size() == objectCt && objectCt > 0) {
+          validationResult.addComment(
+              objectCt + " concepts loaded into Finished Concepts.");
+        } else if (conceptMap.size() != objectCt && objectCt > 0) {
+          validationResult.addComment(
+              objectCt + " concepts loaded into Finished Concepts.");
+          validationResult
+              .addComment("The other concepts are being edited or reviewed.");
+        } else {
+          validationResult
+              .addComment("No concepts loaded into Finished Concepts.");
+        }
+      }
 
       return validationResult;
 
