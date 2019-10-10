@@ -693,7 +693,8 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
               .getTerminologyHandler(project, getHeaders(headers))
               .getTerminologyEditions();
         } catch (Exception e) {
-          Logger.getLogger(getClass()).error("Error getting terminology", e);
+          Logger.getLogger(getClass()).error("Error getting terminology for "
+              + project.getTerminologyHandlerUrl(), e);
           e.printStackTrace();
         }
         return null;
