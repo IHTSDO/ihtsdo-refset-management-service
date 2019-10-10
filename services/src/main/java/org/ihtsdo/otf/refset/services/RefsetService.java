@@ -317,8 +317,8 @@ public interface RefsetService extends ReleaseService {
    * @param background the background
    * @throws Exception the exception
    */
-  public void lookupMemberNames(Long refsetId, String label, boolean background)
-    throws Exception;
+  public void lookupMemberNames(Long refsetId, String label, boolean background,
+    boolean lookupSynonyms) throws Exception;
 
   /**
    * Perform member lookup names for a known list of members. This is to support
@@ -328,12 +328,13 @@ public interface RefsetService extends ReleaseService {
    * @param members the members
    * @param label the label
    * @param saveMembers the save members
+   * @param lookupSynonyms the lookup synonyms
    * @param background the background
    * @throws Exception the exception
    */
   public void lookupMemberNames(Long refsetId,
     List<ConceptRefsetMember> members, String label, boolean saveMembers,
-    boolean background) throws Exception;
+    boolean lookupSynonyms, boolean background) throws Exception;
 
   /**
    * Returns the percentage of concepts within the refset whose lookup has been
@@ -449,8 +450,8 @@ public interface RefsetService extends ReleaseService {
    * @throws Exception the exception
    */
   public void populateMemberSynonyms(ConceptRefsetMember member,
-    Concept concept, Refset refset, RefsetService refsetService, TerminologyHandler handler)
-    throws Exception;
+    Concept concept, Refset refset, RefsetService refsetService,
+    TerminologyHandler handler) throws Exception;
 
   /**
    * Need to access Handler
@@ -467,7 +468,8 @@ public interface RefsetService extends ReleaseService {
    * @throws Exception the exception
    */
   public void populateMemberSynonyms(ConceptRefsetMember member,
-    Concept concept, Refset refset, RefsetService refsetService) throws Exception;
+    Concept concept, Refset refset, RefsetService refsetService)
+    throws Exception;
 
   /**
    * Returns the display name for member.
