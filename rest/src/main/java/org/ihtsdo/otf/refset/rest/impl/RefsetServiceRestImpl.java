@@ -2141,8 +2141,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
             member.setPublished(concept.isPublished());
             member.setConceptId(concept.getTerminologyId());
             member.setConceptName(concept.getName());
-            refsetService.populateMemberSynonyms(member, concept, refset, refsetService, 
-                handler);
+            //Don't look up synonyms at this time - that will be done once the migration is finished.
+//            refsetService.populateMemberSynonyms(member, concept, refset, refsetService, 
+//                handler);
           }
 
           // If origin refset has this as in exclusion, keep it that way.
@@ -2455,10 +2456,15 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       // remove the refset
       refsetService.removeRefset(stagedRefset.getId(), false);
 
+      refsetService.handleLazyInit(refset);
+      refsetService.commitClearBegin();
+      
+      // Look up members and synonyms for this refset
+      refsetService.lookupMemberNames(refset.getId(), "finish migration", true);
+      
       addLogEntry(refsetService, userName, "FINISH MIGRATION",
           refset.getProject().getId(), refset.getId(), refset.toString());
 
-      refsetService.handleLazyInit(refset);
       refsetService.commit();
       return refset;
 
