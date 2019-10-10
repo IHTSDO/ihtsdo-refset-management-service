@@ -130,7 +130,7 @@ tsApp
         };
 
         // Handle error message
-        this.handleError = function(response) {
+        this.handleError = function(response, location) {
           console.debug('Handle error: ', response);
           if (response.data && response.data.length > 120) {
             this.error.message = "Unexpected error, click the icon to view attached full error";
@@ -147,6 +147,10 @@ tsApp
             // Reroute back to login page with 'auth token has
             // expired' message
             $location.path('/login');
+          } else if (location) {
+            // scroll to specified location of page
+            $location.hash(location);
+            $anchorScroll();
           } else {
             // scroll to top of page
             $location.hash('top');
