@@ -278,7 +278,7 @@ public class ImportTranslationTermServerHandler extends ImportExportAbstract
           + " concepts with descriptions found on Term Server.");
     } else {
       validationResult
-          .addComment("No concepts with descriptions found on Term Server");
+          .addComment("No concepts with descriptions found on Term Server.");
     }
 
     return new ArrayList<>(conceptCache.values());
