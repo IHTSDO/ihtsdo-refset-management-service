@@ -457,10 +457,12 @@ tsApp
 
               // Removes all translation concepts
               $scope.removeAllTranslationConcepts = function(translation) {
-                translationService.removeAllTranslationConcepts(translation.id).then(
-                  function(data) {
-                    translationService.fireTranslationChanged(translation);
-                  });
+                if ($window.confirm("Are you sure you want to remove the translation concepts in " + translation.name + "?")) {
+                  translationService.removeAllTranslationConcepts(translation.id).then(
+                    function(data) {
+                      translationService.fireTranslationChanged(translation);
+                    });
+                }
               };
 
               // Convert date to a string
@@ -2091,7 +2093,6 @@ tsApp
                                   $scope.warnings = data.warnings;
                                   $scope.comments = data.comments;
                                   startLookup(translation);
-                                  $uibModalInstance.close($scope.translation);
                                 },
                                 // Failure - show error
                                 function(data) {
@@ -2147,7 +2148,6 @@ tsApp
                             $scope.warnings = data.warnings;
                             $scope.comments = data.comments;
                             startLookup(translation);
-                            $uibModalInstance.close($scope.translation);
                           },
                           // Failure - show error
                           function(data) {
