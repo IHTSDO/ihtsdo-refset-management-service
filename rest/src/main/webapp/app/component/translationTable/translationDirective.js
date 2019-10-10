@@ -468,9 +468,25 @@ tsApp
               // Convert date to a string
               $scope.toSimpleDate = function(lastModified) {
                 return utilService.toSimpleDate(lastModified);
-
               };
 
+              $scope.getConceptTranslators = function (concept) {
+                var translators = [];
+                var translatorsStr = null;
+                concept.descriptions.forEach(function(description) {
+                     if(!translators.includes(description.lastModifiedBy)){
+                        translators.push(description.lastModifiedBy);
+                        if (translatorsStr == null) {
+                          translatorsStr = description.lastModifiedBy;
+                        } else {
+                          translatorsStr = translatorsStr + ", " + description.lastModifiedBy;
+                        }
+                     }
+                });
+                
+                return translatorsStr;
+              };
+              
               // Convert date to a string
               $scope.toDate = function(lastModified) {
                 return utilService.toDate(lastModified);
