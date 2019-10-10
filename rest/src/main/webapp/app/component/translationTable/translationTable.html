@@ -611,9 +611,7 @@
             </span>
           </td>
           <td ng-if="projects.role.includes('REVIEW')">
-            <span ng-repeat="description in concept.descriptions">
-              {{ description.lastModifiedBy }}
-            </span>
+            {{getConceptTranslators(concept)}}
           </td>
           <td ng-show="projects.role != 'AUTHOR'">
             {{toDate(concept.lastModified)}}
@@ -697,16 +695,16 @@
     <table ng-show="selected.translation" class="table">
       <thead>
         <tr>
-          <th class="col-md-3 col-xs-3"
+          <th class="col-md-2 col-xs-2"
             ng-click="setSortField('assigned','conceptTerminologyId', selected.translation)">Concept
             Id<span
               ng-bind="getSortIndicator('assigned','conceptTerminologyId')"></span>
           </th>
-          <th class="col-md-4 col-xs-4"
+          <th class="col-md-6 col-xs-6"
             ng-click="setSortField('assigned','conceptName', selected.translation)">Name<span
               ng-bind="getSortIndicator('assigned','conceptName')"></span></th>
-          <th ng-if="projects.role.includes('REVIEW')">Author(s)</th>
-          <th class="col-md-3 col-xs-3"><span
+          <th class="col-md-1 col-xs-1" ng-if="projects.role.includes('REVIEW')">Author(s)</th>
+          <th class="col-md-2 col-xs-2"><span
               ng-click="setSortField('assigned','lastModified', selected.translation)">
               Last Modified
               <span ng-bind="getSortIndicator('assigned','lastModified')"></span>
@@ -718,7 +716,7 @@
               <span ng-bind="getSortIndicator('assigned','workflowStatus')"></span>
             </span></th>
 
-          <th class="col-md-2 col-xs-2">Actions &emsp;<span
+          <th class="col-md-1 col-xs-1">Actions &emsp;<span
               class="nobreak">
               <!--  Unassign all -->
               <i ng-show="selected.translation.assigned.totalCount > 0"
@@ -759,7 +757,7 @@
             </span>
           </td>                
           <td ng-if="projects.role.includes('REVIEW')">
-            {{ record.authors.join(",") }}
+            {{getConceptTranslators(record.concept)}}
           </td>
           <td>
             {{toDate(record.lastModified)}}
