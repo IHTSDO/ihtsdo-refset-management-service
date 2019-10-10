@@ -258,12 +258,13 @@ public abstract class AbstractTerminologyHandler implements TerminologyHandler {
     String output = null;
     int i = 0;
 
+    Response response = null;
+    String errorMessage = null;
+
     try {
 
       if (i > 0)
         Thread.sleep(delay);
-
-      Response response = null;
 
       while (true) {
         try {
@@ -276,32 +277,40 @@ public abstract class AbstractTerminologyHandler implements TerminologyHandler {
         } catch (ProcessingException e) { // retry in case of exception
           if (e.getCause() instanceof SocketTimeoutException
               || e.getCause() instanceof ConnectException && i < maxTries) {
+            errorMessage = e.getMessage();
             i++;
           } else {
+            errorMessage = null;
             break;
           }
         }
       }
 
-      output = response.readEntity(String.class);
+      if (errorMessage == null) {
+        output = response.readEntity(String.class);
 
-      if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-        // n/a
-      } else {
+        if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+          // n/a
+        } else {
 
-        // Here's the messy part about trying to parse the return error message
-        if (output.contains("loop did not match anything")) {
-          return null;
+          // Here's the messy part about trying to parse the return error
+          // message
+          if (output.contains("loop did not match anything")) {
+            return null;
+          }
+          throw new LocalException(
+              "Unexpected terminology server failure. Message = " + output);
         }
+      } else {
         throw new LocalException(
-            "Unexpected terminology server failure. Message = " + output);
+            "Unexpected error calling server. " + errorMessage);
       }
-
-      response.close();
 
     } catch (Exception e) {
       Logger.getLogger(getClass()).error("Unexpected error calling server.", e);
-      throw e;
+      throw e;  
+    } finally {
+      response.close();
     }
     return output;
   }

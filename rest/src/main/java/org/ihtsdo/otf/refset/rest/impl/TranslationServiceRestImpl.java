@@ -3449,6 +3449,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
       final ValidationResult validationResult = handler.getValidationResults();
 
       int objectCt = 0;
+      int conceptAdded = 0;
 
       // Process concepts from import
       for (final Concept concept : concepts) {
@@ -3509,6 +3510,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
           // lists
           origConcept =
               new ConceptJpa(translationService.addConcept(concept), false);
+          ++conceptAdded;
           conceptMap.put(concept.getTerminologyId(), origConcept);
           Logger.getLogger(getClass())
               .debug("      id = " + origConcept.getId());
@@ -3764,12 +3766,12 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
           translation.getId(), translation + "\n  count = " + objectCt);
 
       if (IoType.API == handler.getIoType()) {
-        if (conceptMap.size() == objectCt && objectCt > 0) {
+        if (conceptMap.size() == conceptAdded && conceptAdded > 0) {
           validationResult.addComment(
-              objectCt + " concepts loaded into Finished Concepts.");
-        } else if (conceptMap.size() != objectCt && objectCt > 0) {
+              conceptAdded + " concepts loaded into Finished Concepts.");
+        } else if (conceptMap.size() != conceptAdded && conceptAdded > 0) {
           validationResult.addComment(
-              objectCt + " concepts loaded into Finished Concepts.");
+              conceptAdded + " concepts loaded into Finished Concepts.");
           validationResult
               .addComment("The other concepts are being edited or reviewed.");
         } else {
