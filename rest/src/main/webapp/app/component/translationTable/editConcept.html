@@ -78,12 +78,8 @@
         <table class="table">
           <thead>
             <tr>
-              <th ng-click="setSortField('term', null)">Name<span
-                  ng-bind="getSortIndicator('term')"></span></th>
-              <th><span ng-click="setSortField('typeId', null)">Type</span>
-                <span ng-bind="getSortIndicator('typeId')"></span> /<span
-                  ng-click="setSortField('caseSignificanceId', null)">Case</span>
-                <span ng-bind="getSortIndicator('caseSignificanceId')"></span></th>
+              <th>Name<span></span></th>
+              <th><span>Type</span> / <span>Case</span> / <span>Author</span></th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -109,6 +105,7 @@
                   ng-options="item.key as item.value for item in caseSignificanceTypes | orderBy:'item.key'"
                   ng-disabled="description.editable == false">
                 </select>
+                 <br /> {{description.lastModifiedBy}}
               </td>
               <td>
                 <!-- remove description -->
