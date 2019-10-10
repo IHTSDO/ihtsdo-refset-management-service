@@ -281,7 +281,7 @@ public class ImportTranslationExcelHandler extends ImportExportAbstract
         }
 
         validationResult.addComment(
-            descriptions.size() + " descriptions successfully loaded.");
+            descriptions.size() + " descriptions successfully loaded, and available for Review.");
         validationResult.addComment(
             skippedDueToLanguageNotMatching + " descriptions skipped: language code in file not same as translation language.");
 
