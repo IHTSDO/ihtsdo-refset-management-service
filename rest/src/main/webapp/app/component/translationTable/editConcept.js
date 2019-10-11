@@ -583,6 +583,7 @@ tsApp.controller('EditConceptModalCtrl', [
       } else {
         description.term = '';
       }
+      description.lastModifiedBy = user.name;
       description.caseSignificanceId = $scope.caseSignificanceTypes[0].key;
       // Pick PT or SY by default depending on how many descriptions there are
       var types = $scope.getDescriptionTypes();
