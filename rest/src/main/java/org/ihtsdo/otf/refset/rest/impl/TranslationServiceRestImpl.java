@@ -3450,6 +3450,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
 
       int objectCt = 0;
       int conceptAdded = 0;
+      int descriptonAdded = 0;
 
       // Process concepts from import
       for (final Concept concept : concepts) {
@@ -3572,6 +3573,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
             // member list
             origDesc = new DescriptionJpa(
                 translationService.addDescription(description), false);
+            ++descriptonAdded;
             Logger.getLogger(getClass())
                 .debug("      id = " + origDesc.getId());
           }
@@ -3772,14 +3774,30 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
         } else if (conceptMap.size() != conceptAdded && conceptAdded > 0) {
           validationResult.addComment(
               conceptAdded + " concepts loaded into Finished Concepts.");
-          validationResult
-              .addComment("The other concepts are being edited, reviewed or already finished.");
+          validationResult.addComment(
+              "The other concepts are being edited, reviewed or already finished.");
         } else if (conceptAdded == 0 && conceptMap.size() > 0) {
-          validationResult
-          .addComment((conceptMap.size() - conceptAdded) + "  concepts are being edited, reviewed or already finished.");
+          validationResult.addComment((conceptMap.size() - conceptAdded)
+              + "  concepts are being edited, reviewed or already finished.");
         } else {
           validationResult
               .addComment("No concepts loaded into Finished Concepts.");
+        }
+      } else if (handler instanceof ImportTranslationExcelHandler) {
+        if (concepts.size() == descriptonAdded && descriptonAdded > 0) {
+          validationResult.addComment(descriptonAdded
+              + " descriptions loaded into Available Concepts for Review.");
+        } else if (concepts.size() != descriptonAdded && descriptonAdded > 0) {
+          validationResult.addComment(descriptonAdded
+              + " descriptions loaded into Available Concepts for Review.");
+          validationResult.addComment(
+              "The other descriptions are being edited or already finished.");
+        } else if (descriptonAdded > 0 && concepts.size() > 0) {
+          validationResult.addComment((concepts.size() - descriptonAdded)
+              + "  descriptions are being edited or already finished.");
+        } else {
+          validationResult.addComment(
+              "No descriptions loaded into Available Concepts for Review.");
         }
       }
 
