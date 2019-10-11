@@ -148,10 +148,10 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
             && EnumSet.of(WorkflowStatus.REVIEW_NEW,
                 WorkflowStatus.REVIEW_IN_PROGRESS, WorkflowStatus.REVIEW_DONE)
                 .contains(refset.getWorkflowStatus());
-        //If an admin is finishing a migration from a refset pulled directly from the release section
+        // If an admin is finishing a migration from a refset pulled directly
+        // from the release section
         boolean adminFlag = projectRole == UserRole.ADMIN && record != null
-            && EnumSet
-                .of(WorkflowStatus.READY_FOR_PUBLICATION)
+            && EnumSet.of(WorkflowStatus.READY_FOR_PUBLICATION)
                 .contains(refset.getWorkflowStatus());
         flag = authorFlag || reviewerFlag || adminFlag;
         break;
@@ -733,16 +733,24 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
           record.getReviewers().remove(user.getUserName());
           record.setForReview(false);
           record.setLastModifiedBy(user.getUserName());
-          // get the origin review concept (e.g. the EDITING_DONE state)
-          final Concept originConcept = getOriginConcept(concept.getId(),
-              record.getReviewOriginRevision());
-          // Restore it.
-          service.syncConcept(concept.getId(), originConcept);
-          // Set the flag to avoid saving the refset later, this is the final
-          // saved state.
-          skipUpdate = true;
-          // no need to do this, sync takes care of it
-          // concept.setWorkflowStatus(WorkflowStatus.EDITING_DONE);
+
+          // Change of thought: instead of reverting to previous state, keep the
+          // changes that have been done and force the user to write a note why
+          // they're unassigning rather than pushing it through the workflow
+          concept.setWorkflowStatus(WorkflowStatus.EDITING_DONE);
+          service.updateConcept(concept);
+          
+//          // get the origin review concept (e.g. the EDITING_DONE state)
+//          final Concept originConcept = getOriginConcept(concept.getId(),
+//              record.getReviewOriginRevision());
+//          // Restore it.
+//          service.syncConcept(concept.getId(), originConcept);
+//          // Set the flag to avoid saving the refset later, this is the final
+//          // saved state.
+//          skipUpdate = true;
+//          // no need to do this, sync takes care of it
+//          // concept.setWorkflowStatus(WorkflowStatus.EDITING_DONE);
+          
         }
         // a READY_FOR_PUBLICATION revision case that has not yet been saved
         // Simply remove the record and revert the revision flag
