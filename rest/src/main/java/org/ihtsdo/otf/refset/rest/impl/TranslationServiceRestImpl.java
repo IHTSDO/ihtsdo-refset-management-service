@@ -3773,7 +3773,10 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
           validationResult.addComment(
               conceptAdded + " concepts loaded into Finished Concepts.");
           validationResult
-              .addComment("The other concepts are being edited or reviewed.");
+              .addComment("The other concepts are being edited, reviewed or already finished.");
+        } else if (conceptAdded == 0 && conceptMap.size() > 0) {
+          validationResult
+          .addComment((conceptMap.size() - conceptAdded) + "  concepts are being edited, reviewed or already finished.");
         } else {
           validationResult
               .addComment("No concepts loaded into Finished Concepts.");
