@@ -150,6 +150,9 @@ public class ImportTranslationTermServerHandler extends ImportExportAbstract
 
     Logger.getLogger(getClass()).info(
         "Import translation concepts translationid: " + translation.getId());
+    
+    // initialize
+    validationResult = new ValidationResultJpa();
 
     try (
         final TranslationService translationService =
@@ -176,15 +179,13 @@ public class ImportTranslationTermServerHandler extends ImportExportAbstract
         Logger.getLogger(getClass()).info("FROM: " + pageSize * iteration
             + " TO: " + Math.min(((iteration + 1) * pageSize), members.size()));
 
-        List<ConceptRefsetMember> conceptSubset =
+        final List<ConceptRefsetMember> conceptSubset =
             members.subList(pageSize * iteration,
                 Math.min(((iteration + 1) * pageSize), members.size()));
         iteration++;
 
-        List<String> terminologyIds = new ArrayList<>();
+        final List<String> terminologyIds = new ArrayList<>();
         for (ConceptRefsetMember c : conceptSubset) {
-          // TODO: lookup workflow status and possibily skip if any work has
-          // been done on it.
           terminologyIds.add(c.getConceptId());
         }
 
