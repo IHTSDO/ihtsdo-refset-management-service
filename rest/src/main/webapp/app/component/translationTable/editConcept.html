@@ -107,7 +107,7 @@
                 </select>
                  <br /> <span ng-show="descriptionAuthor[description.id] != 'Term Server'">Authored by:</span> <span ng-show="descriptionAuthor[description.id] == 'Term Server'">Imported from:</span> 
                  <span ng-show="description.id != null"> {{descriptionAuthor[description.id]}}</span>
-                 <span ng-show="description.id == null"> {{description.lastModifiedBy}}</span>
+                 <span ng-show="description.id == null && description.term != ''"> {{description.lastModifiedBy}}</span>
                  <br /> <span ng-show="descriptionAuthor[description.id] == 'Term Server'"> (Translations imported from the term server<br />cannot be modified or deleted) </span>
               </td>
               
