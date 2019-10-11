@@ -951,8 +951,8 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
 
   /* see superclass */
   @Override
-  public void lookupMemberNames(Long refsetId, String label, boolean background, boolean lookupSynonyms)
-    throws Exception {
+  public void lookupMemberNames(Long refsetId, String label, boolean background,
+    boolean lookupSynonyms) throws Exception {
     Logger.getLogger(getClass()).info("Release Service - lookup member names - "
         + refsetId + ", " + background);
     // Only launch process if refset not already looked-up, or if a previous
@@ -962,7 +962,8 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
           || (lookupProgressMap.containsKey(refsetId)
               && lookupProgressMap.get(refsetId).equals(-100))) {
         // Create new thread
-        Runnable lookup = new LookupMemberNamesThread(refsetId, label, lookupSynonyms);
+        Runnable lookup =
+            new LookupMemberNamesThread(refsetId, label, lookupSynonyms);
         Thread t = new Thread(lookup);
         t.start();
         // Handle non-background
@@ -977,8 +978,8 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
   /* see superclass */
   @Override
   public void lookupMemberNames(Long refsetId,
-    List<ConceptRefsetMember> members, String label, boolean saveMembers, boolean lookupSynonyms,
-    boolean background) throws Exception {
+    List<ConceptRefsetMember> members, String label, boolean saveMembers,
+    boolean lookupSynonyms, boolean background) throws Exception {
     Logger.getLogger(getClass())
         .info("Release Service - lookup member names (2) - " + refsetId + ", "
             + background);
@@ -986,8 +987,8 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
     if (ConfigUtility.isAssignNames()) {
       if (!lookupProgressMap.containsKey(refsetId)) {
         // Create new thread
-        Runnable lookup =
-            new LookupMemberNamesThread(refsetId, members, label, saveMembers, lookupSynonyms);
+        Runnable lookup = new LookupMemberNamesThread(refsetId, members, label,
+            saveMembers, lookupSynonyms);
         Thread t = new Thread(lookup);
         t.start();
         // Handle non-background
@@ -1054,7 +1055,8 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
      * @param label the label
      * @throws Exception the exception
      */
-    public LookupMemberNamesThread(Long id, String label, boolean lookupSynonyms) throws Exception {
+    public LookupMemberNamesThread(Long id, String label,
+        boolean lookupSynonyms) throws Exception {
       this.refsetId = id;
       this.label = label;
       this.lookupSynonyms = lookupSynonyms;
@@ -1071,7 +1073,8 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
      * @throws Exception the exception
      */
     public LookupMemberNamesThread(Long id, List<ConceptRefsetMember> members,
-        String label, boolean saveMembers, boolean lookupSynonyms) throws Exception {
+        String label, boolean saveMembers, boolean lookupSynonyms)
+        throws Exception {
       this.refsetId = id;
       this.members = members;
       this.label = label;
@@ -1160,8 +1163,8 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
             // Get concepts from Term Server based on list
             final TerminologyHandler handler =
                 getTerminologyHandler(refset.getProject(), headers);
-            final ConceptList cons =
-                handler.getConcepts(termIds, terminology, version, lookupSynonyms ? true : false);
+            final ConceptList cons = handler.getConcepts(termIds, terminology,
+                version, lookupSynonyms ? true : false);
 
             // IF the number of concepts returned doesn't match
             // the size of termIds, there was a problem
@@ -1183,9 +1186,9 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
                 final ConceptRefsetMember member = refsetService
                     .getMember(memberMap.get(con.getTerminologyId()).getId());
                 member.setConceptName(con.getName());
-                if(lookupSynonyms) {
-                populateMemberSynonyms(member, con, refset, refsetService,
-                    handler);
+                if (lookupSynonyms) {
+                  populateMemberSynonyms(member, con, refset, refsetService,
+                      handler);
                 }
                 refsetService.updateMember(member);
               }
@@ -1196,9 +1199,9 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
                     memberMap.get(con.getTerminologyId());
                 member.setConceptName(con.getName());
                 member.setConceptActive(con.isActive());
-                if(lookupSynonyms) {
-                populateMemberSynonyms(member, con, refset, refsetService,
-                    handler);
+                if (lookupSynonyms) {
+                  populateMemberSynonyms(member, con, refset, refsetService,
+                      handler);
                 }
               }
             }
@@ -1693,7 +1696,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
   public void populateMemberSynonyms(ConceptRefsetMember member,
     Concept concept, Refset refset, RefsetService refsetService)
     throws Exception {
-    member.setSynonyms(new ArrayList<ConceptRefsetMemberSynonym>());
+    member.setSynonyms(new HashSet<ConceptRefsetMemberSynonym>());
 
     populateMemberSynonymsFromConcept(member, concept, refsetService);
 
@@ -1716,7 +1719,14 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
   public void populateMemberSynonyms(ConceptRefsetMember member,
     Concept concept, Refset refset, RefsetService refsetService,
     TerminologyHandler handler) throws Exception {
-    member.setSynonyms(new ArrayList<ConceptRefsetMemberSynonym>());
+
+    // clear out and remove the current synonyms
+    Set<ConceptRefsetMemberSynonym> currentSynonyms = member.getSynonyms();
+    member.setSynonyms(new HashSet<ConceptRefsetMemberSynonym>());
+    for (ConceptRefsetMemberSynonym synonym : currentSynonyms) {
+      refsetService.removeConceptRefsetMemberSynonym(synonym.getId());
+    }
+    refsetService.updateMember(member);
 
     populateMemberSynonymsFromConcept(member, concept, refsetService);
 
@@ -1725,8 +1735,8 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
           refset.getTerminology(), refset.getVersion());
 
       for (Description d : fullCon.getDescriptions()) {
-        if (d.isActive() && !d.getTypeId().equals("900000000000550004") // DEFINITION_DESC_SCTID
-            && !member.getSynonyms().contains(d.getTerm())) {
+        if (!d.getTypeId().equals("900000000000550004") // DEFINITION_DESC_SCTID
+        ) {
           ConceptRefsetMemberSynonym synonym =
               new ConceptRefsetMemberSynonymJpa();
           synonym.setSynonym(d.getTerm());
@@ -1734,7 +1744,10 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
           if ("900000000000003001".equals(d.getTypeId())) {
             synonym.setTermType("FSN");
           } else {
-            if ("900000000000548007".equals(
+            if (d.getLanguageRefsetMembers() == null
+                || d.getLanguageRefsetMembers().size() == 0) {
+              synonym.setTermType("UNKNOWN");
+            } else if ("900000000000548007".equals(
                 d.getLanguageRefsetMembers().get(0).getAcceptabilityId())) {
               synonym.setTermType("PT");
             } else {
@@ -1744,6 +1757,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
           synonym.setMember(member);
           refsetService.addConceptRefsetMemberSynonym(synonym);
           member.getSynonyms().add(synonym);
+          refsetService.updateMember(member);
         }
       }
     }
@@ -1759,8 +1773,8 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
   private void populateMemberSynonymsFromConcept(ConceptRefsetMember member,
     Concept concept, RefsetService refsetService) throws Exception {
     for (Description d : concept.getDescriptions()) {
-      if (d.isActive() && !d.getTypeId().equals("900000000000550004") // DEFINITION_DESC_SCTID
-          && !member.getSynonyms().contains(d.getTerm())) {
+      if (!d.getTypeId().equals("900000000000550004") // DEFINITION_DESC_SCTID
+      ) {
         ConceptRefsetMemberSynonym synonym =
             new ConceptRefsetMemberSynonymJpa();
         synonym.setSynonym(d.getTerm());
@@ -1768,7 +1782,10 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
         if ("900000000000003001".equals(d.getTypeId())) {
           synonym.setTermType("FSN");
         } else {
-          if ("900000000000548007".equals(
+          if (d.getLanguageRefsetMembers() == null
+              || d.getLanguageRefsetMembers().size() == 0) {
+            synonym.setTermType("UNKNOWN");
+          } else if ("900000000000548007".equals(
               d.getLanguageRefsetMembers().get(0).getAcceptabilityId())) {
             synonym.setTermType("PT");
           } else {

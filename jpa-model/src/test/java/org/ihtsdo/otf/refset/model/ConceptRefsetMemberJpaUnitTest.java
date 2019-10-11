@@ -112,7 +112,6 @@ public class ConceptRefsetMemberJpaUnitTest extends ModelUnitSupport {
     tester.include("terminologyId");
     tester.include("conceptId");
     tester.include("refset");
-    tester.include("synonyms");
 
     tester.proxy(Refset.class, 1, r1);
     tester.proxy(Refset.class, 2, r2);
