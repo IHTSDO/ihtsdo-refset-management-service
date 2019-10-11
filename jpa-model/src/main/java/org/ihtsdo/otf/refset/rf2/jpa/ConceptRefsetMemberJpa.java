@@ -4,7 +4,9 @@
 package org.ihtsdo.otf.refset.rf2.jpa;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -31,9 +33,9 @@ import org.hibernate.search.annotations.SortableField;
 import org.hibernate.search.annotations.Store;
 import org.hibernate.search.bridge.builtin.EnumBridge;
 import org.hibernate.search.bridge.builtin.LongBridge;
+import org.ihtsdo.otf.refset.ConceptRefsetMemberSynonym;
 import org.ihtsdo.otf.refset.Note;
 import org.ihtsdo.otf.refset.Refset;
-import org.ihtsdo.otf.refset.ConceptRefsetMemberSynonym;
 import org.ihtsdo.otf.refset.jpa.ConceptRefsetMemberNoteJpa;
 import org.ihtsdo.otf.refset.jpa.ConceptRefsetMemberSynonymJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
@@ -89,7 +91,7 @@ public class ConceptRefsetMemberJpa extends AbstractComponent
   /** The synonym. */
   @OneToMany(mappedBy = "member", targetEntity = ConceptRefsetMemberSynonymJpa.class)
   @IndexedEmbedded(targetElement = ConceptRefsetMemberSynonymJpa.class)
-  private List<ConceptRefsetMemberSynonym> synonyms = new ArrayList<>();  
+  private Set<ConceptRefsetMemberSynonym> synonyms = new HashSet<>();  
   
   /**
    * Instantiates an empty {@link ConceptRefsetMemberJpa}.
@@ -237,9 +239,9 @@ public class ConceptRefsetMemberJpa extends AbstractComponent
 
   @XmlElement(type = ConceptRefsetMemberSynonymJpa.class)
   @Override
-  public List<ConceptRefsetMemberSynonym> getSynonyms() {
+  public Set<ConceptRefsetMemberSynonym> getSynonyms() {
     if (synonyms == null) {
-      synonyms = new ArrayList<ConceptRefsetMemberSynonym>();
+      synonyms = new HashSet<ConceptRefsetMemberSynonym>();
     }
     return synonyms;
   }
@@ -251,7 +253,7 @@ public class ConceptRefsetMemberJpa extends AbstractComponent
    * @param notes the notes
    */
   @Override
-  public void setSynonyms(List<ConceptRefsetMemberSynonym> synonyms) {
+  public void setSynonyms(Set<ConceptRefsetMemberSynonym> synonyms) {
     this.synonyms = synonyms;
   }
   
