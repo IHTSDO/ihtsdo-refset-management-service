@@ -441,11 +441,11 @@
               {{getTerminologyName(selected.refset.terminology)}}
               {{selected.refset.version}} <i
                 ng-click="openMigrationModal(selected.refset, 'Migration'); $event.stopPropagation()"
-                ng-show="selected.refset.stagingType == null && value == 'ASSIGNED'"
+                ng-show="selected.refset.stagingType == null && value == 'ASSIGNED' && projects.role != 'ADMIN'"
                 title="Migration" class="noul material-icons md-18">find_replace</i>
               <i
                 ng-click="openMigrationModal(selected.refset, 'Migration'); $event.stopPropagation()"
-                ng-show="selected.refset.stagingType == 'MIGRATION' && value == 'ASSIGNED'"
+                ng-show="selected.refset.stagingType == 'MIGRATION' && value == 'ASSIGNED' && projects.role != 'ADMIN'"
                 title="Resume migration" class="noul material-icons md-18">play_arrow</i>
             </td>
           </tr>
