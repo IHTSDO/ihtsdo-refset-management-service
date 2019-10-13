@@ -4,7 +4,7 @@
   <!-- R1C1 -->
   <div class="col-md-6 col-xs-12">
     <div>
-      <span ng-show="value == 'AVAILABLE'"
+      <span ng-show="value == 'AVAILABLE' && projects.role != 'REVIEWER'"
         style="float: right; margin-left: 3px;">
         <button ng-click="openAddRefsetModal(true); $event.stopPropagation()"
           title="Add local set" class="btn btn-xs btn-primary">Add
@@ -118,7 +118,7 @@
           <!-- PUBLISHED/BETA : no actions row -->
           <!-- not PUBLISHED/BETA -->
           <th class="col-md-2 col-xs-2" ng-show="!isDirectory()"><span
-              ng-show="value == 'AVAILABLE'" style="float: right;">
+              ng-show="value == 'AVAILABLE' && projects.role != 'REVIEWER'" style="float: right;">
               <button ng-click="openAddRefsetModal(false);" title="Add refset"
                 class="btn btn-xs btn-primary">Add Refset</button>
             </span></th>
