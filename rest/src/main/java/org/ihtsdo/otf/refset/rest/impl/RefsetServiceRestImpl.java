@@ -3919,6 +3919,41 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
   }
 
   /* see superclass */
+  @GET
+  @Override
+  @Path("/lookup/cancel")
+  @ApiOperation(value = "Cancel name lookup", notes = "Cancels the name/synonym lookup process for a refset")
+  public void cancelLookup(
+    @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(getClass())
+        .info("RESTful call GET (Refset): /lookup/cancel " + refsetId);
+
+    final RefsetService refsetService =
+        new RefsetServiceJpa(getHeaders(headers));
+    try {
+      final Refset refset = refsetService.getRefset(refsetId);
+      if (refset == null) {
+        throw new Exception("Invalid refset id " + refsetId);
+      }
+
+      authorizeApp(securityService, authToken, "cancel lookup process",
+          UserRole.VIEWER);
+      
+      // Cancel the lookup process
+      refsetService.cancelLookup(refsetId);
+
+    } catch (Exception e) {
+      handleException(e, "trying to cancel lookup process");
+    } finally {
+      refsetService.close();
+      securityService.close();
+    }
+  }  
+  
+  /* see superclass */
   @Override
   @POST
   @Produces("text/plain")

@@ -349,6 +349,14 @@ public interface RefsetService extends ReleaseService {
     throws Exception;
 
   /**
+   * Cancel lookup.
+   *
+   * @param objectId the object id
+   * @throws Exception the exception
+   */
+  public void cancelLookup(Long objectId) throws Exception;
+
+  /**
    * Resolve refset definition.
    *
    * @param refset the refset
