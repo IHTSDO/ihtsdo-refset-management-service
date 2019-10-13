@@ -2195,7 +2195,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         // On cancel, we need to undo this.
         // Only lookup up names, not synonyms
         refsetService.lookupMemberNames(refsetCopy.getId(), oldNotNew,
-            "begin migration", true, ConfigUtility.isBackgroundLookup(), false);
+            "begin migration", true, false, ConfigUtility.isBackgroundLookup());
       }
 
       addLogEntry(refsetService, userName, "BEGIN MIGRATION",
