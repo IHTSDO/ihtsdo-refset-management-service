@@ -403,6 +403,13 @@ tsApp.directive('conceptInfo', [
               $scope.disableMemberTypes = true;
               return;
             }
+            
+            // no editing allowed if a lookup is in progress
+            if ($scope.data.refset.lookupInProgress) {
+              $scope.disableMemberTypes = true;
+              return;
+            }
+            
             $scope.disableMemberTypes = false;
 
             var concepts = $scope.getAllConcepts();

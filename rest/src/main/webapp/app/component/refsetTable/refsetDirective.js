@@ -942,6 +942,14 @@ tsApp
                 });
               };
 
+              // Return true if the refset is actively in the middle of a name lookup
+              $scope.isLookupInProgress = function(refset) {
+                if (refset.lookupInProgress && $scope.refsetLookupProgress[refset.id] > -1 && $scope.refsetLookupProgress[refset.id]  < 100) {
+                  return true;
+                }
+                return false;
+              };              
+              
               // Get the most recent note for display
               $scope.getLatestNote = function(refset) {
                 if (refset && refset.notes && refset.notes.length > 0) {
@@ -3016,8 +3024,12 @@ tsApp
                 $scope.metadata = metadata;
                 $scope.validVersion = null;
                 $scope.terminologies = metadata.terminologies;
-                /*$scope.metadataVersions = $scope.metadata.versions[refset.terminology] ? angular
-                  .copy($scope.metadata.versions[refset.terminology].sort().reverse()) : [];*/
+                /*
+                                 * $scope.metadataVersions =
+                                 * $scope.metadata.versions[refset.terminology] ? angular
+                                 * .copy($scope.metadata.versions[refset.terminology].sort().reverse()) :
+                                 * [];
+                                 */
                 $scope.filters = filters;
                 $scope.localSet = localSet;
 
@@ -3656,8 +3668,11 @@ tsApp
                 $scope.paging = paging;
                 $scope.metadata = metadata;
                 $scope.terminologies = [];
-                /* $scope.versions = angular.copy($scope.metadata.versions[$scope.newTerminology]
-                  .sort().reverse());*/
+                /*
+                                 * $scope.versions =
+                                 * angular.copy($scope.metadata.versions[$scope.newTerminology]
+                                 * .sort().reverse());
+                                 */
                 $scope.newVersion = null;
                 $scope.validVersion = null;
                 $scope.errors = [];
