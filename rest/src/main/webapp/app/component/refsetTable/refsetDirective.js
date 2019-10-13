@@ -1707,7 +1707,7 @@ tsApp
                     $scope.localMetadata.versions[terminology] = [];
                     for (var i = 0; i < data.terminologies.length; i++) {
                       $scope.localMetadata.versions[terminology].push(data.terminologies[i].version);
-                      if (terminology == 'SNOMEDCT') {
+                      if (terminology == $scope.project.terminology) {
                         $scope.terminologySelected(terminology);
                       }
                     }
