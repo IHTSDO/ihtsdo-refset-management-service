@@ -1755,12 +1755,15 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
             }
           }
           synonym.setMember(member);
-          refsetService.addConceptRefsetMemberSynonym(synonym);
-          member.getSynonyms().add(synonym);
-          refsetService.updateMember(member);
+          // Make sure to only add unique synonyms. Block duplicates
+          if (!member.getSynonyms().contains(synonym)) {
+            refsetService.addConceptRefsetMemberSynonym(synonym);
+            member.getSynonyms().add(synonym);
+          }          
         }
       }
     }
+    refsetService.updateMember(member);
   }
 
   /**
@@ -1793,8 +1796,11 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
           }
         }
         synonym.setMember(member);
-        refsetService.addConceptRefsetMemberSynonym(synonym);
-        member.getSynonyms().add(synonym);
+        // Make sure to only add unique synonyms. Block duplicates
+        if (!member.getSynonyms().contains(synonym)) {
+          refsetService.addConceptRefsetMemberSynonym(synonym);
+          member.getSynonyms().add(synonym);
+        }
       }
     }
   }
