@@ -1212,7 +1212,8 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
         JsonNode fsn = entry.findValue("fsn");
 
         final Description desc = new DescriptionJpa();
-        desc.setActive(pt.get("active").asText().equals("true"));
+        desc.setActive(pt == null ? false : pt.get("active") == null ? false
+            : pt.get("active").asText().equals("true"));
         String term = pt == null ? ""
             : pt.get("term") == null ? "" : pt.get("term").asText();        
         desc.setTerm(term);
