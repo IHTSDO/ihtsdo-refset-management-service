@@ -1213,7 +1213,9 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
 
         final Description desc = new DescriptionJpa();
         desc.setActive(pt.get("active").asText().equals("true"));
-        desc.setTerm(pt.get("term").asText());
+        String term = pt == null ? ""
+            : pt.get("term") == null ? "" : pt.get("term").asText();        
+        desc.setTerm(term);
         if (conceptMap.containsKey(conceptId)) {
           final Concept concept = conceptMap.get(conceptId);
           if (desc.isActive() || !localPfs.getActiveOnly()) {
@@ -1236,7 +1238,9 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
                 .setDefinitionStatusId(entry.get("definitionStatus").asText());
             concept.setTerminologyId(conceptId);
             concept.setModuleId(entry.get("moduleId").asText());
-            concept.setName(fsn.get("term").asText());
+            term = fsn == null ? ""
+                : fsn.get("term") == null ? "" : fsn.get("term").asText();        
+            concept.setName(term);
             concept.setPublishable(true);
             concept.setPublished(true);
 
