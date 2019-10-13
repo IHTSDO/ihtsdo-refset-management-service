@@ -306,15 +306,21 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
           record.getReviewers().remove(user.getUserName());
           record.setForReview(false);
           record.setLastModifiedBy(user.getUserName());
-          // get the origin review refset (e.g. the EDITING_DONE state)
-          final Refset originRefset =
-              getOriginRefset(refset.getId(), record.getReviewOriginRevision());
-          // Restore it.
-          service.syncRefset(refset.getId(), originRefset);
-          // Set the flag to avoid saving the refset later, this is the final
-          // saved state.
-          skipUpdate = true;
-          // refset.setWorkflowStatus(WorkflowStatus.EDITING_DONE);
+          
+          // Change of thought: instead of reverting to previous state, keep any
+          // changes that have been done 
+          
+          refset.setWorkflowStatus(WorkflowStatus.EDITING_DONE);       
+          
+//          // get the origin review refset (e.g. the EDITING_DONE state)
+//          final Refset originRefset =
+//              getOriginRefset(refset.getId(), record.getReviewOriginRevision());
+//          // Restore it.
+//          service.syncRefset(refset.getId(), originRefset);
+//          // Set the flag to avoid saving the refset later, this is the final
+//          // saved state.
+//          skipUpdate = true;
+//          // refset.setWorkflowStatus(WorkflowStatus.EDITING_DONE);
 
         }
 
@@ -734,11 +740,10 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
           record.setForReview(false);
           record.setLastModifiedBy(user.getUserName());
 
-          // Change of thought: instead of reverting to previous state, keep the
-          // changes that have been done and force the user to write a note why
-          // they're unassigning rather than pushing it through the workflow
+          // Change of thought: instead of reverting to previous state, keep any
+          // changes that have been done
+          
           concept.setWorkflowStatus(WorkflowStatus.EDITING_DONE);
-          service.updateConcept(concept);
           
 //          // get the origin review concept (e.g. the EDITING_DONE state)
 //          final Concept originConcept = getOriginConcept(concept.getId(),
