@@ -922,15 +922,17 @@ tsApp
                   // If all lookups in progress are at 100%, stop interval
                   var found = true;
                   for ( var key in $scope.refsetLookupProgress) {
-                    if ($scope.refsetLookupProgress[key] < 100) {
+                    if ($scope.refsetLookupProgress[key] > -1 && $scope.refsetLookupProgress[key] < 100) {
                       found = false;
                       break;
                     }
                   }
                   if (found) {
-                    $interval.cancel($scope.lookupInterval);
-                    $scope.lookupInterval = null;
-                    refsetService.fireRefsetChanged(data);
+                    if($scope.lookupInterval){
+                      $interval.cancel($scope.lookupInterval);
+                      $scope.lookupInterval = null;
+                      refsetService.fireRefsetChanged(data);
+                    }
                   }
 
                 },
@@ -948,6 +950,19 @@ tsApp
                   return true;
                 }
                 return false;
+              };              
+              
+              // Cancel lookup process
+              $scope.cancelLookup = function(refset) {
+                refsetService.cancelLookup(refset.id).then(
+                // Success
+                function(data) {
+                  $scope.refsetLookupProgress[refset.id] = -1;
+                },
+                // Error
+                function(data) {
+                  // Cancel failed - do nothing
+                });
               };              
               
               // Get the most recent note for display

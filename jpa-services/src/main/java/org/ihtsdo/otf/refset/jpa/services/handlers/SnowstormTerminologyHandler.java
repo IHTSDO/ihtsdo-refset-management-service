@@ -898,6 +898,10 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     if (descriptions) {
       ConceptList conceptList = new ConceptListJpa();
       for (String terminologyId : terminologyIds) {
+        if(Thread.interrupted()) {
+          throw new InterruptedException("User cancelled the lookup");
+        }
+          
         try {
           conceptList
               .addObject(getFullConcept(terminologyId, terminology, version));

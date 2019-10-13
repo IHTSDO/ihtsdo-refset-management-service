@@ -234,8 +234,8 @@ public interface RefsetServiceRest {
    * @throws Exception the exception
    */
   public ConceptRefsetMemberList findRefsetMembersForQuery(Long refsetId,
-    String query, String language, Boolean translated, PfsParameterJpa pfs, String authToken)
-    throws Exception;
+    String query, String language, Boolean translated, PfsParameterJpa pfs,
+    String authToken) throws Exception;
 
   /**
    * Adds the refset inclusion.
@@ -536,6 +536,15 @@ public interface RefsetServiceRest {
     throws Exception;
 
   /**
+   * Cancels the name/synonym lookup process.
+   *
+   * @param refsetId the refset id
+   * @param authToken the auth token
+   * @throws Exception the exception
+   */
+  public void cancelLookup(Long refsetId, String authToken) throws Exception;
+
+  /**
    * Adds the refset members for expression.
    *
    * @param refsetId the refset id
@@ -724,6 +733,5 @@ public interface RefsetServiceRest {
    */
   public void startLookupMemberNames(Long refsetId, Boolean background,
     String authToken) throws Exception;
-
 
 }

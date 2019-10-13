@@ -86,9 +86,16 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
    */
   static Map<Long, Integer> lookupProgressMap = new ConcurrentHashMap<>();
 
+  /** Keep track of which threads are associated with each refset, so they can be canceled by the user. */
+  static Map<Long, Thread> lookupThreadsMap = new ConcurrentHashMap<>();
+
   /** The Constant LOOKUP_ERROR_CODE. */
   final static int LOOKUP_ERROR_CODE = -100;
 
+  /** The Constant LOOKUP_CANCELLED_CODE. */
+  final static int LOOKUP_CANCELLED_CODE = -99;
+
+  
   static {
     try {
       if (config == null)
@@ -599,6 +606,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
     }
   }
 
+  /* see superclass */
   @Override
   public String getDisplayNameForMember(Long memberId, String language)
     throws Exception {
@@ -956,11 +964,11 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
     Logger.getLogger(getClass()).info("Release Service - lookup member names - "
         + refsetId + ", " + background);
     // Only launch process if refset not already looked-up, or if a previous
-    // lookup failed
+    // lookup failed or was cancelled
     if (ConfigUtility.isAssignNames()) {
       if (!lookupProgressMap.containsKey(refsetId)
-          || (lookupProgressMap.containsKey(refsetId)
-              && lookupProgressMap.get(refsetId).equals(-100))) {
+          || lookupProgressMap.get(refsetId).equals(LOOKUP_ERROR_CODE)
+          || lookupProgressMap.get(refsetId).equals(LOOKUP_CANCELLED_CODE)) {
         // Create new thread
         Runnable lookup =
             new LookupMemberNamesThread(refsetId, label, lookupSynonyms);
@@ -969,6 +977,8 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
         // Handle non-background
         if (!background) {
           t.join();
+        } else {
+          lookupThreadsMap.put(refsetId, t);
         }
       }
       // else it is already running
@@ -995,6 +1005,10 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
         if (!background) {
           t.join();
         }
+        // Otherwise keep track of the thread
+        else {
+          lookupThreadsMap.put(refsetId, t);
+        }
       }
       // else it is already running
     }
@@ -1012,7 +1026,11 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
       if (lookupProgressMap.containsKey(objectId)) {
         if (lookupProgressMap.get(objectId).intValue() == LOOKUP_ERROR_CODE) {
           throw new Exception("The lookup process unexpectedly failed");
-        } else {
+        }
+        else if (lookupProgressMap.get(objectId).intValue() == LOOKUP_CANCELLED_CODE) {
+          retval = -1;
+        }
+        else {
           retval = lookupProgressMap.get(objectId);
         }
       } else {
@@ -1025,6 +1043,20 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
         .info("Refset Service - getLookupProgress - " + retval);
 
     return retval;
+  }
+
+  /* see superclass */
+  @Override
+  public void cancelLookup(Long objectId) throws Exception {
+
+    Logger.getLogger(getClass())
+        .info("Refset Service - cancelling lookup - " + objectId);
+
+    Thread t = lookupThreadsMap.get(objectId);
+    if (t != null) {
+      t.interrupt();
+    }
+
   }
 
   /**
@@ -1047,12 +1079,16 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
     /** The lookup synonyms. */
     private boolean lookupSynonyms = true;
 
+    /** The lookup canceled. */
+    private boolean lookupCanceled = false;
+
     /**
      * Instantiates a {@link LookupMemberNamesThread} from the specified
      * parameters.
      *
      * @param id the id
      * @param label the label
+     * @param lookupSynonyms the lookup synonyms
      * @throws Exception the exception
      */
     public LookupMemberNamesThread(Long id, String label,
@@ -1070,6 +1106,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
      * @param members the members
      * @param label the label
      * @param saveMembers the save members
+     * @param lookupSynonyms the lookup synonyms
      * @throws Exception the exception
      */
     public LookupMemberNamesThread(Long id, List<ConceptRefsetMember> members,
@@ -1154,6 +1191,12 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
           // Execute for all members
           boolean missingConcepts = false;
           while (i < numberOfMembers) {
+
+            if (Thread.interrupted()) {
+              lookupCanceled = true;
+              break;
+            }
+
             final List<String> termIds = new ArrayList<>();
 
             // Create list of conceptIds for all members (up to 101 at a time)
@@ -1229,7 +1272,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
               }
             }
 
-            // Update Progess and commit
+            // Update Progress and commit
             int progress = (int) ((100.0 * i) / numberOfMembers);
             if (lookupProgressMap.get(refsetId) < progress) {
               lookupProgressMap.put(refsetId,
@@ -1245,16 +1288,23 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
 
         // Conclude process (reread refset)
         refset = refsetService.getRefset(refsetId);
-        if (saveMembers) {
+        if (saveMembers && !lookupCanceled) {
           refset.setLookupInProgress(false);
           refsetService.updateRefset(refset);
           refsetService.commit();
         }
         lookupProgressMap.remove(refsetId);
+
         Logger.getLogger(RefsetServiceJpa.this.getClass())
             .info("Finished lookupMemberNamesThread - " + refsetId);
 
-      } catch (Exception e) {
+      } catch (InterruptedException e) {
+        Logger.getLogger(RefsetServiceJpa.this.getClass())
+        .info("User cancelled the lookupMemberNamesThread - " + refsetId);
+        
+        lookupProgressMap.put(refsetId, LOOKUP_CANCELLED_CODE);
+      }
+      catch (Exception e) {
         try {
           ExceptionHandler.handleException(e, label, null);
         } catch (Exception e1) {
@@ -1262,6 +1312,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
         }
         lookupProgressMap.put(refsetId, LOOKUP_ERROR_CODE);
       } finally {
+        lookupThreadsMap.remove(refsetId);
         try {
           refsetService.close();
         } catch (Exception e) {
@@ -1759,7 +1810,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
           if (!member.getSynonyms().contains(synonym)) {
             refsetService.addConceptRefsetMemberSynonym(synonym);
             member.getSynonyms().add(synonym);
-          }          
+          }
         }
       }
     }
@@ -1771,6 +1822,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
    *
    * @param member the member
    * @param concept the concept
+   * @param refsetService the refset service
    * @throws Exception the exception
    */
   private void populateMemberSynonymsFromConcept(ConceptRefsetMember member,

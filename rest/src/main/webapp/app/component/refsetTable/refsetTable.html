@@ -206,7 +206,7 @@
               ng-click="unassign(refset,user.userName); $event.stopPropagation()"
               title="Unassign" class="noul material-icons md-18">assignment_return</i>
             <span
-              ng-show="refset.lookupInProgress && refsetLookupProgress[refset.id] > -1 && refsetLookupProgress[refset.id] < 100">
+              ng-show="isLookupInProgress(refset)">
               <br />
               <button class="btn btn-xs btn-warning"
                 ng-click="refreshLookupProgress(refset)"
@@ -215,6 +215,12 @@
                 <span ng-show="refsetLookupProgress[refset.id]">
                   {{refsetLookupProgress[refset.id]}}%</span>
               </button>
+              <br />
+              <button class="btn btn-xs btn-warning"
+                ng-click="cancelLookup(refset)"
+                title="Click to cancel the lookup process">
+                Cancel Lookup
+              </button>              
             </span>
             <!-- ASSIGNED actions -->
           <td class="nobreak" ng-show="value == 'ASSIGNED'">
@@ -255,10 +261,10 @@
               <br />
               <button class="btn btn-xs btn-warning"
                 ng-click="startLookup(refset)" title="Click to restart lookup">Restart
-                Lookup</button>
+                Lookup</button>               
             </span>
             <span
-              ng-show="refset.lookupInProgress && refsetLookupProgress[refset.id] > -1 && refsetLookupProgress[refset.id] < 100">
+              ng-show="isLookupInProgress(refset)">
               <br />
               <button class="btn btn-xs btn-warning"
                 ng-click="refreshLookupProgress(refset)"
@@ -267,6 +273,12 @@
                 <span ng-show="refsetLookupProgress[refset.id]">
                   {{refsetLookupProgress[refset.id]}}%</span>
               </button>
+              <br /><br />
+              <button class="btn btn-xs btn-warning"
+                ng-click="cancelLookup(refset)"
+                title="Click to cancel the lookup process">
+                Cancel Lookup
+              </button>                
             </span>
           </td>
           <!-- RELEASE actions -->
