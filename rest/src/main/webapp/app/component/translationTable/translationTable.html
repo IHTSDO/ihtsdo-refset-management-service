@@ -52,7 +52,7 @@
           title="Showing only most recent, click to toggle">All</span>
       </button>
 
-      <h4 ng-show="value=='EDITING' && translations.totalCount == 0">
+      <h4 ng-show="value=='EDITING' && translations.totalCount == 0 && projects.role != 'REVIEWER'">
         <span style="float: right;">
           <button ng-click="openAddTranslationModal(); $event.stopPropagation()"
             title="Add translation" class="btn btn-xs btn-primary">Add
@@ -133,7 +133,7 @@
           <!-- No actions column -->
 
           <!-- NOT PUBLISHED/BETA -->
-          <th class="col-md-2 col-xs-2" ng-show="userProjectsInfo.anyRole">
+          <th class="col-md-2 col-xs-2" ng-show="userProjectsInfo.anyRole && projects.role != 'REVIEWER'">
             <span ng-show="value == 'EDITING'" style="float: right;">
               <button ng-click="openAddTranslationModal()"
                 title="Add translation" class="btn btn-xs btn-primary">Add</button>
