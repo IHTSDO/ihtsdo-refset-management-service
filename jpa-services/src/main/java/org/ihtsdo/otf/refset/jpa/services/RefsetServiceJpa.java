@@ -993,9 +993,12 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
     Logger.getLogger(getClass())
         .info("Release Service - lookup member names (2) - " + refsetId + ", "
             + background);
-    // Only launch process if refset not already looked-up
+    // Only launch process if refset not already looked-up, or if a previous
+    // lookup failed or was cancelled
     if (ConfigUtility.isAssignNames()) {
-      if (!lookupProgressMap.containsKey(refsetId)) {
+      if (!lookupProgressMap.containsKey(refsetId)
+          || lookupProgressMap.get(refsetId).equals(LOOKUP_ERROR_CODE)
+          || lookupProgressMap.get(refsetId).equals(LOOKUP_CANCELLED_CODE)) {
         // Create new thread
         Runnable lookup = new LookupMemberNamesThread(refsetId, members, label,
             saveMembers, lookupSynonyms);
