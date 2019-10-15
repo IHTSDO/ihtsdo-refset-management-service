@@ -519,10 +519,11 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
         if(metadata.toString().contains("dialectName")) {
           // Only keep language portion of dialect
           languageName = metadata.toString().substring(metadata.toString().lastIndexOf(':') + 3, metadata.toString().lastIndexOf(':') + 5);
-        }else {
-          languageName = metadata.toString().substring(
-              metadata.toString().lastIndexOf(':') - 3,
-              metadata.toString().lastIndexOf(':') - 1);
+        }
+        //When only a single requiredLanguageRefset, the node changes name to contain the language itself.  
+        //E.g. "requiredLanguageRefset.sv": "46011000052107"
+        else {
+          languageName = metadata.toString().substring(metadata.toString().indexOf("requiredLanguageRefset.") + 23, metadata.toString().indexOf("requiredLanguageRefset.") + 25);
         }
         if(!languageName.isBlank() && !requiredLanguageList.contains(languageName)) {
           requiredLanguageList.add(languageName);
