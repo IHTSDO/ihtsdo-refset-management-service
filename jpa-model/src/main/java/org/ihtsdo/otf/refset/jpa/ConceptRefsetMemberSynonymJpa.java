@@ -48,7 +48,7 @@ public class ConceptRefsetMemberSynonymJpa
   private Long id;
 
   /** The synonym. */
-  @Column(columnDefinition = "varchar(255) COLLATE utf8_bin")
+  @Column(columnDefinition = "varchar(1000) COLLATE utf8_bin")
   private String synonym;
 
   /** The language. */

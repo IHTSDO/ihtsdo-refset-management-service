@@ -3,6 +3,7 @@
  */
 package org.ihtsdo.otf.refset.jpa.services.handlers;
 
+import java.io.IOException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -24,6 +25,7 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.Response.Status.Family;
 
 import org.apache.log4j.Logger;
@@ -677,6 +679,10 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
 
           description.setTypeId(desc.get("typeId").asText());
 
+          // update the concept name to the FSN if available
+          if (!desc.get("semanticTag").asText().isEmpty() && desc.get("typeId").asText().equals("900000000000003001")) {
+            concept.setName(desc.get("term").asText());
+          }
           if (description.isActive()) {
             for (final JsonNode language : desc.findValues("acceptability")) {
               final LanguageRefsetMember member = new LanguageRefsetMemberJpa();
@@ -1206,8 +1212,11 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
         JsonNode fsn = entry.findValue("fsn");
 
         final Description desc = new DescriptionJpa();
-        desc.setActive(pt.get("active").asText().equals("true"));
-        desc.setTerm(pt.get("term").asText());
+        desc.setActive(pt == null ? false : pt.get("active") == null ? false
+            : pt.get("active").asText().equals("true"));
+        String term = pt == null ? ""
+            : pt.get("term") == null ? "" : pt.get("term").asText();        
+        desc.setTerm(term);
         if (conceptMap.containsKey(conceptId)) {
           final Concept concept = conceptMap.get(conceptId);
           if (desc.isActive() || !localPfs.getActiveOnly()) {
@@ -1230,7 +1239,9 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
                 .setDefinitionStatusId(entry.get("definitionStatus").asText());
             concept.setTerminologyId(conceptId);
             concept.setModuleId(entry.get("moduleId").asText());
-            concept.setName(fsn.get("term").asText());
+            term = fsn == null ? ""
+                : fsn.get("term") == null ? "" : fsn.get("term").asText();        
+            concept.setName(term);
             concept.setPublishable(true);
             concept.setPublished(true);
 
@@ -1334,6 +1345,8 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
+    } else if (response.getStatusInfo() == Status.NOT_FOUND) {
+      throw new LocalException(getErrorMessage(resultString));
     } else {
       throw new LocalException(
           "Unexpected terminology server failure. Message = " + resultString);
@@ -1400,6 +1413,8 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
+    } else if (response.getStatusInfo() == Status.NOT_FOUND) {
+      throw new LocalException(getErrorMessage(resultString));
     } else {
       throw new LocalException(
           "Unexpected terminology server failure. Message = " + resultString);
@@ -1517,6 +1532,8 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
+    } else if (response.getStatusInfo() == Status.NOT_FOUND) {
+      throw new LocalException(getErrorMessage(resultString));
     } else {
 
       throw new LocalException(
@@ -1699,5 +1716,25 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     }
     return translationExtensionLanguageList;
   }
+  
+  /**
+   * Return message from API response.
+   * 
+   * @param jsonString JSON as string.
+   * @return error message.
+   * @throws IOException
+   */
+  private String getErrorMessage(String jsonString) throws IOException {
+    /**
+     * <pre>
+     * {"error":"BAD_REQUEST","message":"Branch 'MAIN/2018-05-31' does not exist."}
+     * </pre>
+     */
 
+    final ObjectMapper mapper = new ObjectMapper();
+    final JsonNode jsonNode = mapper.readTree(jsonString);
+
+    return jsonNode.get("message").asText();
+  }
+  
 }

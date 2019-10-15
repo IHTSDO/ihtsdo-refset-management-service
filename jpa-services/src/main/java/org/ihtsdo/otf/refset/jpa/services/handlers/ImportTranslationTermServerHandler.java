@@ -150,6 +150,9 @@ public class ImportTranslationTermServerHandler extends ImportExportAbstract
 
     Logger.getLogger(getClass()).info(
         "Import translation concepts translationid: " + translation.getId());
+    
+    // initialize
+    validationResult = new ValidationResultJpa();
 
     try (
         final TranslationService translationService =
@@ -176,15 +179,13 @@ public class ImportTranslationTermServerHandler extends ImportExportAbstract
         Logger.getLogger(getClass()).info("FROM: " + pageSize * iteration
             + " TO: " + Math.min(((iteration + 1) * pageSize), members.size()));
 
-        List<ConceptRefsetMember> conceptSubset =
+        final List<ConceptRefsetMember> conceptSubset =
             members.subList(pageSize * iteration,
                 Math.min(((iteration + 1) * pageSize), members.size()));
         iteration++;
 
-        List<String> terminologyIds = new ArrayList<>();
+        final List<String> terminologyIds = new ArrayList<>();
         for (ConceptRefsetMember c : conceptSubset) {
-          // TODO: lookup workflow status and possibily skip if any work has
-          // been done on it.
           terminologyIds.add(c.getConceptId());
         }
 
@@ -216,11 +217,12 @@ public class ImportTranslationTermServerHandler extends ImportExportAbstract
     Set<Concept> conceptList) throws Exception {
 
     final Map<String, Concept> conceptCache = new HashMap<>();
-    
+
     final Map<String, String> caseSignificanceToId = new HashMap<>();
     caseSignificanceToId.put("CASE_SENSITIVE", "900000000000017005");
     caseSignificanceToId.put("CASE_INSENSITIVE", "900000000000448009");
-    caseSignificanceToId.put("INITIAL_CHARACTER_CASE_INSENSITIVE", "900000000000020002");
+    caseSignificanceToId.put("INITIAL_CHARACTER_CASE_INSENSITIVE",
+        "900000000000020002");
 
     for (Concept sourceConcept : conceptList) {
 
@@ -237,12 +239,14 @@ public class ImportTranslationTermServerHandler extends ImportExportAbstract
           description.setLanguageCode(originalDescription.getLanguageCode());
           description.setTypeId(originalDescription.getTypeId());
           description.setTerm(originalDescription.getTerm());
-          if(caseSignificanceToId.containsKey(originalDescription.getCaseSignificanceId())) {
-          description.setCaseSignificanceId(
-              caseSignificanceToId.get(originalDescription.getCaseSignificanceId()));
-          }
-          else {
-            throw new Exception ("Case significance value of " + originalDescription.getCaseSignificanceId() + " is not handled.");
+          if (caseSignificanceToId
+              .containsKey(originalDescription.getCaseSignificanceId())) {
+            description.setCaseSignificanceId(caseSignificanceToId
+                .get(originalDescription.getCaseSignificanceId()));
+          } else {
+            throw new Exception("Case significance value of "
+                + originalDescription.getCaseSignificanceId()
+                + " is not handled.");
           }
 
           Concept concept = null;
@@ -271,13 +275,13 @@ public class ImportTranslationTermServerHandler extends ImportExportAbstract
     } // end for concept
 
     if (conceptCache != null && conceptCache.size() > 0) {
-      validationResult.addComment(
-        conceptCache.size() + " descriptions successfully loaded.");
-    }  else {
-      validationResult.addComment(
-          "No descriptions found.");
+      validationResult.addComment(conceptCache.size()
+          + " concepts with descriptions found on Term Server.");
+    } else {
+      validationResult
+          .addComment("No concepts with descriptions found on Term Server.");
     }
-    
+
     return new ArrayList<>(conceptCache.values());
   }
 

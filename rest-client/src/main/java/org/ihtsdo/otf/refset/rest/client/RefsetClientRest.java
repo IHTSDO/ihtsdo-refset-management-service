@@ -1265,6 +1265,28 @@ public class RefsetClientRest extends RootClientRest
 
   /* see superclass */
   @Override
+  public void cancelLookup(Long refsetId, String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Rest Client - cancel the lookup of names and statuses of refset members process "
+            + refsetId);
+    validateNotEmpty(refsetId, "refsetId");
+    Client client = ClientBuilder.newClient();
+    WebTarget target = client.target(config.getProperty("base.url")
+        + "/refset/lookup/cancel" + "?refsetId=" + refsetId);
+
+    Response response = target.request(MediaType.TEXT_PLAIN)
+        .header("Authorization", authToken).get();
+
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+  }  
+  
+  /* see superclass */
+  @Override
   public void startLookupMemberNames(Long refsetId, Boolean background, 
     String authToken) throws Exception {
     Logger.getLogger(getClass()).debug(

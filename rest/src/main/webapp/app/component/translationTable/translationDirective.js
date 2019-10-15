@@ -457,18 +457,36 @@ tsApp
 
               // Removes all translation concepts
               $scope.removeAllTranslationConcepts = function(translation) {
-                translationService.removeAllTranslationConcepts(translation.id).then(
-                  function(data) {
-                    translationService.fireTranslationChanged(translation);
-                  });
+                if ($window.confirm("Are you sure you want to remove the translation concepts in " + translation.name + "?")) {
+                  translationService.removeAllTranslationConcepts(translation.id).then(
+                    function(data) {
+                      translationService.fireTranslationChanged(translation);
+                    });
+                }
               };
 
               // Convert date to a string
               $scope.toSimpleDate = function(lastModified) {
                 return utilService.toSimpleDate(lastModified);
-
               };
 
+              $scope.getConceptTranslators = function (concept) {
+                var translators = [];
+                var translatorsStr = null;
+                concept.descriptions.forEach(function(description) {
+                     if(!translators.includes(description.lastModifiedBy)){
+                        translators.push(description.lastModifiedBy);
+                        if (translatorsStr == null) {
+                          translatorsStr = description.lastModifiedBy;
+                        } else {
+                          translatorsStr = translatorsStr + ", " + description.lastModifiedBy;
+                        }
+                     }
+                });
+                
+                return translatorsStr;
+              };
+              
               // Convert date to a string
               $scope.toDate = function(lastModified) {
                 return utilService.toDate(lastModified);
@@ -2091,7 +2109,6 @@ tsApp
                                   $scope.warnings = data.warnings;
                                   $scope.comments = data.comments;
                                   startLookup(translation);
-                                  $uibModalInstance.close($scope.translation);
                                 },
                                 // Failure - show error
                                 function(data) {
@@ -2147,7 +2164,6 @@ tsApp
                             $scope.warnings = data.warnings;
                             $scope.comments = data.comments;
                             startLookup(translation);
-                            $uibModalInstance.close($scope.translation);
                           },
                           // Failure - show error
                           function(data) {
