@@ -497,17 +497,36 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
       while ((entry = requiredLanguageRefsets.get(index++)) != null) {
         String entryText = entry.toString();
         // fragile solution to JsonNode.fields and fieldNames next() not working
-        requiredLanguageList.add(entryText.substring(
-            entryText.lastIndexOf(':') - 3, entryText.lastIndexOf(':') - 1));
+        String languageName = "";
+        if(entry.has("dialectName")) {
+          String dialectName = entry.get("dialectName").toString().replace("\"", "");
+          //Get rid of dialect hyphen and following letters
+          languageName = dialectName.substring(0,2);
+        }else {
+        languageName = entryText.substring(
+            entryText.lastIndexOf(':') - 3, entryText.lastIndexOf(':') - 1);
+        }
+        if(!languageName.isBlank() && !requiredLanguageList.contains(languageName)) {
+          requiredLanguageList.add(languageName);
+        }        
       }
 
     } else {
       if (metadata.toString().contains("requiredLanguageRefset")) {
         // fragile solution to JsonNode.fields and fieldNames next() not
         // working
-        requiredLanguageList.add(metadata.toString().substring(
-            metadata.toString().lastIndexOf(':') - 3,
-            metadata.toString().lastIndexOf(':') - 1));
+        String languageName = "";        
+        if(metadata.toString().contains("dialectName")) {
+          // Only keep language portion of dialect
+          languageName = metadata.toString().substring(metadata.toString().lastIndexOf(':') + 3, metadata.toString().lastIndexOf(':') + 5);
+        }else {
+          languageName = metadata.toString().substring(
+              metadata.toString().lastIndexOf(':') - 3,
+              metadata.toString().lastIndexOf(':') - 1);
+        }
+        if(!languageName.isBlank() && !requiredLanguageList.contains(languageName)) {
+          requiredLanguageList.add(languageName);
+        }   
       }
 
     }
