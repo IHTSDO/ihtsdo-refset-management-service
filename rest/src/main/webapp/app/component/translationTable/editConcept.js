@@ -121,15 +121,26 @@ tsApp.controller('EditConceptModalCtrl', [
     $scope.user = user;
     $scope.role = role;
     $scope.authorNames = [];
+    $scope.descriptionAuthor = {};
         
     if (translation.assigned) {
       $scope.editTranslation = translation.assigned.find(
         et => et.concept.terminologyId === concept.terminologyId);
-      $scope.editTranslation.authors.forEach(function(username) {
-        securityService.getUserByUsername(username).then(
+      $scope.editTranslation.concept.descriptions.forEach(function(description) {
+        securityService.getUserByUsername(description.lastModifiedBy).then(
           function(data) {
-            if(!$scope.authorNames.includes(data.name, 0)){
-           $scope.authorNames.push(data.name);
+            //If no user found, add username as-is
+            var username;
+            if(data == ""){
+              username = description.lastModifiedBy;
+            }
+            else{
+              username = data.name;
+            }
+            $scope.descriptionAuthor[description.id] = username;
+            
+            if(!$scope.authorNames.includes(username, 0)){
+           $scope.authorNames.push(username);
             }
           });
       });
@@ -572,6 +583,7 @@ tsApp.controller('EditConceptModalCtrl', [
       } else {
         description.term = '';
       }
+      description.lastModifiedBy = user.name;
       description.caseSignificanceId = $scope.caseSignificanceTypes[0].key;
       // Pick PT or SY by default depending on how many descriptions there are
       var types = $scope.getDescriptionTypes();

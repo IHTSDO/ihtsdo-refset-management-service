@@ -425,7 +425,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       refsetService.commit();
       
       // Lookup the refset name and synonyms
-      refsetService.lookupMemberNames(refsetId, "looking up names and synonyms for recently added members", true);     
+      refsetService.lookupMemberNames(refsetId, "looking up names and synonyms for recently added members", true, true);     
       
       return list;
     } catch (Exception e) {
@@ -770,7 +770,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       refsetService.commitClearBegin();
       
       // Lookup the refset name and synonyms
-      refsetService.lookupMemberNames(newRefset.getId(), "looking up names for cloned refset", true);
+      refsetService.lookupMemberNames(newRefset.getId(), "looking up names for cloned refset", true, true);
 
       return newRefset;
     } catch (Exception e) {
@@ -1575,7 +1575,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       if (ConfigUtility.isAssignNames()) {
         // Lookup member names should always happen after commit
         refsetService.lookupMemberNames(refset.getId(), "adding refset members",
-            ConfigUtility.isBackgroundLookup());
+            ConfigUtility.isBackgroundLookup(), true);
       }
 
     } catch (Exception e) {
@@ -2141,8 +2141,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
             member.setPublished(concept.isPublished());
             member.setConceptId(concept.getTerminologyId());
             member.setConceptName(concept.getName());
-            refsetService.populateMemberSynonyms(member, concept, refset, refsetService, 
-                handler);
+            //Don't look up synonyms at this time - that will be done once the migration is finished.
+//            refsetService.populateMemberSynonyms(member, concept, refset, refsetService, 
+//                handler);
           }
 
           // If origin refset has this as in exclusion, keep it that way.
@@ -2179,9 +2180,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       // Look up names/concept active for members of EXTENSIONAL
       if (refsetCopy.getType() == Refset.Type.EXTENSIONAL) {
 
-        // Look up members for this refset
+        // Look up members for this refset, but NOT synonyms (they'll be looked up later)
         refsetService.lookupMemberNames(refsetCopy.getId(), "begin migration",
-            ConfigUtility.isBackgroundLookup());
+            ConfigUtility.isBackgroundLookup(), false);
       }
 
       // Look up oldNotNew
@@ -2192,8 +2193,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         // Look up old members for the new refest id (e.g. new
         // terminology/version)
         // On cancel, we need to undo this.
+        // Only lookup up names, not synonyms
         refsetService.lookupMemberNames(refsetCopy.getId(), oldNotNew,
-            "begin migration", true, ConfigUtility.isBackgroundLookup());
+            "begin migration", true, false, ConfigUtility.isBackgroundLookup());
       }
 
       addLogEntry(refsetService, userName, "BEGIN MIGRATION",
@@ -2455,10 +2457,15 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       // remove the refset
       refsetService.removeRefset(stagedRefset.getId(), false);
 
+      refsetService.handleLazyInit(refset);
+      refsetService.commitClearBegin();
+      
+      // Look up members and synonyms for this refset
+      refsetService.lookupMemberNames(refset.getId(), "finish migration", true, true);
+      
       addLogEntry(refsetService, userName, "FINISH MIGRATION",
           refset.getProject().getId(), refset.getId(), refset.toString());
 
-      refsetService.handleLazyInit(refset);
       refsetService.commit();
       return refset;
 
@@ -2536,7 +2543,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       // Lookup member names should always happen after commit
       if (ConfigUtility.isAssignNames()) {
         refsetService.lookupMemberNames(refset.getId(), oldNotNew,
-            "cancel migration", true, ConfigUtility.isBackgroundLookup());
+            "cancel migration", true, true, ConfigUtility.isBackgroundLookup());
       }
 
     } catch (Exception e) {
@@ -3510,7 +3517,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       if (ConfigUtility.isAssignNames()) {
         // Lookup member names should always happen after commit
         refsetService.lookupMemberNames(refsetId, "finish import members",
-            ConfigUtility.isBackgroundLookup());
+            ConfigUtility.isBackgroundLookup(), true);
       }
       return validationResult;
     } catch (Exception e) {
@@ -3912,6 +3919,41 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
   }
 
   /* see superclass */
+  @GET
+  @Override
+  @Path("/lookup/cancel")
+  @ApiOperation(value = "Cancel name lookup", notes = "Cancels the name/synonym lookup process for a refset")
+  public void cancelLookup(
+    @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(getClass())
+        .info("RESTful call GET (Refset): /lookup/cancel " + refsetId);
+
+    final RefsetService refsetService =
+        new RefsetServiceJpa(getHeaders(headers));
+    try {
+      final Refset refset = refsetService.getRefset(refsetId);
+      if (refset == null) {
+        throw new Exception("Invalid refset id " + refsetId);
+      }
+
+      authorizeApp(securityService, authToken, "cancel lookup process",
+          UserRole.VIEWER);
+      
+      // Cancel the lookup process
+      refsetService.cancelLookup(refsetId);
+
+    } catch (Exception e) {
+      handleException(e, "trying to cancel lookup process");
+    } finally {
+      refsetService.close();
+      securityService.close();
+    }
+  }  
+  
+  /* see superclass */
   @Override
   @POST
   @Produces("text/plain")
@@ -3973,7 +4015,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       // Launch lookup process in background thread
       refsetService.lookupMemberNames(refsetId,
           "requested from client " + userName,
-          background == null ? ConfigUtility.isBackgroundLookup() : background);
+          background == null ? ConfigUtility.isBackgroundLookup() : background, true);
     } catch (Exception e) {
       handleException(e,
           "trying to start the lookup of member names and statues");

@@ -105,8 +105,12 @@
                   ng-options="item.key as item.value for item in caseSignificanceTypes | orderBy:'item.key'"
                   ng-disabled="description.editable == false">
                 </select>
-                 <br /> {{description.lastModifiedBy}}
+                 <br /> <span ng-show="descriptionAuthor[description.id] != 'Term Server'">Authored by:</span> <span ng-show="descriptionAuthor[description.id] == 'Term Server'">Imported from:</span> 
+                 <span ng-show="description.id != null"> {{descriptionAuthor[description.id]}}</span>
+                 <span ng-show="description.id == null && description.term != ''"> {{description.lastModifiedBy}}</span>
+                 <br /> <span ng-show="descriptionAuthor[description.id] == 'Term Server'"> (Translations imported from the term server<br />cannot be modified or deleted) </span>
               </td>
+              
               <td>
                 <!-- remove description -->
                 <i ng-show="description.editable == true || description.editable == null" 

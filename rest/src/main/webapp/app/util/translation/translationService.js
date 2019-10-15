@@ -1151,6 +1151,10 @@ tsApp.service('translationService', [
       },
       // error
       function(response) {
+        //Handle user having document open while trying to upload
+        if(response.data == null){
+          response.data = "Error uploading file.  This can be caused by the file being open - please close and try again."
+        }        
         utilService.handleError(response);
         gpService.decrement();
         deferred.reject(response.data);

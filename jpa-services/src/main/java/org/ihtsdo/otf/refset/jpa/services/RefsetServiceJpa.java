@@ -54,7 +54,6 @@ import org.ihtsdo.otf.refset.jpa.helpers.ReleaseInfoListJpa;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.rf2.Description;
-import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
 import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.RefsetDescriptorRefsetMemberJpa;
@@ -87,9 +86,16 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
    */
   static Map<Long, Integer> lookupProgressMap = new ConcurrentHashMap<>();
 
+  /** Keep track of which threads are associated with each refset, so they can be canceled by the user. */
+  static Map<Long, Thread> lookupThreadsMap = new ConcurrentHashMap<>();
+
   /** The Constant LOOKUP_ERROR_CODE. */
   final static int LOOKUP_ERROR_CODE = -100;
 
+  /** The Constant LOOKUP_CANCELLED_CODE. */
+  final static int LOOKUP_CANCELLED_CODE = -99;
+
+  
   static {
     try {
       if (config == null)
@@ -471,11 +477,11 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
     for (final Note note : member.getNotes()) {
       removeNote(note.getId(), ConceptRefsetMemberNoteJpa.class);
     }
-    
+
     // Remove synonyms
     for (final ConceptRefsetMemberSynonym synonym : member.getSynonyms()) {
       removeConceptRefsetMemberSynonym(synonym.getId());
-    }    
+    }
 
     // Remove the component
     removeHasLastModified(id, ConceptRefsetMemberJpa.class);
@@ -600,25 +606,27 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
     }
   }
 
+  /* see superclass */
   @Override
   public String getDisplayNameForMember(Long memberId, String language)
     throws Exception {
-    Logger.getLogger(getClass())
-        .debug("Refset Service - get display name for refset member " + memberId);
-    final javax.persistence.Query query =
-        manager.createQuery("select a from ConceptRefsetMemberSynonymJpa a where "
+    Logger.getLogger(getClass()).debug(
+        "Refset Service - get display name for refset member " + memberId);
+    final javax.persistence.Query query = manager
+        .createQuery("select a from ConceptRefsetMemberSynonymJpa a where "
             + "a.member.id = :memberId and a.language = :language and a.termType = 'PT'");
     try {
       query.setParameter("memberId", memberId);
       query.setParameter("language", language);
-      final ConceptRefsetMemberSynonym synonym = (ConceptRefsetMemberSynonym)query.getSingleResult();
+      final ConceptRefsetMemberSynonym synonym =
+          (ConceptRefsetMemberSynonym) query.getSingleResult();
       return synonym.getSynonym();
-      
+
     } catch (NoResultException e) {
       return null;
     }
   }
-  
+
   /* see superclass */
   @Override
   public StagedRefsetChange getStagedRefsetChangeFromStaged(Long stagedRefsetId)
@@ -793,7 +801,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
         List<ConceptRefsetMemberSynonym> synonymList = new ArrayList<>();
         synonymList.addAll(member.getSynonyms());
         member.getSynonyms().clear();
-        
+
         if (member.getEffectiveTime() == null)
           member.setEffectiveTime(effectiveTime);
         refsetCopy.getMembers().add(member);
@@ -806,7 +814,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
           member.getSynonyms().add(synonym);
         }
         updateMember(member);
-        
+
         // Log and commit on intervals if not using transaction per operation
         if (!getTransactionPerOperation()) {
           logAndCommit(++objectCt, RootService.logCt, RootService.commitCt);
@@ -951,20 +959,26 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
 
   /* see superclass */
   @Override
-  public void lookupMemberNames(Long refsetId, String label, boolean background)
-    throws Exception {
+  public void lookupMemberNames(Long refsetId, String label, boolean background,
+    boolean lookupSynonyms) throws Exception {
     Logger.getLogger(getClass()).info("Release Service - lookup member names - "
         + refsetId + ", " + background);
-    // Only launch process if refset not already looked-up, or if a previous lookup failed
+    // Only launch process if refset not already looked-up, or if a previous
+    // lookup failed or was cancelled
     if (ConfigUtility.isAssignNames()) {
-      if (!lookupProgressMap.containsKey(refsetId) || (lookupProgressMap.containsKey(refsetId) && lookupProgressMap.get(refsetId).equals(-100))) {
+      if (!lookupProgressMap.containsKey(refsetId)
+          || lookupProgressMap.get(refsetId).equals(LOOKUP_ERROR_CODE)
+          || lookupProgressMap.get(refsetId).equals(LOOKUP_CANCELLED_CODE)) {
         // Create new thread
-        Runnable lookup = new LookupMemberNamesThread(refsetId, label);
+        Runnable lookup =
+            new LookupMemberNamesThread(refsetId, label, lookupSynonyms);
         Thread t = new Thread(lookup);
         t.start();
         // Handle non-background
         if (!background) {
           t.join();
+        } else {
+          lookupThreadsMap.put(refsetId, t);
         }
       }
       // else it is already running
@@ -975,21 +989,28 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
   @Override
   public void lookupMemberNames(Long refsetId,
     List<ConceptRefsetMember> members, String label, boolean saveMembers,
-    boolean background) throws Exception {
+    boolean lookupSynonyms, boolean background) throws Exception {
     Logger.getLogger(getClass())
         .info("Release Service - lookup member names (2) - " + refsetId + ", "
             + background);
-    // Only launch process if refset not already looked-up
+    // Only launch process if refset not already looked-up, or if a previous
+    // lookup failed or was cancelled
     if (ConfigUtility.isAssignNames()) {
-      if (!lookupProgressMap.containsKey(refsetId)) {
+      if (!lookupProgressMap.containsKey(refsetId)
+          || lookupProgressMap.get(refsetId).equals(LOOKUP_ERROR_CODE)
+          || lookupProgressMap.get(refsetId).equals(LOOKUP_CANCELLED_CODE)) {
         // Create new thread
-        Runnable lookup =
-            new LookupMemberNamesThread(refsetId, members, label, saveMembers);
+        Runnable lookup = new LookupMemberNamesThread(refsetId, members, label,
+            saveMembers, lookupSynonyms);
         Thread t = new Thread(lookup);
         t.start();
         // Handle non-background
         if (!background) {
           t.join();
+        }
+        // Otherwise keep track of the thread
+        else {
+          lookupThreadsMap.put(refsetId, t);
         }
       }
       // else it is already running
@@ -1008,7 +1029,11 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
       if (lookupProgressMap.containsKey(objectId)) {
         if (lookupProgressMap.get(objectId).intValue() == LOOKUP_ERROR_CODE) {
           throw new Exception("The lookup process unexpectedly failed");
-        } else {
+        }
+        else if (lookupProgressMap.get(objectId).intValue() == LOOKUP_CANCELLED_CODE) {
+          retval = -1;
+        }
+        else {
           retval = lookupProgressMap.get(objectId);
         }
       } else {
@@ -1021,6 +1046,20 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
         .info("Refset Service - getLookupProgress - " + retval);
 
     return retval;
+  }
+
+  /* see superclass */
+  @Override
+  public void cancelLookup(Long objectId) throws Exception {
+
+    Logger.getLogger(getClass())
+        .info("Refset Service - cancelling lookup - " + objectId);
+
+    Thread t = lookupThreadsMap.get(objectId);
+    if (t != null) {
+      t.interrupt();
+    }
+
   }
 
   /**
@@ -1040,17 +1079,26 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
     /** The save members. */
     private boolean saveMembers = true;
 
+    /** The lookup synonyms. */
+    private boolean lookupSynonyms = true;
+
+    /** The lookup canceled. */
+    private boolean lookupCanceled = false;
+
     /**
      * Instantiates a {@link LookupMemberNamesThread} from the specified
      * parameters.
      *
      * @param id the id
      * @param label the label
+     * @param lookupSynonyms the lookup synonyms
      * @throws Exception the exception
      */
-    public LookupMemberNamesThread(Long id, String label) throws Exception {
+    public LookupMemberNamesThread(Long id, String label,
+        boolean lookupSynonyms) throws Exception {
       this.refsetId = id;
       this.label = label;
+      this.lookupSynonyms = lookupSynonyms;
     }
 
     /**
@@ -1061,14 +1109,17 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
      * @param members the members
      * @param label the label
      * @param saveMembers the save members
+     * @param lookupSynonyms the lookup synonyms
      * @throws Exception the exception
      */
     public LookupMemberNamesThread(Long id, List<ConceptRefsetMember> members,
-        String label, boolean saveMembers) throws Exception {
+        String label, boolean saveMembers, boolean lookupSynonyms)
+        throws Exception {
       this.refsetId = id;
       this.members = members;
       this.label = label;
       this.saveMembers = saveMembers;
+      this.lookupSynonyms = lookupSynonyms;
     }
 
     /* see superclass */
@@ -1143,6 +1194,12 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
           // Execute for all members
           boolean missingConcepts = false;
           while (i < numberOfMembers) {
+
+            if (Thread.interrupted()) {
+              lookupCanceled = true;
+              break;
+            }
+
             final List<String> termIds = new ArrayList<>();
 
             // Create list of conceptIds for all members (up to 101 at a time)
@@ -1152,8 +1209,8 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
             // Get concepts from Term Server based on list
             final TerminologyHandler handler =
                 getTerminologyHandler(refset.getProject(), headers);
-            final ConceptList cons =
-                handler.getConcepts(termIds, terminology, version, true);
+            final ConceptList cons = handler.getConcepts(termIds, terminology,
+                version, lookupSynonyms ? true : false);
 
             // IF the number of concepts returned doesn't match
             // the size of termIds, there was a problem
@@ -1175,7 +1232,10 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
                 final ConceptRefsetMember member = refsetService
                     .getMember(memberMap.get(con.getTerminologyId()).getId());
                 member.setConceptName(con.getName());
-                populateMemberSynonyms(member, con, refset, refsetService, handler);
+                if (lookupSynonyms) {
+                  populateMemberSynonyms(member, con, refset, refsetService,
+                      handler);
+                }
                 refsetService.updateMember(member);
               }
 
@@ -1185,7 +1245,10 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
                     memberMap.get(con.getTerminologyId());
                 member.setConceptName(con.getName());
                 member.setConceptActive(con.isActive());
-                populateMemberSynonyms(member, con, refset, refsetService, handler);
+                if (lookupSynonyms) {
+                  populateMemberSynonyms(member, con, refset, refsetService,
+                      handler);
+                }
               }
             }
 
@@ -1212,7 +1275,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
               }
             }
 
-            // Update Progess and commit
+            // Update Progress and commit
             int progress = (int) ((100.0 * i) / numberOfMembers);
             if (lookupProgressMap.get(refsetId) < progress) {
               lookupProgressMap.put(refsetId,
@@ -1228,28 +1291,34 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
 
         // Conclude process (reread refset)
         refset = refsetService.getRefset(refsetId);
-        if (saveMembers) {
+        if (saveMembers && !lookupCanceled) {
           refset.setLookupInProgress(false);
           refsetService.updateRefset(refset);
           refsetService.commit();
         }
         lookupProgressMap.remove(refsetId);
+
         Logger.getLogger(RefsetServiceJpa.this.getClass())
             .info("Finished lookupMemberNamesThread - " + refsetId);
+
+      } catch (InterruptedException e) {
+        Logger.getLogger(RefsetServiceJpa.this.getClass())
+        .info("User cancelled the lookupMemberNamesThread - " + refsetId);
         
-      } catch (Exception e) {
+        lookupProgressMap.put(refsetId, LOOKUP_CANCELLED_CODE);
+      }
+      catch (Exception e) {
         try {
           ExceptionHandler.handleException(e, label, null);
         } catch (Exception e1) {
           // n/a
         }
         lookupProgressMap.put(refsetId, LOOKUP_ERROR_CODE);
-      }
-      finally {
+      } finally {
+        lookupThreadsMap.remove(refsetId);
         try {
           refsetService.close();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
           // n/a
         }
       }
@@ -1372,9 +1441,10 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
 
       }
     }
-    
+
     // Lookup the refset name and synonyms
-    lookupMemberNames(refset.getId(), "looking up names and synonyms for recently added members", true);     
+    lookupMemberNames(refset.getId(),
+        "looking up names and synonyms for recently added members", true, true);
 
   }
 
@@ -1678,8 +1748,9 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
 
   /* see superclass */
   public void populateMemberSynonyms(ConceptRefsetMember member,
-    Concept concept, Refset refset, RefsetService refsetService) throws Exception {
-    member.setSynonyms(new ArrayList<ConceptRefsetMemberSynonym>());
+    Concept concept, Refset refset, RefsetService refsetService)
+    throws Exception {
+    member.setSynonyms(new HashSet<ConceptRefsetMemberSynonym>());
 
     populateMemberSynonymsFromConcept(member, concept, refsetService);
 
@@ -1700,9 +1771,16 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
   /* see superclass */
   @Override
   public void populateMemberSynonyms(ConceptRefsetMember member,
-    Concept concept, Refset refset, RefsetService refsetService, TerminologyHandler handler)
-    throws Exception {
-    member.setSynonyms(new ArrayList<ConceptRefsetMemberSynonym>());
+    Concept concept, Refset refset, RefsetService refsetService,
+    TerminologyHandler handler) throws Exception {
+
+    // clear out and remove the current synonyms
+    Set<ConceptRefsetMemberSynonym> currentSynonyms = member.getSynonyms();
+    member.setSynonyms(new HashSet<ConceptRefsetMemberSynonym>());
+    for (ConceptRefsetMemberSynonym synonym : currentSynonyms) {
+      refsetService.removeConceptRefsetMemberSynonym(synonym.getId());
+    }
+    refsetService.updateMember(member);
 
     populateMemberSynonymsFromConcept(member, concept, refsetService);
 
@@ -1711,29 +1789,35 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
           refset.getTerminology(), refset.getVersion());
 
       for (Description d : fullCon.getDescriptions()) {
-        if (d.isActive() && !d.getTypeId().equals("900000000000550004") // DEFINITION_DESC_SCTID
-            && !member.getSynonyms().contains(d.getTerm())) {
+        if (!d.getTypeId().equals("900000000000550004") // DEFINITION_DESC_SCTID
+        ) {
           ConceptRefsetMemberSynonym synonym =
               new ConceptRefsetMemberSynonymJpa();
           synonym.setSynonym(d.getTerm());
           synonym.setLanguage(d.getLanguageCode());
-          if("900000000000003001".equals(d.getTypeId())) {
+          if ("900000000000003001".equals(d.getTypeId())) {
             synonym.setTermType("FSN");
-          }
-          else {
-            if("900000000000548007".equals(d.getLanguageRefsetMembers().get(0).getAcceptabilityId())) {
+          } else {
+            if (d.getLanguageRefsetMembers() == null
+                || d.getLanguageRefsetMembers().size() == 0) {
+              synonym.setTermType("UNKNOWN");
+            } else if ("900000000000548007".equals(
+                d.getLanguageRefsetMembers().get(0).getAcceptabilityId())) {
               synonym.setTermType("PT");
-            }
-            else {
+            } else {
               synonym.setTermType("SY");
             }
           }
           synonym.setMember(member);
-          refsetService.addConceptRefsetMemberSynonym(synonym);
-          member.getSynonyms().add(synonym);
+          // Make sure to only add unique synonyms. Block duplicates
+          if (!member.getSynonyms().contains(synonym)) {
+            refsetService.addConceptRefsetMemberSynonym(synonym);
+            member.getSynonyms().add(synonym);
+          }
         }
       }
     }
+    refsetService.updateMember(member);
   }
 
   /**
@@ -1741,31 +1825,37 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
    *
    * @param member the member
    * @param concept the concept
+   * @param refsetService the refset service
    * @throws Exception the exception
    */
   private void populateMemberSynonymsFromConcept(ConceptRefsetMember member,
     Concept concept, RefsetService refsetService) throws Exception {
     for (Description d : concept.getDescriptions()) {
-      if (d.isActive() && !d.getTypeId().equals("900000000000550004") // DEFINITION_DESC_SCTID
-          && !member.getSynonyms().contains(d.getTerm())) {
+      if (!d.getTypeId().equals("900000000000550004") // DEFINITION_DESC_SCTID
+      ) {
         ConceptRefsetMemberSynonym synonym =
             new ConceptRefsetMemberSynonymJpa();
         synonym.setSynonym(d.getTerm());
         synonym.setLanguage(d.getLanguageCode());
-        if("900000000000003001".equals(d.getTypeId())) {
+        if ("900000000000003001".equals(d.getTypeId())) {
           synonym.setTermType("FSN");
-        }
-        else {
-          if("900000000000548007".equals(d.getLanguageRefsetMembers().get(0).getAcceptabilityId())) {
+        } else {
+          if (d.getLanguageRefsetMembers() == null
+              || d.getLanguageRefsetMembers().size() == 0) {
+            synonym.setTermType("UNKNOWN");
+          } else if ("900000000000548007".equals(
+              d.getLanguageRefsetMembers().get(0).getAcceptabilityId())) {
             synonym.setTermType("PT");
-          }
-          else {
+          } else {
             synonym.setTermType("SY");
           }
         }
         synonym.setMember(member);
-        refsetService.addConceptRefsetMemberSynonym(synonym);
-        member.getSynonyms().add(synonym);
+        // Make sure to only add unique synonyms. Block duplicates
+        if (!member.getSynonyms().contains(synonym)) {
+          refsetService.addConceptRefsetMemberSynonym(synonym);
+          member.getSynonyms().add(synonym);
+        }
       }
     }
   }

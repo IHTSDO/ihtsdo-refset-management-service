@@ -1368,6 +1368,27 @@ tsApp.service('refsetService', [
       });
       return deferred.promise;
     };
+    
+    // cancel lookup of member names/statuses
+    this.cancelLookup = function(refsetId) {
+      console.debug('cancelLookup');
+      var deferred = $q.defer();
+
+      // cancel the lookup process
+      $http.get(
+        refsetUrl + 'lookup/cancel?refsetId=' + refsetId).then(
+      // success
+      function(response) {
+        console.debug('  cancel lookup names = ', response.data);
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    };    
 
     // get the count of items in the resolved expression
     this.countExpression = function(projectId, expression, terminology, version) {

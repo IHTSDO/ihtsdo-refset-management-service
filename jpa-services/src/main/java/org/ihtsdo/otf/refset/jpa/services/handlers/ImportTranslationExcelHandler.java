@@ -61,7 +61,7 @@ public class ImportTranslationExcelHandler extends ImportExportAbstract
   private static final int TYPE = 5;
 
   /** The Constant LANGUAGE_REFERENCE_SET. */
-  //private static final int LANGUAGE_REFERENCE_SET = 6;
+  // private static final int LANGUAGE_REFERENCE_SET = 6;
 
   /** The Constant ACCEPTABILITY. */
   private static final int ACCEPTABILITY = 7;
@@ -168,7 +168,7 @@ public class ImportTranslationExcelHandler extends ImportExportAbstract
     validationResult = new ValidationResultJpa();
 
     int skippedDueToLanguageNotMatching = 0;
-    
+
     /** The descriptions. */
     List<Description> descriptions = new ArrayList<>();
 
@@ -209,11 +209,12 @@ public class ImportTranslationExcelHandler extends ImportExportAbstract
           // 8. Acceptability - ACCEPTABILITY - used
 
           // If excel language doesn't match translation's language, skip
-          if(!translation.getLanguage().equals(getCellValue(row, LANGUAGE_CODE))){
+          if (!translation.getLanguage()
+              .equals(getCellValue(row, LANGUAGE_CODE))) {
             skippedDueToLanguageNotMatching++;
             continue;
           }
-          
+
           // Create description and populate from RF2
           final Description description = new DescriptionJpa();
 
@@ -280,10 +281,13 @@ public class ImportTranslationExcelHandler extends ImportExportAbstract
           }
         }
 
-        validationResult.addComment(
-            descriptions.size() + " descriptions successfully loaded.");
-        validationResult.addComment(
-            skippedDueToLanguageNotMatching + " descriptions skipped: language code in file not same as translation language.");
+        validationResult
+            .addComment(descriptions.size() + " descriptions read from file.");
+
+        if (skippedDueToLanguageNotMatching > 0) {
+          validationResult.addComment(skippedDueToLanguageNotMatching
+              + " descriptions skipped: language code in file not same as translation language.");
+        }
 
       } catch (Exception e) {
         Logger.getLogger(getClass()).error("", e);

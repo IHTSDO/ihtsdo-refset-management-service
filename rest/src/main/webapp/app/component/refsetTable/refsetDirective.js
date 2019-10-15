@@ -922,15 +922,17 @@ tsApp
                   // If all lookups in progress are at 100%, stop interval
                   var found = true;
                   for ( var key in $scope.refsetLookupProgress) {
-                    if ($scope.refsetLookupProgress[key] < 100) {
+                    if ($scope.refsetLookupProgress[key] > -1 && $scope.refsetLookupProgress[key] < 100) {
                       found = false;
                       break;
                     }
                   }
                   if (found) {
-                    $interval.cancel($scope.lookupInterval);
-                    $scope.lookupInterval = null;
-                    refsetService.fireRefsetChanged(data);
+                    if($scope.lookupInterval){
+                      $interval.cancel($scope.lookupInterval);
+                      $scope.lookupInterval = null;
+                      refsetService.fireRefsetChanged(data);
+                    }
                   }
 
                 },
@@ -942,6 +944,27 @@ tsApp
                 });
               };
 
+              // Return true if the refset is actively in the middle of a name lookup
+              $scope.isLookupInProgress = function(refset) {
+                if (refset.lookupInProgress && $scope.refsetLookupProgress[refset.id] > -1 && $scope.refsetLookupProgress[refset.id]  < 100) {
+                  return true;
+                }
+                return false;
+              };              
+              
+              // Cancel lookup process
+              $scope.cancelLookup = function(refset) {
+                refsetService.cancelLookup(refset.id).then(
+                // Success
+                function(data) {
+                  $scope.refsetLookupProgress[refset.id] = -1;
+                },
+                // Error
+                function(data) {
+                  // Cancel failed - do nothing
+                });
+              };              
+              
               // Get the most recent note for display
               $scope.getLatestNote = function(refset) {
                 if (refset && refset.notes && refset.notes.length > 0) {
@@ -1707,7 +1730,7 @@ tsApp
                     $scope.localMetadata.versions[terminology] = [];
                     for (var i = 0; i < data.terminologies.length; i++) {
                       $scope.localMetadata.versions[terminology].push(data.terminologies[i].version);
-                      if (terminology == 'SNOMEDCT') {
+                      if (terminology == $scope.project.terminology) {
                         $scope.terminologySelected(terminology);
                       }
                     }
@@ -3016,8 +3039,12 @@ tsApp
                 $scope.metadata = metadata;
                 $scope.validVersion = null;
                 $scope.terminologies = metadata.terminologies;
-                /*$scope.metadataVersions = $scope.metadata.versions[refset.terminology] ? angular
-                  .copy($scope.metadata.versions[refset.terminology].sort().reverse()) : [];*/
+                /*
+                                 * $scope.metadataVersions =
+                                 * $scope.metadata.versions[refset.terminology] ? angular
+                                 * .copy($scope.metadata.versions[refset.terminology].sort().reverse()) :
+                                 * [];
+                                 */
                 $scope.filters = filters;
                 $scope.localSet = localSet;
 
@@ -3656,8 +3683,11 @@ tsApp
                 $scope.paging = paging;
                 $scope.metadata = metadata;
                 $scope.terminologies = [];
-                /* $scope.versions = angular.copy($scope.metadata.versions[$scope.newTerminology]
-                  .sort().reverse());*/
+                /*
+                                 * $scope.versions =
+                                 * angular.copy($scope.metadata.versions[$scope.newTerminology]
+                                 * .sort().reverse());
+                                 */
                 $scope.newVersion = null;
                 $scope.validVersion = null;
                 $scope.errors = [];

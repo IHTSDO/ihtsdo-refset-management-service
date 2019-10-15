@@ -4,10 +4,11 @@
 package org.ihtsdo.otf.refset.rf2;
 
 import java.util.List;
+import java.util.Set;
 
+import org.ihtsdo.otf.refset.ConceptRefsetMemberSynonym;
 import org.ihtsdo.otf.refset.Note;
 import org.ihtsdo.otf.refset.Refset;
-import org.ihtsdo.otf.refset.ConceptRefsetMemberSynonym;
 
 /**
  * Represents a simple reference set member.
@@ -103,12 +104,12 @@ public interface ConceptRefsetMember extends Component {
    *
    * @return the synonyms
    */
-  public List<ConceptRefsetMemberSynonym> getSynonyms();
+  public Set<ConceptRefsetMemberSynonym> getSynonyms();
 
   /**
    * Sets the synonyms.
    *
    * @param synonyms the synonyms
    */
-  public void setSynonyms(List<ConceptRefsetMemberSynonym> synonyms);
+  public void setSynonyms(Set<ConceptRefsetMemberSynonym> synonyms);
 }
