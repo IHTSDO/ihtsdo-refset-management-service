@@ -220,7 +220,10 @@ public class ImportTranslationTermServerHandler extends ImportExportAbstract
 
     final Map<String, String> caseSignificanceToId = new HashMap<>();
     caseSignificanceToId.put("CASE_SENSITIVE", "900000000000017005");
+    caseSignificanceToId.put("ENTIRE_TERM_CASE_SENSITIVE",
+        "900000000000017005");
     caseSignificanceToId.put("CASE_INSENSITIVE", "900000000000448009");
+    caseSignificanceToId.put("ENTIRE_TERM_CASE_INSENSITIVE", "900000000000448009");
     caseSignificanceToId.put("INITIAL_CHARACTER_CASE_INSENSITIVE",
         "900000000000020002");
 
