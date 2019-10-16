@@ -502,9 +502,13 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
           String dialectName = entry.get("dialectName").toString().replace("\"", "");
           //Get rid of dialect hyphen and following letters
           languageName = dialectName.substring(0,2);
-        }else {
-        languageName = entryText.substring(
+        } else {
+          languageName = entryText.substring(
+              entryText.indexOf(':') - 3, entryText.indexOf(':') - 1);
+          if (entryText.substring(1, entryText.indexOf(':')).equals("\"default\"")) {
+            languageName = entryText.substring(
             entryText.lastIndexOf(':') - 3, entryText.lastIndexOf(':') - 1);
+          }
         }
         if(!languageName.isBlank() && !requiredLanguageList.contains(languageName)) {
           requiredLanguageList.add(languageName);
