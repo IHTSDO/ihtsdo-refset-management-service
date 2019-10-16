@@ -668,7 +668,11 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
           .setDefinitionStatusId(conceptNode.get("definitionStatus").asText());
 
       // pt.term is the name
-      concept.setName(conceptNode.get("pt").get("term").asText());
+      if (conceptNode.get("pt") != null) {
+        concept.setName(conceptNode.get("pt").get("term").asText());
+      } else {
+        concept.setName(UNABLE_TO_DETERMINE_NAME);
+      }
 
       concept.setPublishable(true);
       concept.setPublished(true);
