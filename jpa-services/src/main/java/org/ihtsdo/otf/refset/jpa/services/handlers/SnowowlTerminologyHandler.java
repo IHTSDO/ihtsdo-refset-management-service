@@ -500,8 +500,8 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
         String languageName = "";
         if(entry.has("dialectName")) {
           String dialectName = entry.get("dialectName").toString().replace("\"", "");
-          //Get rid of dialect hyphen and following letters
-          languageName = dialectName.substring(0,2);
+          //Keep the full dialect
+          languageName = dialectName;//.substring(0,2);
         } else {
           languageName = entryText.substring(
               entryText.indexOf(':') - 3, entryText.indexOf(':') - 1);
