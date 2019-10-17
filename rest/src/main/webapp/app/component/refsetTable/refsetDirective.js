@@ -438,6 +438,12 @@ tsApp
                 var value = $scope.paging['member'].typeFilter;
                 var translated;
                 var language = $scope.preferredLanguage;
+                
+                // Drop any dialect code when doing lookups.
+                // This is possibly temporary
+                if(language.length > 2){
+                  language = language.substring(0,2);
+                }
 
                 if (value == 'Translated') {
                   translated = true;
