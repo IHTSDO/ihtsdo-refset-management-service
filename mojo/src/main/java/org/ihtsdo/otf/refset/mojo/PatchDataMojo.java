@@ -79,6 +79,11 @@ public class PatchDataMojo extends AbstractRttMojo {
   /** The end. */
   @Parameter
   String end;
+  
+  /** The refsetId. */
+  @Parameter
+  String refsetId=null;
+
 
   /** The already reviewed japanese. */
   String[] alreadyReviewedJapanese = {
@@ -904,7 +909,15 @@ public class PatchDataMojo extends AbstractRttMojo {
       if (!uniqueProjects.contains(project.getId())) {
         getLog().info("About to start updating project: " + project.getName());
         uniqueProjects.add(project.getId());
-        addSynonyms(project, conceptSynonymsMap, refsetService);
+        
+        for(Refset refset : project.getRefsets()) {
+          //Only run on single refset, if specified
+          if(refsetId != null && refset.getId().equals(Long.parseLong(refsetId))) {
+          refsetService.lookupMemberNames(refset.getId(), "initial population of synonyms for refset=" + refset.getId(), false,
+              true);
+          }
+        }
+        
         getLog().info(" Completed project: " + project.getName());
       }
     }
@@ -916,10 +929,16 @@ public class PatchDataMojo extends AbstractRttMojo {
       if (!uniqueProjects.contains(project.getId())) {
         getLog().info("Via getProjects, about to start updating project: "
             + project.getName());
-
         uniqueProjects.add(project.getId());
-        addSynonyms(project, conceptSynonymsMap, refsetService);
-
+        
+        for(Refset refset : project.getRefsets()) {
+          //Only run on single refset, if specified
+          if(refsetId != null && refset.getId().equals(Long.parseLong(refsetId))) {
+          refsetService.lookupMemberNames(refset.getId(), "initial population of synonyms for refset=" + refset.getId(), false,
+              true);
+          }
+        }
+        
         getLog().info(" Completed project: " + project.getName());
       }
     }
@@ -927,21 +946,20 @@ public class PatchDataMojo extends AbstractRttMojo {
     getLog().info("Completed operation across all project-refset pairs");
     refsetService.commit();
 
-    // if no other patch needs a reindex, then reindex ConceptRefsetMemberJpa
-    // here
+    // no reindex needed for this patch
     if (!fullReindex) {
-      getLog().info("  Reindex Refset Members");
-
-      // login as "admin", use token
-      final Properties properties = ConfigUtility.getConfigProperties();
-      try (final SecurityService securityService = new SecurityServiceJpa();) {
-        String authToken =
-            securityService.authenticate(properties.getProperty("admin.user"),
-                properties.getProperty("admin.password")).getAuthToken();
-        ProjectServiceRestImpl contentService = new ProjectServiceRestImpl();
-        contentService.luceneReindex("ConceptRefsetMemberJpa", null, null,
-            authToken);
-      }
+//      getLog().info("  Reindex Refset Members");
+//
+//      // login as "admin", use token
+//      final Properties properties = ConfigUtility.getConfigProperties();
+//      try (final SecurityService securityService = new SecurityServiceJpa();) {
+//        String authToken =
+//            securityService.authenticate(properties.getProperty("admin.user"),
+//                properties.getProperty("admin.password")).getAuthToken();
+//        ProjectServiceRestImpl contentService = new ProjectServiceRestImpl();
+//        contentService.luceneReindex("ConceptRefsetMemberJpa", null, null,
+//            authToken);
+//      }
     }
   }
 
@@ -958,11 +976,7 @@ public class PatchDataMojo extends AbstractRttMojo {
     RefsetService refsetService) throws Exception {
     /*-
     *
-    * Adds the synonyms IFF they are:
-    *  - Active
-    *  - Not Definition Type of Descriptions
-    *  - Not identical to the ConceptName field
-    *  - Length is less than or equal to 256 characters
+    * Adds the synonyms as long as they are not Definition Type of Descriptions
     */
     // TerminologyHandler termHandler =
     // refsetService.getTerminologyHandler(project, null);
@@ -1191,6 +1205,13 @@ public class PatchDataMojo extends AbstractRttMojo {
 
   }
 
+  /**
+   * Patch 20191009.
+   *
+   * @param translationService the translation service
+   * @param fullReindex the full reindex
+   * @throws Exception the exception
+   */
   private void patch20191009(TranslationService translationService,
     boolean fullReindex) throws Exception {
     int ct = 0;
@@ -1228,7 +1249,12 @@ public class PatchDataMojo extends AbstractRttMojo {
           && translation.getVersion().length() == 10) {
         ct++;
         String old_version = translation.getVersion();
-        translation.setVersion("MAIN/" + old_version);
+        if (translation.getTerminology().equals("SNOMEDCT")) {
+          translation.setVersion("MAIN/" + old_version);
+        } else {
+          translation.setVersion(
+              "MAIN/" + translation.getTerminology() + "/" + old_version);
+        }
         translationService.updateTranslation(translation);
 
         if (ct % 100 == 0) {
@@ -1248,7 +1274,12 @@ public class PatchDataMojo extends AbstractRttMojo {
           && refset.getVersion().length() == 10) {
         ct++;
         String old_version = refset.getVersion();
-        refset.setVersion("MAIN/" + old_version);
+        if (refset.getTerminology().equals("SNOMEDCT")) {
+          refset.setVersion("MAIN/" + old_version);
+        } else {
+          refset.setVersion(
+              "MAIN/" + refset.getTerminology() + "/" + old_version);
+        }
         translationService.updateRefset(refset);
 
         if (ct % 100 == 0) {
@@ -1274,7 +1305,5 @@ public class PatchDataMojo extends AbstractRttMojo {
             null, null, authToken);
       }
     }
-
   }
-
 }
