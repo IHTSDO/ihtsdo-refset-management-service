@@ -70,8 +70,10 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
   /** The terminology version language map. */
   private static Map<String, String> tvLanguageMap = new HashMap<>();
 
+  /** The terminologies for UR lexpiration date. */
   private static Date terminologiesForURLexpirationDate = new Date();
 
+  /** The terminologies for URL. */
   private static Map<String, List<Terminology>> terminologiesForURL =
       new HashMap<>();
 
@@ -122,6 +124,9 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
 
   /** The generic user cookies. */
   private String genericUserCookie = null;
+
+  /** The max batch lookup size. */
+  private int maxBatchLookupSize = 101;
 
   /* see superclass */
   @Override
@@ -481,7 +486,7 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     if (doc.get("metadata").toString().equals("{}")) {
       if (version.contains("/")) {
         final String higherVersion =
-            version.substring(0,version.lastIndexOf("/"));
+            version.substring(0, version.lastIndexOf("/"));
         return (getRequiredLanguageRefsets(terminology, higherVersion));
       } else {
         return new ArrayList<>();
@@ -497,17 +502,50 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
       while ((entry = requiredLanguageRefsets.get(index++)) != null) {
         String entryText = entry.toString();
         // fragile solution to JsonNode.fields and fieldNames next() not working
-        requiredLanguageList.add(entryText.substring(
-            entryText.lastIndexOf(':') - 3, entryText.lastIndexOf(':') - 1));
+        String languageName = "";
+        if (entry.has("dialectName")) {
+          String dialectName =
+              entry.get("dialectName").toString().replace("\"", "");
+          // Keep the full dialect
+          languageName = dialectName;// .substring(0,2);
+        } else {
+          languageName = entryText.substring(entryText.indexOf(':') - 3,
+              entryText.indexOf(':') - 1);
+          if (entryText.substring(1, entryText.indexOf(':'))
+              .equals("\"default\"")) {
+            languageName = entryText.substring(entryText.lastIndexOf(':') - 3,
+                entryText.lastIndexOf(':') - 1);
+          }
+        }
+        if (!languageName.isBlank()
+            && !requiredLanguageList.contains(languageName)) {
+          requiredLanguageList.add(languageName);
+        }
       }
 
     } else {
       if (metadata.toString().contains("requiredLanguageRefset")) {
         // fragile solution to JsonNode.fields and fieldNames next() not
         // working
-        requiredLanguageList.add(metadata.toString().substring(
-            metadata.toString().lastIndexOf(':') - 3,
-            metadata.toString().lastIndexOf(':') - 1));
+        String languageName = "";
+        if (metadata.toString().contains("dialectName")) {
+          // Only keep language portion of dialect
+          languageName = metadata.toString().substring(
+              metadata.toString().lastIndexOf(':') + 3,
+              metadata.toString().lastIndexOf(':') + 5);
+        }
+        // When only a single requiredLanguageRefset, the node changes name to
+        // contain the language itself.
+        // E.g. "requiredLanguageRefset.sv": "46011000052107"
+        else {
+          languageName = metadata.toString().substring(
+              metadata.toString().indexOf("requiredLanguageRefset.") + 23,
+              metadata.toString().indexOf("requiredLanguageRefset.") + 25);
+        }
+        if (!languageName.isBlank()
+            && !requiredLanguageList.contains(languageName)) {
+          requiredLanguageList.add(languageName);
+        }
       }
 
     }
@@ -632,10 +670,10 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
 
       concept.setActive(conceptNode.get("active").asText().equals("true"));
       concept.setTerminologyId(conceptNode.get("id").asText());
-      if(conceptNode.has("effectiveTime")) {
-      concept.setLastModified(ConfigUtility.DATE_FORMAT
-          .parse(conceptNode.get("effectiveTime").asText()));}
-      else {
+      if (conceptNode.has("effectiveTime")) {
+        concept.setLastModified(ConfigUtility.DATE_FORMAT
+            .parse(conceptNode.get("effectiveTime").asText()));
+      } else {
         concept.setLastModified(new Date());
       }
       concept.setLastModifiedBy(terminology);
@@ -644,7 +682,11 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
           .setDefinitionStatusId(conceptNode.get("definitionStatus").asText());
 
       // pt.term is the name
-      concept.setName(conceptNode.get("pt").get("term").asText());
+      if (conceptNode.get("pt") != null) {
+        concept.setName(conceptNode.get("pt").get("term").asText());
+      } else {
+        concept.setName(UNABLE_TO_DETERMINE_NAME);
+      }
 
       concept.setPublishable(true);
       concept.setPublished(true);
@@ -680,7 +722,8 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
           description.setTypeId(desc.get("typeId").asText());
 
           // update the concept name to the FSN if available
-          if (!desc.get("semanticTag").asText().isEmpty() && desc.get("typeId").asText().equals("900000000000003001")) {
+          if (!desc.get("semanticTag").asText().isEmpty()
+              && desc.get("typeId").asText().equals("900000000000003001")) {
             concept.setName(desc.get("term").asText());
           }
           if (description.isActive()) {
@@ -1215,7 +1258,7 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
         desc.setActive(pt == null ? false : pt.get("active") == null ? false
             : pt.get("active").asText().equals("true"));
         String term = pt == null ? ""
-            : pt.get("term") == null ? "" : pt.get("term").asText();        
+            : pt.get("term") == null ? "" : pt.get("term").asText();
         desc.setTerm(term);
         if (conceptMap.containsKey(conceptId)) {
           final Concept concept = conceptMap.get(conceptId);
@@ -1240,7 +1283,7 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
             concept.setTerminologyId(conceptId);
             concept.setModuleId(entry.get("moduleId").asText());
             term = fsn == null ? ""
-                : fsn.get("term") == null ? "" : fsn.get("term").asText();        
+                : fsn.get("term") == null ? "" : fsn.get("term").asText();
             concept.setName(term);
             concept.setPublishable(true);
             concept.setPublished(true);
@@ -1636,6 +1679,12 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     return branches;
   }
 
+  /**
+   * Gets the generic user cookies.
+   *
+   * @return the generic user cookies
+   * @throws Exception the exception
+   */
   private void getGenericUserCookies() throws Exception {
     final String userName = ConfigUtility.getConfigProperties()
         .getProperty("generic.user.userName");
@@ -1716,13 +1765,13 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     }
     return translationExtensionLanguageList;
   }
-  
+
   /**
    * Return message from API response.
-   * 
+   *
    * @param jsonString JSON as string.
    * @return error message.
-   * @throws IOException
+   * @throws IOException Signals that an I/O exception has occurred.
    */
   private String getErrorMessage(String jsonString) throws IOException {
     /**
@@ -1736,5 +1785,11 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
 
     return jsonNode.get("message").asText();
   }
-  
+
+  /* see superclass */
+  @Override
+  public int getMaxBatchLookupSize() throws Exception {
+    return maxBatchLookupSize;
+  }
+
 }

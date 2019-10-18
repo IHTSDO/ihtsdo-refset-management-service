@@ -227,6 +227,7 @@ public class RefsetJpaUnitTest extends ModelUnitSupport {
     tester.include("refsetDescriptorUuid");
     tester.include("inPublicationProcess");
     tester.include("lookupInProgress");
+    tester.include("lookupRequired");
     tester.include("revision");
 
     assertTrue(tester.testNotNullFields());

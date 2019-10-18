@@ -71,8 +71,10 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
   /** The terminology version language map. */
   private static Map<String, String> tvLanguageMap = new HashMap<>();
 
+  /** The terminologies for UR lexpiration date. */
   private static Date terminologiesForURLexpirationDate = new Date();
 
+  /** The terminologies for URL. */
   private static Map<String, List<Terminology>> terminologiesForURL =
       new HashMap<>();
 
@@ -128,6 +130,9 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
 
   /** The generic user cookies. */
   private String genericUserCookie = null;
+
+  /** The max batch lookup size. */
+  private int maxBatchLookupSize = 10;
 
   /* see superclass */
   @Override
@@ -898,10 +903,10 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     if (descriptions) {
       ConceptList conceptList = new ConceptListJpa();
       for (String terminologyId : terminologyIds) {
-        if(Thread.interrupted()) {
+        if (Thread.interrupted()) {
           throw new InterruptedException("User cancelled the lookup");
         }
-          
+
         try {
           conceptList
               .addObject(getFullConcept(terminologyId, terminology, version));
@@ -1071,7 +1076,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
         final Description desc = new DescriptionJpa();
         desc.setActive(entry.get("active").asText().equals("true"));
         String term = pt == null ? ""
-            : pt.get("term") == null ? "" : pt.get("term").asText();        
+            : pt.get("term") == null ? "" : pt.get("term").asText();
         desc.setTerm(term);
         if (conceptMap.containsKey(conceptId)) {
           final Concept concept = conceptMap.get(conceptId);
@@ -1599,6 +1604,12 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     return requiredLanguageList;
   }
 
+  /**
+   * Gets the generic user cookies.
+   *
+   * @return the generic user cookies
+   * @throws Exception the exception
+   */
   private void getGenericUserCookies() throws Exception {
     final String userName = ConfigUtility.getConfigProperties()
         .getProperty("generic.user.userName");
@@ -1628,10 +1639,10 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
 
   /**
    * Return message from API response.
-   * 
+   *
    * @param jsonString JSON as string.
    * @return error message.
-   * @throws IOException
+   * @throws IOException Signals that an I/O exception has occurred.
    */
   private String getErrorMessage(String jsonString) throws IOException {
     /**
@@ -1644,6 +1655,12 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     final JsonNode jsonNode = mapper.readTree(jsonString);
 
     return jsonNode.get("message").asText();
+  }
+
+  /* see superclass */
+  @Override
+  public int getMaxBatchLookupSize() throws Exception {
+    return maxBatchLookupSize;
   }
 
 }
