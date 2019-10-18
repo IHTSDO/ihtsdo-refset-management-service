@@ -4118,11 +4118,19 @@ tsApp
                     $scope.errors[0] = 'New terminology and version must not exactly match original values';
                     return;
                   }
-                  if (newTerminology == $scope.refset.terminology
+                  // Full version comparison no longer works for MANAGED-SERVICE projects, since it can include the edition's working project
+                  // e.g. MAIN/2019-07-31/SNOMEDCT-BE/BEMAR20
+                  if ($scope.project.terminologyHandlerKey != 'MANAGED-SERVICE' && newTerminology == $scope.refset.terminology
                     && newVersion < $scope.refset.version) {
                     $scope.errors[0] = 'New version must be greater than existing version';
                     return;
                   }
+                  // For MANAGED-SERVICE projects, make sure the actual version isn't going backwards
+                  if ($scope.project.terminologyHandlerKey == 'MANAGED-SERVICE' && newTerminology == $scope.refset.terminology
+                    && newVersion.substring(5,15) < $scope.refset.version.substring(5,15)) {
+                    $scope.errors[0] = 'New version must be greater than existing version';
+                    return;
+                  }                  
                   if (!newVersion) {
                     $scope.errors[0] = 'New version must not be blank';
                     return;
