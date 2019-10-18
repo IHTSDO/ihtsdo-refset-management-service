@@ -1,5 +1,5 @@
 /*
- *    Copyright 2015 West Coast Informatics, LLC
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.jpa.services.handlers;
 
@@ -59,7 +59,13 @@ public abstract class AbstractTerminologyHandler implements TerminologyHandler {
     GoogleTranslate.setHttpReferrer(
         ConfigUtility.getConfigProperties().getProperty("base.url"));
     GoogleTranslate.setKey(getApiKey());
-    return GoogleTranslate.execute(text, "en", language);
+    String translation = GoogleTranslate.execute(text, "en", language);
+    // Make sure first letter comes back uncapitalized
+    if (translation != null && translation.length() > 0) {
+      translation =
+          translation.substring(0, 1).toLowerCase() + translation.substring(1);
+    }
+    return translation;
   }
 
   /**
@@ -308,7 +314,7 @@ public abstract class AbstractTerminologyHandler implements TerminologyHandler {
 
     } catch (Exception e) {
       Logger.getLogger(getClass()).error("Unexpected error calling server.", e);
-      throw e;  
+      throw e;
     } finally {
       response.close();
     }

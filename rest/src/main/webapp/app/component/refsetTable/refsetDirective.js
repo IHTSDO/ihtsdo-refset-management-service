@@ -390,7 +390,7 @@ tsApp
                 // If 'lookup in progress' is set, get progress
                 for (var i = 0; i < $scope.refsets.length; i++) {
                   if ($scope.refsets[i].lookupInProgress) {
-                    $scope.refreshLookupProgress($scope.refsets[i]);
+                    startLookup($scope.refsets[i]);
                   }
                 }
 
@@ -438,6 +438,12 @@ tsApp
                 var value = $scope.paging['member'].typeFilter;
                 var translated;
                 var language = $scope.preferredLanguage;
+                
+                // Drop any dialect code when doing lookups.
+                // This is possibly temporary
+                if(language.length > 2){
+                  language = language.substring(0,2);
+                }
 
                 if (value == 'Translated') {
                   translated = true;
@@ -449,22 +455,6 @@ tsApp
                   pfs, translated, language).then(
                   // Success
                   function(data) {
-                    // if this is a language lookup on page 1, check if there were any changes 
-                    if ($scope.preferredLanguage != 'en' && $scope.paging['member'].page == 1 && 
-                       refset.members && data.members) {
-                      var match = true;
-                      for (var i = 0; i < refset.members.length && i < data.members.length; i++) {
-                        if (refset.members[i].conceptName != data.members[i].conceptName) {
-                          match = false;
-                          break;
-                        }
-                      }
-                      // if no changes, alert user to expect english
-                      if (match) {
-                        $window.alert("Term is displayed in English if a '" + $scope.preferredLanguage + "' term isn’t available.");
-                      }
-                    }
-                    
                     refset.members = data.members;
                     refset.members.totalCount = data.totalCount;
                     $scope.requiresNameLookup = false;
@@ -901,6 +891,15 @@ tsApp
                 function(data) {
                   $scope.refsetLookupProgress[refset.id] = 1;
                   refset.lookupInProgress = true;
+                  
+                  //update $scope.refsets copy of refset
+                  for (var i = 0; i < $scope.refsets.length; i++) {
+                    if ($scope.refsets[i].id == refset.id) {
+                      $scope.refsets[i].lookupInProgress=true;
+                      break;
+                    }
+                  }
+                  
                   // Start if not already running
                   if (!$scope.lookupInterval) {
                     $scope.lookupInterval = $interval(function() {
@@ -958,6 +957,13 @@ tsApp
                 // Success
                 function(data) {
                   $scope.refsetLookupProgress[refset.id] = -1;
+                  //update $scope.refsets copy of refset
+                  for (var i = 0; i < $scope.refsets.length; i++) {
+                    if ($scope.refsets[i].id == refset.id) {
+                      $scope.refsets[i].lookupInProgress=false;
+                      break;
+                    }
+                  }
                 },
                 // Error
                 function(data) {
@@ -1839,6 +1845,8 @@ tsApp
                           $scope.comments.push('Refset "' + data.name
                             + '" successfully cloned to "' + name + '"');
 
+                          startLookup(newRefset);
+                          
                         },
                         // Error - clone refset
                         function(data) {
@@ -3188,6 +3196,10 @@ tsApp
                       // Success - add refset
                       function(data) {
                         var newRefset = data;
+                        //Run lookup if this is a new intensional refset with clauses specified
+                        if ($scope.clause && $scope.clause.value) {
+                          startLookup(newRefset);
+                        }
                         $uibModalInstance.close(newRefset);
                       },
                       // Error - add refset
@@ -4106,11 +4118,19 @@ tsApp
                     $scope.errors[0] = 'New terminology and version must not exactly match original values';
                     return;
                   }
-                  if (newTerminology == $scope.refset.terminology
+                  // Full version comparison no longer works for MANAGED-SERVICE projects, since it can include the edition's working project
+                  // e.g. MAIN/2019-07-31/SNOMEDCT-BE/BEMAR20
+                  if ($scope.project.terminologyHandlerKey != 'MANAGED-SERVICE' && newTerminology == $scope.refset.terminology
                     && newVersion < $scope.refset.version) {
                     $scope.errors[0] = 'New version must be greater than existing version';
                     return;
                   }
+                  // For MANAGED-SERVICE projects, make sure the actual version isn't going backwards
+                  if ($scope.project.terminologyHandlerKey == 'MANAGED-SERVICE' && newTerminology == $scope.refset.terminology
+                    && newVersion.substring(5,15) < $scope.refset.version.substring(5,15)) {
+                    $scope.errors[0] = 'New version must be greater than existing version';
+                    return;
+                  }                  
                   if (!newVersion) {
                     $scope.errors[0] = 'New version must not be blank';
                     return;
@@ -4151,6 +4171,7 @@ tsApp
                   refsetService.finishMigration(refset.id).then(
                   // Success
                   function(data) {
+                    startLookup(refset);
                     $uibModalInstance.close(refset);
                   },
                   // Error

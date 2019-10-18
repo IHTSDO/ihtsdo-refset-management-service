@@ -205,7 +205,8 @@
               ng-show="isAllowed('UNASSIGN', refset)"
               ng-click="unassign(refset,user.userName); $event.stopPropagation()"
               title="Unassign" class="noul material-icons md-18">assignment_return</i>
-            <span
+
+             <span
               ng-show="isLookupInProgress(refset)">
               <br />
               <button class="btn btn-xs btn-warning"
@@ -214,13 +215,7 @@
                 Refresh
                 <span ng-show="refsetLookupProgress[refset.id]">
                   {{refsetLookupProgress[refset.id]}}%</span>
-              </button>
-              <br />
-              <button class="btn btn-xs btn-warning"
-                ng-click="cancelLookup(refset)"
-                title="Click to cancel the lookup process">
-                Cancel Lookup
-              </button>              
+              </button>     
             </span>
             <!-- ASSIGNED actions -->
           <td class="nobreak" ng-show="value == 'ASSIGNED'">
@@ -257,7 +252,7 @@
             </span>
             <!-- Refresh/start buttons if lookup in progress -->
             <span
-              ng-show="refset.lookupInProgress && refsetLookupProgress[refset.id] == -1">
+              ng-show="!refset.lookupInProgress && refset.lookupRequired">
               <br />
               <button class="btn btn-xs btn-warning"
                 ng-click="startLookup(refset)" title="Click to restart lookup">Restart
@@ -659,7 +654,7 @@
           <i
             confirm="Are you sure you want to initiate name/active lookup (long-running for large refsets)?"
             ng-click="startLookup(selected.refset); $event.stopPropagation()"
-            ng-show="(requiresNameLookup && !selected.refset.lookupInProgress)"
+            ng-show="requiresNameLookup && !selected.refset.lookupInProgress"
             title="Restart name lookup" class="noul material-icons md-18">play_arrow</i>
           
         </span>
