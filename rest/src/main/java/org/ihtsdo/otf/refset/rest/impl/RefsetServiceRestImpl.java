@@ -2280,7 +2280,6 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         }
       }
       refsetService.handleLazyInit(refset);
-      refsetService.handleLazyInit(refset);
       refsetService.commit();
 
       addLogEntry(refsetService, userName, "CONVERT REFSET",
@@ -2456,6 +2455,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       refset.setTerminology(stagedRefset.getTerminology());
       refset.setVersion(stagedRefset.getVersion());
       refset.setLastModifiedBy(userName);
+      // Also flag the refset as needing a name lookup
+      refset.setLookupRequired(true);
+      
       refsetService.updateRefset(refset);
 
       // Update terminology/version also for any translations
@@ -2472,11 +2474,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       // remove the refset
       refsetService.removeRefset(stagedRefset.getId(), false);
 
-      // Flag the refset as needing a name lookup
-      refset.setLookupRequired(true);
-      refsetService.updateRefset(refset);      
-      
-      refsetService.handleLazyInit(refset);
+      refsetService.handleLazyInit(refset);           
       refsetService.commitClearBegin();
       
       // Look up members and synonyms for this refset
