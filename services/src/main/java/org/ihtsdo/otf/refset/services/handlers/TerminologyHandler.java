@@ -278,7 +278,6 @@ public interface TerminologyHandler extends Configurable {
   public List<String> getRequiredLanguageRefsets(String terminology,
     String version) throws Exception;
 
-
   /**
    * Returns the available translation extension languages.
    *
@@ -287,4 +286,12 @@ public interface TerminologyHandler extends Configurable {
    */
   public List<TranslationExtensionLanguage> getAvailableTranslationExtensionLanguages()
     throws Exception;
+
+  /**
+   * Gets the max batch lookup size.
+   *
+   * @return the max batch lookup size
+   * @throws Exception the exception
+   */
+  public int getMaxBatchLookupSize() throws Exception;
 }

@@ -445,6 +445,22 @@ public interface Refset extends Component, Searchable {
    */
   public boolean isLookupInProgress();
 
+
+  /**
+   * Indicates whether or a lookup of member concepts names and statuses
+   * is needed
+   * 
+   * @return true, if is lookup aborted
+   */
+  public boolean isLookupRequired();
+
+  /**
+   * Updates whether a lookup of member concepts names and statuses 
+   * is needed
+   *
+   * @param lookupAborted the new lookup aborted
+   */
+  public void setLookupRequired(boolean lookupRequired);
   /**
    * Sets the revision.
    *

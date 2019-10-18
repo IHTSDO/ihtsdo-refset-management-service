@@ -128,6 +128,10 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   @Column(nullable = false)
   private boolean lookupInProgress;
 
+  /** The lookup in progress. */
+  @Column(nullable = false)
+  private boolean lookupRequired;
+
   /** The feedback email. */
   @Column(nullable = true)
   private String feedbackEmail;
@@ -198,7 +202,6 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   @IndexedEmbedded(targetElement = RefsetNoteJpa.class)
   private List<Note> notes = new ArrayList<>();
 
-
   /**
    * Instantiates an empty {@link RefsetJpa}.
    */
@@ -228,6 +231,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
     forTranslation = refset.isForTranslation();
     inPublicationProcess = refset.isInPublicationProcess();
     lookupInProgress = refset.isLookupInProgress();
+    lookupRequired = refset.isLookupRequired();
     feedbackEmail = refset.getFeedbackEmail();
     workflowStatus = refset.getWorkflowStatus();
     project = refset.getProject();
@@ -454,6 +458,18 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   @Override
   public void setLookupInProgress(boolean lookupInProgress) {
     this.lookupInProgress = lookupInProgress;
+  }
+
+  /* see superclass */
+  @Override
+  public boolean isLookupRequired() {
+    return lookupRequired;
+  }
+
+  /* see superclass */
+  @Override
+  public void setLookupRequired(boolean lookupRequired) {
+    this.lookupRequired = lookupRequired;
   }
 
   /* see superclass */
@@ -803,7 +819,6 @@ public class RefsetJpa extends AbstractComponent implements Refset {
     this.revision = revision;
   }
 
-
   /* see superclass */
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   @SortableField
@@ -929,7 +944,8 @@ public class RefsetJpa extends AbstractComponent implements Refset {
         + ", namespace=" + namespace + ", definitionClauses="
         + definitionClauses + ", extUrl=" + externalUrl + ", workflowStatus="
         + workflowStatus + ", domain=" + domain + ", project="
-        + (project == null ? null : project.getId()) + ", localSet=" + localSet +  "]";
+        + (project == null ? null : project.getId()) + ", localSet=" + localSet
+        + "]";
   }
 
 }

@@ -86,7 +86,10 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
    */
   static Map<Long, Integer> lookupProgressMap = new ConcurrentHashMap<>();
 
-  /** Keep track of which threads are associated with each refset, so they can be canceled by the user. */
+  /**
+   * Keep track of which threads are associated with each refset, so they can be
+   * canceled by the user.
+   */
   static Map<Long, Thread> lookupThreadsMap = new ConcurrentHashMap<>();
 
   /** The Constant LOOKUP_ERROR_CODE. */
@@ -95,7 +98,6 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
   /** The Constant LOOKUP_CANCELLED_CODE. */
   final static int LOOKUP_CANCELLED_CODE = -99;
 
-  
   static {
     try {
       if (config == null)
@@ -969,6 +971,24 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
       if (!lookupProgressMap.containsKey(refsetId)
           || lookupProgressMap.get(refsetId).equals(LOOKUP_ERROR_CODE)
           || lookupProgressMap.get(refsetId).equals(LOOKUP_CANCELLED_CODE)) {
+
+        // Update the refset lookup in progress flag
+        boolean previousTransactions = getTransactionPerOperation();
+        if (!previousTransactions) {
+          commit();
+          clear();
+        }
+        setTransactionPerOperation(true);
+
+        Refset refset = getRefset(refsetId);
+        refset.setLookupInProgress(true);
+        updateRefset(refset);
+
+        setTransactionPerOperation(previousTransactions);
+        if (!previousTransactions) {
+          beginTransaction();
+        }
+
         // Create new thread
         Runnable lookup =
             new LookupMemberNamesThread(refsetId, label, lookupSynonyms);
@@ -999,6 +1019,26 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
       if (!lookupProgressMap.containsKey(refsetId)
           || lookupProgressMap.get(refsetId).equals(LOOKUP_ERROR_CODE)
           || lookupProgressMap.get(refsetId).equals(LOOKUP_CANCELLED_CODE)) {
+
+        // If needed, update the refset lookup in progress flag
+        if (saveMembers) {
+          boolean previousTransactions = getTransactionPerOperation();
+          if (!previousTransactions) {
+            commit();
+            clear();
+          }
+          setTransactionPerOperation(true);
+
+          Refset refset = getRefset(refsetId);
+          refset.setLookupInProgress(true);
+          updateRefset(refset);
+
+          setTransactionPerOperation(previousTransactions);
+          if (!previousTransactions) {
+            beginTransaction();
+          }
+        }
+
         // Create new thread
         Runnable lookup = new LookupMemberNamesThread(refsetId, members, label,
             saveMembers, lookupSynonyms);
@@ -1029,11 +1069,10 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
       if (lookupProgressMap.containsKey(objectId)) {
         if (lookupProgressMap.get(objectId).intValue() == LOOKUP_ERROR_CODE) {
           throw new Exception("The lookup process unexpectedly failed");
-        }
-        else if (lookupProgressMap.get(objectId).intValue() == LOOKUP_CANCELLED_CODE) {
+        } else if (lookupProgressMap.get(objectId)
+            .intValue() == LOOKUP_CANCELLED_CODE) {
           retval = -1;
-        }
-        else {
+        } else {
           retval = lookupProgressMap.get(objectId);
         }
       } else {
@@ -1059,6 +1098,10 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
     if (t != null) {
       t.interrupt();
     }
+
+    Refset refset = getRefset(objectId);
+    refset.setLookupInProgress(false);
+    updateRefset(refset);
 
   }
 
@@ -1156,12 +1199,6 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
         // Set last modified flag to false for this operation
         refsetService.setLastModifiedFlag(false);
 
-        if (!refset.isLookupInProgress() && saveMembers) {
-          refset.setLookupInProgress(true);
-          refsetService.updateRefset(refset);
-          refsetService.clear();
-        }
-
         refset = refsetService.getRefset(refsetId);
         if (saveMembers) {
           refsetService.setTransactionPerOperation(false);
@@ -1202,13 +1239,21 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
 
             final List<String> termIds = new ArrayList<>();
 
-            // Create list of conceptIds for all members (up to 101 at a time)
-            for (int j = 0; (j < 101 && i < numberOfMembers); j++, i++) {
+            final TerminologyHandler handler =
+                getTerminologyHandler(refset.getProject(), headers);
+
+            // If we're looking up synonyms, only lookup as many concepts per
+            // batch as specified by the handler
+            int batchLookupSize =
+                lookupSynonyms ? handler.getMaxBatchLookupSize() : 101;
+
+            // Create list of conceptIds for all members (batch-size depends on
+            // the handler)
+            for (int j = 0; (j < batchLookupSize
+                && i < numberOfMembers); j++, i++) {
               termIds.add(members.get(i).getConceptId());
             }
             // Get concepts from Term Server based on list
-            final TerminologyHandler handler =
-                getTerminologyHandler(refset.getProject(), headers);
             final ConceptList cons = handler.getConcepts(termIds, terminology,
                 version, lookupSynonyms ? true : false);
 
@@ -1293,6 +1338,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
         refset = refsetService.getRefset(refsetId);
         if (saveMembers && !lookupCanceled) {
           refset.setLookupInProgress(false);
+          refset.setLookupRequired(false);
           refsetService.updateRefset(refset);
           refsetService.commit();
         }
@@ -1303,17 +1349,24 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
 
       } catch (InterruptedException e) {
         Logger.getLogger(RefsetServiceJpa.this.getClass())
-        .info("User cancelled the lookupMemberNamesThread - " + refsetId);
-        
+            .info("User cancelled the lookupMemberNamesThread - " + refsetId);
+
         lookupProgressMap.put(refsetId, LOOKUP_CANCELLED_CODE);
-      }
-      catch (Exception e) {
+      } catch (Exception e) {
         try {
           ExceptionHandler.handleException(e, label, null);
         } catch (Exception e1) {
           // n/a
         }
         lookupProgressMap.put(refsetId, LOOKUP_ERROR_CODE);
+        try {
+          Refset refset = refsetService.getRefset(refsetId);
+          refset.setLookupInProgress(false);
+          refsetService.updateRefset(refset);
+          refsetService.commit();
+        } catch (Exception e2) {
+          // n/a
+        }
       } finally {
         lookupThreadsMap.remove(refsetId);
         try {
