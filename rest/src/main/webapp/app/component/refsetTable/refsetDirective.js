@@ -390,7 +390,7 @@ tsApp
                 // If 'lookup in progress' is set, get progress
                 for (var i = 0; i < $scope.refsets.length; i++) {
                   if ($scope.refsets[i].lookupInProgress) {
-                    $scope.refreshLookupProgress($scope.refsets[i]);
+                    startLookup($scope.refsets[i]);
                   }
                 }
 
@@ -891,6 +891,15 @@ tsApp
                 function(data) {
                   $scope.refsetLookupProgress[refset.id] = 1;
                   refset.lookupInProgress = true;
+                  
+                  //update $scope.refsets copy of refset
+                  for (var i = 0; i < $scope.refsets.length; i++) {
+                    if ($scope.refsets[i].id == refset.id) {
+                      $scope.refsets[i].lookupInProgress=true;
+                      break;
+                    }
+                  }
+                  
                   // Start if not already running
                   if (!$scope.lookupInterval) {
                     $scope.lookupInterval = $interval(function() {
@@ -948,6 +957,13 @@ tsApp
                 // Success
                 function(data) {
                   $scope.refsetLookupProgress[refset.id] = -1;
+                  //update $scope.refsets copy of refset
+                  for (var i = 0; i < $scope.refsets.length; i++) {
+                    if ($scope.refsets[i].id == refset.id) {
+                      $scope.refsets[i].lookupInProgress=false;
+                      break;
+                    }
+                  }
                 },
                 // Error
                 function(data) {
@@ -1829,6 +1845,8 @@ tsApp
                           $scope.comments.push('Refset "' + data.name
                             + '" successfully cloned to "' + name + '"');
 
+                          startLookup(newRefset);
+                          
                         },
                         // Error - clone refset
                         function(data) {
@@ -3178,6 +3196,10 @@ tsApp
                       // Success - add refset
                       function(data) {
                         var newRefset = data;
+                        //Run lookup if this is a new intensional refset with clauses specified
+                        if ($scope.clause && $scope.clause.value) {
+                          startLookup(newRefset);
+                        }
                         $uibModalInstance.close(newRefset);
                       },
                       // Error - add refset
@@ -4141,6 +4163,7 @@ tsApp
                   refsetService.finishMigration(refset.id).then(
                   // Success
                   function(data) {
+                    startLookup(refset);
                     $uibModalInstance.close(refset);
                   },
                   // Error
