@@ -126,11 +126,11 @@ public class RefsetJpa extends AbstractComponent implements Refset {
 
   /** The lookup in progress. */
   @Column(nullable = false)
-  private boolean lookupInProgress;
+  private boolean lookupInProgress = false;
 
   /** The lookup in progress. */
   @Column(nullable = false)
-  private boolean lookupRequired;
+  private boolean lookupRequired = false;
 
   /** The feedback email. */
   @Column(nullable = true)
