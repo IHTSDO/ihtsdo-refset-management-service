@@ -658,6 +658,8 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
     refset.getEnabledFeedbackEvents().size();
     refset.getNotes().size();
     refset.getDefinitionClauses().size();
+    refset.isLookupRequired();
+    refset.isLookupInProgress();
   }
 
   /* see superclass */
