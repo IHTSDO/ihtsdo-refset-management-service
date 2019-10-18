@@ -76,6 +76,9 @@ public class BrowserTerminologyHandler extends AbstractTerminologyHandler {
   @SuppressWarnings("unused")
   private Map<String, String> headers;
 
+  /** The max batch lookup size. */
+  private int maxBatchLookupSize = 101;
+
   /**
    * Instantiates an empty {@link BrowserTerminologyHandler}.
    *
@@ -1207,5 +1210,10 @@ public class BrowserTerminologyHandler extends AbstractTerminologyHandler {
         .info("  get translation extensions languages from branches - " + url);
     return null;
   }
-
+  
+  /* see superclass */
+  @Override
+  public int getMaxBatchLookupSize() throws Exception {
+    return maxBatchLookupSize;
+  }
 }
