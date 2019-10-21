@@ -912,10 +912,11 @@ public class PatchDataMojo extends AbstractRttMojo {
         
         for(Refset refset : project.getRefsets()) {
           //Only run on single refset, if specified
-          if(refsetId != null && refset.getId().equals(Long.parseLong(refsetId))) {
+          if(refsetId != null && !refset.getId().equals(Long.parseLong(refsetId))) {
+            continue;
+          }
           refsetService.lookupMemberNames(refset.getId(), "initial population of synonyms for refset=" + refset.getId(), false,
               true);
-          }
         }
         
         getLog().info(" Completed project: " + project.getName());
@@ -933,10 +934,11 @@ public class PatchDataMojo extends AbstractRttMojo {
         
         for(Refset refset : project.getRefsets()) {
           //Only run on single refset, if specified
-          if(refsetId != null && refset.getId().equals(Long.parseLong(refsetId))) {
+          if(refsetId != null && !refset.getId().equals(Long.parseLong(refsetId))) {
+            continue;
+          }
           refsetService.lookupMemberNames(refset.getId(), "initial population of synonyms for refset=" + refset.getId(), false,
               true);
-          }
         }
         
         getLog().info(" Completed project: " + project.getName());
