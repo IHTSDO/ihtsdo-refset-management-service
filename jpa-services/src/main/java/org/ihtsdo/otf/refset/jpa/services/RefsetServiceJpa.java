@@ -967,6 +967,30 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
     boolean lookupSynonyms) throws Exception {
     Logger.getLogger(getClass()).info("Release Service - lookup member names - "
         + refsetId + ", " + background);
+    
+    // If the refset's branch is invalid (e.g. a very old version, etc.), do
+    // not lookup members
+    // Test by trying to retrieve the top-level Snomed concept: "138875005 |
+    // SNOMED CT Concept (SNOMED RT+CTV3) |"
+    Refset refset = getRefset(refsetId);
+    
+    final TerminologyHandler handler =
+        getTerminologyHandler(refset.getProject(), headers);
+    
+    Concept testConcept = null;
+    
+    try {
+    testConcept = handler.getConcept("138875005",
+        refset.getTerminology(), refset.getVersion());
+    }
+    catch(Exception e) {
+      // n/a
+    }
+    
+    if(testConcept == null) {
+      return;
+    }       
+    
     // Only launch process if refset not already looked-up, or if a previous
     // lookup failed or was cancelled
     if (ConfigUtility.isAssignNames()) {
@@ -982,7 +1006,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
         }
         setTransactionPerOperation(true);
 
-        Refset refset = getRefset(refsetId);
+        refset = getRefset(refsetId);
         refset.setLookupInProgress(true);
         updateRefset(refset);
 
@@ -1015,6 +1039,32 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
     Logger.getLogger(getClass())
         .info("Release Service - lookup member names (2) - " + refsetId + ", "
             + background);
+    
+
+    // If the refset's branch is invalid (e.g. a very old version, etc.), do
+    // not lookup members
+    // Test by trying to retrieve the top-level Snomed concept: "138875005 |
+    // SNOMED CT Concept (SNOMED RT+CTV3) |"
+    Refset refset = getRefset(refsetId);
+    
+    final TerminologyHandler handler =
+        getTerminologyHandler(refset.getProject(), headers);
+    
+    Concept testConcept = null;
+    
+    try {
+    testConcept = handler.getConcept("138875005",
+        refset.getTerminology(), refset.getVersion());
+    }
+    catch(Exception e) {
+      // n/a
+    }
+    
+    if(testConcept == null) {
+      return;
+    }    
+    
+    
     // Only launch process if refset not already looked-up, or if a previous
     // lookup failed or was cancelled
     if (ConfigUtility.isAssignNames()) {
@@ -1031,7 +1081,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
           }
           setTransactionPerOperation(true);
 
-          Refset refset = getRefset(refsetId);
+          refset = getRefset(refsetId);
           refset.setLookupInProgress(true);
           updateRefset(refset);
 
