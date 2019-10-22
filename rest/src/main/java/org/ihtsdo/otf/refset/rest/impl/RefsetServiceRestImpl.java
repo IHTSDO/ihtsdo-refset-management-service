@@ -2197,9 +2197,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       // Look up names/concept active for members of EXTENSIONAL
       if (refsetCopy.getType() == Refset.Type.EXTENSIONAL) {
 
-        // re-read refset copy and flag all members for name re-lookup
-//        refsetCopy = refsetService.getRefset(refsetCopy.getId());
-//        refsetService.handleLazyInit(refsetCopy);
+        // flag all members for name re-lookup
         int count = 0;
         for (ConceptRefsetMember member : refsetCopy.getMembers()) {
           member.setConceptName(TerminologyHandler.REQUIRES_NAME_LOOKUP);
