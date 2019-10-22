@@ -53,9 +53,11 @@ import org.ihtsdo.otf.refset.rf2.Description;
 import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
 import org.ihtsdo.otf.refset.services.ProjectService;
 import org.ihtsdo.otf.refset.services.RefsetService;
+import org.ihtsdo.otf.refset.services.RootService;
 import org.ihtsdo.otf.refset.services.SecurityService;
 import org.ihtsdo.otf.refset.services.TranslationService;
 import org.ihtsdo.otf.refset.services.WorkflowService;
+import org.ihtsdo.otf.refset.services.handlers.TerminologyHandler;
 import org.ihtsdo.otf.refset.workflow.TrackingRecord;
 import org.ihtsdo.otf.refset.workflow.TrackingRecordJpa;
 import org.ihtsdo.otf.refset.workflow.TrackingRecordList;
@@ -79,11 +81,14 @@ public class PatchDataMojo extends AbstractRttMojo {
   /** The end. */
   @Parameter
   String end;
-  
+
   /** The refsetId. */
   @Parameter
-  String refsetId=null;
+  String refsetId = null;
 
+  /** The projectId. */
+  @Parameter
+  String projectId = null;
 
   /** The already reviewed japanese. */
   String[] alreadyReviewedJapanese = {
@@ -909,15 +914,60 @@ public class PatchDataMojo extends AbstractRttMojo {
       if (!uniqueProjects.contains(project.getId())) {
         getLog().info("About to start updating project: " + project.getName());
         uniqueProjects.add(project.getId());
-        
-        for(Refset refset : project.getRefsets()) {
-          //Only run on single refset, if specified
-          if(refsetId != null && refset.getId().equals(Long.parseLong(refsetId))) {
-          refsetService.lookupMemberNames(refset.getId(), "initial population of synonyms for refset=" + refset.getId(), false,
-              true);
-          }
+
+        // Only run on single project, if specified
+        if (project != null
+            && !project.getId().equals(Long.parseLong(projectId))) {
+          continue;
         }
-        
+
+        TerminologyHandler handler =
+            refsetService.getTerminologyHandler(project, null);
+
+        for (Refset refset : project.getRefsets()) {
+          // Only run on single refset, if specified
+          if (refsetId != null
+              && !refset.getId().equals(Long.parseLong(refsetId))) {
+            continue;
+          }
+
+          // If the refset's branch is invalid (e.g. a very old version, etc.), do
+          // not lookup members/synonyms
+          // Test by trying to retrieve the top-level Snomed concept: "138875005 |
+          // SNOMED CT Concept (SNOMED RT+CTV3) |"
+          Concept testConcept = null;
+
+          try {
+            testConcept = handler.getConcept("138875005",
+                refset.getTerminology(), refset.getVersion());
+          } catch (Exception e) {
+            // n/a
+          }
+
+          if (testConcept == null) {
+            continue;
+          }
+          // Flag all members as needing lookup
+          else {
+            refsetService.handleLazyInit(refset);
+            int count = 0;
+            for(ConceptRefsetMember member : refset.getMembers()) {
+              member.setConceptName(TerminologyHandler.REQUIRES_NAME_LOOKUP);
+              refsetService.updateMember(member);
+              count++;
+              if(count % RootService.commitCt == 0) {
+                refsetService.commitClearBegin();
+              }
+            }
+            refsetService.commitClearBegin();
+          }
+
+          // Okay, you can actually lookup the members and synonyms now. 
+          refsetService.lookupMemberNames(refset.getId(),
+              "initial population of synonyms for refset=" + refset.getId(),
+              false, true);
+        }
+
         getLog().info(" Completed project: " + project.getName());
       }
     }
@@ -930,15 +980,61 @@ public class PatchDataMojo extends AbstractRttMojo {
         getLog().info("Via getProjects, about to start updating project: "
             + project.getName());
         uniqueProjects.add(project.getId());
-        
-        for(Refset refset : project.getRefsets()) {
-          //Only run on single refset, if specified
-          if(refsetId != null && refset.getId().equals(Long.parseLong(refsetId))) {
-          refsetService.lookupMemberNames(refset.getId(), "initial population of synonyms for refset=" + refset.getId(), false,
-              true);
-          }
+
+        // Only run on single project, if specified
+        if (project != null
+            && !project.getId().equals(Long.parseLong(projectId))) {
+          continue;
         }
+
+        TerminologyHandler handler =
+            refsetService.getTerminologyHandler(project, null);        
         
+        for (Refset refset : project.getRefsets()) {
+          // Only run on single refset, if specified
+          if (refsetId != null
+              && !refset.getId().equals(Long.parseLong(refsetId))) {
+            continue;
+          }
+          
+          // If the refset's branch is invalid (e.g. a very old version, etc.), do
+          // not lookup members/synonyms
+          // Test by trying to retrieve the top-level Snomed concept: "138875005 |
+          // SNOMED CT Concept (SNOMED RT+CTV3) |"
+          Concept testConcept = null;
+
+          try {
+            testConcept = handler.getConcept("138875005",
+                refset.getTerminology(), refset.getVersion());
+          } catch (Exception e) {
+            // n/a
+          }
+
+          if (testConcept == null) {
+            continue;
+          }
+          // Flag all members as needing lookup
+          else {
+            refsetService.handleLazyInit(refset);
+            int count = 0;
+            for(ConceptRefsetMember member : refset.getMembers()) {
+              member.setConceptName(TerminologyHandler.REQUIRES_NAME_LOOKUP);
+              refsetService.updateMember(member);
+              count++;
+              if(count % RootService.commitCt == 0) {
+                refsetService.commitClearBegin();
+              }
+            }
+            refsetService.commitClearBegin();
+          }
+          
+          // Okay, you can actually lookup the members and synonyms now.           
+          
+          refsetService.lookupMemberNames(refset.getId(),
+              "initial population of synonyms for refset=" + refset.getId(),
+              false, true);
+        }
+
         getLog().info(" Completed project: " + project.getName());
       }
     }
@@ -948,18 +1044,19 @@ public class PatchDataMojo extends AbstractRttMojo {
 
     // no reindex needed for this patch
     if (!fullReindex) {
-//      getLog().info("  Reindex Refset Members");
-//
-//      // login as "admin", use token
-//      final Properties properties = ConfigUtility.getConfigProperties();
-//      try (final SecurityService securityService = new SecurityServiceJpa();) {
-//        String authToken =
-//            securityService.authenticate(properties.getProperty("admin.user"),
-//                properties.getProperty("admin.password")).getAuthToken();
-//        ProjectServiceRestImpl contentService = new ProjectServiceRestImpl();
-//        contentService.luceneReindex("ConceptRefsetMemberJpa", null, null,
-//            authToken);
-//      }
+      // getLog().info(" Reindex Refset Members");
+      //
+      // // login as "admin", use token
+      // final Properties properties = ConfigUtility.getConfigProperties();
+      // try (final SecurityService securityService = new SecurityServiceJpa();)
+      // {
+      // String authToken =
+      // securityService.authenticate(properties.getProperty("admin.user"),
+      // properties.getProperty("admin.password")).getAuthToken();
+      // ProjectServiceRestImpl contentService = new ProjectServiceRestImpl();
+      // contentService.luceneReindex("ConceptRefsetMemberJpa", null, null,
+      // authToken);
+      // }
     }
   }
 

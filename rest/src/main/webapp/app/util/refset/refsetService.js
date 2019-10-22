@@ -18,6 +18,11 @@ tsApp.service('refsetService', [
       $rootScope.$broadcast('refset:refsetChanged', refset);
     };
 
+    // broadcasts a refset being disabled for editing because a lookup is in progress
+    this.fireDisableEditing = function(refset) {
+      $rootScope.$broadcast('refset:disableEditing', refset);
+    };
+    
     // get refset revision
     this.getRefsetRevision = function(refsetId, date) {
       console.debug('getRefsetRevision');

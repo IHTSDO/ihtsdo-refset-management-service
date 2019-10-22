@@ -26,6 +26,11 @@ public interface TerminologyHandler extends Configurable {
   public final static String NAME_LOOKUP_IN_PROGRESS =
       "name lookup in progress";
 
+  /** The Constant REQUIRES_NAME_LOOKUP. */
+  public final static String REQUIRES_NAME_LOOKUP =
+      "requires name lookup";
+  
+  
   /**
    * Copy the handler. This is needed used because of how the terminology
    * handler is instantiated. One template object is created, and then copies of

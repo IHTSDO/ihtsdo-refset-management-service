@@ -461,7 +461,8 @@ tsApp
                     var found = false;
                     for (var i = 0; i < data.members.length; i++) {
                       if (data.members[i].conceptName == 'name lookup in progress'
-                        || data.members[i].conceptName == 'unable to determine name') {
+                        || data.members[i].conceptName == 'unable to determine name'
+                          || data.members[i].conceptName == 'requires name lookup') {
                         found = true;
                         break;
                       }
@@ -945,7 +946,7 @@ tsApp
 
               // Return true if the refset is actively in the middle of a name lookup
               $scope.isLookupInProgress = function(refset) {
-                if (refset.lookupInProgress && $scope.refsetLookupProgress[refset.id] > -1 && $scope.refsetLookupProgress[refset.id]  < 100) {
+                if (refset != null && refset.lookupInProgress && $scope.refsetLookupProgress[refset.id] > -1 && $scope.refsetLookupProgress[refset.id]  < 100) {
                   return true;
                 }
                 return false;
@@ -960,6 +961,7 @@ tsApp
                   //update $scope.refsets copy of refset
                   for (var i = 0; i < $scope.refsets.length; i++) {
                     if ($scope.refsets[i].id == refset.id) {
+                      $scope.refsets[i].requiresLookup=true;
                       $scope.refsets[i].lookupInProgress=false;
                       break;
                     }
@@ -3639,6 +3641,11 @@ tsApp
                 $scope.cancel = function() {
                   $uibModalInstance.close(refset);
                 };
+                
+                $scope.$on('refset:disableEditing', function(event, data) {
+                  console.debug('on refset:disableEditing', data);
+                  $uibModalInstance.close(data);
+                });                
 
               };
 
