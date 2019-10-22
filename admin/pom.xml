@@ -7,7 +7,7 @@
   <parent>
     <groupId>org.ihtsdo.otf.refset</groupId>
     <artifactId>refset-parent</artifactId>
-    <version>1.2.6</version>
+    <version>1.2.7</version>
     <relativePath>../parent</relativePath>
   </parent>
 
@@ -284,7 +284,8 @@
                 <configuration>
                   <start>${start}</start>
                   <end>${end}</end>
-                  <refsetId>${refset.id}</refsetId>
+                  <refsetId>${refsetid}</refsetId>
+                  <projectId>${projectid}</projectId>
                 </configuration>
               </execution>
             </executions>

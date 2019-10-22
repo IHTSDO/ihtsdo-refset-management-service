@@ -29,11 +29,11 @@
     ng-show="data.memberTypes[tree.terminologyId].memberType == 'MEMBER'"
     uib-tooltip="Member">M</button>
   <i
-    ng-show="data.refset.type == 'INTENSIONAL' && data.memberTypes[tree.terminologyId].memberType == 'MEMBER'"
+    ng-show="data.refset.type == 'INTENSIONAL' && !disableMemberTypes && data.memberTypes[tree.terminologyId].memberType == 'MEMBER'"
     ng-click="openRemoveModal(data.refset, data.memberTypes[tree.terminologyId]); "
     title="Add exclusion" class="noul material-icons md-18">remove_circle_outline</i>
   <i
-    ng-show="data.refset.type == 'EXTENSIONAL' && data.memberTypes[tree.terminologyId].memberType == 'MEMBER'"
+    ng-show="data.refset.type == 'EXTENSIONAL' && !disableMemberTypes && data.memberTypes[tree.terminologyId].memberType == 'MEMBER'"
     ng-click="openRemoveModal(data.refset, data.memberTypes[tree.terminologyId]); "
     title="Remove members" class="noul material-icons md-18">delete</i>
 
@@ -42,7 +42,7 @@
     style="transform: scale(.8, .8); margin-bottom: 4px; padding-left: 4px;"
     ng-show="data.memberTypes[tree.terminologyId].memberType == 'EXCLUSION'"
     uib-tooltip="Exclusion">X</button>
-  <i ng-show="data.memberTypes[tree.terminologyId].memberType == 'EXCLUSION'"
+  <i ng-show="!disableMemberTypes && data.memberTypes[tree.terminologyId].memberType == 'EXCLUSION'"
     ng-click="removeRefsetExclusion(data.refset, data.memberTypes[tree.terminologyId]);"
     title="Remove exclusion" class="noul material-icons md-18">delete</i>
 
@@ -51,7 +51,7 @@
     style="transform: scale(.8, .8); margin-bottom: 4px; padding-left: 4px;"
     ng-show="data.memberTypes[tree.terminologyId].memberType == 'INCLUSION'"
     uib-tooltip="Inclusion">I</button>
-  <i ng-show="data.memberTypes[tree.terminologyId].memberType == 'INCLUSION'"
+  <i ng-show="!disableMemberTypes && data.memberTypes[tree.terminologyId].memberType == 'INCLUSION'"
     ng-click="removeRefsetInclusion(data.refset,data.memberTypes[tree.terminologyId]);"
     title="Remove inclusion" class="noul material-icons md-18">delete</i>
 
