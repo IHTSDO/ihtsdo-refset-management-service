@@ -634,7 +634,7 @@ tsApp
                 $scope.selected.concept = null;
                 $scope.selected.terminology = refset.terminology;
                 $scope.selected.version = refset.version;
-                refsetService.getRequiredLanguageRefsets(refsetId).then(function(data) {
+                refsetService.getRequiredLanguageRefsets(refset.id).then(function(data) {
                   $scope.requiredLanguages = data.strings;
                   // If new refset doesn't contain the most recently selected preferred language, revert to english
                   if(!$scope.requiredLanguages.includes($scope.preferredLanguage)){
