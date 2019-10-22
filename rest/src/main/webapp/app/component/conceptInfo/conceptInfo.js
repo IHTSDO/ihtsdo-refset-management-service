@@ -85,7 +85,7 @@ tsApp.directive('conceptInfo', [
           $scope.clearError = function() {
             $scope.error = null;
           };
-
+          
           // Force a change to $scope.data.concept to reload the data
           $scope.getConceptById = function(terminologyId) {
             var copy = JSON.parse(JSON.stringify($scope.data.concept));
@@ -582,8 +582,9 @@ tsApp.directive('conceptInfo', [
               refsetService.addRefsetMembersForExpression(refset, value).then(
               // Success - update refset
               function(data) {
+                refsetService.fireDisableEditing(refset);
                 $uibModalInstance.close(refset);
-              },
+                },
               // Error - add refset
               function(data) {
                 handleError($scope.errors, data);
