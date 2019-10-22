@@ -3491,7 +3491,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
           concept.setId(null);
           concept.setPublishable(true);
           concept.setPublished(false);
-          concept.setName(TerminologyHandler.NAME_LOOKUP_IN_PROGRESS);
+          concept.setName(TerminologyHandler.REQUIRES_NAME_LOOKUP);
           concept.setActive(true);
           concept.setTranslation(translation);
           // Excel imported concepts should go to Review Available work
