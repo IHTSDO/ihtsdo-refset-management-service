@@ -287,7 +287,7 @@
               ng-click="removeRefset(refset); $event.stopPropagation()"
               title="Remove" class="noul material-icons md-18">delete</i>
             <!-- TODO -->
-            <i ng-show="isAllowed('ASSIGN', refset)"
+            <i ng-show="isAllowed('ASSIGN', refset) && !refset.inPublicationProcess"
               ng-click="openAssignRefsetModal(refset,'ASSIGN'); $event.stopPropagation()"
               title="Assign" class="noul material-icons md-18">assignment_ind</i>
             <i ng-show="isAllowed('FEEDBACK', refset)"
