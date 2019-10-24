@@ -850,7 +850,7 @@ tsApp
                   });
 
                 }
-                if (refset.stagingType == 'BETA') {
+                if (refset.stagingType == 'BETA' || refset.stagingType == null) {
                   releaseService.cancelRefsetRelease(refset.id).then(
                   // Success
                   function() {
