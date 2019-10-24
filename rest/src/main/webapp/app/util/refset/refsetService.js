@@ -74,7 +74,7 @@ tsApp.service('refsetService', [
       var deferred = $q.defer();
 
       gpService.increment();
-      $http.get(refsetUrl + '/' + refsetId).then(
+      $http.get(refsetUrl + refsetId).then(
       // success
       function(response) {
         console.debug('  refset = ', response.data);
