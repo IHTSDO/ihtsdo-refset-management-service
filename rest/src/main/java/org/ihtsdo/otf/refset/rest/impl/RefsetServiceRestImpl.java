@@ -2201,11 +2201,13 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         int count = 0;
         for (ConceptRefsetMember member : refsetCopy.getMembers()) {
           member.setConceptName(TerminologyHandler.REQUIRES_NAME_LOOKUP);
+          refsetService.updateMember(member);
           count++;
           if (count % RootService.commitCt == 0) {
             refsetService.commitClearBegin();
           }
         }
+        refsetService.updateRefset(refsetCopy);
         refsetService.commitClearBegin();        
         
         // Look up members for this refset, but NOT synonyms (they'll be looked

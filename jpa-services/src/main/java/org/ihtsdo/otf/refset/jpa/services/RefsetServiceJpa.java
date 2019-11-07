@@ -1351,6 +1351,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
                 final ConceptRefsetMember member = refsetService
                     .getMember(memberMap.get(con.getTerminologyId()).getId());
                 member.setConceptName(con.getName());
+                member.setConceptActive(con.isActive());
                 if (lookupSynonyms) {
                   populateMemberSynonyms(member, con, refset, refsetService,
                       handler);
