@@ -578,12 +578,6 @@ tsApp
                     .sortBy('negated'));
                 }
               };
-              
-              $scope.getRequiredLanguageRefsets = function(refsetId) {
-                refsetService.getRequiredLanguageRefsets(refsetId).then(function(data) {
-                  $scope.requiredLanguages = data.strings;
-                });
-              };
 
               // Table sorting mechanism
               $scope.setSortField = function(table, field, object) {
@@ -640,25 +634,31 @@ tsApp
                 $scope.selected.concept = null;
                 $scope.selected.terminology = refset.terminology;
                 $scope.selected.version = refset.version;
-                $scope.getRefsetReleaseInfo(refset);
-                $scope.getMembers(refset);
-                $scope.getStandardDescriptionTypes(refset.terminology, refset.version);
-                $scope.getLink(refset);
-                $scope.getRequiredLanguageRefsets(refset.id);
-                if (refset.id != $scope.user.userPreferences.lastRefsetId) {
-                  $scope.user.userPreferences.lastRefsetId = refset.id;
-                  securityService.updateUserPreferences($scope.user.userPreferences);
-                }
-                //show refset copy button 
-                if (appConfig['deploy.refset.member.copy.group']) {
-                  var refsetList = appConfig['deploy.refset.member.copy.group'].split('|');
-                  if (refsetList.includes($scope.selected.refset.name)) {
-                    $scope.showImportFromExistingProject = true;
+                refsetService.getRequiredLanguageRefsets(refset.id).then(function(data) {
+                  $scope.requiredLanguages = data.strings;
+                  // If new refset doesn't contain the most recently selected preferred language, revert to english
+                  if(!$scope.requiredLanguages.includes($scope.preferredLanguage)){
+                    $scope.preferredLanguage = "en";
                   }
-                  else{
-                    $scope.showImportFromExistingProject = false;
+                  $scope.getRefsetReleaseInfo(refset);
+                  $scope.getMembers(refset);
+                  $scope.getStandardDescriptionTypes(refset.terminology, refset.version);
+                  $scope.getLink(refset);
+                  if (refset.id != $scope.user.userPreferences.lastRefsetId) {
+                    $scope.user.userPreferences.lastRefsetId = refset.id;
+                    securityService.updateUserPreferences($scope.user.userPreferences);
                   }
-                }
+                  //show refset copy button 
+                  if (appConfig['deploy.refset.member.copy.group']) {
+                    var refsetList = appConfig['deploy.refset.member.copy.group'].split('|');
+                    if (refsetList.includes($scope.selected.refset.name)) {
+                      $scope.showImportFromExistingProject = true;
+                    }
+                    else{
+                      $scope.showImportFromExistingProject = false;
+                    }
+                  }
+                });
               };
 
               // Selects a member (setting $scope.selected.member)
@@ -850,7 +850,7 @@ tsApp
                   });
 
                 }
-                if (refset.stagingType == 'BETA') {
+                if (refset.stagingType == 'BETA' || refset.stagingType == null) {
                   releaseService.cancelRefsetRelease(refset.id).then(
                   // Success
                   function() {
