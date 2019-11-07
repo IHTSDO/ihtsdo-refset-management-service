@@ -107,7 +107,7 @@ public class ImportTranslationExcelHandler extends ImportExportAbstract
     
     caseSignificanceCodeMap.put("ci", "900000000000448009");
     caseSignificanceCodeMap.put("CS", "900000000000017005");
-    caseSignificanceCodeMap.put("cl", "900000000000020002");
+    caseSignificanceCodeMap.put("cI", "900000000000020002");
 
     languageReferenceSetCodeMap.put("Belgian French","21000172104");
     languageReferenceSetCodeMap.put("Belgian Dutch","31000172101");
@@ -274,6 +274,8 @@ public class ImportTranslationExcelHandler extends ImportExportAbstract
           description.setTerminologyId(null);
           description.setLanguageCode(getCellValue(row, LANGUAGE_CODE));
           description.setTypeId(descriptionTypeCodeMap.get(getCellValue(row, TYPE)));
+          String caseSignificanceString = getCellValue(row, CASE_SIGNIFIANCE);
+          String caseSignificanceId = caseSignificanceCodeMap.get(caseSignificanceString);
           description
               .setCaseSignificanceId(caseSignificanceCodeMap.get(getCellValue(row, CASE_SIGNIFIANCE)));
           description.setEffectiveTime(new Date());
