@@ -916,7 +916,7 @@ public class PatchDataMojo extends AbstractRttMojo {
         uniqueProjects.add(project.getId());
 
         // Only run on single project, if specified
-        if (project != null
+        if (projectId != null
             && !project.getId().equals(Long.parseLong(projectId))) {
           continue;
         }
