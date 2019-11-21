@@ -948,6 +948,8 @@ public class PatchDataMojo extends AbstractRttMojo {
             continue;
           }
 
+          getLog().info("About to start updating refset: " + refset.getId());          
+          
           // If the refset's branch is invalid (e.g. a very old version, etc.),
           // do not lookup members/synonyms
           // Test by trying to retrieve the top-level Snomed concept:
@@ -965,6 +967,11 @@ public class PatchDataMojo extends AbstractRttMojo {
             continue;
           }
 
+          // handle lazy init
+          for (ConceptRefsetMember member : refset.getMembers()) {
+            refsetService.handleLazyInit(member);
+          }
+          
           int count = 0;
           for (ConceptRefsetMember member : refset.getMembers()) {
 
@@ -1041,6 +1048,8 @@ public class PatchDataMojo extends AbstractRttMojo {
             continue;
           }
 
+          getLog().info("About to start updating refset: " + refset.getId());          
+          
           // If the refset's branch is invalid (e.g. a very old version, etc.),
           // do not lookup members/synonyms
           // Test by trying to retrieve the top-level Snomed concept:
@@ -1058,6 +1067,11 @@ public class PatchDataMojo extends AbstractRttMojo {
             continue;
           }
 
+          // handle lazy init
+          for (ConceptRefsetMember member : refset.getMembers()) {
+            refsetService.handleLazyInit(member);
+          }          
+          
           int count = 0;
           for (ConceptRefsetMember member : refset.getMembers()) {
 
