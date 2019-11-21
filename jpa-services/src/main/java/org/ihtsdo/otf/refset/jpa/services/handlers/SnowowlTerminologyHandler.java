@@ -1049,6 +1049,8 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
           description.setTypeId("900000000000003001");
         } else if (description.getTypeId().equals("SYNONYM")) {
           description.setTypeId("900000000000013009");
+        } else if (description.getTypeId().equals("TEXT_DEFINITION")) {
+          description.setTypeId("900000000000550004");
         }
         if (description.isActive()) {
           for (final JsonNode language : desc.findValues("acceptabilityMap")) {

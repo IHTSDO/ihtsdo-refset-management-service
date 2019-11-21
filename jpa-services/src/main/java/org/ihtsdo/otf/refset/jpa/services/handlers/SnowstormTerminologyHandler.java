@@ -786,13 +786,13 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
         description.setTerm(desc.get("term").asText());
         description.setTerminologyId(desc.get("descriptionId").asText());
 
-        description.setTypeId(desc.get("type").asText());
-        // Hardcoded SNOMED CT ID - due to terminology server values returned
-        if (description.getTypeId().equals("FSN")) {
-          description.setTypeId("900000000000003001");
-        } else if (description.getTypeId().equals("SYNONYM")) {
-          description.setTypeId("900000000000013009");
-        }
+        description.setTypeId(desc.get("typeId").asText());
+//        // Hardcoded SNOMED CT ID - due to terminology server values returned
+//        if (description.getTypeId().equals("FSN")) {
+//          description.setTypeId("900000000000003001");
+//        } else if (description.getTypeId().equals("SYNONYM")) {
+//          description.setTypeId("900000000000013009");
+//        }
         if (description.isActive()) {
           for (final JsonNode language : desc.findValues("acceptabilityMap")) {
             final LanguageRefsetMember member = new LanguageRefsetMemberJpa();
