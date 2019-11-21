@@ -1010,16 +1010,16 @@ public class PatchDataMojo extends AbstractRttMojo {
               false, true);
 
           refsetService.commitClearBegin();
-
           // Finally, add all newly looked up synonyms to the cache
           Refset refsetWithSynonyms = refsetService.getRefset(refset.getId());
           for (ConceptRefsetMember member : refsetWithSynonyms.getMembers()) {
-            // Clear out the members associated with the synonyms, since it will
-            // be different when getting reused
+            // Create a new synonym and clear out the member associated with it,
+            // since it will be different when getting reused
             Set<ConceptRefsetMemberSynonym> synonymsToCache = new HashSet<>();
             for (ConceptRefsetMemberSynonym synonym : member.getSynonyms()) {
-              synonym.setMember(null);
-              synonymsToCache.add(synonym);
+              ConceptRefsetMemberSynonym synonymToCache = new ConceptRefsetMemberSynonymJpa(synonym);
+              synonymToCache.setMember(null);
+              synonymsToCache.add(synonymToCache);
             }
             conceptVersionSynonymsMap.put(
                 member.getConceptId() + "|" + refset.getVersion(),
@@ -1121,12 +1121,13 @@ public class PatchDataMojo extends AbstractRttMojo {
           // Finally, add all newly looked up synonyms to the cache
           Refset refsetWithSynonyms = refsetService.getRefset(refset.getId());
           for (ConceptRefsetMember member : refsetWithSynonyms.getMembers()) {
-            // Clear out the members associated with the synonyms, since it will
-            // be different when getting reused
+            // Create a new synonym and clear out the member associated with it,
+            // since it will be different when getting reused
             Set<ConceptRefsetMemberSynonym> synonymsToCache = new HashSet<>();
             for (ConceptRefsetMemberSynonym synonym : member.getSynonyms()) {
-              synonym.setMember(null);
-              synonymsToCache.add(synonym);
+              ConceptRefsetMemberSynonym synonymToCache = new ConceptRefsetMemberSynonymJpa(synonym);
+              synonymToCache.setMember(null);
+              synonymsToCache.add(synonymToCache);
             }
             conceptVersionSynonymsMap.put(
                 member.getConceptId() + "|" + refset.getVersion(),
