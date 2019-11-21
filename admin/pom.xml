@@ -284,8 +284,8 @@
                 <configuration>
                   <start>${start}</start>
                   <end>${end}</end>
-                  <refsetId>${refsetid}</refsetId>
-                  <projectId>${projectid}</projectId>
+                  <refsetIds>${refsetids}</refsetIds>
+                  <projectIds>${projectids}</projectIds>
                 </configuration>
               </execution>
             </executions>
