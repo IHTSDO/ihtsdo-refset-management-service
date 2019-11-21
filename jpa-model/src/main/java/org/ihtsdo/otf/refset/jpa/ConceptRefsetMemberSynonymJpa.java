@@ -85,7 +85,7 @@ public class ConceptRefsetMemberSynonymJpa
    *
    * @param synonym the synonym
    */
-  public ConceptRefsetMemberSynonymJpa(ConceptRefsetMemberSynonymJpa synonym) {
+  public ConceptRefsetMemberSynonymJpa(ConceptRefsetMemberSynonym synonym) {
     setSynonym(synonym.getSynonym());
     setLanguage(synonym.getLanguage());
     setTermType(synonym.getTermType());

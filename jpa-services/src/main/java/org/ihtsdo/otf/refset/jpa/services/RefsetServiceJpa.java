@@ -1925,8 +1925,15 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
   public void populateMemberSynonyms(ConceptRefsetMember member,
     Concept concept, Refset refset, RefsetService refsetService)
     throws Exception {
+    
+    // clear out and remove the current synonyms
+    Set<ConceptRefsetMemberSynonym> currentSynonyms = member.getSynonyms();
     member.setSynonyms(new HashSet<ConceptRefsetMemberSynonym>());
-
+    for (ConceptRefsetMemberSynonym synonym : currentSynonyms) {
+      refsetService.removeConceptRefsetMemberSynonym(synonym.getId());
+    }
+    refsetService.updateMember(member);
+    
     populateMemberSynonymsFromConcept(member, concept, refsetService);
 
     if (member.getSynonyms().isEmpty()) {

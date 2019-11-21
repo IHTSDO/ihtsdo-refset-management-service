@@ -34,6 +34,7 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.ihtsdo.otf.refset.ConceptRefsetMemberSynonym;
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
@@ -41,6 +42,7 @@ import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.ProjectList;
+import org.ihtsdo.otf.refset.jpa.ConceptRefsetMemberSynonymJpa;
 import org.ihtsdo.otf.refset.jpa.services.ProjectServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.RefsetServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
@@ -82,13 +84,17 @@ public class PatchDataMojo extends AbstractRttMojo {
   @Parameter
   String end;
 
-  /** The refsetId. */
+  /**
+   * The refsetId. A comma-delimited list of refset ids
+   */
   @Parameter
-  String refsetId = null;
+  String refsetIds = null;
 
-  /** The projectId. */
+  /**
+   * The projectId. A comma-delimited list of project ids
+   */
   @Parameter
-  String projectId = null;
+  String projectIds = null;
 
   /** The already reviewed japanese. */
   String[] alreadyReviewedJapanese = {
@@ -904,8 +910,19 @@ public class PatchDataMojo extends AbstractRttMojo {
   private void patch20190728(WorkflowService workflowService,
     RefsetService refsetService, boolean fullReindex) throws Exception {
     Set<Long> uniqueProjects = new HashSet<>();
-    // Map of (Concept to Map of (Version to List of synonyms))
-    Map<String, Map<String, List<String>>> conceptSynonymsMap = new HashMap<>();
+    // Map of (ConceptId+"|"+RefsetVersion to Set of synonyms)
+    Map<String, Set<ConceptRefsetMemberSynonym>> conceptVersionSynonymsMap =
+        new HashMap<>();
+
+    // Turn the project/refset id strings into lists, if specified
+    List<String> projectIdsList = new ArrayList<>();
+    List<String> refsetIdsList = new ArrayList<>();
+    if (projectIds != null) {
+      projectIdsList = Arrays.asList(projectIds.split(",", -1));
+    }
+    if (refsetIds != null) {
+      refsetIdsList = Arrays.asList(refsetIds.split(",", -1));
+    }
 
     refsetService.setTransactionPerOperation(false);
     refsetService.beginTransaction();
@@ -915,9 +932,9 @@ public class PatchDataMojo extends AbstractRttMojo {
         getLog().info("About to start updating project: " + project.getName());
         uniqueProjects.add(project.getId());
 
-        // Only run on single project, if specified
-        if (projectId != null
-            && !project.getId().equals(Long.parseLong(projectId))) {
+        // Only run on subset of projects, if specified
+        if (projectIds != null
+            && !projectIdsList.contains(project.getId().toString())) {
           continue;
         }
 
@@ -925,16 +942,16 @@ public class PatchDataMojo extends AbstractRttMojo {
             refsetService.getTerminologyHandler(project, null);
 
         for (Refset refset : project.getRefsets()) {
-          // Only run on single refset, if specified
-          if (refsetId != null
-              && !refset.getId().equals(Long.parseLong(refsetId))) {
+          // Only run on subset of refsets, if specified
+          if (refsetIds != null
+              && !refsetIdsList.contains(refset.getId().toString())) {
             continue;
           }
 
-          // If the refset's branch is invalid (e.g. a very old version, etc.), do
-          // not lookup members/synonyms
-          // Test by trying to retrieve the top-level Snomed concept: "138875005 |
-          // SNOMED CT Concept (SNOMED RT+CTV3) |"
+          // If the refset's branch is invalid (e.g. a very old version, etc.),
+          // do not lookup members/synonyms
+          // Test by trying to retrieve the top-level Snomed concept:
+          // "138875005 | SNOMED CT Concept (SNOMED RT+CTV3) |"
           Concept testConcept = null;
 
           try {
@@ -947,25 +964,53 @@ public class PatchDataMojo extends AbstractRttMojo {
           if (testConcept == null) {
             continue;
           }
-          // Flag all members as needing lookup
-          else {
-            refsetService.handleLazyInit(refset);
-            int count = 0;
-            for(ConceptRefsetMember member : refset.getMembers()) {
-              member.setConceptName(TerminologyHandler.REQUIRES_NAME_LOOKUP);
-              refsetService.updateMember(member);
-              count++;
-              if(count % RootService.commitCt == 0) {
-                refsetService.commitClearBegin();
+
+          int count = 0;
+          for (ConceptRefsetMember member : refset.getMembers()) {
+
+            // For any concept that has already had its synonyms looked up, add
+            // them from the cache
+            if (conceptVersionSynonymsMap.get(
+                member.getConceptId() + "|" + refset.getVersion()) != null) {
+              // Create new synonyms based on the cache and wire to this member
+              for (ConceptRefsetMemberSynonym synonym : conceptVersionSynonymsMap
+                  .get(member.getConceptId() + "|" + refset.getVersion())) {
+                ConceptRefsetMemberSynonym newSynonym =
+                    new ConceptRefsetMemberSynonymJpa(synonym);
+                newSynonym.setMember(member);
+                // Make sure to only add unique synonyms. Block duplicates
+                if (!member.getSynonyms().contains(newSynonym)) {
+                  refsetService.addConceptRefsetMemberSynonym(newSynonym);
+                  member.getSynonyms().add(newSynonym);
+                }
               }
             }
-            refsetService.commitClearBegin();
+            // Otherwise, flag the concept as needing synonyms looked up
+            else {
+              member.setConceptName(TerminologyHandler.REQUIRES_NAME_LOOKUP);
+            }
+            refsetService.updateMember(member);
+            count++;
+            if (count % RootService.commitCt == 0) {
+              refsetService.commitClearBegin();
+            }
           }
+          refsetService.commitClearBegin();
 
-          // Okay, you can actually lookup the members and synonyms now. 
+          // Okay, you can actually lookup the synonyms now.
           refsetService.lookupMemberNames(refset.getId(),
               "initial population of synonyms for refset=" + refset.getId(),
               false, true);
+
+          refsetService.commitClearBegin();
+
+          // Finally, add all newly looked up synonyms to the cache
+          Refset refsetWithSynonyms = refsetService.getRefset(refset.getId());
+          for (ConceptRefsetMember member : refsetWithSynonyms.getMembers()) {
+            conceptVersionSynonymsMap.put(
+                member.getConceptId() + "|" + refset.getVersion(),
+                member.getSynonyms());
+          }
         }
 
         getLog().info(" Completed project: " + project.getName());
@@ -977,30 +1022,29 @@ public class PatchDataMojo extends AbstractRttMojo {
     final ProjectList list = workflowService.getProjects();
     for (final Project project : list.getObjects()) {
       if (!uniqueProjects.contains(project.getId())) {
-        getLog().info("Via getProjects, about to start updating project: "
-            + project.getName());
+        getLog().info("About to start updating project: " + project.getName());
         uniqueProjects.add(project.getId());
 
-        // Only run on single project, if specified
-        if (project != null
-            && !project.getId().equals(Long.parseLong(projectId))) {
+        // Only run on subset of projects, if specified
+        if (projectIds != null
+            && !projectIdsList.contains(project.getId().toString())) {
           continue;
         }
 
         TerminologyHandler handler =
-            refsetService.getTerminologyHandler(project, null);        
-        
+            refsetService.getTerminologyHandler(project, null);
+
         for (Refset refset : project.getRefsets()) {
-          // Only run on single refset, if specified
-          if (refsetId != null
-              && !refset.getId().equals(Long.parseLong(refsetId))) {
+          // Only run on subset of refsets, if specified
+          if (refsetIds != null
+              && !refsetIdsList.contains(refset.getId().toString())) {
             continue;
           }
-          
-          // If the refset's branch is invalid (e.g. a very old version, etc.), do
-          // not lookup members/synonyms
-          // Test by trying to retrieve the top-level Snomed concept: "138875005 |
-          // SNOMED CT Concept (SNOMED RT+CTV3) |"
+
+          // If the refset's branch is invalid (e.g. a very old version, etc.),
+          // do not lookup members/synonyms
+          // Test by trying to retrieve the top-level Snomed concept:
+          // "138875005 | SNOMED CT Concept (SNOMED RT+CTV3) |"
           Concept testConcept = null;
 
           try {
@@ -1013,26 +1057,53 @@ public class PatchDataMojo extends AbstractRttMojo {
           if (testConcept == null) {
             continue;
           }
-          // Flag all members as needing lookup
-          else {
-            refsetService.handleLazyInit(refset);
-            int count = 0;
-            for(ConceptRefsetMember member : refset.getMembers()) {
-              member.setConceptName(TerminologyHandler.REQUIRES_NAME_LOOKUP);
-              refsetService.updateMember(member);
-              count++;
-              if(count % RootService.commitCt == 0) {
-                refsetService.commitClearBegin();
+
+          int count = 0;
+          for (ConceptRefsetMember member : refset.getMembers()) {
+
+            // For any concept that has already had its synonyms lookup up, add
+            // them from the cache
+            if (conceptVersionSynonymsMap.get(
+                member.getConceptId() + "|" + refset.getVersion()) != null) {
+              // Create new synonyms based on the cache and wire to this member
+              for (ConceptRefsetMemberSynonym synonym : conceptVersionSynonymsMap
+                  .get(member.getConceptId() + "|" + refset.getVersion())) {
+                ConceptRefsetMemberSynonym newSynonym =
+                    new ConceptRefsetMemberSynonymJpa(synonym);
+                newSynonym.setMember(member);
+                // Make sure to only add unique synonyms. Block duplicates
+                if (!member.getSynonyms().contains(newSynonym)) {
+                  refsetService.addConceptRefsetMemberSynonym(newSynonym);
+                  member.getSynonyms().add(newSynonym);
+                }
               }
             }
-            refsetService.commitClearBegin();
+            // Otherwise, flag the concept as needing synonyms looked up
+            else {
+              member.setConceptName(TerminologyHandler.REQUIRES_NAME_LOOKUP);
+            }
+            refsetService.updateMember(member);
+            count++;
+            if (count % RootService.commitCt == 0) {
+              refsetService.commitClearBegin();
+            }
           }
-          
-          // Okay, you can actually lookup the members and synonyms now.           
-          
+          refsetService.commitClearBegin();
+
+          // Okay, you can actually lookup the synonyms now.
           refsetService.lookupMemberNames(refset.getId(),
               "initial population of synonyms for refset=" + refset.getId(),
               false, true);
+
+          refsetService.commitClearBegin();
+
+          // Finally, add all newly looked up synonyms to the cache
+          Refset refsetWithSynonyms = refsetService.getRefset(refset.getId());
+          for (ConceptRefsetMember member : refsetWithSynonyms.getMembers()) {
+            conceptVersionSynonymsMap.put(
+                member.getConceptId() + "|" + refset.getVersion(),
+                member.getSynonyms());
+          }
         }
 
         getLog().info(" Completed project: " + project.getName());
@@ -1069,7 +1140,7 @@ public class PatchDataMojo extends AbstractRttMojo {
    * @throws Exception the exception
    */
   private void addSynonyms(Project project,
-    Map<String, Map<String, List<String>>> conceptSynonymsMapCache,
+    Map<String, Map<String, List<ConceptRefsetMemberSynonym>>> conceptSynonymsMapCache,
     RefsetService refsetService) throws Exception {
     /*-
     *
@@ -1089,19 +1160,20 @@ public class PatchDataMojo extends AbstractRttMojo {
     //
     // if (!conceptSynonymsMapCache.keySet().contains(conId)) {
     // // Lookup synonyms and add to member
-    // Map<String, List<String>> versionSynonymsMap = new HashMap<>();
+    // Map<String, List<ConceptRefsetMemberSynonym>> versionSynonymsMap =
+    // new HashMap<>();
     // conceptSynonymsMapCache.put(conId, versionSynonymsMap);
     // }
     //
     // if (!conceptSynonymsMapCache.get(conId)
     // .containsKey(refset.getVersion())) {
-    // List<String> synonyms = new ArrayList<>();
+    // List<ConceptRefsetMemberSynonym> synonyms = new ArrayList<>();
     // conceptSynonymsMapCache.get(conId).put(refset.getVersion(), synonyms);
     // }
     //
     // if (conceptSynonymsMapCache.get(conId).get(refset.getVersion())
     // .isEmpty()) {
-    // List<String> synonyms =
+    // List<ConceptRefsetMemberSynonym> synonyms =
     // conceptSynonymsMapCache.get(conId).get(refset.getVersion());
     //
     // try {
