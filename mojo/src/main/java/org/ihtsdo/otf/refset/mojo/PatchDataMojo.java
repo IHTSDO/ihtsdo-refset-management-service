@@ -948,8 +948,8 @@ public class PatchDataMojo extends AbstractRttMojo {
             continue;
           }
 
-          getLog().info("About to start updating refset: " + refset.getId());          
-          
+          getLog().info("About to start updating refset: " + refset.getId());
+
           // If the refset's branch is invalid (e.g. a very old version, etc.),
           // do not lookup members/synonyms
           // Test by trying to retrieve the top-level Snomed concept:
@@ -971,7 +971,7 @@ public class PatchDataMojo extends AbstractRttMojo {
           for (ConceptRefsetMember member : refset.getMembers()) {
             refsetService.handleLazyInit(member);
           }
-          
+
           int count = 0;
           for (ConceptRefsetMember member : refset.getMembers()) {
 
@@ -1014,9 +1014,16 @@ public class PatchDataMojo extends AbstractRttMojo {
           // Finally, add all newly looked up synonyms to the cache
           Refset refsetWithSynonyms = refsetService.getRefset(refset.getId());
           for (ConceptRefsetMember member : refsetWithSynonyms.getMembers()) {
+            // Clear out the members associated with the synonyms, since it will
+            // be different when getting reused
+            Set<ConceptRefsetMemberSynonym> synonymsToCache = new HashSet<>();
+            for (ConceptRefsetMemberSynonym synonym : member.getSynonyms()) {
+              synonym.setMember(null);
+              synonymsToCache.add(synonym);
+            }
             conceptVersionSynonymsMap.put(
                 member.getConceptId() + "|" + refset.getVersion(),
-                member.getSynonyms());
+                synonymsToCache);
           }
         }
 
@@ -1048,8 +1055,8 @@ public class PatchDataMojo extends AbstractRttMojo {
             continue;
           }
 
-          getLog().info("About to start updating refset: " + refset.getId());          
-          
+          getLog().info("About to start updating refset: " + refset.getId());
+
           // If the refset's branch is invalid (e.g. a very old version, etc.),
           // do not lookup members/synonyms
           // Test by trying to retrieve the top-level Snomed concept:
@@ -1070,8 +1077,8 @@ public class PatchDataMojo extends AbstractRttMojo {
           // handle lazy init
           for (ConceptRefsetMember member : refset.getMembers()) {
             refsetService.handleLazyInit(member);
-          }          
-          
+          }
+
           int count = 0;
           for (ConceptRefsetMember member : refset.getMembers()) {
 
@@ -1114,9 +1121,16 @@ public class PatchDataMojo extends AbstractRttMojo {
           // Finally, add all newly looked up synonyms to the cache
           Refset refsetWithSynonyms = refsetService.getRefset(refset.getId());
           for (ConceptRefsetMember member : refsetWithSynonyms.getMembers()) {
+            // Clear out the members associated with the synonyms, since it will
+            // be different when getting reused
+            Set<ConceptRefsetMemberSynonym> synonymsToCache = new HashSet<>();
+            for (ConceptRefsetMemberSynonym synonym : member.getSynonyms()) {
+              synonym.setMember(null);
+              synonymsToCache.add(synonym);
+            }
             conceptVersionSynonymsMap.put(
                 member.getConceptId() + "|" + refset.getVersion(),
-                member.getSynonyms());
+                synonymsToCache);
           }
         }
 
