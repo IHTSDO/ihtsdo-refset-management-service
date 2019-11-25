@@ -1534,7 +1534,7 @@ public class PatchDataMojo extends AbstractRttMojo {
               + project.getId() + ", " + project.getName());
           final String terminologyHandlerUrl =
               project.getTerminologyHandlerUrl().substring(0,
-                  project.getTerminologyHandlerUrl().length() - 2);
+                  project.getTerminologyHandlerUrl().length() - 3);
           project.setTerminologyHandlerUrl(terminologyHandlerUrl);
         }
         try {
