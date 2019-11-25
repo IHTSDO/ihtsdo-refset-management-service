@@ -367,6 +367,14 @@ public class PatchDataMojo extends AbstractRttMojo {
         patch20191009(translationService, fullReindex);
       }
 
+      // Patch to remove /v2 from the end of all terminologyHandlerURLs
+      if ("20191125".compareTo(start) >= 0 && "20191125".compareTo(end) <= 0) {
+        getLog().info(
+            "Processing patch 20191125 - remove /v2 from the end of all handler URLs"); // Patch
+
+        patch20191125(fullReindex);
+      }
+
       // Reindex
       if (fullReindex) {
         getLog().info("  Reindex");
@@ -1017,7 +1025,8 @@ public class PatchDataMojo extends AbstractRttMojo {
             // since it will be different when getting reused
             Set<ConceptRefsetMemberSynonym> synonymsToCache = new HashSet<>();
             for (ConceptRefsetMemberSynonym synonym : member.getSynonyms()) {
-              ConceptRefsetMemberSynonym synonymToCache = new ConceptRefsetMemberSynonymJpa(synonym);
+              ConceptRefsetMemberSynonym synonymToCache =
+                  new ConceptRefsetMemberSynonymJpa(synonym);
               synonymToCache.setMember(null);
               synonymsToCache.add(synonymToCache);
             }
@@ -1125,7 +1134,8 @@ public class PatchDataMojo extends AbstractRttMojo {
             // since it will be different when getting reused
             Set<ConceptRefsetMemberSynonym> synonymsToCache = new HashSet<>();
             for (ConceptRefsetMemberSynonym synonym : member.getSynonyms()) {
-              ConceptRefsetMemberSynonym synonymToCache = new ConceptRefsetMemberSynonymJpa(synonym);
+              ConceptRefsetMemberSynonym synonymToCache =
+                  new ConceptRefsetMemberSynonymJpa(synonym);
               synonymToCache.setMember(null);
               synonymsToCache.add(synonymToCache);
             }
@@ -1504,4 +1514,58 @@ public class PatchDataMojo extends AbstractRttMojo {
       }
     }
   }
+
+  /**
+   * Patch 20191125.
+   *
+   * @param fullReindex the full reindex
+   */
+  private void patch20191125(boolean fullReindex) {
+
+    try (ProjectService projectService = new ProjectServiceJpa();) {
+
+      projectService.setTransactionPerOperation(false);
+      projectService.beginTransaction();
+
+      projectService.getProjects().getObjects().forEach(project -> {
+
+        if (project.getTerminologyHandlerUrl().endsWith("/v2")) {
+          getLog().info("  updating terminology handler URL for project = "
+              + project.getId() + ", " + project.getName());
+          final String terminologyHandlerUrl =
+              project.getTerminologyHandlerUrl().substring(0,
+                  project.getTerminologyHandlerUrl().length() - 2);
+          project.setTerminologyHandlerUrl(terminologyHandlerUrl);
+        }
+        try {
+          projectService.updateProject(project);
+        } catch (Exception e) {
+          getLog().error(
+              "patch20191125 : Failed to update project " + project.getId(), e);
+        }
+      });
+
+      projectService.commit();
+
+      if (!fullReindex) {
+        getLog().info("  Projects");
+
+        // login as "admin", use token
+        final Properties properties = ConfigUtility.getConfigProperties();
+        try (
+            final SecurityService securityService = new SecurityServiceJpa();) {
+          String authToken =
+              securityService.authenticate(properties.getProperty("admin.user"),
+                  properties.getProperty("admin.password")).getAuthToken();
+          ProjectServiceRestImpl contentService = new ProjectServiceRestImpl();
+          contentService.luceneReindex("ProjectJpa", null, null, authToken);
+        }
+      }
+
+    } catch (Exception e) {
+      getLog().error("patch20191125 : Failed to update all projects", e);
+    }
+
+  }
+
 }
