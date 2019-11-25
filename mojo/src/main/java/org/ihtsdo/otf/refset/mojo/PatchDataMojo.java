@@ -367,7 +367,8 @@ public class PatchDataMojo extends AbstractRttMojo {
         patch20191009(translationService, fullReindex);
       }
 
-      // Patch to remove /v2 from the end of all terminologyHandlerURLs
+      // Patch to remove /v2 from the end of terminologyHandlerURLs for
+      // non-MANAGED-SERVICE projects
       if ("20191125".compareTo(start) >= 0 && "20191125".compareTo(end) <= 0) {
         getLog().info(
             "Processing patch 20191125 - remove /v2 from the end of all handler URLs"); // Patch
@@ -1529,7 +1530,8 @@ public class PatchDataMojo extends AbstractRttMojo {
 
       projectService.getProjects().getObjects().forEach(project -> {
 
-        if (project.getTerminologyHandlerUrl().endsWith("/v2")) {
+        if (!project.getTerminologyHandlerKey().equals("MANAGED-SERVICE")
+            && project.getTerminologyHandlerUrl().endsWith("/v2")) {
           getLog().info("  updating terminology handler URL for project = "
               + project.getId() + ", " + project.getName());
           final String terminologyHandlerUrl =
