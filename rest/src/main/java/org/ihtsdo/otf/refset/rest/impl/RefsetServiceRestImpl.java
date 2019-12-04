@@ -3696,7 +3696,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       // Authorize the call
       authorizeProject(refsetService, refset.getProject().getId(),
           securityService, authToken, "get required language refsets",
-          UserRole.AUTHOR);
+          UserRole.VIEWER);
 
       List<String> languagePriorities = refsetService
           .getTerminologyHandler(refset.getProject(), getHeaders(headers))
