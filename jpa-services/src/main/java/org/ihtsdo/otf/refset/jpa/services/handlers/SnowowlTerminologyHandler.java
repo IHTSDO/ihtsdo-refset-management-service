@@ -215,7 +215,6 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
 
     PfsParameter localPfs = new PfsParameterJpa();
     localPfs.setStartIndex(0);
-    localPfs.setMaxResults(1000);
 
     WebTarget target =
         client.target(url + "/branches?" + "limit=" + localPfs.getMaxResults());
@@ -280,7 +279,6 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
 
     PfsParameter localPfs = new PfsParameterJpa();
     localPfs.setStartIndex(0);
-    localPfs.setMaxResults(1000);
 
     WebTarget target =
         client.target(url + "/branches?" + "limit=" + localPfs.getMaxResults());
