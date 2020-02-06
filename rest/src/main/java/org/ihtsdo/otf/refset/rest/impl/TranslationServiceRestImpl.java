@@ -929,7 +929,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
           ioHandlerInfoId, user, in, workflowStatus, true);
 
     } catch (Exception e) {
-
+      handleException(e, "trying to import translations");
     } finally {
       securityService.close();
     }
@@ -974,7 +974,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
           handlerName, user, getHeaders(headers), workflowStatus, false);
 
     } catch (Exception e) {
-
+      handleException(e, "trying to import translations");
     } finally {
       securityService.close();
     }
