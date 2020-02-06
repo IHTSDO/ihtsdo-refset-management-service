@@ -61,21 +61,33 @@ public class ImportTranslationExcelHandler extends ImportExportAbstract
   private static final int TYPE = 5;
 
   /** The Constant LANGUAGE_REFERENCE_SET. */
-  // private static final int LANGUAGE_REFERENCE_SET = 6;
+  private static final int LANGUAGE_REFERENCE_SET = 6;
 
   /** The Constant ACCEPTABILITY. */
   private static final int ACCEPTABILITY = 7;
 
-  private Map<String,String> acceptibilityCodeMap = new HashMap<>();
-  
-  private Map<String,String> descriptionTypeCodeMap = new HashMap<>();
-  
-  private Map<String,String> caseSignificanceCodeMap = new HashMap<>();
+  private Map<Integer, String> columnIndexNameMap = new HashMap<>() {
+    {
+      put(0, "Concept ID");
+      put(1, "GB/US FSN Term");
+      put(2, "Translated Term");
+      put(3, "Language Code");
+      put(4, "Case significance");
+      put(5, "Type");
+      put(6, "Language reference set");
+      put(7, "Acceptability");
+    }
+  };
 
-  private Map<String,String> languageReferenceSetCodeMap = new HashMap<>();
+  private Map<String, String> acceptibilityCodeMap = new HashMap<>();
 
-  private Map<String,String> inactivationReasonCodeMap = new HashMap<>();
+  private Map<String, String> descriptionTypeCodeMap = new HashMap<>();
 
+  private Map<String, String> caseSignificanceCodeMap = new HashMap<>();
+
+  private Map<String, String> languageReferenceSetCodeMap = new HashMap<>();
+
+  private Map<String, String> inactivationReasonCodeMap = new HashMap<>();
 
   /** The request cancel flag. */
   boolean requestCancel = false;
@@ -101,36 +113,37 @@ public class ImportTranslationExcelHandler extends ImportExportAbstract
   private void populateCodeMaps() {
     acceptibilityCodeMap.put("PREFERRED", "900000000000548007");
     acceptibilityCodeMap.put("ACCEPTABLE", "900000000000549004");
-    
+
     descriptionTypeCodeMap.put("SYNONYM", "900000000000013009");
     descriptionTypeCodeMap.put("FSN", "900000000000003001");
-    
+
     caseSignificanceCodeMap.put("ci", "900000000000448009");
     caseSignificanceCodeMap.put("CS", "900000000000017005");
     caseSignificanceCodeMap.put("cI", "900000000000020002");
 
-    languageReferenceSetCodeMap.put("Belgian French","21000172104");
-    languageReferenceSetCodeMap.put("Belgian Dutch","31000172101");
-    languageReferenceSetCodeMap.put("GB English","900000000000508004");
-    languageReferenceSetCodeMap.put("US English","900000000000509007");
-    languageReferenceSetCodeMap.put("Irish","21000220103");
-    languageReferenceSetCodeMap.put("Danish","554461000005103");
-    languageReferenceSetCodeMap.put("Swiss German","2041000195100");
-    languageReferenceSetCodeMap.put("Swiss French","2021000195106");
-    languageReferenceSetCodeMap.put("Swiss Italian","2031000195108");
-    languageReferenceSetCodeMap.put("Norwegian Bokmål","61000202103");
-    languageReferenceSetCodeMap.put("Norwegian Nynorsk","91000202106");
-    languageReferenceSetCodeMap.put("Estonian","71000181105");
-    languageReferenceSetCodeMap.put("Swedish","46011000052107");
-    
-    inactivationReasonCodeMap.put("Not semantically equivalent","723278000");
-    inactivationReasonCodeMap.put("Outdated","900000000000483008");
-    inactivationReasonCodeMap.put("Erroneous","900000000000485001");
-    inactivationReasonCodeMap.put("Non-conformance to editorial policy","723277005");
-    inactivationReasonCodeMap.put("Duplicate","900000000000482003");
-    inactivationReasonCodeMap.put("Ambiguous","900000000000484000");
-    inactivationReasonCodeMap.put("Moved elsewhere","900000000000487009");
-    inactivationReasonCodeMap.put("Limited","900000000000486000");
+    languageReferenceSetCodeMap.put("Belgian French", "21000172104");
+    languageReferenceSetCodeMap.put("Belgian Dutch", "31000172101");
+    languageReferenceSetCodeMap.put("GB English", "900000000000508004");
+    languageReferenceSetCodeMap.put("US English", "900000000000509007");
+    languageReferenceSetCodeMap.put("Irish", "21000220103");
+    languageReferenceSetCodeMap.put("Danish", "554461000005103");
+    languageReferenceSetCodeMap.put("Swiss German", "2041000195100");
+    languageReferenceSetCodeMap.put("Swiss French", "2021000195106");
+    languageReferenceSetCodeMap.put("Swiss Italian", "2031000195108");
+    languageReferenceSetCodeMap.put("Norwegian Bokmål", "61000202103");
+    languageReferenceSetCodeMap.put("Norwegian Nynorsk", "91000202106");
+    languageReferenceSetCodeMap.put("Estonian", "71000181105");
+    languageReferenceSetCodeMap.put("Swedish", "46011000052107");
+
+    inactivationReasonCodeMap.put("Not semantically equivalent", "723278000");
+    inactivationReasonCodeMap.put("Outdated", "900000000000483008");
+    inactivationReasonCodeMap.put("Erroneous", "900000000000485001");
+    inactivationReasonCodeMap.put("Non-conformance to editorial policy",
+        "723277005");
+    inactivationReasonCodeMap.put("Duplicate", "900000000000482003");
+    inactivationReasonCodeMap.put("Ambiguous", "900000000000484000");
+    inactivationReasonCodeMap.put("Moved elsewhere", "900000000000487009");
+    inactivationReasonCodeMap.put("Limited", "900000000000486000");
   }
 
   /* see superclass */
@@ -218,6 +231,7 @@ public class ImportTranslationExcelHandler extends ImportExportAbstract
     validationResult = new ValidationResultJpa();
 
     int skippedDueToLanguageNotMatching = 0;
+    int skippedDueToMissingData = 0;
 
     /** The descriptions. */
     List<Description> descriptions = new ArrayList<>();
@@ -258,6 +272,25 @@ public class ImportTranslationExcelHandler extends ImportExportAbstract
           // 7. Language reference set - LANGUAGE_REFERENCE_SET - NOT used
           // 8. Acceptability - ACCEPTABILITY - used
 
+
+          boolean skipRow = false;
+          // Check for missing required data
+          for (int i = 0; i < columnIndexNameMap.size(); i++) {
+            // The language reference set column is not required.
+            if(i==LANGUAGE_REFERENCE_SET) {
+              continue;
+            }
+            if (row.getCell(i) == null) {
+                validationResult.addError("Required \"" + columnIndexNameMap.get(i) + "\" data missing for at least one row.");
+
+              skippedDueToMissingData++;
+              skipRow = true;
+            }
+          }
+          if (skipRow) {
+            continue;
+          }
+          
           // If excel language doesn't match translation's language, skip
           if (!translation.getLanguage()
               .equals(getCellValue(row, LANGUAGE_CODE))) {
@@ -273,11 +306,13 @@ public class ImportTranslationExcelHandler extends ImportExportAbstract
           description.setTerm(getCellValue(row, TRANSLATED_TERM));
           description.setTerminologyId(null);
           description.setLanguageCode(getCellValue(row, LANGUAGE_CODE));
-          description.setTypeId(descriptionTypeCodeMap.get(getCellValue(row, TYPE)));
-          String caseSignificanceString = getCellValue(row, CASE_SIGNIFIANCE);
-          String caseSignificanceId = caseSignificanceCodeMap.get(caseSignificanceString);
           description
-              .setCaseSignificanceId(caseSignificanceCodeMap.get(getCellValue(row, CASE_SIGNIFIANCE)));
+              .setTypeId(descriptionTypeCodeMap.get(getCellValue(row, TYPE)));
+          String caseSignificanceString = getCellValue(row, CASE_SIGNIFIANCE);
+          String caseSignificanceId =
+              caseSignificanceCodeMap.get(caseSignificanceString);
+          description.setCaseSignificanceId(
+              caseSignificanceCodeMap.get(getCellValue(row, CASE_SIGNIFIANCE)));
           description.setEffectiveTime(new Date());
 
           // Handle the concept the description is connected to
@@ -315,7 +350,8 @@ public class ImportTranslationExcelHandler extends ImportExportAbstract
           member.setRefsetId(translation.getRefset().getTerminologyId());
 
           // Language unique attributes
-          member.setAcceptabilityId(acceptibilityCodeMap.get(getCellValue(row, ACCEPTABILITY)));
+          member.setAcceptabilityId(
+              acceptibilityCodeMap.get(getCellValue(row, ACCEPTABILITY)));
 
           // Connect description and language refset member object
           member.setDescriptionId(description.getTerminologyId());
@@ -339,6 +375,10 @@ public class ImportTranslationExcelHandler extends ImportExportAbstract
         if (skippedDueToLanguageNotMatching > 0) {
           validationResult.addComment(skippedDueToLanguageNotMatching
               + " descriptions skipped: language code in file not same as translation language.");
+        }
+        if (skippedDueToMissingData > 0) {
+          validationResult.addComment(skippedDueToMissingData
+              + " descriptions skipped: missing required data");
         }
 
       } catch (Exception e) {
