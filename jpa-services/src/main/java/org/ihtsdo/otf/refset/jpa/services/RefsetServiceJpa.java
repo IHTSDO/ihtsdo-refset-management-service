@@ -1218,66 +1218,40 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
     /* see superclass */
     @Override
     public void run() {
-      // Note: using translation Service because translation concepts may need
-      // to be updated as well.
-      TranslationService translationService = null;
+      RefsetService refsetService = null;
       try {
         Logger.getLogger(RefsetServiceJpa.this.getClass())
             .info("Starting lookupMemberNamesThread - " + refsetId);
         // Initialize Process
         lookupProgressMap.put(refsetId, 0);
 
-        translationService = new TranslationServiceJpa();
+        refsetService = new RefsetServiceJpa();
 
         // Refset may not be ready yet in DB, wait for 250ms until ready
         Refset refset = null;
         int ms = 250;
         while (refset == null) {
           Thread.sleep(ms);
-          translationService.close();
-          translationService = new TranslationServiceJpa();
-          refset = translationService.getRefset(refsetId);
+          refsetService.close();
+          refsetService = new RefsetServiceJpa();
+          refset = refsetService.getRefset(refsetId);
           ms = (ms > 2000) ? ms + 2000 : ms * 2;
           if (ms > 60000) {
             Exception e =
                 new Exception("Unable to load refset after too many tries");
             ExceptionHandler.handleException(e,
                 "looking up refset member names - " + refsetId, null);
-            translationService.close();
+            refsetService.close();
             throw e;
           }
         }
 
         // Set last modified flag to false for this operation
-        translationService.setLastModifiedFlag(false);
-
-        // Find out if this refset is associated with any translations, and if
-        // so collect all of the already-translated concepts, so their names can
-        // be updated as well
-        refset = translationService.getRefset(refsetId);
-        List<Translation> associatedTranslations = refset.getTranslations();
-
-        Map<String, List<Long>> terminologyIdToTranslationConceptIds =
-            new HashMap<>();
-        for (Translation translation : associatedTranslations) {
-          for (Concept concept : translation.getConcepts()) {
-            if (terminologyIdToTranslationConceptIds
-                .get(concept.getTerminologyId()) == null) {
-              terminologyIdToTranslationConceptIds
-                  .put(concept.getTerminologyId(), new ArrayList<>());
-            }
-            List<Long> translationConceptIds =
-                terminologyIdToTranslationConceptIds
-                    .get(concept.getTerminologyId());
-            translationConceptIds.add(concept.getId());
-            terminologyIdToTranslationConceptIds
-                .put(concept.getTerminologyId(), translationConceptIds);
-          }
-        }
+        refsetService.setLastModifiedFlag(false);
 
         if (saveMembers) {
-          translationService.setTransactionPerOperation(false);
-          translationService.beginTransaction();
+          refsetService.setTransactionPerOperation(false);
+          refsetService.beginTransaction();
         }
 
         // Get the members
@@ -1303,30 +1277,33 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
               || member.getConceptName()
                   .equals(TerminologyHandler.UNABLE_TO_DETERMINE_NAME)) {
             member.setConceptName(TerminologyHandler.NAME_LOOKUP_IN_PROGRESS);
-            translationService.updateMember(member);
+            refsetService.updateMember(member);
             count++;
             if (count % RootService.commitCt == 0) {
-              translationService.commit();
-              translationService.clear();
-              translationService.beginTransaction();
+              refsetService.commit();
+              refsetService.clear();
+              refsetService.beginTransaction();
             }
             lookupMemberList.add(member);
           }
         }
-        translationService.commit();
-        translationService.clear();
-        translationService.beginTransaction();
+        refsetService.commit();
+        refsetService.clear();
+        refsetService.beginTransaction();
 
         Logger.getLogger(RefsetServiceJpa.this.getClass())
             .info("LOOKUP  members for lookup ct = " + lookupMemberList.size());
 
         int numberOfMembersToLookup = lookupMemberList.size();
 
+        final TerminologyHandler handler =
+            getTerminologyHandler(refset.getProject(), headers);
+        final String terminology = refset.getTerminology();
+        final String version = refset.getVersion();
+
         // If no members to lookup, go directly to concluding process
         if (numberOfMembersToLookup > 0) {
           int i = 0;
-          final String terminology = refset.getTerminology();
-          final String version = refset.getVersion();
 
           // Execute for all members
           boolean missingConcepts = false;
@@ -1339,9 +1316,6 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
             }
 
             final List<String> termIds = new ArrayList<>();
-
-            final TerminologyHandler handler =
-                getTerminologyHandler(refset.getProject(), headers);
 
             // If we're looking up synonyms, only lookup as many concepts per
             // batch as specified by the handler
@@ -1375,24 +1349,15 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
 
               // Reread the member as we don't know if it has changed
               if (saveMembers) {
-                final ConceptRefsetMember member = translationService
+                final ConceptRefsetMember member = refsetService
                     .getMember(memberMap.get(con.getTerminologyId()).getId());
                 member.setConceptName(con.getName());
                 member.setConceptActive(con.isActive());
                 if (lookupSynonyms) {
-                  populateMemberSynonyms(member, con, refset, translationService,
+                  populateMemberSynonyms(member, con, refset, refsetService,
                       handler);
                 }
-                translationService.updateMember(member);
-                
-                // Check for translated concepts as well
-                if(terminologyIdToTranslationConceptIds.get(con.getTerminologyId()) != null) {
-                  for(Long conceptId : terminologyIdToTranslationConceptIds.get(con.getTerminologyId())) {
-                    Concept concept = translationService.getConcept(conceptId);
-                    concept.setName(con.getName());
-                    translationService.updateConcept(concept);
-                  }
-                }
+                refsetService.updateMember(member);
               }
 
               // This is for an in-memory member, just update the object
@@ -1402,7 +1367,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
                 member.setConceptName(con.getName());
                 member.setConceptActive(con.isActive());
                 if (lookupSynonyms) {
-                  populateMemberSynonyms(member, con, refset, translationService,
+                  populateMemberSynonyms(member, con, refset, refsetService,
                       handler);
                 }
               }
@@ -1414,11 +1379,11 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
               // Reread the member as we don't know if it has changed
               if (saveMembers) {
                 final ConceptRefsetMember member =
-                    translationService.getMember(memberMap.get(termId).getId());
+                    refsetService.getMember(memberMap.get(termId).getId());
                 member.setConceptName(
                     TerminologyHandler.UNABLE_TO_DETERMINE_NAME);
                 member.setSynonyms(null);
-                translationService.updateMember(member);
+                refsetService.updateMember(member);
 
               }
 
@@ -1437,21 +1402,77 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
               lookupProgressMap.put(refsetId,
                   (int) ((100.0 * i) / numberOfMembersToLookup));
               if (saveMembers) {
-                translationService.commit();
-                translationService.clear();
-                translationService.beginTransaction();
+                refsetService.commit();
+                refsetService.clear();
+                refsetService.beginTransaction();
               }
             }
           }
         }
 
+        // Find out if this refset is associated with any translations, and if
+        // so collect all of the already-translated concepts, so their names can
+        // be updated as well
+        if (refset.getTranslations() != null) {
+
+          TranslationService translationService = new TranslationServiceJpa();
+          translationService.setTransactionPerOperation(false);
+          translationService.beginTransaction();
+
+          refset = translationService.getRefset(refsetId);
+          List<Translation> associatedTranslations = refset.getTranslations();
+
+          Map<String, List<Long>> terminologyIdToTranslationConceptIds =
+              new HashMap<>();
+          for (Translation translation : associatedTranslations) {
+            for (Concept concept : translation.getConcepts()) {
+              if (terminologyIdToTranslationConceptIds
+                  .get(concept.getTerminologyId()) == null) {
+                terminologyIdToTranslationConceptIds
+                    .put(concept.getTerminologyId(), new ArrayList<>());
+              }
+              List<Long> translationConceptIds =
+                  terminologyIdToTranslationConceptIds
+                      .get(concept.getTerminologyId());
+              translationConceptIds.add(concept.getId());
+              terminologyIdToTranslationConceptIds
+                  .put(concept.getTerminologyId(), translationConceptIds);
+            }
+          }
+
+          // Also store terminologyIds as list (for use in lookup later)
+          List<String> translationConceptTerminologyIds = new ArrayList<>();
+          for (String id : terminologyIdToTranslationConceptIds.keySet()) {
+            translationConceptTerminologyIds.add(id);
+          }
+
+          final ConceptList translationCons = handler.getConcepts(
+              translationConceptTerminologyIds, terminology, version, false);
+
+          // Update translation concept names
+          for (final Concept con : translationCons.getObjects()) {
+            if (terminologyIdToTranslationConceptIds
+                .get(con.getTerminologyId()) != null) {
+              for (Long conceptId : terminologyIdToTranslationConceptIds
+                  .get(con.getTerminologyId())) {
+                Concept concept = translationService.getConcept(conceptId);
+                concept.setName(con.getName());
+                translationService.updateConcept(concept);
+              }
+            }
+          }
+
+          translationService.commit();
+          translationService.close();
+        }
+
         // Conclude process (reread refset)
-        refset = translationService.getRefset(refsetId);
+        refset = refsetService.getRefset(refsetId);
         if (saveMembers && !lookupCanceled) {
           refset.setLookupInProgress(false);
           refset.setLookupRequired(false);
-          translationService.updateRefset(refset);
-          translationService.commit();
+          refsetService.updateRefset(refset);
+          refsetService.commit();
         }
         lookupProgressMap.remove(refsetId);
 
@@ -1464,28 +1485,28 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
 
         lookupProgressMap.put(refsetId, LOOKUP_CANCELLED_CODE);
         try {
-          translationService.commitClearBegin();
-          Refset refset = translationService.getRefset(refsetId);
+          refsetService.commitClearBegin();
+          Refset refset = refsetService.getRefset(refsetId);
 
           int count = 0;
           for (final ConceptRefsetMember member : refset.getMembers()) {
             if (member.getConceptName()
                 .equals(TerminologyHandler.NAME_LOOKUP_IN_PROGRESS)) {
               member.setConceptName(TerminologyHandler.REQUIRES_NAME_LOOKUP);
-              translationService.updateMember(member);
+              refsetService.updateMember(member);
               count++;
               if (count % RootService.commitCt == 0) {
-                translationService.commit();
-                translationService.clear();
-                translationService.beginTransaction();
+                refsetService.commit();
+                refsetService.clear();
+                refsetService.beginTransaction();
               }
             }
           }
 
           refset.setLookupRequired(true);
           refset.setLookupInProgress(false);
-          translationService.updateRefset(refset);
-          translationService.commit();
+          refsetService.updateRefset(refset);
+          refsetService.commit();
 
         } catch (Exception e2) {
           // n/a
@@ -1498,35 +1519,35 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
         }
         lookupProgressMap.put(refsetId, LOOKUP_ERROR_CODE);
         try {
-          translationService.commitClearBegin();
-          Refset refset = translationService.getRefset(refsetId);
+          refsetService.commitClearBegin();
+          Refset refset = refsetService.getRefset(refsetId);
 
           int count = 0;
           for (final ConceptRefsetMember member : refset.getMembers()) {
             if (member.getConceptName()
                 .equals(TerminologyHandler.NAME_LOOKUP_IN_PROGRESS)) {
               member.setConceptName(TerminologyHandler.REQUIRES_NAME_LOOKUP);
-              translationService.updateMember(member);
+              refsetService.updateMember(member);
               count++;
               if (count % RootService.commitCt == 0) {
-                translationService.commit();
-                translationService.clear();
-                translationService.beginTransaction();
+                refsetService.commit();
+                refsetService.clear();
+                refsetService.beginTransaction();
               }
             }
           }
 
           refset.setLookupRequired(true);
           refset.setLookupInProgress(false);
-          translationService.updateRefset(refset);
-          translationService.commit();
+          refsetService.updateRefset(refset);
+          refsetService.commit();
         } catch (Exception e2) {
           // n/a
         }
       } finally {
         lookupThreadsMap.remove(refsetId);
         try {
-          translationService.close();
+          refsetService.close();
         } catch (Exception e) {
           // n/a
         }
