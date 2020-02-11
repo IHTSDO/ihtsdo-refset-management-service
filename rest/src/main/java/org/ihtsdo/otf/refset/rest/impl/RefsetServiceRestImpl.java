@@ -2458,6 +2458,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
           stagedMember.setRefset(originRefset);
           stagedMember.setLastModifiedBy(userName);
           refsetService.updateMember(stagedMember);
+          
+          // Also explicitly add the new member to the refset, so it can be handled correctly by the name lookup
+          refset.addMember(stagedMember);
         } else if (originMember != null && stagedMember.getMemberType()
             .getUnstagedType() != originMember.getMemberType()) {
           // This was already handled in the prior section, do nothing
@@ -2506,7 +2509,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
 //      refsetService.handleLazyInit(refset);
       
       int count = 0;
-      for (ConceptRefsetMember member : refset.getMembers()) {
+      for (ConceptRefsetMember member : refset.getMembers()) {  
         member.setConceptName(TerminologyHandler.REQUIRES_NAME_LOOKUP);
         refsetService.updateMember(member);
         count++;
