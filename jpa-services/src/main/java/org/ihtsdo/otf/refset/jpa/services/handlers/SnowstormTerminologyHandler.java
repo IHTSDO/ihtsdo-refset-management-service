@@ -132,7 +132,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
   private String genericUserCookie = null;
 
   /** The max batch lookup size. */
-  private int maxBatchLookupSize = 10;
+  private int maxBatchLookupSize = 100;
 
   /* see superclass */
   @Override
@@ -900,23 +900,835 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
   public ConceptList getConcepts(List<String> terminologyIds,
     String terminology, String version, boolean descriptions) throws Exception {
 
+    // If descriptions are needed, use the browser /concepts API endpoint    
     if (descriptions) {
-      ConceptList conceptList = new ConceptListJpa();
-      for (String terminologyId : terminologyIds) {
-        if (Thread.interrupted()) {
-          throw new InterruptedException("User cancelled the lookup");
-        }
 
-        try {
-          conceptList
-              .addObject(getFullConcept(terminologyId, terminology, version));
-        } catch (Exception e) {
-          Logger.getLogger(getClass()).error(
-              "Failed to get concept " + terminologyId + ". " + e.getMessage());
+      // Make a webservice call to SnowOwl to get concept
+      final Client client = ClientBuilder.newClient();
+
+      PfsParameter localPfs = new PfsParameterJpa();
+
+      if (localPfs.getStartIndex() == -1) {
+        localPfs.setStartIndex(0);
+        localPfs.setMaxResults(Integer.MAX_VALUE);
+      }
+
+      // Start by just getting first 200, then check how many remaining ones there
+      // are
+      // and make a second call if needed
+      final int initialMaxLimit = 100;
+
+      final StringBuilder query = new StringBuilder();
+      for (final String terminologyId : terminologyIds) {
+        // Only lookup stuff with actual digits
+        if (terminologyId.matches("[0-9]*")) {
+          if (query.length() != 0) {
+            query.append(",");
+          }
+          query.append(terminologyId);
         }
       }
-      return conceptList;
-    } else {
+      String expr = query.toString();
+      
+      WebTarget target = client.target(url + "/browser/" + version + "/concepts?conceptIds="
+          + URLEncoder.encode(expr, "UTF-8").replaceAll(" ", "%20") + "&limit="
+          + Math.min(initialMaxLimit, localPfs.getMaxResults()));
+      Logger.getLogger(getClass())
+          .info(url + "/browser/" + version + "/concepts?conceptIds="
+              + URLEncoder.encode(expr, "UTF-8").replaceAll(" ", "%20")
+              + "&limit=" + Math.min(initialMaxLimit, localPfs.getMaxResults()));
+
+      Response response = target.request(accept)
+          .header("Authorization", authHeader)
+          .header("Accept-Language", getAcceptLanguage(terminology, version))
+          .header("Cookie",
+              genericUserCookie != null ? genericUserCookie : getCookieHeader())
+          .get();
+
+      String resultString = response.readEntity(String.class);
+      if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+        // n/a
+      } else {
+
+        // Here's the messy part about trying to parse the return error message
+        if (resultString.contains("loop did not match anything")) {
+          return new ConceptListJpa();
+        }
+
+        throw new LocalException(
+            "Unexpected terminology server failure. Message = " + resultString);
+      }
+
+      /**
+       * <pre>
+       * 
+       * {
+       *   "items": [
+       *     {
+       *       "conceptId": "12738006",
+       *       "fsn": {
+       *         "term": "Brain structure (body structure)",
+       *         "lang": "en"
+       *       },
+       *       "pt": {
+       *         "term": "Brain structure",
+       *         "lang": "en"
+       *       },
+       *       "active": true,
+       *       "effectiveTime": "20020131",
+       *       "released": true,
+       *       "releasedEffectiveTime": 20020131,
+       *       "moduleId": "900000000000207008",
+       *       "definitionStatus": "PRIMITIVE",
+       *       "descriptions": [
+       *         {
+       *           "active": true,
+       *           "released": true,
+       *           "releasedEffectiveTime": 20170731,
+       *           "descriptionId": "21867017",
+       *           "term": "Brain",
+       *           "conceptId": "12738006",
+       *           "moduleId": "900000000000207008",
+       *           "typeId": "900000000000013009",
+       *           "acceptabilityMap": {
+       *             "900000000000509007": "ACCEPTABLE",
+       *             "900000000000508004": "ACCEPTABLE"
+       *           },
+       *           "type": "SYNONYM",
+       *           "lang": "en",
+       *           "caseSignificance": "CASE_INSENSITIVE",
+       *           "effectiveTime": "20170731"
+       *         },
+       *         {
+       *           "active": true,
+       *           "released": true,
+       *           "releasedEffectiveTime": 20170731,
+       *           "descriptionId": "474135016",
+       *           "term": "Brain structure",
+       *           "conceptId": "12738006",
+       *           "moduleId": "900000000000207008",
+       *           "typeId": "900000000000013009",
+       *           "acceptabilityMap": {
+       *             "900000000000509007": "PREFERRED",
+       *             "900000000000508004": "PREFERRED"
+       *           },
+       *           "type": "SYNONYM",
+       *           "lang": "en",
+       *           "caseSignificance": "CASE_INSENSITIVE",
+       *           "effectiveTime": "20170731"
+       *         },
+       *         {
+       *           "active": false,
+       *           "released": true,
+       *           "releasedEffectiveTime": 20020131,
+       *           "descriptionId": "21868010",
+       *           "term": "Brain, NOS",
+       *           "conceptId": "12738006",
+       *           "moduleId": "900000000000207008",
+       *           "typeId": "900000000000013009",
+       *           "acceptabilityMap": {},
+       *           "type": "SYNONYM",
+       *           "lang": "en",
+       *           "caseSignificance": "INITIAL_CHARACTER_CASE_INSENSITIVE",
+       *           "effectiveTime": "20020131"
+       *         },
+       *         {
+       *           "active": true,
+       *           "released": true,
+       *           "releasedEffectiveTime": 20170731,
+       *           "descriptionId": "731463013",
+       *           "term": "Brain structure (body structure)",
+       *           "conceptId": "12738006",
+       *           "moduleId": "900000000000207008",
+       *           "typeId": "900000000000003001",
+       *           "acceptabilityMap": {
+       *             "900000000000509007": "PREFERRED",
+       *             "900000000000508004": "PREFERRED"
+       *           },
+       *           "type": "FSN",
+       *           "lang": "en",
+       *           "caseSignificance": "CASE_INSENSITIVE",
+       *           "effectiveTime": "20170731"
+       *         }
+       *       ],
+       *       "classAxioms": [
+       *         {
+       *           "axiomId": "aefb8ac7-0451-4621-a206-448df8ba791d",
+       *           "moduleId": "900000000000207008",
+       *           "active": true,
+       *           "released": true,
+       *           "definitionStatusId": "900000000000074008",
+       *           "relationships": [
+       *             {
+       *               "active": true,
+       *               "released": false,
+       *               "moduleId": "900000000000207008",
+       *               "sourceId": "12738006",
+       *               "destinationId": "389079005",
+       *               "typeId": "116680003",
+       *               "type": {
+       *                 "conceptId": "116680003",
+       *                 "definitionStatus": "PRIMITIVE",
+       *                 "pt": {
+       *                   "term": "Is a",
+       *                   "lang": "en"
+       *                 },
+       *                 "fsn": {
+       *                   "term": "Is a (attribute)",
+       *                   "lang": "en"
+       *                 },
+       *                 "id": "116680003"
+       *               },
+       *               "target": {
+       *                 "conceptId": "389079005",
+       *                 "definitionStatus": "PRIMITIVE",
+       *                 "pt": {
+       *                   "term": "Brain and spinal cord structure",
+       *                   "lang": "en"
+       *                 },
+       *                 "fsn": {
+       *                   "term": "Brain and spinal cord structure (body structure)",
+       *                   "lang": "en"
+       *                 },
+       *                 "id": "389079005"
+       *               },
+       *               "groupId": 0,
+       *               "modifier": "EXISTENTIAL",
+       *               "characteristicType": "STATED_RELATIONSHIP"
+       *             },
+       *             {
+       *               "active": true,
+       *               "released": false,
+       *               "moduleId": "900000000000207008",
+       *               "sourceId": "12738006",
+       *               "destinationId": "128319008",
+       *               "typeId": "116680003",
+       *               "type": {
+       *                 "conceptId": "116680003",
+       *                 "definitionStatus": "PRIMITIVE",
+       *                 "pt": {
+       *                   "term": "Is a",
+       *                   "lang": "en"
+       *                 },
+       *                 "fsn": {
+       *                   "term": "Is a (attribute)",
+       *                   "lang": "en"
+       *                 },
+       *                 "id": "116680003"
+       *               },
+       *               "target": {
+       *                 "conceptId": "128319008",
+       *                 "definitionStatus": "PRIMITIVE",
+       *                 "pt": {
+       *                   "term": "Intracranial structure",
+       *                   "lang": "en"
+       *                 },
+       *                 "fsn": {
+       *                   "term": "Intracranial structure (body structure)",
+       *                   "lang": "en"
+       *                 },
+       *                 "id": "128319008"
+       *               },
+       *               "groupId": 0,
+       *               "modifier": "EXISTENTIAL",
+       *               "characteristicType": "STATED_RELATIONSHIP"
+       *             }
+       *           ],
+       *           "definitionStatus": "PRIMITIVE",
+       *           "id": "aefb8ac7-0451-4621-a206-448df8ba791d",
+       *           "effectiveTime": 20190731
+       *         }
+       *       ],
+       *       "gciAxioms": [],
+       *       "relationships": [
+       *         {
+       *           "active": true,
+       *           "released": true,
+       *           "releasedEffectiveTime": 20030131,
+       *           "relationshipId": "1921720020",
+       *           "moduleId": "900000000000207008",
+       *           "sourceId": "12738006",
+       *           "destinationId": "389079005",
+       *           "typeId": "116680003",
+       *           "type": {
+       *             "conceptId": "116680003",
+       *             "definitionStatus": "PRIMITIVE",
+       *             "pt": {
+       *               "term": "Is a",
+       *               "lang": "en"
+       *             },
+       *             "fsn": {
+       *               "term": "Is a (attribute)",
+       *               "lang": "en"
+       *             },
+       *             "id": "116680003"
+       *           },
+       *           "target": {
+       *             "conceptId": "389079005",
+       *             "definitionStatus": "PRIMITIVE",
+       *             "pt": {
+       *               "term": "Brain and spinal cord structure",
+       *               "lang": "en"
+       *             },
+       *             "fsn": {
+       *               "term": "Brain and spinal cord structure (body structure)",
+       *               "lang": "en"
+       *             },
+       *             "id": "389079005"
+       *           },
+       *           "groupId": 0,
+       *           "modifier": "EXISTENTIAL",
+       *           "characteristicType": "INFERRED_RELATIONSHIP",
+       *           "effectiveTime": "20030131",
+       *           "id": "1921720020"
+       *         },
+       *         {
+       *           "active": true,
+       *           "released": true,
+       *           "releasedEffectiveTime": 20020131,
+       *           "relationshipId": "162310025",
+       *           "moduleId": "900000000000207008",
+       *           "sourceId": "12738006",
+       *           "destinationId": "128319008",
+       *           "typeId": "116680003",
+       *           "type": {
+       *             "conceptId": "116680003",
+       *             "definitionStatus": "PRIMITIVE",
+       *             "pt": {
+       *               "term": "Is a",
+       *               "lang": "en"
+       *             },
+       *             "fsn": {
+       *               "term": "Is a (attribute)",
+       *               "lang": "en"
+       *             },
+       *             "id": "116680003"
+       *           },
+       *           "target": {
+       *             "conceptId": "128319008",
+       *             "definitionStatus": "PRIMITIVE",
+       *             "pt": {
+       *               "term": "Intracranial structure",
+       *               "lang": "en"
+       *             },
+       *             "fsn": {
+       *               "term": "Intracranial structure (body structure)",
+       *               "lang": "en"
+       *             },
+       *             "id": "128319008"
+       *           },
+       *           "groupId": 0,
+       *           "modifier": "EXISTENTIAL",
+       *           "characteristicType": "INFERRED_RELATIONSHIP",
+       *           "effectiveTime": "20020131",
+       *           "id": "162310025"
+       *         },
+       *         {
+       *           "active": false,
+       *           "released": true,
+       *           "releasedEffectiveTime": 20190731,
+       *           "relationshipId": "3971289022",
+       *           "moduleId": "900000000000207008",
+       *           "sourceId": "12738006",
+       *           "destinationId": "389079005",
+       *           "typeId": "116680003",
+       *           "type": {
+       *             "conceptId": "116680003",
+       *             "definitionStatus": "PRIMITIVE",
+       *             "pt": {
+       *               "term": "Is a",
+       *               "lang": "en"
+       *             },
+       *             "fsn": {
+       *               "term": "Is a (attribute)",
+       *               "lang": "en"
+       *             },
+       *             "id": "116680003"
+       *           },
+       *           "target": {
+       *             "conceptId": "389079005",
+       *             "definitionStatus": "PRIMITIVE",
+       *             "pt": {
+       *               "term": "Brain and spinal cord structure",
+       *               "lang": "en"
+       *             },
+       *             "fsn": {
+       *               "term": "Brain and spinal cord structure (body structure)",
+       *               "lang": "en"
+       *             },
+       *             "id": "389079005"
+       *           },
+       *           "groupId": 0,
+       *           "modifier": "EXISTENTIAL",
+       *           "characteristicType": "STATED_RELATIONSHIP",
+       *           "effectiveTime": "20190731",
+       *           "id": "3971289022"
+       *         },
+       *         {
+       *           "active": false,
+       *           "released": true,
+       *           "releasedEffectiveTime": 20190731,
+       *           "relationshipId": "3971290029",
+       *           "moduleId": "900000000000207008",
+       *           "sourceId": "12738006",
+       *           "destinationId": "128319008",
+       *           "typeId": "116680003",
+       *           "type": {
+       *             "conceptId": "116680003",
+       *             "definitionStatus": "PRIMITIVE",
+       *             "pt": {
+       *               "term": "Is a",
+       *               "lang": "en"
+       *             },
+       *             "fsn": {
+       *               "term": "Is a (attribute)",
+       *               "lang": "en"
+       *             },
+       *             "id": "116680003"
+       *           },
+       *           "target": {
+       *             "conceptId": "128319008",
+       *             "definitionStatus": "PRIMITIVE",
+       *             "pt": {
+       *               "term": "Intracranial structure",
+       *               "lang": "en"
+       *             },
+       *             "fsn": {
+       *               "term": "Intracranial structure (body structure)",
+       *               "lang": "en"
+       *             },
+       *             "id": "128319008"
+       *           },
+       *           "groupId": 0,
+       *           "modifier": "EXISTENTIAL",
+       *           "characteristicType": "STATED_RELATIONSHIP",
+       *           "effectiveTime": "20190731",
+       *           "id": "3971290029"
+       *         },
+       *         {
+       *           "active": false,
+       *           "released": true,
+       *           "releasedEffectiveTime": 20190131,
+       *           "relationshipId": "695938020",
+       *           "moduleId": "900000000000207008",
+       *           "sourceId": "12738006",
+       *           "destinationId": "278199004",
+       *           "typeId": "123005000",
+       *           "type": {
+       *             "conceptId": "123005000",
+       *             "definitionStatus": "PRIMITIVE",
+       *             "pt": {
+       *               "term": "Part of",
+       *               "lang": "en"
+       *             },
+       *             "fsn": {
+       *               "term": "Part of (attribute)",
+       *               "lang": "en"
+       *             },
+       *             "id": "123005000"
+       *           },
+       *           "target": {
+       *             "conceptId": "278199004",
+       *             "definitionStatus": "PRIMITIVE",
+       *             "pt": {
+       *               "term": "Entire central nervous system",
+       *               "lang": "en"
+       *             },
+       *             "fsn": {
+       *               "term": "Entire central nervous system (body structure)",
+       *               "lang": "en"
+       *             },
+       *             "id": "278199004"
+       *           },
+       *           "groupId": 0,
+       *           "modifier": "EXISTENTIAL",
+       *           "characteristicType": "ADDITIONAL_RELATIONSHIP",
+       *           "effectiveTime": "20190131",
+       *           "id": "695938020"
+       *         },
+       *         {
+       *           "active": false,
+       *           "released": true,
+       *           "releasedEffectiveTime": 20190131,
+       *           "relationshipId": "695937026",
+       *           "moduleId": "900000000000207008",
+       *           "sourceId": "12738006",
+       *           "destinationId": "264452006",
+       *           "typeId": "123005000",
+       *           "type": {
+       *             "conceptId": "123005000",
+       *             "definitionStatus": "PRIMITIVE",
+       *             "pt": {
+       *               "term": "Part of",
+       *               "lang": "en"
+       *             },
+       *             "fsn": {
+       *               "term": "Part of (attribute)",
+       *               "lang": "en"
+       *             },
+       *             "id": "123005000"
+       *           },
+       *           "target": {
+       *             "conceptId": "264452006",
+       *             "definitionStatus": "PRIMITIVE",
+       *             "pt": {
+       *               "term": "Entire cranial cavity",
+       *               "lang": "en"
+       *             },
+       *             "fsn": {
+       *               "term": "Entire cranial cavity (body structure)",
+       *               "lang": "en"
+       *             },
+       *             "id": "264452006"
+       *           },
+       *           "groupId": 0,
+       *           "modifier": "EXISTENTIAL",
+       *           "characteristicType": "ADDITIONAL_RELATIONSHIP",
+       *           "effectiveTime": "20190131",
+       *           "id": "695937026"
+       *         }
+       *       ]
+       *     }
+       *     .
+       *     .
+       *     .
+       *   ],
+       *   "total": 2,
+       *   "limit": 100,
+       *   "offset": 0,
+       *   "searchAfter": "WyIyOTk0MDA0Il0=",
+       *   "searchAfterArray": [
+       *     "2994004"
+       *   ]
+       * }
+       * </pre>
+       */
+
+      ConceptList conceptList = new ConceptListJpa();
+      ObjectMapper mapper = new ObjectMapper();
+      JsonNode doc = mapper.readTree(resultString);
+
+      // get total amount
+      final int total = doc.get("total").asInt();
+      // Get concepts returned in this call (up to 100)
+      if (doc.get("items") == null) {
+        return conceptList;
+      }
+      String searchAfter = "";
+      if (doc.findValue("searchAfter") != null) {
+        searchAfter = doc.findValue("searchAfter").asText();
+      }
+      for (final JsonNode conceptNode : doc.get("items")) {
+        final Concept concept = new ConceptJpa();
+
+        concept.setActive(conceptNode.get("active").asText().equals("true"));
+        concept.setTerminologyId(conceptNode.get("conceptId").asText());
+        if (conceptNode.has("effectiveTime")) {
+          concept.setLastModified(ConfigUtility.DATE_FORMAT
+              .parse(conceptNode.get("effectiveTime").asText()));
+        } else {
+          concept.setLastModified(new Date());
+        }
+        concept.setLastModifiedBy(terminology);
+        concept.setModuleId(conceptNode.get("moduleId").asText());
+        concept
+            .setDefinitionStatusId(conceptNode.get("definitionStatus").asText());
+
+        // pt.term is the name
+        if (conceptNode.get("pt") != null) {
+          concept.setName(conceptNode.get("pt").get("term").asText());
+        } else {
+          concept.setName(UNABLE_TO_DETERMINE_NAME);
+        }
+
+        concept.setPublishable(true);
+        concept.setPublished(true);
+
+        conceptList.addObject(concept);
+
+        if (conceptNode.get("descriptions") != null) {
+          for (final JsonNode desc : conceptNode.get("descriptions")) {
+            final Description description = new DescriptionJpa();
+
+            description.setActive(desc.get("active").asText().equals("true"));
+
+            description
+                .setCaseSignificanceId(desc.get("caseSignificance").asText());
+
+            description.setConcept(concept);
+            if (desc.has("effectiveTime")) {
+              description.setEffectiveTime(ConfigUtility.DATE_FORMAT
+                  .parse(desc.get("effectiveTime").asText()));
+              description.setLastModified(description.getEffectiveTime());
+            } else {
+              description.setLastModified(new Date());
+            }
+            description.setLanguageCode(desc.get("lang").asText());
+            description.setLastModifiedBy(terminology);
+            description.setModuleId(desc.get("moduleId").asText());
+            description.setPublishable(true);
+            description.setPublished(true);
+            description.setTerm(desc.get("term").asText());
+            description.setTerminologyId(desc.get("descriptionId").asText());
+
+            description.setTypeId(desc.get("typeId").asText());
+
+            if (description.isActive()) {
+              for (final JsonNode language : desc.findValues("acceptabilityMap")) {
+                final LanguageRefsetMember member = new LanguageRefsetMemberJpa();
+                member.setActive(true);
+                member.setDescriptionId(concept.getTerminologyId());
+                String key = language.fieldNames().next();
+                member.setRefsetId(key);
+                member.setAcceptabilityId(language.get(key).asText());
+                if (member.getAcceptabilityId().equals("PREFERRED")) {
+                  member.setAcceptabilityId("900000000000548007");
+                } else if (member.getAcceptabilityId().equals("ACCEPTABLE")) {
+                  member.setAcceptabilityId("900000000000549004");
+                }
+                description.getLanguageRefsetMembers().add(member);
+              }
+            }
+
+            concept.getDescriptions().add(description);
+          }
+        }
+        
+        if (doc.get("relationships") != null) {
+          for (final JsonNode relNode : doc.get("relationships")) {
+            final Relationship rel = new RelationshipJpa();
+
+            rel.setActive(relNode.get("active").asText().equals("true"));
+            // Skip inactive descriptions
+            if (!rel.isActive()) {
+              continue;
+            }
+
+            rel.setCharacteristicTypeId(relNode.get("characteristicType").asText());
+            // Only keep INFERRED_RELATIONSHIP rels
+            if (!rel.getCharacteristicTypeId().equals("INFERRED_RELATIONSHIP")) {
+              continue;
+            }
+            rel.setModifierId(relNode.get("modifier").asText());
+            rel.setRelationshipGroup(
+                Integer.valueOf(relNode.get("groupId").asText()));
+            if (relNode.has("effectiveTime")) {
+              rel.setEffectiveTime(ConfigUtility.DATE_FORMAT
+                  .parse(relNode.get("effectiveTime").asText()));
+              rel.setLastModified(rel.getEffectiveTime());
+            } else {
+              rel.setLastModified(new Date());
+            }
+            rel.setModuleId(relNode.get("moduleId").asText());
+            rel.setTypeId(relNode.get("type").get("fsn").get("term").asText()
+                .replaceFirst(" \\([a-zA-Z0-9 ]*\\)", ""));
+            // Skip "isa" rels
+            if (rel.getTypeId().equals("Is a")) {
+              continue;
+            }
+
+            rel.setSourceConcept(concept);
+            rel.setLastModifiedBy(terminology);
+            rel.setPublishable(true);
+            rel.setPublished(true);
+            rel.setTerminologyId(relNode.get("relationshipId").asText());
+
+            final Concept destination = new ConceptJpa();
+            destination
+                .setTerminologyId(relNode.get("target").get("conceptId").asText());
+            // Reuse as id if only digits, otherwise dummy id
+            if (destination.getTerminologyId().matches("^\\d+$")) {
+              destination.setId(Long.parseLong(destination.getTerminologyId()));
+            } else {
+              destination.setId(1L);
+            }
+            destination
+                .setName(relNode.get("target").get("fsn").get("term").asText());
+            destination.setDefinitionStatusId(
+                relNode.get("target").get("definitionStatus").asText());
+            rel.setDestinationConcept(destination);
+
+            concept.getRelationships().add(rel);
+          }
+        }        
+        
+      }
+
+      // If the total is over the initial max limit and pfs max results is too.
+      if (total > initialMaxLimit && localPfs.getMaxResults() > initialMaxLimit) {
+        target = client.target(url + "/browser/" + version + "/concepts?conceptIds="
+            + URLEncoder.encode(expr, "UTF-8").replaceAll(" ", "%20") + "&limit="
+            + (total - initialMaxLimit) + "&searchAfter=" + searchAfter);
+        Logger.getLogger(getClass())
+        .info(url + "/browser/" + version + "/concepts?conceptIds="
+            + URLEncoder.encode(expr, "UTF-8").replaceAll(" ", "%20")
+            + "&limit=" + (total - initialMaxLimit)  + "&searchAfter=" + searchAfter);
+        
+        response = target.request(accept).header("Authorization", authHeader)
+            .header("Accept-Language", getAcceptLanguage(terminology, version))
+            .header("Cookie",
+                genericUserCookie != null ? genericUserCookie : getCookieHeader())
+            .get();
+        resultString = response.readEntity(String.class);
+        if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+          // n/a
+        } else {
+          throw new LocalException(
+              "Unexpected terminology server failure. Message = " + resultString);
+        }
+        
+        mapper = new ObjectMapper();
+        doc = mapper.readTree(resultString);
+        // get total amount
+        // Get concepts returned in this call (up to 100)
+        if (doc.get("items") == null) {
+          return conceptList;
+        }
+        
+        for (final JsonNode conceptNode : doc.get("items")) {
+          final Concept concept = new ConceptJpa();
+
+          concept.setActive(conceptNode.get("active").asText().equals("true"));
+          concept.setTerminologyId(conceptNode.get("conceptId").asText());
+          if (conceptNode.has("effectiveTime")) {
+            concept.setLastModified(ConfigUtility.DATE_FORMAT
+                .parse(conceptNode.get("effectiveTime").asText()));
+          } else {
+            concept.setLastModified(new Date());
+          }
+          concept.setLastModifiedBy(terminology);
+          concept.setModuleId(conceptNode.get("moduleId").asText());
+          concept
+              .setDefinitionStatusId(conceptNode.get("definitionStatus").asText());
+
+          // pt.term is the name
+          if (conceptNode.get("pt") != null) {
+            concept.setName(conceptNode.get("pt").get("term").asText());
+          } else {
+            concept.setName(UNABLE_TO_DETERMINE_NAME);
+          }
+
+          concept.setPublishable(true);
+          concept.setPublished(true);
+
+          conceptList.addObject(concept);
+
+          if (conceptNode.get("descriptions") != null) {
+            for (final JsonNode desc : conceptNode.get("descriptions")) {
+              final Description description = new DescriptionJpa();
+
+              description.setActive(desc.get("active").asText().equals("true"));
+
+              description
+                  .setCaseSignificanceId(desc.get("caseSignificance").asText());
+
+              description.setConcept(concept);
+              if (desc.has("effectiveTime")) {
+                description.setEffectiveTime(ConfigUtility.DATE_FORMAT
+                    .parse(desc.get("effectiveTime").asText()));
+                description.setLastModified(description.getEffectiveTime());
+              } else {
+                description.setLastModified(new Date());
+              }
+              description.setLanguageCode(desc.get("lang").asText());
+              description.setLastModifiedBy(terminology);
+              description.setModuleId(desc.get("moduleId").asText());
+              description.setPublishable(true);
+              description.setPublished(true);
+              description.setTerm(desc.get("term").asText());
+              description.setTerminologyId(desc.get("descriptionId").asText());
+
+              description.setTypeId(desc.get("typeId").asText());
+
+              if (description.isActive()) {
+                for (final JsonNode language : desc.findValues("acceptabilityMap")) {
+                  final LanguageRefsetMember member = new LanguageRefsetMemberJpa();
+                  member.setActive(true);
+                  member.setDescriptionId(concept.getTerminologyId());
+                  String key = language.fieldNames().next();
+                  member.setRefsetId(key);
+                  member.setAcceptabilityId(language.get(key).asText());
+                  if (member.getAcceptabilityId().equals("PREFERRED")) {
+                    member.setAcceptabilityId("900000000000548007");
+                  } else if (member.getAcceptabilityId().equals("ACCEPTABLE")) {
+                    member.setAcceptabilityId("900000000000549004");
+                  }
+                  description.getLanguageRefsetMembers().add(member);
+                }
+              }
+
+              concept.getDescriptions().add(description);
+            }
+          }
+          
+          if (doc.get("relationships") != null) {
+            for (final JsonNode relNode : doc.get("relationships")) {
+              final Relationship rel = new RelationshipJpa();
+
+              rel.setActive(relNode.get("active").asText().equals("true"));
+              // Skip inactive descriptions
+              if (!rel.isActive()) {
+                continue;
+              }
+
+              rel.setCharacteristicTypeId(relNode.get("characteristicType").asText());
+              // Only keep INFERRED_RELATIONSHIP rels
+              if (!rel.getCharacteristicTypeId().equals("INFERRED_RELATIONSHIP")) {
+                continue;
+              }
+              rel.setModifierId(relNode.get("modifier").asText());
+              rel.setRelationshipGroup(
+                  Integer.valueOf(relNode.get("groupId").asText()));
+              if (relNode.has("effectiveTime")) {
+                rel.setEffectiveTime(ConfigUtility.DATE_FORMAT
+                    .parse(relNode.get("effectiveTime").asText()));
+                rel.setLastModified(rel.getEffectiveTime());
+              } else {
+                rel.setLastModified(new Date());
+              }
+              rel.setModuleId(relNode.get("moduleId").asText());
+              rel.setTypeId(relNode.get("type").get("fsn").get("term").asText()
+                  .replaceFirst(" \\([a-zA-Z0-9 ]*\\)", ""));
+              // Skip "isa" rels
+              if (rel.getTypeId().equals("Is a")) {
+                continue;
+              }
+
+              rel.setSourceConcept(concept);
+              rel.setLastModifiedBy(terminology);
+              rel.setPublishable(true);
+              rel.setPublished(true);
+              rel.setTerminologyId(relNode.get("relationshipId").asText());
+
+              final Concept destination = new ConceptJpa();
+              destination
+                  .setTerminologyId(relNode.get("target").get("conceptId").asText());
+              // Reuse as id if only digits, otherwise dummy id
+              if (destination.getTerminologyId().matches("^\\d+$")) {
+                destination.setId(Long.parseLong(destination.getTerminologyId()));
+              } else {
+                destination.setId(1L);
+              }
+              destination
+                  .setName(relNode.get("target").get("fsn").get("term").asText());
+              destination.setDefinitionStatusId(
+                  relNode.get("target").get("definitionStatus").asText());
+              rel.setDestinationConcept(destination);
+
+              concept.getRelationships().add(rel);
+            }
+          }        
+          
+        }
+      }
+
+      conceptList.setTotalCount(total);
+      return conceptList;      
+     
+    }
+    
+    // If no descriptions needed, use the regular /concepts API endpoint
+    else {
       final StringBuilder query = new StringBuilder();
       for (final String terminologyId : terminologyIds) {
         // Only lookup stuff with actual digits
@@ -963,10 +1775,6 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
       // Get concepts returned in this call (up to 200)
       if (doc.get("items") == null) {
         return conceptList;
-      }
-      String searchAfter = "";
-      if (doc.findValue("searchAfter") != null) {
-        searchAfter = doc.findValue("searchAfter").asText();
       }
       for (final JsonNode conceptNode : doc.get("items")) {
         final Concept concept = new ConceptJpa();
