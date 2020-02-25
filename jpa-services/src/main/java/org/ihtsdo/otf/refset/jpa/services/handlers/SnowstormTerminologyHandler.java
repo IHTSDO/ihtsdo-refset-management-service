@@ -900,6 +900,12 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
   public ConceptList getConcepts(List<String> terminologyIds,
     String terminology, String version, boolean descriptions) throws Exception {
 
+    // If no terminologyIds are specified, return an empty ConceptList   
+    ConceptList conceptList = new ConceptListJpa();
+    if(terminologyIds.size() == 0) {
+      return conceptList;      
+    }
+    
     // If descriptions are needed, use the browser /concepts API endpoint
     if (descriptions) {
 
@@ -913,7 +919,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
         localPfs.setMaxResults(Integer.MAX_VALUE);
       }
 
-      // Start by just getting first 200, then check how many remaining ones
+      // Start by just getting first 100, then check how many remaining ones
       // there
       // are
       // and make a second call if needed
@@ -1079,7 +1085,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
        * </pre>
        */
 
-      ConceptList conceptList = new ConceptListJpa();
+      conceptList = new ConceptListJpa();
       ObjectMapper mapper = new ObjectMapper();
       JsonNode doc = mapper.readTree(resultString);
 
@@ -1425,7 +1431,9 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
           if (query.length() != 0) {
             query.append("&");
           }
-          query.append("conceptIds=").append(terminologyId);
+          else{
+            query.append("conceptIds=").append(terminologyId);
+          }
         }
       }
 
@@ -1455,13 +1463,13 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
             "Unexpected terminology server failure. Message = " + resultString);
       }
 
-      ConceptList conceptList = new ConceptListJpa();
+      conceptList = new ConceptListJpa();
       ObjectMapper mapper = new ObjectMapper();
       JsonNode doc = mapper.readTree(resultString);
 
       // get total amount
       final int total = doc.get("total").asInt();
-      // Get concepts returned in this call (up to 200)
+      // Get concepts returned in this call (up to 100)
       if (doc.get("items") == null) {
         return conceptList;
       }
