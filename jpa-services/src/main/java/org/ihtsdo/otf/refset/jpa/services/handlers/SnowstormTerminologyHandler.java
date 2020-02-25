@@ -1431,7 +1431,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
           if (query.length() == 0) {
             query.append("conceptIds=");
           } else {
-            query.append("&");
+            query.append(",");
           }
           query.append(terminologyId);
         }
