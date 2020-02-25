@@ -1428,12 +1428,10 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
       for (final String terminologyId : terminologyIds) {
         // Only lookup stuff with actual digits
         if (terminologyId.matches("[0-9]*")) {
-          if (query.length() != 0) {
-            query.append("&");
-          }
-          else{
+          if (query.length() == 0) {
             query.append("conceptIds=").append(terminologyId);
           }
+          query.append("&");
         }
       }
 
