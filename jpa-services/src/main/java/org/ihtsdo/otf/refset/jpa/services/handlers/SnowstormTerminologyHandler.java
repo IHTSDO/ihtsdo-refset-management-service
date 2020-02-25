@@ -900,12 +900,12 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
   public ConceptList getConcepts(List<String> terminologyIds,
     String terminology, String version, boolean descriptions) throws Exception {
 
-    // If no terminologyIds are specified, return an empty ConceptList   
+    // If no terminologyIds are specified, return an empty ConceptList
     ConceptList conceptList = new ConceptListJpa();
-    if(terminologyIds.size() == 0) {
-      return conceptList;      
+    if (terminologyIds.size() == 0) {
+      return conceptList;
     }
-    
+
     // If descriptions are needed, use the browser /concepts API endpoint
     if (descriptions) {
 
@@ -1429,9 +1429,11 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
         // Only lookup stuff with actual digits
         if (terminologyId.matches("[0-9]*")) {
           if (query.length() == 0) {
-            query.append("conceptIds=").append(terminologyId);
+            query.append("conceptIds=");
+          } else {
+            query.append("&");
           }
-          query.append("&");
+          query.append(terminologyId);
         }
       }
 
