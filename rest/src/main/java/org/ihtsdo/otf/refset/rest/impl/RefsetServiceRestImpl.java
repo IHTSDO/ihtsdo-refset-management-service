@@ -32,6 +32,7 @@ import javax.ws.rs.core.MediaType;
 import org.apache.log4j.Logger;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
+import org.ihtsdo.otf.refset.ConceptRefsetMemberSynonym;
 import org.ihtsdo.otf.refset.DefinitionClause;
 import org.ihtsdo.otf.refset.MemberDiffReport;
 import org.ihtsdo.otf.refset.Note;
@@ -427,11 +428,11 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       refsetService.updateRefset(refset);
 
       refsetService.commitClearBegin();
-      
+
       // Look up members and synonyms for this refset
-      refsetService.lookupMemberNames(refset.getId(), "adding members for expression", true,
-          true);      
-      
+      refsetService.lookupMemberNames(refset.getId(),
+          "adding members for expression", true, true);
+
       refsetService.commit();
 
       return list;
@@ -1462,25 +1463,24 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       }
 
       // Look up concept name and active
-        final Concept concept = refsetService
-            .getTerminologyHandler(refset.getProject(), getHeaders(headers))
-            .getFullConcept(member.getConceptId(), refset.getTerminology(),
-                refset.getVersion());
-        if (concept != null) {
-          member.setConceptName(concept.getName());
-          member.setConceptActive(concept.isActive());
-        } else {
-          member.setConceptName(TerminologyHandler.UNABLE_TO_DETERMINE_NAME);
-          member.setSynonyms(null);
-        }
+      final Concept concept = refsetService
+          .getTerminologyHandler(refset.getProject(), getHeaders(headers))
+          .getFullConcept(member.getConceptId(), refset.getTerminology(),
+              refset.getVersion());
+      if (concept != null) {
+        member.setConceptName(concept.getName());
+        member.setConceptActive(concept.isActive());
+      } else {
+        member.setConceptName(TerminologyHandler.UNABLE_TO_DETERMINE_NAME);
+        member.setSynonyms(null);
+      }
 
       member.setLastModifiedBy(userName);
       ConceptRefsetMember newMember = refsetService.addMember(member);
-      
-      //Get the synonyms based on the returned concept
+
+      // Get the synonyms based on the returned concept
       refsetService.populateMemberSynonyms(member, concept, refset,
           refsetService);
-      
 
       addLogEntry(refsetService, userName, "ADD member",
           refset.getProject().getId(), refset.getId(),
@@ -1866,7 +1866,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       if (concept != null) {
         inclusion.setConceptName(concept.getName());
         inclusion.setConceptActive(concept.isActive());
-        //Set synonyms below once the member has been added (to avoid transient instance errors)
+        // Set synonyms below once the member has been added (to avoid transient
+        // instance errors)
         inclusion.setSynonyms(null);
       } else {
         inclusion.setConceptName(TerminologyHandler.UNABLE_TO_DETERMINE_NAME);
@@ -1890,11 +1891,11 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
 
       final ConceptRefsetMember member = refsetService.addMember(inclusion);
 
-      if(concept != null) {
+      if (concept != null) {
         refsetService.populateMemberSynonyms(inclusion, concept, refset,
             refsetService);
       }
-      
+
       addLogEntry(refsetService, userName, "ADD refset inclusion",
           refset.getProject().getId(), refset.getId(),
           refset.getTerminologyId() + " = " + inclusion.getConceptId() + " "
@@ -2208,8 +2209,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
           }
         }
         refsetService.updateRefset(refsetCopy);
-        refsetService.commitClearBegin();        
-        
+        refsetService.commitClearBegin();
+
         // Look up members for this refset, but NOT synonyms (they'll be looked
         // up later)
         refsetService.lookupMemberNames(refsetCopy.getId(), "begin migration",
@@ -2221,12 +2222,12 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
 
         List<ConceptRefsetMember> oldNotNew =
             getOldNotNewForMigration(refset, refsetCopy, refsetService);
-        
+
         // Flag all oldNotNew members for name lookup
-        for(ConceptRefsetMember member : oldNotNew) {
+        for (ConceptRefsetMember member : oldNotNew) {
           member.setConceptName(TerminologyHandler.REQUIRES_NAME_LOOKUP);
         }
-        
+
         // Look up old members for the new refest id (e.g. new
         // terminology/version)
         // On cancel, we need to undo this.
@@ -2458,8 +2459,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
           stagedMember.setRefset(originRefset);
           stagedMember.setLastModifiedBy(userName);
           refsetService.updateMember(stagedMember);
-          
-          // Also explicitly add the new member to the refset, so it can be handled correctly by the name lookup
+
+          // Also explicitly add the new member to the refset, so it can be
+          // handled correctly by the name lookup
           refset.addMember(stagedMember);
         } else if (originMember != null && stagedMember.getMemberType()
             .getUnstagedType() != originMember.getMemberType()) {
@@ -2505,11 +2507,12 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       refsetService.commitClearBegin();
 
       // Re-read updated refset and flag all members for name/synonym lookup
-//      refset = refsetService.getRefset(refsetId);
-//      refsetService.handleLazyInit(refset);
-      
+      // refset = refsetService.getRefset(refsetId);
+      // refsetService.handleLazyInit(refset);
+
       int count = 0;
-      for (ConceptRefsetMember member : refset.getMembers()) {  
+      for (ConceptRefsetMember member : refset.getMembers()) {
+        member.setSynonyms(new HashSet<>());
         member.setConceptName(TerminologyHandler.REQUIRES_NAME_LOOKUP);
         refsetService.updateMember(member);
         count++;
@@ -2517,8 +2520,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
           refsetService.commitClearBegin();
         }
       }
-      refsetService.commitClearBegin();      
-      
+      refsetService.commitClearBegin();
+
       // Look up members and synonyms for this refset
       refsetService.lookupMemberNames(refset.getId(), "finish migration", true,
           true);
