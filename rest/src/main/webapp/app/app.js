@@ -217,6 +217,12 @@ tsApp.controller('HeaderCtrl', [
       $location.path('/login');
     };
 
+    // Check if user is using Chrome or not (for showing browser warning page)
+    $scope.isUsingChrome = function() {
+      var isChrome = !!window.chrome && (!!window.chrome.webstore || !!window.chrome.runtime);
+      return isChrome;
+    }; 
+    
     // Open help page dynamically
     $scope.goToHelp = function() {
       var path = $location.path();
