@@ -924,6 +924,13 @@ tsApp.service('securityService', [
       });
       return deferred.promise;
     };
+    
+    // Check if user is using Chrome or not (for showing browser warning page)
+    this.isUsingChrome = function() {
+      var isChrome = !!window.chrome && (!!window.chrome.webstore || !!window.chrome.runtime);
+      return isChrome;
+    }; 
+    
   } ]);
 
 // Tab service
@@ -959,6 +966,11 @@ tsApp.service('tabService', [ '$location', 'utilService', 'gpService', 'security
       this.selectedTab = tab;
     };
 
+    // Check if user is using Chrome or not (for showing browser warning page)
+    this.isUsingChrome = function() {
+      return securityService.isUsingChrome();
+    }; 
+    
     // sets the selected tab by label
     // to be called by controllers when their
     // respective tab is selected
