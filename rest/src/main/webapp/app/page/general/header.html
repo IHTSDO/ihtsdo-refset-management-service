@@ -3,6 +3,14 @@
 <nav ng-controller="HeaderCtrl"
   class="navbar navbar-default navbar-fixed-top header-footer-bg">
 
+<div ng-if="!isUsingChrome()" class="row">
+
+  <div class="col-md-12 col-xs-12">
+    <!-- Show warning banner if user is not accessing tool via Chrome -->
+    <div ng-include="'app/page/general/browserWarning.html'"></div>
+  </div>
+</div>
+
   <div ng-include="showJiraFeedback() ? 'app/page/general/feedback.html' : null"></div>
   <div class="container-fluid">
 
