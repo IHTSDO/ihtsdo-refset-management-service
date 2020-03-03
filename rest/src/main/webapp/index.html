@@ -98,6 +98,10 @@
   <!-- Blank for header -->
   <div class="hidden-xs" style="height: 60px;">Makes room for content</div>
   <div class="visible-xs" style="height: 60px;">Makes room for content</div>
+  
+  <!-- Additional Blank if browser warning is showing -->
+  <div ng-if="!isUsingChrome()" class="hidden-s" style="height: 35px;">Makes room for content</div>
+  
   <div class="container-fluid">
     <!-- Show global error message -->
     <div ng-include src="'app/page/general/error.html'"></div>
