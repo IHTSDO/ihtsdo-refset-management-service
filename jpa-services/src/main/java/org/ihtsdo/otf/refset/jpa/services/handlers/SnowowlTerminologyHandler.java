@@ -70,13 +70,19 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
   /** The terminology version language map. */
   private static Map<String, String> tvLanguageMap = new HashMap<>();
 
-  /** The terminologies for UR lexpiration date. */
-  private static Date terminologiesForURLexpirationDate = new Date();
-
   /** The terminologies for URL. */
   private static Map<String, List<Terminology>> terminologiesForURL =
       new HashMap<>();
 
+  /** The terminologies for URL expiration date. */
+  private static Date terminologiesForURLexpirationDate = new Date();
+  
+  /** The generic user cookie. */
+  private static String genericUserCookie = null;  
+  
+  /** The generic user cookie expiration date. */
+  private static Date genericUserCookieExpirationDate = new Date();  
+  
   /** The ids to ignore. */
   private static List<String> idsToIgnore = new ArrayList<>();
 
@@ -100,7 +106,6 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
    */
   public SnowowlTerminologyHandler() throws Exception {
     super();
-    getGenericUserCookies();
   }
 
   /** The accept. */
@@ -121,9 +126,6 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
 
   /** The headers. */
   private Map<String, String> headers;
-
-  /** The generic user cookies. */
-  private String genericUserCookie = null;
 
   /** The max batch lookup size. */
   private int maxBatchLookupSize = 101;
@@ -148,7 +150,7 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     final Response response = target.request(accept)
         .header("Authorization", authHeader)
         .header("Cookie",
-            genericUserCookie != null ? genericUserCookie : getCookieHeader())
+            getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
         .get();
 
     final String resultString = response.readEntity(String.class);
@@ -224,7 +226,7 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
         .header("Authorization", authHeader)
         .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
         .header("Cookie",
-            genericUserCookie != null ? genericUserCookie : getCookieHeader())
+            getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
         .get();
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -289,7 +291,7 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
         .header("Authorization", authHeader)
         .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
         .header("Cookie",
-            genericUserCookie != null ? genericUserCookie : getCookieHeader())
+            getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
         .get();
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -337,7 +339,7 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
         .header("Authorization", authHeader)
         .header("Accept-Language", getAcceptLanguage(terminology, version))
         .header("Cookie",
-            genericUserCookie != null ? genericUserCookie : getCookieHeader())
+            getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
         .get();
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -458,7 +460,7 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
         .header("Authorization", authHeader)
         .header("Accept-Language", getAcceptLanguage(terminology, version))
         .header("Cookie",
-            genericUserCookie != null ? genericUserCookie : getCookieHeader())
+            getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
         .get();
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -596,7 +598,7 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
         .header("Authorization", authHeader)
         .header("Accept-Language", getAcceptLanguage(terminology, version))
         .header("Cookie",
-            genericUserCookie != null ? genericUserCookie : getCookieHeader())
+            getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
         .get();
 
     String resultString = response.readEntity(String.class);
@@ -757,7 +759,7 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
       response = target.request(accept).header("Authorization", authHeader)
           .header("Accept-Language", getAcceptLanguage(terminology, version))
           .header("Cookie",
-              genericUserCookie != null ? genericUserCookie : getCookieHeader())
+              getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
           .get();
       resultString = response.readEntity(String.class);
       if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -869,7 +871,7 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
         .header("Authorization", authHeader)
         .header("Accept-Language", getAcceptLanguage(terminology, version))
         .header("Cookie",
-            genericUserCookie != null ? genericUserCookie : getCookieHeader())
+            getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
         .get();
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -911,7 +913,7 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
         .header("Authorization", authHeader)
         .header("Accept-Language", getAcceptLanguage(terminology, version))
         .header("Cookie",
-            genericUserCookie != null ? genericUserCookie : getCookieHeader())
+            getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
         .get();
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -1230,7 +1232,7 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
         .header("Authorization", authHeader)
         .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
         .header("Cookie",
-            genericUserCookie != null ? genericUserCookie : getCookieHeader())
+            getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
         .get();
 
     final String resultString = response.readEntity(String.class);
@@ -1385,7 +1387,7 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
         .header("Authorization", authHeader)
         .header("Accept-Language", getAcceptLanguage(terminology, version))
         .header("Cookie",
-            genericUserCookie != null ? genericUserCookie : getCookieHeader())
+            getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
         .get();
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -1453,7 +1455,7 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
         .header("Authorization", authHeader)
         .header("Accept-Language", getAcceptLanguage(terminology, version))
         .header("Cookie",
-            genericUserCookie != null ? genericUserCookie : getCookieHeader())
+            getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
         .get();
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -1572,7 +1574,7 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
         .header("Authorization", authHeader)
         .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
         .header("Cookie",
-            genericUserCookie != null ? genericUserCookie : getCookieHeader())
+            getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
         .get();
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -1654,7 +1656,7 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
         .header("Authorization", authHeader)
         .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
         .header("Cookie",
-            genericUserCookie != null ? genericUserCookie : getCookieHeader())
+            getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
         .get();
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -1682,12 +1684,29 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
   }
 
   /**
-   * Gets the generic user cookies.
+   * Gets the generic user cookie.
    *
-   * @return the generic user cookies
+   * @return the generic user cookie
    * @throws Exception the exception
    */
-  private void getGenericUserCookies() throws Exception {
+  private String getGenericUserCookie() throws Exception {
+    
+    // Check if the generic user cookie is expired and needs to be cleared
+    // and re-read
+    if (new Date().after(genericUserCookieExpirationDate)) {
+      genericUserCookie = null;
+      
+      // Set the new expiration date for tomorrow
+      Calendar now = Calendar.getInstance();
+      now.add(Calendar.HOUR, 24);
+      genericUserCookieExpirationDate = now.getTime();
+    }
+
+    if (genericUserCookie != null) {
+      return genericUserCookie;
+    }
+    
+    // Login the generic user, then save and return the cookie
     final String userName = ConfigUtility.getConfigProperties()
         .getProperty("generic.user.userName");
     final String password = ConfigUtility.getConfigProperties()
@@ -1712,6 +1731,7 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
       sb.append(";");
     }
     genericUserCookie = sb.toString();
+    return genericUserCookie;
   }
 
   /* see superclass */
@@ -1737,7 +1757,7 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
         .header("Authorization", authHeader)
         .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
         .header("Cookie",
-            genericUserCookie != null ? genericUserCookie : getCookieHeader())
+            getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
         .get();
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() != Family.SUCCESSFUL) {
