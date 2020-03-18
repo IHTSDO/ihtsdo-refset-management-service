@@ -163,6 +163,12 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
+    }
+    // If the generic user is logged out, it returns a 403 Forbidden error. In
+    // this case, clear out the generic use cookie so the next call can re-login
+    else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
+      genericUserCookie = null;
+      throw new LocalException("Connection with the terminology server has expired. Please reload the page to reconnect.");
     } else {
       throw new LocalException(
           "Unexpected terminology server failure. Message = " + resultString);
@@ -232,6 +238,12 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
+    }
+    // If the generic user is logged out, it returns a 403 Forbidden error. In
+    // this case, clear out the generic use cookie so the next call can re-login
+    else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
+      genericUserCookie = null;
+      throw new LocalException("Connection with the terminology server has expired. Please reload the page to reconnect.");
     } else {
       throw new LocalException(
           "Unexpected terminology server failure. Message = " + resultString);
@@ -273,6 +285,12 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
+    }
+    // If the generic user is logged out, it returns a 403 Forbidden error. In
+    // this case, clear out the generic use cookie so the next call can re-login
+    else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
+      genericUserCookie = null;
+      throw new LocalException("Connection with the terminology server has expired. Please reload the page to reconnect.");
     } else {
       throw new LocalException(
           "Unexpected terminology server failure. Message = " + resultString);
@@ -356,6 +374,12 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
+    }
+    // If the generic user is logged out, it returns a 403 Forbidden error. In
+    // this case, clear out the generic use cookie so the next call can re-login
+    else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
+      genericUserCookie = null;
+      throw new LocalException("Connection with the terminology server has expired. Please reload the page to reconnect.");
     } else {
 
       // Here's the messy part about trying to parse the return error message
@@ -465,6 +489,12 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
+    }
+    // If the generic user is logged out, it returns a 403 Forbidden error. In
+    // this case, clear out the generic use cookie so the next call can re-login
+    else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
+      genericUserCookie = null;
+      throw new LocalException("Connection with the terminology server has expired. Please reload the page to reconnect.");
     } else {
 
       // Here's the messy part about trying to parse the return error message
@@ -573,6 +603,12 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
       resultString = response.readEntity(String.class);
       if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
         // n/a
+      }
+      // If the generic user is logged out, it returns a 403 Forbidden error. In
+      // this case, clear out the generic use cookie so the next call can re-login
+      else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
+        genericUserCookie = null;
+        throw new LocalException("Connection with the terminology server has expired. Please reload the page to reconnect.");
       } else {
         throw new LocalException(
             "Unexpected terminology server failure. Message = " + resultString);
@@ -638,6 +674,12 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
+    }
+    // If the generic user is logged out, it returns a 403 Forbidden error. In
+    // this case, clear out the generic use cookie so the next call can re-login
+    else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
+      genericUserCookie = null;
+      throw new LocalException("Connection with the terminology server has expired. Please reload the page to reconnect.");
     } else {
 
       // Here's the messy part about trying to parse the return error message
@@ -960,6 +1002,12 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
       String resultString = response.readEntity(String.class);
       if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
         // n/a
+      }
+      // If the generic user is logged out, it returns a 403 Forbidden error. In
+      // this case, clear out the generic use cookie so the next call can re-login
+      else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
+        genericUserCookie = null;
+        throw new LocalException("Connection with the terminology server has expired. Please reload the page to reconnect.");
       } else {
 
         // Here's the messy part about trying to parse the return error message
@@ -1264,6 +1312,12 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
         resultString = response.readEntity(String.class);
         if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
           // n/a
+        }
+        // If the generic user is logged out, it returns a 403 Forbidden error. In
+        // this case, clear out the generic use cookie so the next call can re-login
+        else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
+          genericUserCookie = null;
+          throw new LocalException("Connection with the terminology server has expired. Please reload the page to reconnect.");
         } else {
           throw new LocalException(
               "Unexpected terminology server failure. Message = "
@@ -1455,6 +1509,12 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
       String resultString = response.readEntity(String.class);
       if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
         // n/a
+      }
+      // If the generic user is logged out, it returns a 403 Forbidden error. In
+      // this case, clear out the generic use cookie so the next call can re-login
+      else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
+        genericUserCookie = null;
+        throw new LocalException("Connection with the terminology server has expired. Please reload the page to reconnect.");
       } else {
 
         // Here's the messy part about trying to parse the return error message
@@ -1561,6 +1621,12 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
+    }
+    // If the generic user is logged out, it returns a 403 Forbidden error. In
+    // this case, clear out the generic use cookie so the next call can re-login
+    else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
+      genericUserCookie = null;
+      throw new LocalException("Connection with the terminology server has expired. Please reload the page to reconnect.");
     } else {
       throw new LocalException(
           "Unexpected terminology server failure. Message = " + resultString);
@@ -1715,6 +1781,12 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
+    }
+    // If the generic user is logged out, it returns a 403 Forbidden error. In
+    // this case, clear out the generic use cookie so the next call can re-login
+    else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
+      genericUserCookie = null;
+      throw new LocalException("Connection with the terminology server has expired. Please reload the page to reconnect.");
     } else if (response.getStatusInfo() == Status.BAD_REQUEST) {
       throw new LocalException(getErrorMessage(resultString));
     } else {
@@ -1784,6 +1856,12 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
+    }
+    // If the generic user is logged out, it returns a 403 Forbidden error. In
+    // this case, clear out the generic use cookie so the next call can re-login
+    else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
+      genericUserCookie = null;
+      throw new LocalException("Connection with the terminology server has expired. Please reload the page to reconnect.");
     } else if (response.getStatusInfo() == Status.BAD_REQUEST) {
       throw new LocalException(getErrorMessage(resultString));
     } else {
@@ -1910,6 +1988,12 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
+    }
+    // If the generic user is logged out, it returns a 403 Forbidden error. In
+    // this case, clear out the generic use cookie so the next call can re-login
+    else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
+      genericUserCookie = null;
+      throw new LocalException("Connection with the terminology server has expired. Please reload the page to reconnect.");
     } else if (response.getStatusInfo() == Status.BAD_REQUEST) {
       throw new LocalException(getErrorMessage(resultString));
     } else {
@@ -1965,6 +2049,12 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
+    }
+    // If the generic user is logged out, it returns a 403 Forbidden error. In
+    // this case, clear out the generic use cookie so the next call can re-login
+    else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
+      genericUserCookie = null;
+      throw new LocalException("Connection with the terminology server has expired. Please reload the page to reconnect.");
     } else {
 
       throw new LocalException(
@@ -2093,6 +2183,12 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
+    }
+    // If the generic user is logged out, it returns a 403 Forbidden error. In
+    // this case, clear out the generic use cookie so the next call can re-login
+    else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
+      genericUserCookie = null;
+      throw new LocalException("Connection with the terminology server has expired. Please reload the page to reconnect.");
     } else {
       throw new LocalException(
           "Unexpected terminology server failure. Message = " + resultString);
