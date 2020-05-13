@@ -1592,7 +1592,7 @@ public class PatchDataMojo extends AbstractRttMojo {
 
       projectService.getProjects().getObjects().forEach(project -> {
 
-        if (!project.getTerminologyHandlerKey().equals("AUTHORING-INTL")) {
+        if (project.getTerminologyHandlerKey().equals("AUTHORING-INTL")) {
           getLog().info("  updating terminology handler URL for project = "
               + project.getId() + ", " + project.getName());
           project.setTerminologyHandlerUrl("https://prod-snowstorm.ihtsdotools.org/snowstorm/snomed-ct");
