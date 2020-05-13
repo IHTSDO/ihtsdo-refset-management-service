@@ -376,6 +376,14 @@ public class PatchDataMojo extends AbstractRttMojo {
         patch20191125(fullReindex);
       }
 
+      // Patch to change the terminologyHandlerURLs for AUTHORING-INTL projects
+      if ("20200512".compareTo(start) >= 0 && "20200512".compareTo(end) <= 0) {
+        getLog().info(
+            "Processing patch 20200512 - changing the terminologyHandlerURL for AUTHORING-INTL projects"); // Patch
+
+        patch20200512(fullReindex);
+      } 
+      
       // Reindex
       if (fullReindex) {
         getLog().info("  Reindex");
@@ -1570,4 +1578,55 @@ public class PatchDataMojo extends AbstractRttMojo {
 
   }
 
+  /**
+   * Patch 20200512.
+   *
+   * @param fullReindex the full reindex
+   */
+  private void patch20200512(boolean fullReindex) {
+
+    try (ProjectService projectService = new ProjectServiceJpa();) {
+
+      projectService.setTransactionPerOperation(false);
+      projectService.beginTransaction();
+
+      projectService.getProjects().getObjects().forEach(project -> {
+
+        if (!project.getTerminologyHandlerKey().equals("AUTHORING-INTL")) {
+          getLog().info("  updating terminology handler URL for project = "
+              + project.getId() + ", " + project.getName());
+          project.setTerminologyHandlerUrl("https://prod-snowstorm.ihtsdotools.org/snowstorm/snomed-ct");
+        }
+        try {
+          projectService.updateProject(project);
+        } catch (Exception e) {
+          getLog().error(
+              "patch20200512 : Failed to update project " + project.getId(), e);
+        }
+      });
+
+      projectService.commit();
+
+      if (!fullReindex) {
+        getLog().info("  Projects");
+
+        // login as "admin", use token
+        final Properties properties = ConfigUtility.getConfigProperties();
+        try (
+            final SecurityService securityService = new SecurityServiceJpa();) {
+          String authToken =
+              securityService.authenticate(properties.getProperty("admin.user"),
+                  properties.getProperty("admin.password")).getAuthToken();
+          ProjectServiceRestImpl contentService = new ProjectServiceRestImpl();
+          contentService.luceneReindex("ProjectJpa", null, null, authToken);
+        }
+      }
+
+    } catch (Exception e) {
+      getLog().error("patch20200512 : Failed to update all projects", e);
+    }
+
+  }
+
+  
 }
