@@ -236,6 +236,8 @@ public class PatchDataMojo extends AbstractRttMojo {
       getLog().info("Patch data");
       getLog().info("  start = " + start);
       getLog().info("  end = " + end);
+      getLog().info("  projectIds = " + projectIds);
+      getLog().info("  refsetIds = " + refsetIds);
 
       // Patch 1000001
       // Set project handler key/url for all projects
@@ -337,7 +339,8 @@ public class PatchDataMojo extends AbstractRttMojo {
       if ("20190728".compareTo(start) >= 0 && "20190728".compareTo(end) <= 0) {
         getLog().info(
             "Processing patch 20190728 - Adding new ConceptRefsetMemberJpa 'Synonyms' table"); // Patch
-
+        refsetIds = "24357942,24357945,24931373,24931381,23871126";
+        projectIds = "1701,2053";
         patch20190728(workflowService, refsetService, fullReindex);
       }
 
