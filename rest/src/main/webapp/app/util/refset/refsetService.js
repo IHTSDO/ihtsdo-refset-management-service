@@ -1611,7 +1611,7 @@ tsApp.service('refsetService', [
         else if (terminologyHandler === 'AUTHORING-INTL') {          
           var keys = path.substring(path.indexOf('/')+1).split('/');
           for(var k of keys) {
-            if (keys.length == 1 && utilService.isValidDate(k)) {
+            if (utilService.isValidDate(k)) {
               key = k;
               break;
             }

@@ -761,7 +761,7 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
 
           // update the concept name to the FSN if available
           if (!desc.get("semanticTag").asText().isEmpty()
-              && desc.get("typeId").asText().equals("900000000000003001")) {
+              && desc.get("typeId").asText().equals("900000000000003001") && desc.get("active").asText().equals("true")) {
             concept.setName(desc.get("term").asText());
           }
           if (description.isActive()) {
