@@ -19,6 +19,9 @@
  */
 package org.ihtsdo.otf.refset.mojo;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -28,6 +31,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
 import org.apache.maven.plugin.MojoFailureException;
@@ -95,6 +100,12 @@ public class PatchDataMojo extends AbstractRttMojo {
    */
   @Parameter
   String projectIds = null;
+  
+  /**
+   * The specified input file (for driving action)
+   */
+  @Parameter
+  private String input = null;
 
   /** The already reviewed japanese. */
   String[] alreadyReviewedJapanese = {
@@ -236,6 +247,8 @@ public class PatchDataMojo extends AbstractRttMojo {
       getLog().info("Patch data");
       getLog().info("  start = " + start);
       getLog().info("  end = " + end);
+      getLog().info("  projectIds = " + projectIds);
+      getLog().info("  refsetIds = " + refsetIds);
 
       // Patch 1000001
       // Set project handler key/url for all projects
@@ -337,7 +350,8 @@ public class PatchDataMojo extends AbstractRttMojo {
       if ("20190728".compareTo(start) >= 0 && "20190728".compareTo(end) <= 0) {
         getLog().info(
             "Processing patch 20190728 - Adding new ConceptRefsetMemberJpa 'Synonyms' table"); // Patch
-
+        refsetIds = "24357942,24357945,24931373,24931381,23871126";
+        projectIds = "1701,2053";
         patch20190728(workflowService, refsetService, fullReindex);
       }
 
@@ -382,6 +396,14 @@ public class PatchDataMojo extends AbstractRttMojo {
             "Processing patch 20200512 - changing the terminologyHandlerURL for AUTHORING-INTL projects"); // Patch
 
         patch20200512(fullReindex);
+      } 
+      
+      // Patch to change the terminologyHandlerURLs for AUTHORING-INTL projects
+      if ("20200603".compareTo(start) >= 0 && "20200603".compareTo(end) <= 0) {
+        getLog().info(
+            "Processing patch 20200603 - updating MANAGED-SERVICE projects from Snowowl to Snowstorm"); // Patch
+
+        patch20200603(translationService, workflowService, refsetService, fullReindex);
       } 
       
       // Reindex
@@ -1628,5 +1650,121 @@ public class PatchDataMojo extends AbstractRttMojo {
 
   }
 
-  
+  /**
+   * Patch 20200603.
+   *
+   * @param translationService the translation service
+   * @throws Exception the exception
+   */
+  private void patch20200603(TranslationService translationService, WorkflowService workflowService, 
+    RefsetService refsetService, boolean fullReindex)
+    throws Exception {
+    int ct = 0;
+    translationService.setTransactionPerOperation(false);
+    translationService.beginTransaction();
+    StringBuilder projectIdStringBuilder = new StringBuilder();
+    for (Project prj : translationService.getProjects().getObjects()) {
+      Project project = translationService.getProject(prj.getId());
+      if (!project.getTerminologyHandlerKey().equals("PUBLIC-BROWSER")) {
+        ct++;
+        project.setTerminologyHandlerUrl(
+            "https://prod-snowstorm.ihtsdotools.org/snowstorm/snomed-ct");
+     
+        translationService.updateProject(project);
+        projectIdStringBuilder.append(project.getId().toString()).append(",");
+
+        if (ct % 100 == 0) {
+          getLog().info("projects updated  ct = " + ct);
+          translationService.commitClearBegin();
+        }
+      }
+    }
+    getLog().info("projects updated final ct = " + ct);
+
+    
+    // Read in from branch map file
+    final Map<String, String> refsetIdToBranch = new HashMap<>();
+    final Map<String, String> refsetIdToEdition = new HashMap<>();
+    System.out.println("input dir: " + input);
+    try (final BufferedReader in =
+        new BufferedReader(new FileReader(new File(input)))) {
+      String line = null;
+      while ((line = in.readLine()) != null) {
+        String tokens[] = line.split("\t");
+        refsetIdToBranch.put(tokens[2], tokens[7]);
+        refsetIdToEdition.put(tokens[2], tokens[6]);
+        System.out.println("map: " + tokens[2] + " " + tokens[6] + " " + tokens[7]);
+      }
+    }
+
+    // update non-PUBLIC-BROWSER refset terminology and version branches
+    ct = 0;
+    for (Refset ref : translationService.getRefsets().getObjects()) {
+      Refset refset = translationService.getRefset(ref.getId());
+      if (!refset.getProject().getTerminologyHandlerKey().equals("PUBLIC-BROWSER")) {
+        ct++;
+        String old_version = refset.getVersion();
+        System.out.println("REFSET " + refset.getId() + " Old terminology: " + refset.getTerminology() + " Old version: " + old_version);
+        if (old_version.contains("SNOMEDCT-")) {
+          Matcher matcher =
+              Pattern.compile("(.*)(SNOMEDCT-\\w{2})(.*)").matcher(old_version);
+          matcher.find();
+          String edition = matcher.group(2);
+          refset.setVersion("MAIN/" + edition);
+          refset.setTerminology(edition);
+          System.out.println("REFSET " + refset.getId() + " New terminology: " + edition + " New version: " + "MAIN/" + edition);
+        } else if (refsetIdToBranch.containsKey(refset.getId().toString())) {
+          refset.setVersion(refsetIdToBranch.get(refset.getId().toString()));
+          refset.setTerminology(refsetIdToEdition.get(refset.getId().toString()));
+          System.out.println("REFSET*" + refset.getId() + " New terminology: " + refsetIdToEdition.get(refset.getId().toString()) + " New version: " + refsetIdToBranch.get(refset.getId().toString()));
+        } else if (!old_version.contains("SNOMEDCT-") && old_version.indexOf("-") == 9) {
+          refset.setVersion("MAIN");
+          System.out.println("REFSET " + refset.getId() + " New terminology: " + refset.getTerminology() + " New version: " + "MAIN");
+        }
+        translationService.updateRefset(refset);
+
+        if (ct % 100 == 0) {
+          getLog().info("refsets updated ct = " + ct);
+          translationService.commitClearBegin();
+        }
+      }
+    }
+    getLog().info("refsets updated final ct = " + ct);
+    translationService.commitClearBegin();
+    
+    // update non-PUBLIC-BROWSER translation terminology and version branches
+    ct = 0;
+    for (Translation trans : translationService.getTranslations()
+        .getObjects()) {
+      Translation translation =
+          translationService.getTranslation(trans.getId());
+      if (!translation.getProject().getTerminologyHandlerKey().equals("PUBLIC-BROWSER")) {
+        ct++;
+        String old_version = translation.getVersion();
+
+          System.out.println("TRANSLATION " + translation.getId() + " Old terminology: " + translation.getTerminology() + " Old version: " + old_version );
+
+          Refset underlyingRefset = translation.getRefset();
+          translation.setVersion(underlyingRefset.getVersion());
+          translation.setTerminology(underlyingRefset.getTerminology());
+          translationService.updateTranslation(translation);
+
+          System.out.println("TRANSLATION " + translation.getId() + " New terminology: " + translation.getTerminology() + " New version: " + old_version );
+
+          if (ct % 100 == 0) {
+            getLog().info("translations updated ct = " + ct);
+            translationService.commitClearBegin();
+          }
+        
+      }
+    }
+    getLog().info("translations updated final ct = " + ct); 
+
+    translationService.commit();
+    
+    // rerun all concept name lookups for the projects that were updated
+    projectIds = projectIdStringBuilder.toString();
+    System.out.println("projectIds " + projectIds);
+    patch20190728(workflowService, refsetService, fullReindex);
+  } 
 }
