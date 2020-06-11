@@ -406,6 +406,16 @@ public class PatchDataMojo extends AbstractRttMojo {
         patch20200603(translationService, workflowService, refsetService, fullReindex);
       } 
       
+      // Patch 20200611
+      // Concept name and synonym lookups for the following projects and/or refsets
+      if ("20200611".compareTo(start) >= 0 && "20200611".compareTo(end) <= 0) {
+        getLog().info(
+            "Processing patch 20200611 - Concept name and synonym lookups for the following projects and/or refsets"); // Patch
+        refsetIds = "24357942,24357945,24931373,24931381,23871126";
+        projectIds = "1701,2053";
+        patch20200611(workflowService, refsetService, fullReindex);
+      }
+      
       // Reindex
       if (fullReindex) {
         getLog().info("  Reindex");
@@ -1765,6 +1775,114 @@ public class PatchDataMojo extends AbstractRttMojo {
     // rerun all concept name lookups for the projects that were updated
     projectIds = projectIdStringBuilder.toString();
     System.out.println("projectIds " + projectIds);
-    patch20190728(workflowService, refsetService, fullReindex);
+    patch20200611(workflowService, refsetService, fullReindex);
   } 
+  
+  /**
+   * Patch 20200611.
+   *
+   * @param workflowService the workflow service
+   * @param refsetService the refset service
+   * @param fullReindex the full reindex
+   * @throws Exception the exception
+   */
+  private void patch20200611(WorkflowService workflowService,
+    RefsetService refsetService, boolean fullReindex) throws Exception {
+    Set<Long> uniqueProjects = new HashSet<>();
+    // Map of (ConceptId+"|"+RefsetVersion to Set of synonyms)
+    Map<String, Set<ConceptRefsetMemberSynonym>> conceptVersionSynonymsMap =
+        new HashMap<>();
+
+    // Turn the project/refset id strings into lists, if specified
+    List<String> projectIdsList = new ArrayList<>();
+    List<String> refsetIdsList = new ArrayList<>();
+    if (projectIds != null) {
+      projectIdsList = Arrays.asList(projectIds.split(",", -1));
+    }
+    if (refsetIds != null) {
+      refsetIdsList = Arrays.asList(refsetIds.split(",", -1));
+    }
+
+    refsetService.setTransactionPerOperation(false);
+    refsetService.beginTransaction();
+
+    // identify projects via get operation
+    getLog().info("  Identify projects using getProjects()");
+    final ProjectList list = workflowService.getProjects();
+    for (final Project project : list.getObjects()) {
+      if (!uniqueProjects.contains(project.getId())) {
+        getLog().info("About to start updating project: " + project.getName());
+        uniqueProjects.add(project.getId());
+
+        // Only run on subset of projects, if specified
+        if (projectIds != null
+            && !projectIdsList.contains(project.getId().toString())) {
+          continue;
+        }
+
+        TerminologyHandler handler =
+            refsetService.getTerminologyHandler(project, null);
+
+        for (Refset refset : project.getRefsets()) {
+          // Only run on subset of refsets, if specified
+          if (refsetIds != null
+              && !refsetIdsList.contains(refset.getId().toString())) {
+            continue;
+          }
+
+          getLog().info("About to start updating refset: " + refset.getId());
+
+          // If the refset's branch is invalid (e.g. a very old version, etc.),
+          // do not lookup members/synonyms
+          // Test by trying to retrieve the top-level Snomed concept:
+          // "138875005 | SNOMED CT Concept (SNOMED RT+CTV3) |"
+          Concept testConcept = null;
+
+          try {
+            testConcept = handler.getConcept("138875005",
+                refset.getTerminology(), refset.getVersion());
+          } catch (Exception e) {
+            // n/a
+          }
+
+          if (testConcept == null) {
+            System.out.println("test concept failed on " + refset.getTerminology() + " " + refset.getVersion());
+            continue;
+          }
+
+          // handle lazy init
+          for (ConceptRefsetMember member : refset.getMembers()) {
+            refsetService.handleLazyInit(member);
+          }
+
+          int count = 0;
+          for (ConceptRefsetMember member : refset.getMembers()) {
+
+            member.setConceptName(TerminologyHandler.REQUIRES_NAME_LOOKUP);
+            
+            refsetService.updateMember(member);
+            count++;
+            if (count % RootService.commitCt == 0) {
+              refsetService.commitClearBegin();
+            }
+          }
+          refsetService.commitClearBegin();
+
+          // Okay, you can actually lookup the synonyms now.
+          refsetService.lookupMemberNames(refset.getId(),
+              "initial population of synonyms for refset=" + refset.getId(),
+              false, true);
+
+          refsetService.commitClearBegin();
+
+        }
+
+        getLog().info(" Completed project: " + project.getName());
+      }
+    }
+
+    getLog().info("Completed operation across all project-refset pairs");
+    refsetService.commit();
+
+  }
 }
