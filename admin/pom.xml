@@ -286,6 +286,7 @@
                   <end>${end}</end>
                   <refsetIds>${refsetids}</refsetIds>
                   <projectIds>${projectids}</projectIds>
+                  <input>${input}</input>
                 </configuration>
               </execution>
             </executions>
