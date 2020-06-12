@@ -1699,6 +1699,7 @@ tsApp
                 $scope.refset = JSON.parse(JSON.stringify(refset));
                 $scope.newRefset = null;
                 $scope.refset.terminologyId = null;
+                $scope.refset.version = null;
                 $scope.modules = [];
                 $scope.errors = [];
                 $scope.comments = [];
@@ -1783,6 +1784,13 @@ tsApp
                 $scope.terminologySelected = function(terminology) {
                   $scope.versions = refsetService.filterTerminologyVersions(
                     $scope.project.terminologyHandlerKey, terminology, $scope.localMetadata.versions);
+					if ($scope.project.terminologyHandlerKey !== 'PUBLIC-BROWSER') {                  
+						if (terminology === 'SNOMEDCT') {
+                    		$scope.refset.version = "MAIN";
+                  		} else {
+                   			 $scope.refset.version = "MAIN/" + terminology;
+                  		}
+					}
                 };
 
                 // Handle version selected
@@ -3121,6 +3129,13 @@ tsApp
                 $scope.terminologySelected = function(terminology) {
                   $scope.versions = refsetService.filterTerminologyVersions(
                     $scope.project.terminologyHandlerKey, terminology, $scope.metadata.versions);
+                  if ($scope.project.terminologyHandlerKey !== 'PUBLIC-BROWSER') {
+                    if (terminology === 'SNOMEDCT') {
+                      $scope.refset.version = "MAIN";
+                    } else {
+                      $scope.refset.version = "MAIN/" + terminology;
+                    }
+                  }
                 };
 
                 // Handle version selected
@@ -3319,6 +3334,13 @@ tsApp
                 $scope.terminologySelected = function(terminology) {
                   $scope.versions = refsetService.filterTerminologyVersions(
                     $scope.project.terminologyHandlerKey, terminology, $scope.metadata.versions);
+                  if ($scope.project.terminologyHandlerKey !== 'PUBLIC-BROWSER') {
+                    if (terminology === 'SNOMEDCT') {
+                      $scope.refset.version = "MAIN";
+                    } else {
+                      $scope.refset.version = "MAIN/" + terminology;
+                    }
+                  } 
                 };
 
                 // Handle version selected
@@ -3822,6 +3844,11 @@ tsApp
                 $scope.terminologySelected = function(terminology) {
                   $scope.versions = refsetService.filterTerminologyVersions(
                     $scope.project.terminologyHandlerKey, terminology, $scope.metadata.versions);
+                  if (terminology === 'SNOMEDCT') {
+                    $scope.newVersion = "MAIN";
+                  } else {
+                    $scope.newVersion = "MAIN/" + terminology;
+                  }
                 };                
 
                 // Table sorting mechanism
@@ -4120,24 +4147,15 @@ tsApp
                 // Begin migration and compare refsets and get diff report
                 $scope.beginMigration = function(newTerminology, newVersion) {
                   $scope.errors = [];
-                  if (newTerminology == $scope.refset.terminology
-                    && newVersion == $scope.refset.version) {
-                    $scope.errors[0] = 'New terminology and version must not exactly match original values';
-                    return;
-                  }
+                 
                   // Full version comparison no longer works for MANAGED-SERVICE projects, since it can include the edition's working project
                   // e.g. MAIN/2019-07-31/SNOMEDCT-BE/BEMAR20
-                  if ($scope.project.terminologyHandlerKey != 'MANAGED-SERVICE' && newTerminology == $scope.refset.terminology
+                  if ($scope.project.terminologyHandlerKey === 'PUBLIC-BROWSER' && newTerminology == $scope.refset.terminology
                     && newVersion < $scope.refset.version) {
                     $scope.errors[0] = 'New version must be greater than existing version';
                     return;
                   }
-                  // For MANAGED-SERVICE projects, make sure the actual version isn't going backwards
-                  if ($scope.project.terminologyHandlerKey == 'MANAGED-SERVICE' && newTerminology == $scope.refset.terminology
-                    && newVersion.substring(5,15) < $scope.refset.version.substring(5,15)) {
-                    $scope.errors[0] = 'New version must be greater than existing version';
-                    return;
-                  }                  
+                    
                   if (!newVersion) {
                     $scope.errors[0] = 'New version must not be blank';
                     return;

@@ -19,9 +19,9 @@
             <select ng-model="newTerminology"
               ng-change="terminologySelected(newTerminology)"
               ng-options="item.terminology as item.name for item in metadata.terminologies"></select>
-          </td>
+          </td>         
         </tr>
-        <tr>
+        <tr ng-show="project.terminologyHandlerKey == 'PUBLIC-BROWSER'">
           <td>
             <b>Current Version:</b>
           </td>
@@ -38,7 +38,7 @@
           <td></td>
           <td></td>
           <td>
-            <b>Terminology Path</b>
+            <b>Terminology Path:</b>
           </td>
           <td>
             <input style="width: 252px" ng-model="newVersion" list="versions"
