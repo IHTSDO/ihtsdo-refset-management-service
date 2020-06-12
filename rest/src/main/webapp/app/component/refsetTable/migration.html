@@ -15,14 +15,11 @@
           <td>
             <b>New Terminology:</b>
           </td>
-          <td ng-show="project.terminologyHandlerKey == 'PUBLIC-BROWSER'">
+          <td>
             <select ng-model="newTerminology"
               ng-change="terminologySelected(newTerminology)"
               ng-options="item.terminology as item.name for item in metadata.terminologies"></select>
-          </td>
-          <td ng-show="project.terminologyHandlerKey !== 'PUBLIC-BROWSER'">
-            {{newTerminology}}
-          </td>
+          </td>         
         </tr>
         <tr ng-show="project.terminologyHandlerKey == 'PUBLIC-BROWSER'">
           <td>
