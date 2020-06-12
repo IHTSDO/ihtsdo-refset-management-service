@@ -57,8 +57,7 @@
         <td>
           <b>Server Endpoint</b>
         </td>
-        <td>{{project.terminologyHandlerKey}}
-          {{project.terminologyHandlerUrl}}</td>
+        <td>{{project.terminologyHandlerKey}}</td>
       </tr>
       <tr>
         <td>
@@ -73,7 +72,7 @@
             class="glyphicon-question-sign"></i>
         </td>
       </tr>
-      <tr>
+     <tr ng-show="project.terminologyHandlerKey == 'PUBLIC-BROWSER'">
         <td>
           <b>Version</b>
         </td>
