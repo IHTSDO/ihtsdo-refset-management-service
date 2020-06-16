@@ -56,7 +56,10 @@
             title="Test handler URL" ng-click="testHandlerUrl()"
             class="btn btn-xs btn-primary">Test</span>
         </td>
+        <!-- Hiding URL on Edit screens, to keep the 'secret' backdoor from being exposed to many users. 
+             Future changes to permissions/roles may have this re-exposed.
         <td ng-if="action=='Edit'">{{project.terminologyHandlerUrl}}</td>
+         -->
       </tr>
       <tr>
         <td>
