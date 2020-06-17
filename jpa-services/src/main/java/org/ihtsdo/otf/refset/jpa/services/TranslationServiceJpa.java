@@ -249,7 +249,10 @@ public class TranslationServiceJpa extends RefsetServiceJpa
     }
 
     // Remove the component
+    int objectCt = 0;
     Translation translation = getTranslation(id);
+    handleLazyInit(translation);
+    
     if (cascade) {
 
       if (getTransactionPerOperation())
@@ -259,11 +262,13 @@ public class TranslationServiceJpa extends RefsetServiceJpa
       // Remove concepts/ descriptions/language refset members
       for (final Concept c : translation.getConcepts()) {
         removeConcept(c.getId(), true);
+        logAndCommit(++objectCt, RootService.logCt, RootService.commitCt);
       }
 
       // Remove spelling dictionary
       if (translation.getSpellingDictionary() != null) {
         removeSpellingDictionary(translation.getSpellingDictionary().getId());
+        logAndCommit(++objectCt, RootService.logCt, RootService.commitCt);
       }
 
       // remove memory entry
@@ -271,6 +276,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa
         for (final MemoryEntry entry : translation.getPhraseMemory()
             .getEntries()) {
           removeMemoryEntry(entry.getId());
+          logAndCommit(++objectCt, RootService.logCt, RootService.commitCt);
         }
 
         // remove phrase memory
@@ -280,9 +286,12 @@ public class TranslationServiceJpa extends RefsetServiceJpa
       // Remove description types - CASCADE
     }
 
+    commitClearBegin();
+    
     // Remove notes
     for (final Note note : translation.getNotes()) {
       removeNote(note.getId(), TranslationNoteJpa.class);
+      logAndCommit(++objectCt, RootService.logCt, RootService.commitCt);
     }
 
     translation = removeHasLastModified(id, TranslationJpa.class);
