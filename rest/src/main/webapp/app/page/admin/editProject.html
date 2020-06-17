@@ -35,7 +35,7 @@
         <td>
           <b>Terminology Handler</b>
         </td>
-        <td ng-if="action=='Add'">
+        <td ng-if="action==='Add'">
           <select ng-model="handler" ng-change="selectHandler(handler)"
             ng-options="item.key for item in terminologyHandlers"></select>
           &nbsp;
@@ -43,23 +43,22 @@
             uib-tooltip="Choose the handler and URL before picking terminology and module."
             class="noul material-icons md-18">info</i>
         </td>
-        <td ng-if="action=='Edit'">{{project.terminologyHandlerKey}}</td>
+        <td ng-if="action==='Edit'">{{project.terminologyHandlerKey}}</td>
       </tr>
-      <tr>
+        <!-- Hiding URL on Edit screens, to keep the 'secret' backdoor from being exposed to many users. 
+             Future changes to permissions/roles may have this re-exposed. -->      
+      <tr ng-if="action==='Add'">
         <td>
           <b>Handler URL</b>
         </td>
-        <td ng-if="action=='Add'">
+        <td ng-if="action==='Add'">
           <input type="text" ng-model="project.terminologyHandlerUrl" size="40"
             ng-change="urlChanged()" />
           <span ng-disabled="!project.terminologyHandlerUrl"
             title="Test handler URL" ng-click="testHandlerUrl()"
             class="btn btn-xs btn-primary">Test</span>
         </td>
-        <!-- Hiding URL on Edit screens, to keep the 'secret' backdoor from being exposed to many users. 
-             Future changes to permissions/roles may have this re-exposed.
-        <td ng-if="action=='Edit'">{{project.terminologyHandlerUrl}}</td>
-         -->
+        <td ng-if="action==='Edit'">{{project.terminologyHandlerUrl}}</td>
       </tr>
       <tr>
         <td>
