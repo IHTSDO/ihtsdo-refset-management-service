@@ -275,7 +275,11 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
       beginTransaction();
     }
 
+    // Remove the component
+    int objectCt = 0;
     Refset refset = getRefset(id);
+    handleLazyInit(refset);
+    
     if (cascade) {
       if (getTransactionPerOperation())
         throw new Exception(
@@ -287,12 +291,16 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
       }
       for (final ConceptRefsetMember member : refset.getMembers()) {
         removeMember(member.getId());
+        logAndCommit(++objectCt, RootService.logCt, RootService.commitCt);
       }
     }
 
+    commitClearBegin();
+    
     // Remove notes
     for (final Note note : refset.getNotes()) {
       removeNote(note.getId(), RefsetNoteJpa.class);
+      logAndCommit(++objectCt, RootService.logCt, RootService.commitCt);
     }
 
     // Remove the component
