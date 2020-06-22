@@ -275,7 +275,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     Logger.getLogger(getClass()).debug("  Get terminology versions - " + url
         + "/codesystems/" + edition + "/versions");
     WebTarget target =
-        client.target(url + "/codesystems/" + edition + "/versions?showFutureVersions=true");
+        client.target(url + "/codesystems/" + edition + "/versions");
     Response response = target.request(accept)
         .header("Authorization", authHeader)
         .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
