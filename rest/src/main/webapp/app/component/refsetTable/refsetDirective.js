@@ -1784,14 +1784,14 @@ tsApp
                 $scope.terminologySelected = function(terminology) {
                   $scope.versions = refsetService.filterTerminologyVersions(
                     $scope.project.terminologyHandlerKey, terminology, $scope.localMetadata.versions);
-					if ($scope.project.terminologyHandlerKey !== 'PUBLIC-BROWSER') {                  
-						if (terminology === 'SNOMEDCT') {
-                    		$scope.refset.version = "MAIN";
-                  		} else {
-                   			 $scope.refset.version = "MAIN/" + terminology;
-                  		}
-					}
-                };
+                  if ($scope.project.terminologyHandlerKey === 'MANAGED-SERVICE') {
+                    if (terminology === 'SNOMEDCT') {
+                      $scope.refset.version = "MAIN";
+                    } else {
+                      $scope.refset.version = "MAIN/" + terminology;
+                    }
+                  }
+		                };
 
                 // Handle version selected
                 $scope.versionSelected = function(version) {
@@ -3129,7 +3129,7 @@ tsApp
                 $scope.terminologySelected = function(terminology) {
                   $scope.versions = refsetService.filterTerminologyVersions(
                     $scope.project.terminologyHandlerKey, terminology, $scope.metadata.versions);
-                  if ($scope.project.terminologyHandlerKey !== 'PUBLIC-BROWSER') {
+                  if ($scope.project.terminologyHandlerKey === 'MANAGED-SERVICE') {
                     if (terminology === 'SNOMEDCT') {
                       $scope.refset.version = "MAIN";
                     } else {
@@ -3334,7 +3334,7 @@ tsApp
                 $scope.terminologySelected = function(terminology) {
                   $scope.versions = refsetService.filterTerminologyVersions(
                     $scope.project.terminologyHandlerKey, terminology, $scope.metadata.versions);
-                  if ($scope.project.terminologyHandlerKey !== 'PUBLIC-BROWSER') {
+                  if ($scope.project.terminologyHandlerKey === 'MANAGED-SERVICE') {
                     if (terminology === 'SNOMEDCT') {
                       $scope.refset.version = "MAIN";
                     } else {
