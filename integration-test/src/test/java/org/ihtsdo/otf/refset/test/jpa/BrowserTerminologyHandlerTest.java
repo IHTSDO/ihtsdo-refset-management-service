@@ -237,7 +237,7 @@ public class BrowserTerminologyHandlerTest extends JpaSupport {
     ProjectService service = new ProjectServiceJpa();
     List<Terminology> terminologyList =
         service.getTerminologyHandler(project, null)
-            .getTerminologyVersions("en-edition");
+            .getTerminologyVersions("en-edition", false);
     assertEquals(3, terminologyList.size());
     service.close();
   }
