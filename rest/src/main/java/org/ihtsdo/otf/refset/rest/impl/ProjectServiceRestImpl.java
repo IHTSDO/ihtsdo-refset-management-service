@@ -739,7 +739,9 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
 
       final List<Terminology> versions =
           projectService.getTerminologyHandler(project, getHeaders(headers))
-              .getTerminologyVersions(terminology);
+              .getTerminologyVersions(terminology,
+                  (project.getTerminologyHandlerKey().equals("AUTHORING-INTL")
+                      ? true : false));
       final TerminologyList list = new TerminologyListJpa();
       list.setObjects(versions);
       list.setTotalCount(list.getCount());
