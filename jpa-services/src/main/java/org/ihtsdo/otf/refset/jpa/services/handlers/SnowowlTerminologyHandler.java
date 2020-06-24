@@ -161,7 +161,8 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     // this case, clear out the generic use cookie so the next call can re-login
     else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
       genericUserCookie = null;
-      throw new LocalException("Connection with the terminology server has expired. Please reload the page to reconnect.");
+      throw new LocalException(
+          "Connection with the terminology server has expired. Please reload the page to reconnect.");
     } else {
       throw new LocalException(
           "Unexpected terminology server failure. Message = " + resultString);
@@ -242,7 +243,8 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     // this case, clear out the generic use cookie so the next call can re-login
     else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
       genericUserCookie = null;
-      throw new LocalException("Connection with the terminology server has expired. Please reload the page to reconnect.");
+      throw new LocalException(
+          "Connection with the terminology server has expired. Please reload the page to reconnect.");
     } else {
 
       throw new LocalException(
@@ -287,8 +289,8 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
 
   /* see superclass */
   @Override
-  public List<Terminology> getTerminologyVersions(String edition)
-    throws Exception {
+  public List<Terminology> getTerminologyVersions(String edition,
+    Boolean showFutureVersions) throws Exception {
     // Make a webservice call to SnowOwl to get branches
     final Client client = ClientBuilder.newClient();
 
@@ -313,7 +315,8 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     // this case, clear out the generic use cookie so the next call can re-login
     else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
       genericUserCookie = null;
-      throw new LocalException("Connection with the terminology server has expired. Please reload the page to reconnect.");
+      throw new LocalException(
+          "Connection with the terminology server has expired. Please reload the page to reconnect.");
     } else {
 
       throw new LocalException(
@@ -367,7 +370,8 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     // this case, clear out the generic use cookie so the next call can re-login
     else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
       genericUserCookie = null;
-      throw new LocalException("Connection with the terminology server has expired. Please reload the page to reconnect.");
+      throw new LocalException(
+          "Connection with the terminology server has expired. Please reload the page to reconnect.");
     } else {
 
       // Here's the messy part about trying to parse the return error message
@@ -494,7 +498,8 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     // this case, clear out the generic use cookie so the next call can re-login
     else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
       genericUserCookie = null;
-      throw new LocalException("Connection with the terminology server has expired. Please reload the page to reconnect.");
+      throw new LocalException(
+          "Connection with the terminology server has expired. Please reload the page to reconnect.");
     } else {
 
       // Here's the messy part about trying to parse the return error message
@@ -639,7 +644,8 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     // this case, clear out the generic use cookie so the next call can re-login
     else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
       genericUserCookie = null;
-      throw new LocalException("Connection with the terminology server has expired. Please reload the page to reconnect.");
+      throw new LocalException(
+          "Connection with the terminology server has expired. Please reload the page to reconnect.");
     } else {
 
       // Here's the messy part about trying to parse the return error message
@@ -761,7 +767,8 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
 
           // update the concept name to the FSN if available
           if (!desc.get("semanticTag").asText().isEmpty()
-              && desc.get("typeId").asText().equals("900000000000003001") && desc.get("active").asText().equals("true")) {
+              && desc.get("typeId").asText().equals("900000000000003001")
+              && desc.get("active").asText().equals("true")) {
             concept.setName(desc.get("term").asText());
           }
           if (description.isActive()) {
@@ -802,10 +809,12 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
         // n/a
       }
       // If the generic user is logged out, it returns a 403 Forbidden error. In
-      // this case, clear out the generic use cookie so the next call can re-login
+      // this case, clear out the generic use cookie so the next call can
+      // re-login
       else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
         genericUserCookie = null;
-        throw new LocalException("Connection with the terminology server has expired. Please reload the page to reconnect.");
+        throw new LocalException(
+            "Connection with the terminology server has expired. Please reload the page to reconnect.");
       } else {
         throw new LocalException(
             "Unexpected terminology server failure. Message = " + resultString);
@@ -923,7 +932,8 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     // this case, clear out the generic use cookie so the next call can re-login
     else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
       genericUserCookie = null;
-      throw new LocalException("Connection with the terminology server has expired. Please reload the page to reconnect.");
+      throw new LocalException(
+          "Connection with the terminology server has expired. Please reload the page to reconnect.");
     } else {
 
       // Here's the messy part about trying to parse the return error message
@@ -971,7 +981,8 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     // this case, clear out the generic use cookie so the next call can re-login
     else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
       genericUserCookie = null;
-      throw new LocalException("Connection with the terminology server has expired. Please reload the page to reconnect.");
+      throw new LocalException(
+          "Connection with the terminology server has expired. Please reload the page to reconnect.");
     } else {
 
       // Here's the messy part about trying to parse the return error message
@@ -1297,7 +1308,8 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     // this case, clear out the generic use cookie so the next call can re-login
     else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
       genericUserCookie = null;
-      throw new LocalException("Connection with the terminology server has expired. Please reload the page to reconnect.");
+      throw new LocalException(
+          "Connection with the terminology server has expired. Please reload the page to reconnect.");
     } else {
       throw new LocalException(
           "Unexpected terminology server failure. Message = " + resultString);
@@ -1457,7 +1469,8 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     // this case, clear out the generic use cookie so the next call can re-login
     else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
       genericUserCookie = null;
-      throw new LocalException("Connection with the terminology server has expired. Please reload the page to reconnect.");
+      throw new LocalException(
+          "Connection with the terminology server has expired. Please reload the page to reconnect.");
     } else if (response.getStatusInfo() == Status.NOT_FOUND) {
       throw new LocalException(getErrorMessage(resultString));
     } else {
@@ -1531,7 +1544,8 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     // this case, clear out the generic use cookie so the next call can re-login
     else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
       genericUserCookie = null;
-      throw new LocalException("Connection with the terminology server has expired. Please reload the page to reconnect.");
+      throw new LocalException(
+          "Connection with the terminology server has expired. Please reload the page to reconnect.");
     } else if (response.getStatusInfo() == Status.NOT_FOUND) {
       throw new LocalException(getErrorMessage(resultString));
     } else {
@@ -1656,7 +1670,8 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     // this case, clear out the generic use cookie so the next call can re-login
     else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
       genericUserCookie = null;
-      throw new LocalException("Connection with the terminology server has expired. Please reload the page to reconnect.");
+      throw new LocalException(
+          "Connection with the terminology server has expired. Please reload the page to reconnect.");
     } else if (response.getStatusInfo() == Status.NOT_FOUND) {
       throw new LocalException(getErrorMessage(resultString));
     } else {
@@ -1744,7 +1759,8 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     // this case, clear out the generic use cookie so the next call can re-login
     else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
       genericUserCookie = null;
-      throw new LocalException("Connection with the terminology server has expired. Please reload the page to reconnect.");
+      throw new LocalException(
+          "Connection with the terminology server has expired. Please reload the page to reconnect.");
     } else {
 
       throw new LocalException(
@@ -1817,7 +1833,7 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     genericUserCookie = sb.toString();
     return genericUserCookie;
   }
-  
+
   /* see superclass */
   @Override
   public List<TranslationExtensionLanguage> getAvailableTranslationExtensionLanguages()
