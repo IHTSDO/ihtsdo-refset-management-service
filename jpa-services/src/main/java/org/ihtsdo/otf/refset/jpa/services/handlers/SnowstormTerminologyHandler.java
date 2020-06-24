@@ -30,6 +30,7 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.Response.Status.Family;
 
 import org.apache.log4j.Logger;
+import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Terminology;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
@@ -267,15 +268,17 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
 
   /* see superclass */
   @Override
-  public List<Terminology> getTerminologyVersions(String edition)
+  public List<Terminology> getTerminologyVersions(String edition, Boolean showFutureVersions)
     throws Exception {
     final List<Terminology> list = new ArrayList<Terminology>();
     // Make a webservice call to get codesystems
     final Client client = ClientBuilder.newClient();
     Logger.getLogger(getClass()).debug("  Get terminology versions - " + url
-        + "/codesystems/" + edition + "/versions");
+        + "/codesystems/" + edition + "/versions"
+            + (showFutureVersions ? "?showFutureVersions=true" : ""));
     WebTarget target =
-        client.target(url + "/codesystems/" + edition + "/versions?showFutureVersions=true");
+        client.target(url + "/codesystems/" + edition + "/versions"
+            + (showFutureVersions ? "?showFutureVersions=true" : ""));
     Response response = target.request(accept)
         .header("Authorization", authHeader)
         .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")

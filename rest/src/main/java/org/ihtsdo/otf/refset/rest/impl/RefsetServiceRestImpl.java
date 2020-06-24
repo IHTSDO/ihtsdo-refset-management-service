@@ -6,6 +6,7 @@ package org.ihtsdo.otf.refset.rest.impl;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -32,7 +33,6 @@ import javax.ws.rs.core.MediaType;
 import org.apache.log4j.Logger;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
-import org.ihtsdo.otf.refset.ConceptRefsetMemberSynonym;
 import org.ihtsdo.otf.refset.DefinitionClause;
 import org.ihtsdo.otf.refset.MemberDiffReport;
 import org.ihtsdo.otf.refset.Note;
@@ -1398,6 +1398,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
 
       // use first to get refset id
       refset = refsetService.getRefset(members[0].getRefsetId());
+      refsetService.handleLazyInit(refset);
 
       final ConceptRefsetMemberList preAdditionsRefsetMemberList =
           refsetService.findMembersForRefset(refset.getId(), "", null);
@@ -2249,6 +2250,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
     try {
       // Load refset
       Refset refset = refsetService.getRefset(refsetId);
+      refsetService.handleLazyInit(refset);
+
       if (refset == null) {
         throw new Exception("Invalid refset id " + refsetId);
       }
@@ -2348,7 +2351,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
 
       // copy definition from staged to origin refset
       // should be identical unless we implement definition changes
-      refset.setDefinitionClauses(stagedRefset.getDefinitionClauses());
+      refset.setDefinitionClauses(new ArrayList<DefinitionClause>(stagedRefset.getDefinitionClauses()));
 
       // Remove the staged refset change and set staging type back to null
       // and update version
@@ -2375,7 +2378,6 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       // remove the refset
       refsetService.removeRefset(stagedRefset.getId(), false);
 
-      refsetService.handleLazyInit(refset);
       refsetService.commitClearBegin();
 
       // Re-read updated refset and flag all members for name/synonym lookup
@@ -2430,6 +2432,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
     try {
       // Load refset
       final Refset refset = refsetService.getRefset(refsetId);
+      refsetService.handleLazyInit(refset);
+      
       if (refset == null) {
         throw new Exception("Invalid refset id " + refsetId);
       }
