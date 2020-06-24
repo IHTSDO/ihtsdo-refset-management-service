@@ -952,6 +952,13 @@ tsApp.service('refsetService', [
         });
     };
 
+    
+    /* $http.get(refsetUrl + 'lookup/status?refsetId=' + refsetId, {
+        headers : {
+          'Content-type' : 'text/plain'
+        }
+      }).then(*/
+      
     this.exportDiffReport = function(action, reportToken, refset, migrationTerminology,
       migrationVersion) {
       console.debug('exportDiffReport');
@@ -959,23 +966,26 @@ tsApp.service('refsetService', [
       gpService.increment();
       $http.get(
         refsetUrl + 'export/report?reportToken=' + reportToken + '&terminology='
-          + migrationTerminology + '&version=' + migrationVersion).then(
+          + migrationTerminology + '&version=' + migrationVersion, {
+            responseType: 'arraybuffer'
+          }).then(
         // Success
         function(response) {
+          console.debug('  export report result = ');
           var blob = new Blob([ response.data ], {
-            type : ''
+            type : 'application/vnd.ms-excel'
           });
 
-          // fake a file URL and download it
+          // hack to download store a file having its URL
           var fileURL = URL.createObjectURL(blob);
           var a = document.createElement('a');
           a.href = fileURL;
           a.target = '_blank';
-          a.download = action + '_' + utilService.toCamelCase(refset.name) + refset.terminologyId
-            + '_' + utilService.yyyymmdd(new Date()) + '.xls';
+          a.download = getReportFileName(refset);
           document.body.appendChild(a);
           gpService.decrement();
           a.click();
+          
           deferred.resolve(response.data);
         },
         // Error
@@ -985,6 +995,11 @@ tsApp.service('refsetService', [
           deferred.reject(response.data);
         });
       return deferred.promise;
+    };
+    
+    var getReportFileName = function(refset) {
+      var date = new Date().toISOString().slice(0, 19).replace(/-/g, '').replace(/:/g, '').replace(/T/, '_');
+      return refset.name + '_' + refset.id + '_' + date + '.xls';
     };
 
     // Begin import members - if validation is result, OK to proceed.
