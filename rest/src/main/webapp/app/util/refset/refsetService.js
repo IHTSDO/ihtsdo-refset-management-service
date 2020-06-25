@@ -952,8 +952,9 @@ tsApp.service('refsetService', [
         });
     };
 
+    // returns the file names for migration reports for the given project and refset
     this.getMigrationFileNames = function(projectId, refsetId) {
-      console.debug('get migration file names');
+      console.debug('get migration file names*');
       var deferred = $q.defer();
       gpService.increment();
       $http.get(refsetUrl + 'export/report/fileNames?projectId=' + projectId + '&refsetId=' + refsetId).then(
