@@ -549,10 +549,28 @@
             </td>
             <td>{{refsetReleaseInfo.name}}
           </tr>
+           <tr ng-show="migrationFiles.length > 0">
+            <td><b>Migration Files</b></td>
+            <td>
+              <select style="width:75%;"
+                ng-model="selectedMigrationFile"
+                ng-options="item for item in migrationFiles">
+               </select>
+             <a
+               href="RTT/Project-{{project.id}}/Migration/{{selected.refset.terminologyId}}/{{selectedMigrationFile}}"
+               target="_blank">
+                <i
+                  style="margin-left: 5px; margin-right: 10px;"
+                   class="noul glyphicon glyphicon-download"
+                   title="Download selected migration file."></i>
+             </a>
+             </td>
+          </tr>
           <tr ng-show="!refsetReleaseInfo">
             <td>Not yet released</td>
             <td>&nbsp;</td>
           </tr>
+         
         </tbody>
       </table>
     </div>

@@ -3,6 +3,8 @@
  */
 package org.ihtsdo.otf.refset.jpa.services;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -2105,5 +2107,45 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
         }
       }
     }
+  }
+  
+  /* see superclass */
+  @Override
+  public String getMigrationFileNames(String projectId, String refsetId) throws Exception {
+    String rootPath = ConfigUtility.getConfigProperties()
+        .getProperty("report.base.dir");
+    if (!rootPath.endsWith("/") && !rootPath.endsWith("\\")) {
+      rootPath += "/";
+    }
+
+    // Find the refset's directory of files
+    String path = rootPath + "RTT/Project-" + projectId
+        + "/Migration/" + refsetId;
+    path.replaceAll("\\s", "");
+
+    // Get all effectiveTime subfolders within that location
+    File reportDir = new File(path);
+    if (!reportDir.exists()) {
+      return "";
+    }
+
+    String releaseFileNames = "";
+
+    // Get all .xls files 
+    // And add to return releaseFileNames (full path)
+    for (final File report : reportDir.listFiles()) {      
+      if (!report.getName().endsWith(".xls")) {
+        continue;
+      }
+      releaseFileNames += report.getName() + "|";
+    }
+
+    // get rid of last pipe
+    if (releaseFileNames.length() > 1) {
+      releaseFileNames =
+          releaseFileNames.substring(0, releaseFileNames.length() - 1);
+    } 
+    
+    return releaseFileNames;
   }
 }

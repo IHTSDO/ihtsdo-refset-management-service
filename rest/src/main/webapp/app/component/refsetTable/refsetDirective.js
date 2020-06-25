@@ -123,6 +123,9 @@ tsApp
               $scope.ioImportHandlers = [];
               $scope.ioExportHandlers = [];
               $scope.isSnowowl = false;
+              
+
+              $scope.migrationFiles = new Array();
 
               // Refset Changed handler
               $scope.$on('refset:refsetChanged', function(event, data) {
@@ -659,6 +662,20 @@ tsApp
                     }
                   }
                 });
+                // check if migration files are on server available for download
+                $scope.migrationFiles = new Array();
+                refsetService.getMigrationFileNames($scope.project.id, $scope.selected.refset.terminologyId).then(
+                  function(data) {
+                    if (data != '') {                     
+                    var fileNames = data.split("\|");
+                    for (var i = 0, l = fileNames.length; i < l; i++) {
+                      $scope.migrationFiles.push(fileNames[i]);
+                      // Have the files sorted in reverse order, so the most recent is on top.
+                      $scope.migrationFiles.sort();
+                      $scope.migrationFiles.reverse();
+                    }
+                    }
+                  });
               };
 
               // Selects a member (setting $scope.selected.member)
@@ -3881,8 +3898,22 @@ tsApp
                   return utilService.getSortIndicator(table, field, $scope.paging);
                 };
 
-                $scope.exportDiffReport = function() {
-                  refsetService.exportDiffReport('migration', $scope.reportToken, $scope.refset, $scope.newTerminology, $scope.newVersion);
+                $scope.exportDiffReport = function(action) {
+                  refsetService.exportDiffReport(action, $scope.reportToken, $scope.refset, $scope.newTerminology, $scope.newVersion);
+                  // update migration files list
+                  $scope.migrationFiles = new Array();
+                  refsetService.getMigrationFileNames($scope.project.id, $scope.refset.terminologyId).then(
+                    function(data) {
+                      if (data != '') {                     
+                      var fileNames = data.split("\|");
+                      for (var i = 0, l = fileNames.length; i < l; i++) {
+                        $scope.migrationFiles.push(fileNames[i]);
+                        // Have the files sorted in reverse order, so the most recent is on top.
+                        $scope.migrationFiles.sort();
+                        $scope.migrationFiles.reverse();
+                      }
+                      }
+                    });
                 }
 
                 $scope.testTerminologyVersion = function() {
@@ -4739,6 +4770,8 @@ tsApp
 
               $scope.getFilters();
 
+              
+              
               // end
 
             } ]
