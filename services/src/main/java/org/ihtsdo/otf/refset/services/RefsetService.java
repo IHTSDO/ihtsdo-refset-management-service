@@ -490,4 +490,15 @@ public interface RefsetService extends ReleaseService {
   public String getDisplayNameForMember(Long memberId, String language)
     throws Exception;
 
+  /**
+   * Returns the migration file names.
+   *
+   * @param projectId the project id
+   * @param refsetId the refset id
+   * @return the migration file names
+   * @throws Exception the exception
+   */
+  public String getMigrationFileNames(String projectId, String refsetId)
+    throws Exception;
+
 }

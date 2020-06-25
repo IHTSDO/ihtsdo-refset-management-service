@@ -4,7 +4,10 @@
 package org.ihtsdo.otf.refset.rest.impl;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -31,6 +34,7 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 
 import org.apache.log4j.Logger;
+import org.apache.poi.util.IOUtils;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.ihtsdo.otf.refset.DefinitionClause;
@@ -1103,12 +1107,14 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
     @ApiParam(value = "Report token, (UUID format)", required = true) @QueryParam("reportToken") String reportToken,
     @ApiParam(value = "Terminology", required = false) @QueryParam("terminology") String migrationTerminology,
     @ApiParam(value = "Version", required = false) @QueryParam("version") String migrationVersion,
+    @ApiParam(value = "Action", required = false) @QueryParam("action") String action,
+    @ApiParam(value = "Report File Name", required = false) @QueryParam("reportFileName") String reportFileName,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
     Logger.getLogger(getClass())
         .info("RESTful call GET (Refset): /export/report " + reportToken + " "
-            + migrationTerminology + " " + migrationVersion);
+            + migrationTerminology + " " + migrationVersion + " " + action + " " + reportFileName);
 
     final RefsetServiceJpa refsetService =
         new RefsetServiceJpa(getHeaders(headers));
@@ -1117,23 +1123,50 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       authorizeApp(securityService, authToken, "export report",
           UserRole.VIEWER);
 
-      // Load refset
+      // Load report
       final MemberDiffReport report =
           this.getDiffReport(reportToken, authToken);
       if (report == null) {
         throw new Exception("Member diff report is null " + reportToken);
       }
 
+      // Compile report
       List<ConceptRefsetMember> membersInCommon = membersInCommonMap.get(reportToken);
       ExportReportHandler reportHandler = new ExportReportHandler();
       InputStream reportStream = reportHandler.exportReport(report, refsetService, 
           migrationTerminology, migrationVersion, getHeaders(headers), membersInCommon);
       
+      // Create dir structure to write report to disk
+      String outputDirString = ConfigUtility.getConfigProperties().getProperty("report.base.dir");
+      
+      File outputDir = new File(outputDirString);
+      File rttDir = new File(outputDir, "RTT");
+      String projectId = report.getNewRefset().getProject().getTerminologyId();
+      File projectDir = new File (rttDir, "Project-" + projectId);
+      File migrationDir = new File(projectDir, "Migration");
+      File refsetDir = new File(migrationDir, report.getNewRefset().getTerminologyId());
+      if (!refsetDir.isDirectory()) {
+        refsetDir.mkdirs();
+      }
+      
+      // Write report file to disk
+      File exportFile = new File(refsetDir, reportFileName);
+      OutputStream outStream = new FileOutputStream(exportFile);
+      
+      byte[] buffer = new byte[8 * 1024];
+      int bytesRead;
+      while ((bytesRead = reportStream.read(buffer)) != -1) {
+          outStream.write(buffer, 0, bytesRead);
+      }
+      IOUtils.closeQuietly(reportStream);
+      IOUtils.closeQuietly(outStream);
+      
+      // Return report stream to user for download
       return reportStream;
       
 
     } catch (Exception e) {
-      handleException(e, "trying to export migration report");
+      handleException(e, "trying to export report");
     } finally {
       refsetService.close();
       securityService.close();
@@ -1142,6 +1175,45 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
 
   }
 
+  /* see superclass */
+  @Override
+  @GET
+  @Path("/export/report/fileNames")
+  @ApiOperation(value = "Get migration file names", notes = "Gets a list of migration file names from the server.", response = String.class)
+  @Produces({
+      MediaType.TEXT_PLAIN
+  })
+  public String getMigrationFileNames(
+    @ApiParam(value = "Project id, e.g. 7", required = true) @QueryParam("projectId") String projectId,
+    @ApiParam(value = "Refset id, e.g. 7", required = true) @QueryParam("refsetId") String refsetId,
+    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(getClass())
+    .info("RESTful call GET (Refset): /export/report/fileNames " + projectId + " "
+        + refsetId);
+
+
+    final RefsetServiceJpa refsetService =
+        new RefsetServiceJpa(getHeaders(headers));
+    try {
+      // Authorize the call
+      authorizeApp(securityService, authToken, "export report file names",
+          UserRole.VIEWER);
+      
+      final String results = refsetService.getMigrationFileNames(projectId, refsetId);
+
+      return results;
+
+    } catch (Exception e) {
+      handleException(e, "trying to export report file names");
+    } finally {
+      refsetService.close();
+      securityService.close();
+    }
+    return null;
+  }
+  
   /* see superclass */
   @POST
   @Override

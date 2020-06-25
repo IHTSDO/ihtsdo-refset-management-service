@@ -952,40 +952,55 @@ tsApp.service('refsetService', [
         });
     };
 
-    
-    /* $http.get(refsetUrl + 'lookup/status?refsetId=' + refsetId, {
-        headers : {
-          'Content-type' : 'text/plain'
-        }
-      }).then(*/
-      
+    this.getMigrationFileNames = function(projectId, refsetId) {
+      console.debug('get migration file names');
+      var deferred = $q.defer();
+      gpService.increment();
+      $http.get(refsetUrl + 'export/report/fileNames?projectId=' + projectId + '&refsetId=' + refsetId).then(
+      // success
+      function(response) {
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    };
+
     this.exportDiffReport = function(action, reportToken, refset, migrationTerminology,
       migrationVersion) {
       console.debug('exportDiffReport');
+      var reportFileName = getReportFileName(refset, action);
       var deferred = $q.defer();
       gpService.increment();
       $http.get(
         refsetUrl + 'export/report?reportToken=' + reportToken + '&terminology='
-          + migrationTerminology + '&version=' + migrationVersion, {
+          + migrationTerminology + '&version=' + migrationVersion + '&action=' 
+          + action + '&reportFileName=' + reportFileName, {
             responseType: 'arraybuffer'
           }).then(
         // Success
         function(response) {
           console.debug('  export report result = ');
-          var blob = new Blob([ response.data ], {
-            type : 'application/vnd.ms-excel'
-          });
+          if (action == 'ExportReport') {
+            var blob = new Blob([ response.data ], {
+              type : 'application/vnd.ms-excel'
+            });
 
-          // hack to download store a file having its URL
-          var fileURL = URL.createObjectURL(blob);
-          var a = document.createElement('a');
-          a.href = fileURL;
-          a.target = '_blank';
-          a.download = getReportFileName(refset);
-          document.body.appendChild(a);
+            // hack to download store a file having its URL
+            var fileURL = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = fileURL;
+            a.target = '_blank';
+            a.download = reportFileName;
+            document.body.appendChild(a);
+            a.click();
+          }
           gpService.decrement();
-          a.click();
-          
           deferred.resolve(response.data);
         },
         // Error
@@ -997,9 +1012,9 @@ tsApp.service('refsetService', [
       return deferred.promise;
     };
     
-    var getReportFileName = function(refset) {
+    var getReportFileName = function(refset, action) {
       var date = new Date().toISOString().slice(0, 19).replace(/-/g, '').replace(/:/g, '').replace(/T/, '_');
-      return refset.name + '_' + refset.id + '_' + date + '.xls';
+      return utilService.toCamelCase(refset.name) + '_' + refset.id + '_' + date + '_' + action + '.xls';
     };
 
     // Begin import members - if validation is result, OK to proceed.

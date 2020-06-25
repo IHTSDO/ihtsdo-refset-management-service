@@ -80,7 +80,7 @@ tsApp
           return pfs;
         };
 
-        this.toText = function(camelCase, captializefirst) {
+        this.toText = function(camelCase, capitalizeFirst) {
           if (capitalizeFirst) {
             var str = camelCase.replace(/([A-Z]+)/g, " $1").replace(/([A-Z][a-z])/g, " $1");
             return str[0].toUpperCase() + str.slice(1)
