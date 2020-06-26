@@ -177,7 +177,6 @@ public class DescriptionJpaUnitTest extends ModelUnitSupport {
     tester.include("typeId");
     tester.include("termSort");
     tester.include("caseSignificanceId");
-    tester.include("active");
 
     assertTrue(tester.testNotAnalyzedIndexedFields());
 

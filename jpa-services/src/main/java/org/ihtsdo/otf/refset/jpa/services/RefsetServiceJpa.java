@@ -281,7 +281,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
     int objectCt = 0;
     Refset refset = getRefset(id);
     handleLazyInit(refset);
-
+    
     if (cascade) {
       if (getTransactionPerOperation())
         throw new Exception(
@@ -291,14 +291,14 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
         throw new LocalException(
             "Unable to remove refset, embedded translations must first be removed.");
       }
-      for (final ConceptRefsetMember member : refset.getMembers(true)) {
-        removeMember(member.getId(), true);
+      for (final ConceptRefsetMember member : refset.getMembers()) {
+        removeMember(member.getId());
         logAndCommit(++objectCt, RootService.logCt, RootService.commitCt);
       }
     }
 
     commitClearBegin();
-
+    
     // Remove notes
     for (final Note note : refset.getNotes()) {
       removeNote(note.getId(), RefsetNoteJpa.class);
@@ -450,22 +450,6 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
   @Override
   public ConceptRefsetMember addMember(ConceptRefsetMember member)
     throws Exception {
-
-    // If member already exists and is inactive, reactivate (pull over the
-    // immutable ids from the existing member)
-    ConceptRefsetMemberList existingMembers =
-        findMembersForRefset(member.getRefset().getId(),
-            "conceptId:" + member.getConceptId(), null, true);
-
-    if (existingMembers.getCount() > 0
-        && !existingMembers.getObjects().get(0).isActive()) {
-      ConceptRefsetMember inactiveMember = existingMembers.getObjects().get(0);
-      member.setId(inactiveMember.getId());
-      member.setTerminologyId(inactiveMember.getTerminologyId());
-      return reactivateMember(member);
-    }
-
-    // Otherwise, add
     Logger.getLogger(getClass()).debug("Refset Service - add member " + member);
     // Assign id
     IdentifierAssignmentHandler idHandler = null;
@@ -488,50 +472,9 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
 
   }
 
-  /**
-   * Reactivate member.
-   *
-   * @param member the member
-   * @return the concept refset member
-   * @throws Exception the exception
-   */
-  private ConceptRefsetMember reactivateMember(ConceptRefsetMember member)
-    throws Exception {
-    Logger.getLogger(getClass())
-        .debug("Refset Service - reactivate member " + member);
-
-    // Manage transaction
-    boolean origTpo = getTransactionPerOperation();
-    if (origTpo) {
-      setTransactionPerOperation(false);
-      beginTransaction();
-    }
-
-    // Set the member to active
-    member.setActive(true);
-    updateMember(member);
-
-    // Manage transaction
-    if (origTpo) {
-      commit();
-      setTransactionPerOperation(origTpo);
-    }
-
-    return member;
-
-  }
-
   /* see superclass */
   @Override
   public void removeMember(Long id) throws Exception {
-
-    // If this member is part of a project that has stable UUIDs,
-    // inactivate instead of removing
-    if (getMember(id).getRefset().getProject().isStableUUIDs()) {
-      inactivateMember(id);
-      return;
-    }
-
     Logger.getLogger(getClass())
         .debug("Refset Service - remove refset member " + id);
 
@@ -563,84 +506,6 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
     }
 
     // Do not inform listeners
-  }
-
-  /* see superclass */
-  @Override
-  public void removeMember(Long id, Boolean force) throws Exception {
-
-    // Sometimes we need to forcibly remove members, even if the project is
-    // tracking UUIDs
-    // e.g. for temporary, staged refsets created during migrations or release processes
-
-    // If we're not forcing, do the normal remove/inactivate method
-    if (!force) {
-      removeMember(id);
-      return;
-    }
-
-    // Otherwise, remove the refset.
-    Logger.getLogger(getClass())
-        .debug("Refset Service - remove refset member " + id);
-
-    // Manage transaction
-    boolean origTpo = getTransactionPerOperation();
-    if (origTpo) {
-      setTransactionPerOperation(false);
-      beginTransaction();
-    }
-
-    // Remove notes
-    final ConceptRefsetMember member = getMember(id);
-    for (final Note note : member.getNotes()) {
-      removeNote(note.getId(), ConceptRefsetMemberNoteJpa.class);
-    }
-
-    // Remove synonyms
-    for (final ConceptRefsetMemberSynonym synonym : member.getSynonyms()) {
-      removeConceptRefsetMemberSynonym(synonym.getId());
-    }
-
-    // Remove the component
-    removeHasLastModified(id, ConceptRefsetMemberJpa.class);
-
-    // Manage transaction
-    if (origTpo) {
-      commit();
-      setTransactionPerOperation(origTpo);
-    }
-
-    // Do not inform listeners
-  }
-
-  /**
-   * Inactivate member.
-   *
-   * @param id the id
-   * @throws Exception the exception
-   */
-  private void inactivateMember(Long id) throws Exception {
-    Logger.getLogger(getClass())
-        .debug("Refset Service - inactivate refset member " + id);
-
-    // Manage transaction
-    boolean origTpo = getTransactionPerOperation();
-    if (origTpo) {
-      setTransactionPerOperation(false);
-      beginTransaction();
-    }
-
-    // Set the member to inactive
-    final ConceptRefsetMember member = getMember(id);
-    member.setActive(false);
-    updateMember(member);
-
-    // Manage transaction
-    if (origTpo) {
-      commit();
-      setTransactionPerOperation(origTpo);
-    }
-
   }
 
   /* see superclass */
@@ -657,46 +522,6 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
     String query, PfsParameter pfs) throws Exception {
     Logger.getLogger(getClass()).info("Refset Service - find members " + "/"
         + query + " refsetId " + refsetId);
-
-    final StringBuilder sb = new StringBuilder();
-    if (query != null && !query.equals("")) {
-      sb.append(query).append(" AND ");
-    }
-    if (refsetId == null) {
-      sb.append("refsetId:[* TO *] AND ");
-    } else {
-      sb.append("refsetId:" + refsetId + " AND ");
-    }
-
-    sb.append("active:true");
-
-    try {
-      int[] totalCt = new int[1];
-      final List<ConceptRefsetMember> list =
-          (List<ConceptRefsetMember>) getQueryResults(sb.toString(),
-              ConceptRefsetMemberJpa.class, ConceptRefsetMemberJpa.class, pfs,
-              totalCt);
-      final ConceptRefsetMemberList result = new ConceptRefsetMemberListJpa();
-      result.setTotalCount(totalCt[0]);
-      result.setObjects(list);
-      return result;
-    } catch (ParseException e) {
-      // On parse error, return empty results
-      return new ConceptRefsetMemberListJpa();
-    }
-  }
-
-  /* see superclass */
-  @SuppressWarnings("unchecked")
-  public ConceptRefsetMemberList findMembersForRefset(Long refsetId,
-    String query, PfsParameter pfs, Boolean includeInactive) throws Exception {
-    Logger.getLogger(getClass())
-        .info("Refset Service - find members " + "/" + query + " refsetId "
-            + refsetId + " includeInactive=" + includeInactive);
-
-    if (includeInactive == false) {
-      return findMembersForRefset(refsetId, query, pfs);
-    }
 
     final StringBuilder sb = new StringBuilder();
     if (query != null && !query.equals("")) {

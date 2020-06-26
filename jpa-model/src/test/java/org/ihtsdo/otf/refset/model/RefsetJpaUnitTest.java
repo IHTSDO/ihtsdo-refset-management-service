@@ -249,7 +249,6 @@ public class RefsetJpaUnitTest extends ModelUnitSupport {
     tester.include("userRoleMap");
     tester.include("userAnyRole");
     tester.include("organization");
-    
     assertTrue(tester.testAnalyzedIndexedFields());
 
     // Test non analyzed fields
@@ -279,7 +278,6 @@ public class RefsetJpaUnitTest extends ModelUnitSupport {
     tester.include("namespace");
     tester.include("domain");
     tester.include("revision");
-    tester.include("active");
 
     assertTrue(tester.testNotAnalyzedIndexedFields());
 
