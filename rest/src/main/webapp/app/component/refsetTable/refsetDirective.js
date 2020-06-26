@@ -11,6 +11,7 @@ tsApp
       '$routeParams',
       '$sce',
       '$interval',
+      '$timeout',
       'utilService',
       'securityService',
       'projectService',
@@ -19,7 +20,7 @@ tsApp
       'workflowService',
       'validationService',
       'appConfig',
-      function($uibModal, $location, $window, $route, $routeParams, $sce, $interval, utilService,
+      function($uibModal, $location, $window, $route, $routeParams, $sce, $interval, $timeout, utilService,
         securityService, projectService, refsetService, releaseService, workflowService,
         validationService, appConfig) {
         console.debug('configure refsetTable directive');
@@ -4162,6 +4163,7 @@ tsApp
                       function(data) {
                         $scope.reportToken = data;
                         $scope.getDiffReport();
+                        $scope.exportDiffReport('Migrate');
                       },
                       // Error
                       function(data) {
@@ -4262,6 +4264,8 @@ tsApp
 
                 // Save for later, allow state to be resumed
                 $scope.saveForLater = function(refset) {
+                  // added solely for delay to migration files update
+                  startLookup(refset);
                   // updates refset on close
                   $uibModalInstance.close(refset);
                 };
