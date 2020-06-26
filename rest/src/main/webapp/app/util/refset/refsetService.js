@@ -952,30 +952,56 @@ tsApp.service('refsetService', [
         });
     };
 
+    // returns the file names for migration reports for the given project and refset
+    this.getMigrationFileNames = function(projectId, refsetId) {
+      console.debug('get migration file names*');
+      var deferred = $q.defer();
+      gpService.increment();
+      $http.get(refsetUrl + 'export/report/fileNames?projectId=' + projectId + '&refsetId=' + refsetId).then(
+      // success
+      function(response) {
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    };
+
     this.exportDiffReport = function(action, reportToken, refset, migrationTerminology,
       migrationVersion) {
       console.debug('exportDiffReport');
+      var reportFileName = getReportFileName(refset, action);
       var deferred = $q.defer();
       gpService.increment();
       $http.get(
         refsetUrl + 'export/report?reportToken=' + reportToken + '&terminology='
-          + migrationTerminology + '&version=' + migrationVersion).then(
+          + migrationTerminology + '&version=' + migrationVersion + '&action=' 
+          + action + '&reportFileName=' + reportFileName, {
+            responseType: 'arraybuffer'
+          }).then(
         // Success
         function(response) {
-          var blob = new Blob([ response.data ], {
-            type : ''
-          });
+          console.debug('  export report result = ');
+          if (action == 'ExportReport') {
+            var blob = new Blob([ response.data ], {
+              type : 'application/vnd.ms-excel'
+            });
 
-          // fake a file URL and download it
-          var fileURL = URL.createObjectURL(blob);
-          var a = document.createElement('a');
-          a.href = fileURL;
-          a.target = '_blank';
-          a.download = action + '_' + utilService.toCamelCase(refset.name) + refset.terminologyId
-            + '_' + utilService.yyyymmdd(new Date()) + '.xls';
-          document.body.appendChild(a);
+            // hack to download store a file having its URL
+            var fileURL = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = fileURL;
+            a.target = '_blank';
+            a.download = reportFileName;
+            document.body.appendChild(a);
+            a.click();
+          }
           gpService.decrement();
-          a.click();
           deferred.resolve(response.data);
         },
         // Error
@@ -985,6 +1011,11 @@ tsApp.service('refsetService', [
           deferred.reject(response.data);
         });
       return deferred.promise;
+    };
+    
+    var getReportFileName = function(refset, action) {
+      var date = new Date().toISOString().slice(0, 19).replace(/-/g, '').replace(/:/g, '').replace(/T/, '_');
+      return utilService.toCamelCase(refset.name) + '_' + refset.id + '_' + date + '_' + action + '.xls';
     };
 
     // Begin import members - if validation is result, OK to proceed.

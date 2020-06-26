@@ -1560,7 +1560,7 @@ public class RefsetClientRest extends RootClientRest
   /* see superclass */
   @Override
   public InputStream exportDiffReport(String reportToken, String terminology, 
-		  String version,String authToken)
+		  String version, String action, String reportFileName, String authToken)
     throws Exception {
     Logger.getLogger(getClass())
         .debug("Refset Client - export diff report - " + reportToken);
@@ -1568,7 +1568,8 @@ public class RefsetClientRest extends RootClientRest
     Client client = ClientBuilder.newClient();
     WebTarget target = client.target(config.getProperty("base.url")
         + "/refset/export/report" + "?reportToken=" + reportToken + 
-        "&terminology=" + terminology + "&version=" + version);
+        "&terminology=" + terminology + "&version=" + version + 
+        "&action=" + action + "&reportFileName=" + reportFileName);
     Response response = target.request(MediaType.APPLICATION_OCTET_STREAM)
         .header("Authorization", authToken).get();
 
@@ -1656,6 +1657,13 @@ public class RefsetClientRest extends RootClientRest
   public StringList getRequiredLanguageRefsets(Long refsetId, String authToken) throws Exception {
 	// TODO Auto-generated method stub
 	return null;
+  }
+
+  @Override
+  public String getMigrationFileNames(String projectIdName, String refsetIdName,
+    String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
   }
 
 }

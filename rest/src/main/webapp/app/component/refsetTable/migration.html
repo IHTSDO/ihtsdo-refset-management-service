@@ -797,20 +797,20 @@
 
   <span style="float: left">
     <button ng-show="refset.staged" class="btn btn-xs btn-primary"
-      ng-click="exportDiffReport();">Export Report</button>
+      ng-click="exportDiffReport('ExportReport');">Export Report</button>
   </span>
   <button class="btn btn-xs btn-primary"
     ng-disabled="refset.staged || validVersion != 'true'"
     title="Test version before migrating"
-    ng-click="beginMigration(newTerminology, newVersion);">Migrate</button>
+    ng-click="beginMigration(newTerminology, newVersion);exportDiffReport('Migrate')">Migrate</button>
 
   <button ng-show="refset.staged" class="btn btn-xs btn-primary"
-    ng-click="saveForLater(refset);">Save for later</button>
+    ng-click="saveForLater(refset);exportDiffReport('SaveForLater')">Save for later</button>
 
   <button class="btn btn-xs btn-primary"
     confirm="Are you sure you want to finish migration?"
     ng-disabled="!refset.staged || stagedRefset.lookupInProgress || refset.lookupInProgress"
-    ng-click="finish(refset); ">Finish</button>
+    ng-click="finish(refset);exportDiffReport('Finish')">Finish</button>
 
   <button confirm="Are you sure you want to cancel migration?"
     class="btn btn-xs btn-warning"
