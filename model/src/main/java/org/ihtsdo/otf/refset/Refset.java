@@ -313,6 +313,14 @@ public interface Refset extends Component, Searchable {
   public List<ConceptRefsetMember> getMembers();
 
   /**
+   * Gets the members.
+   *
+   * @param includeInactives the include inactives
+   * @return the members
+   */
+  public List<ConceptRefsetMember> getMembers(Boolean includeInactives);
+
+  /**
    * Sets the refset members.
    *
    * @param members the refset members
@@ -445,22 +453,21 @@ public interface Refset extends Component, Searchable {
    */
   public boolean isLookupInProgress();
 
-
   /**
-   * Indicates whether or a lookup of member concepts names and statuses
-   * is needed
-   * 
+   * Indicates whether or a lookup of member concepts names and statuses is
+   * needed.
+   *
    * @return true, if is lookup aborted
    */
   public boolean isLookupRequired();
 
   /**
-   * Updates whether a lookup of member concepts names and statuses 
-   * is needed
+   * Updates whether a lookup of member concepts names and statuses is needed.
    *
-   * @param lookupAborted the new lookup aborted
+   * @param lookupRequired the new lookup required
    */
   public void setLookupRequired(boolean lookupRequired);
+
   /**
    * Sets the revision.
    *
@@ -516,6 +523,5 @@ public interface Refset extends Component, Searchable {
    * @param translated the new translated
    */
   public void setTranslated(boolean translated);
-
 
 }
