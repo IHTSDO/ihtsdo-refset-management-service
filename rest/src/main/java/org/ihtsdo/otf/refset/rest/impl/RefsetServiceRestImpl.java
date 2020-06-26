@@ -2416,7 +2416,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         }
         // Member exactly matches one in origin - remove it, leave origin alone
         else {
-          refsetService.removeMember(stagedMember.getId(), true);
+          refsetService.removeMember(stagedMember.getId());
         }
       }
       stagedRefset.setMembers(new ArrayList<ConceptRefsetMember>());

@@ -140,7 +140,6 @@ public class ProjectJpaUnitTest extends ModelUnitSupport {
     tester.include("terminology");
     tester.include("terminologyHandlerKey");
     tester.include("workflowPath");
-    tester.include("stableUUIDs");
     assertTrue(tester.testNotNullFields());
   }
 

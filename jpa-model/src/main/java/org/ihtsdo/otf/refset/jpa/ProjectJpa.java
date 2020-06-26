@@ -133,10 +133,6 @@ public class ProjectJpa implements Project {
   @Column(nullable = false)
   private String workflowPath;
 
-  /** The "stable UUIDs" flag. */
-  @Column(nullable = false)
-  private boolean stableUUIDs = false;
-  
   /** The role map. */
   @ElementCollection
   @MapKeyClass(value = UserJpa.class)
@@ -157,7 +153,7 @@ public class ProjectJpa implements Project {
   @CollectionTable(name = "project_validation_checks")
   private List<String> validationChecks = new ArrayList<>();
 
-  /**  The translation preferred languages for suggestions. */
+  /** The translation preferred languages for suggestions */
   @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, targetEntity = TranslationExtensionLanguageJpa.class, orphanRemoval = true)
   private List<TranslationExtensionLanguage> translationExtensionLanguages;
 
@@ -201,7 +197,6 @@ public class ProjectJpa implements Project {
     for (Refset refset : project.getRefsets()) {
       refsets.add(new RefsetJpa(refset));
     }
-    stableUUIDs = project.isStableUUIDs();
   }
 
   /* see superclass */
@@ -573,20 +568,6 @@ public class ProjectJpa implements Project {
     this.translationExtensionLanguages.remove(translationExtensionLanguage);
   }
 
-
-  /* see superclass */
-  @Override
-  public boolean isStableUUIDs() {
-    return stableUUIDs;
-  }
-
-  /* see superclass */
-  @Override
-  public void setStableUUIDs(boolean stableUUIDs) {
-    this.stableUUIDs = stableUUIDs;
-  }
-  
-  
   /* see superclass */
   @Override
   public boolean equals(Object obj) {
@@ -668,7 +649,7 @@ public class ProjectJpa implements Project {
         + workflowPath + ", exclusionClause=" + exclusionClause
         + ", userRoleMap=" + userRoleMap + ", validationChecks="
         + validationChecks + ", translationExtensionLanguages="
-        + translationExtensionLanguages + "], stableUUIDs=" + stableUUIDs;
+        + translationExtensionLanguages + "]";
   }
 
 }

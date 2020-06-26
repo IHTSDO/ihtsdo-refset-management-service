@@ -96,15 +96,6 @@ public interface RefsetService extends ReleaseService {
   public void removeMember(Long id) throws Exception;
 
   /**
-   * Removes the member.
-   *
-   * @param id the id
-   * @param force the force
-   * @throws Exception the exception
-   */
-  public void removeMember(Long id, Boolean force) throws Exception;
-
-  /**
    * Returns the refset descriptor ref set member.
    *
    * @param terminologyId the terminology id
@@ -150,19 +141,6 @@ public interface RefsetService extends ReleaseService {
    */
   public ConceptRefsetMemberList findMembersForRefset(Long refsetId,
     String query, PfsParameter pfs) throws Exception;
-
-  /**
-   * Find members for refset.
-   *
-   * @param refsetId the refset id
-   * @param query the query
-   * @param pfs the pfs
-   * @param includeInactive the include inactive
-   * @return the concept refset member list
-   * @throws Exception the exception
-   */
-  public ConceptRefsetMemberList findMembersForRefset(Long refsetId,
-    String query, PfsParameter pfs, Boolean includeInactive) throws Exception;
 
   /**
    * Returns the import refset handler.
@@ -337,7 +315,6 @@ public interface RefsetService extends ReleaseService {
    * @param refsetId the refset
    * @param label the label
    * @param background the background
-   * @param lookupSynonyms the lookup synonyms
    * @throws Exception the exception
    */
   public void lookupMemberNames(Long refsetId, String label, boolean background,
