@@ -206,7 +206,7 @@ public interface Project extends Searchable {
   /**
    * Sets the translation extension languages.
    *
-   * @param translationExtensionLanguages the translation extension languages
+   * @param translationExtensionLanguage the new translation extension languages
    */
   public void setTranslationExtensionLanguages(
     List<TranslationExtensionLanguage> translationExtensionLanguage);
@@ -226,5 +226,21 @@ public interface Project extends Searchable {
    */
   public void removeTranslationExtensionLanguage(
     TranslationExtensionLanguage translationExtensionLanguage);
+
+
+  /**
+   * Checks if is stable UUI ds.
+   *
+   * @return true, if is stable UUI ds
+   */
+  public boolean isStableUUIDs();
+
+
+  /**
+   * Sets the stable UUI ds.
+   *
+   * @param stableUUIDs the new stable UUI ds
+   */
+  public void setStableUUIDs(boolean stableUUIDs);
 
 }
