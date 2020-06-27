@@ -3,7 +3,6 @@
  */
 package org.ihtsdo.otf.refset.rest.impl;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
@@ -43,7 +42,6 @@ import org.ihtsdo.otf.refset.Note;
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Refset.MemberType;
-import org.ihtsdo.otf.refset.Refset.Type;
 import org.ihtsdo.otf.refset.ReleaseInfo;
 import org.ihtsdo.otf.refset.StagedRefsetChange;
 import org.ihtsdo.otf.refset.Translation;
@@ -1082,21 +1080,25 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
 
   }
 
-  /**@POST
-  @Path("/compare/files/{id:[0-9][0-9]*}")
-  @ApiOperation(value = "Compares two map files", notes = "Compares two files and saves the comparison report to the file system.", response = InputStream.class)
-  @Consumes({
-      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
-  })
-  @Produces("application/vnd.ms-excel")
-  public InputStream compareMapFiles(
-    @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
-    @ApiParam(value = "File paths, in JSON or XML POST data", required = true) List<String> files,
-    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
-    
-  } */
-  
+  /**
+   * @POST @Path("/compare/files/{id:[0-9][0-9]*}")
+   * @ApiOperation(value = "Compares two map files", notes = "Compares two files
+   *                     and saves the comparison report to the file system.",
+   *                     response = InputStream.class)
+   * @Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+   *             }) @Produces("application/vnd.ms-excel") public InputStream
+   *             compareMapFiles(
+   * @ApiParam(value = "Map project id, e.g. 7", required =
+   *                 true) @PathParam("id") Long mapProjectId,
+   * @ApiParam(value = "File paths, in JSON or XML POST data", required = true)
+   *                 List<String> files,
+   * @ApiParam(value = "Authorization token", required =
+   *                 true) @HeaderParam("Authorization") String authToken)
+   *                 throws Exception {
+   * 
+   *                 }
+   */
+
   /* see superclass */
   @GET
   @Override
@@ -1114,7 +1116,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
 
     Logger.getLogger(getClass())
         .info("RESTful call GET (Refset): /export/report " + reportToken + " "
-            + migrationTerminology + " " + migrationVersion + " " + action + " " + reportFileName);
+            + migrationTerminology + " " + migrationVersion + " " + action + " "
+            + reportFileName);
 
     final RefsetServiceJpa refsetService =
         new RefsetServiceJpa(getHeaders(headers));
@@ -1131,39 +1134,42 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       }
 
       // Compile report
-      List<ConceptRefsetMember> membersInCommon = membersInCommonMap.get(reportToken);
+      List<ConceptRefsetMember> membersInCommon =
+          membersInCommonMap.get(reportToken);
       ExportReportHandler reportHandler = new ExportReportHandler();
-      InputStream reportStream = reportHandler.exportReport(report, refsetService, 
-          migrationTerminology, migrationVersion, getHeaders(headers), membersInCommon);
-      
+      InputStream reportStream = reportHandler.exportReport(report,
+          refsetService, migrationTerminology, migrationVersion,
+          getHeaders(headers), membersInCommon);
+
       // Create dir structure to write report to disk
-      String outputDirString = ConfigUtility.getConfigProperties().getProperty("report.base.dir");
-      
+      String outputDirString =
+          ConfigUtility.getConfigProperties().getProperty("report.base.dir");
+
       File outputDir = new File(outputDirString);
       File rttDir = new File(outputDir, "RTT");
       String projectId = report.getNewRefset().getProject().getTerminologyId();
-      File projectDir = new File (rttDir, "Project-" + projectId);
+      File projectDir = new File(rttDir, "Project-" + projectId);
       File migrationDir = new File(projectDir, "Migration");
-      File refsetDir = new File(migrationDir, report.getNewRefset().getTerminologyId());
+      File refsetDir =
+          new File(migrationDir, report.getNewRefset().getTerminologyId());
       if (!refsetDir.isDirectory()) {
         refsetDir.mkdirs();
       }
-      
+
       // Write report file to disk
       File exportFile = new File(refsetDir, reportFileName);
       OutputStream outStream = new FileOutputStream(exportFile);
-      
+
       byte[] buffer = new byte[8 * 1024];
       int bytesRead;
       while ((bytesRead = reportStream.read(buffer)) != -1) {
-          outStream.write(buffer, 0, bytesRead);
+        outStream.write(buffer, 0, bytesRead);
       }
       IOUtils.closeQuietly(reportStream);
       IOUtils.closeQuietly(outStream);
-      
+
       // Return report stream to user for download
       return reportStream;
-      
 
     } catch (Exception e) {
       handleException(e, "trying to export report");
@@ -1190,9 +1196,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
     throws Exception {
 
     Logger.getLogger(getClass())
-    .info("RESTful call GET (Refset): /export/report/fileNames " + projectId + " "
-        + refsetId);
-
+        .info("RESTful call GET (Refset): /export/report/fileNames " + projectId
+            + " " + refsetId);
 
     final RefsetServiceJpa refsetService =
         new RefsetServiceJpa(getHeaders(headers));
@@ -1200,8 +1205,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       // Authorize the call
       authorizeApp(securityService, authToken, "export report file names",
           UserRole.VIEWER);
-      
-      final String results = refsetService.getMigrationFileNames(projectId, refsetId);
+
+      final String results =
+          refsetService.getMigrationFileNames(projectId, refsetId);
 
       return results;
 
@@ -1213,7 +1219,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
     }
     return null;
   }
-  
+
   /* see superclass */
   @POST
   @Override
@@ -2366,6 +2372,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         final ConceptRefsetMember stagedMember = stagedMembers.get(key);
         // concept not in staged refset, remove
         if (stagedMember == null) {
+          refset.removeMember(originMember);
           refsetService.removeMember(originMember.getId());
         }
         // member type or concept active status changed, rewire
@@ -2505,7 +2512,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       // Load refset
       final Refset refset = refsetService.getRefset(refsetId);
       refsetService.handleLazyInit(refset);
-      
+
       if (refset == null) {
         throw new Exception("Invalid refset id " + refsetId);
       }
