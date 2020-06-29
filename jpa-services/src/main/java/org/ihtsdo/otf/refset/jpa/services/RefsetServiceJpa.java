@@ -4,7 +4,6 @@
 package org.ihtsdo.otf.refset.jpa.services;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -455,10 +454,9 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
     // immutable ids from the existing member)
     ConceptRefsetMemberList existingMembers =
         findMembersForRefset(member.getRefset().getId(),
-            "conceptId:" + member.getConceptId(), null, true);
+            "conceptId:" + member.getConceptId(), null, false);
 
-    if (existingMembers.getCount() > 0
-        && !existingMembers.getObjects().get(0).isActive()) {
+    if (existingMembers.getCount() > 0) {
       ConceptRefsetMember inactiveMember = existingMembers.getObjects().get(0);
       member.setId(inactiveMember.getId());
       member.setTerminologyId(inactiveMember.getTerminologyId());
@@ -466,6 +464,44 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
     }
 
     // Otherwise, add
+    Logger.getLogger(getClass()).debug("Refset Service - add member " + member);
+    // Assign id
+    IdentifierAssignmentHandler idHandler = null;
+    if (assignIdentifiersFlag) {
+      idHandler =
+          getIdentifierAssignmentHandler(member.getRefset().getTerminology());
+      if (idHandler == null) {
+        throw new Exception("Unable to find id handler for "
+            + member.getRefset().getTerminology());
+      }
+      String id = idHandler.getTerminologyId(member);
+      member.setTerminologyId(id);
+    }
+
+    // Add component
+    ConceptRefsetMember newMember = addHasLastModified(member);
+
+    // do not inform listeners
+    return newMember;
+
+  }
+
+  /* see superclass */
+  public ConceptRefsetMember addMember(ConceptRefsetMember member,
+    Map<String, Long> inactiveMemberConceptIdsMap) throws Exception {
+
+    // If the refset contains any inactive members, check each member to be
+    // added against the list of inactive members' concept Ids
+    if (inactiveMemberConceptIdsMap != null
+        && inactiveMemberConceptIdsMap.keySet().contains(member.getConceptId())) {
+      ConceptRefsetMember inactiveMember =
+          getMember(inactiveMemberConceptIdsMap.get(member.getConceptId()));
+      member.setId(inactiveMember.getId());
+      member.setTerminologyId(inactiveMember.getTerminologyId());
+      return reactivateMember(member);
+    }
+
+    // Otherwise, add the member
     Logger.getLogger(getClass()).debug("Refset Service - add member " + member);
     // Assign id
     IdentifierAssignmentHandler idHandler = null;
@@ -571,7 +607,8 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
 
     // Sometimes we need to forcibly remove members, even if the project is
     // tracking UUIDs
-    // e.g. for temporary, staged refsets created during migrations or release processes
+    // e.g. for temporary, staged refsets created during migrations or release
+    // processes
 
     // If we're not forcing, do the normal remove/inactivate method
     if (!force) {
@@ -654,7 +691,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
   @SuppressWarnings("unchecked")
   @Override
   public ConceptRefsetMemberList findMembersForRefset(Long refsetId,
-    String query, PfsParameter pfs) throws Exception {
+    String query, PfsParameter pfs, Boolean active) throws Exception {
     Logger.getLogger(getClass()).info("Refset Service - find members " + "/"
         + query + " refsetId " + refsetId);
 
@@ -668,45 +705,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
       sb.append("refsetId:" + refsetId + " AND ");
     }
 
-    sb.append("active:true");
-
-    try {
-      int[] totalCt = new int[1];
-      final List<ConceptRefsetMember> list =
-          (List<ConceptRefsetMember>) getQueryResults(sb.toString(),
-              ConceptRefsetMemberJpa.class, ConceptRefsetMemberJpa.class, pfs,
-              totalCt);
-      final ConceptRefsetMemberList result = new ConceptRefsetMemberListJpa();
-      result.setTotalCount(totalCt[0]);
-      result.setObjects(list);
-      return result;
-    } catch (ParseException e) {
-      // On parse error, return empty results
-      return new ConceptRefsetMemberListJpa();
-    }
-  }
-
-  /* see superclass */
-  @SuppressWarnings("unchecked")
-  public ConceptRefsetMemberList findMembersForRefset(Long refsetId,
-    String query, PfsParameter pfs, Boolean includeInactive) throws Exception {
-    Logger.getLogger(getClass())
-        .info("Refset Service - find members " + "/" + query + " refsetId "
-            + refsetId + " includeInactive=" + includeInactive);
-
-    if (includeInactive == false) {
-      return findMembersForRefset(refsetId, query, pfs);
-    }
-
-    final StringBuilder sb = new StringBuilder();
-    if (query != null && !query.equals("")) {
-      sb.append(query).append(" AND ");
-    }
-    if (refsetId == null) {
-      sb.append("refsetId:[* TO *]");
-    } else {
-      sb.append("refsetId:" + refsetId);
-    }
+    sb.append("active:" + (active ? "true" : "false"));
 
     try {
       int[] totalCt = new int[1];
@@ -997,7 +996,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
           member.setEffectiveTime(effectiveTime);
         refsetCopy.getMembers().add(member);
 
-        addMember(member);
+        addMember(member,null);
         for (ConceptRefsetMemberSynonym synonym : synonymList) {
           synonym.setMember(member);
           synonym.setId(null);
@@ -1904,7 +1903,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
       for (final ConceptRefsetMember member : refset.getMembers()) {
         member.setId(null);
         member.setRefset(copy);
-        addMember(member);
+        addMember(member, null);
       }
 
       // Recover Notes
@@ -2283,19 +2282,20 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
       }
     }
   }
-  
+
   /* see superclass */
   @Override
-  public String getMigrationFileNames(String projectId, String refsetId) throws Exception {
-    String rootPath = ConfigUtility.getConfigProperties()
-        .getProperty("report.base.dir");
+  public String getMigrationFileNames(String projectId, String refsetId)
+    throws Exception {
+    String rootPath =
+        ConfigUtility.getConfigProperties().getProperty("report.base.dir");
     if (!rootPath.endsWith("/") && !rootPath.endsWith("\\")) {
       rootPath += "/";
     }
 
     // Find the refset's directory of files
-    String path = rootPath + "RTT/Project-" + projectId
-        + "/Migration/" + refsetId;
+    String path =
+        rootPath + "RTT/Project-" + projectId + "/Migration/" + refsetId;
     path.replaceAll("\\s", "");
 
     // Get all effectiveTime subfolders within that location
@@ -2306,9 +2306,9 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
 
     String releaseFileNames = "";
 
-    // Get all .xls files 
+    // Get all .xls files
     // And add to return releaseFileNames (full path)
-    for (final File report : reportDir.listFiles()) {      
+    for (final File report : reportDir.listFiles()) {
       if (!report.getName().endsWith(".xls")) {
         continue;
       }
@@ -2319,8 +2319,29 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
     if (releaseFileNames.length() > 1) {
       releaseFileNames =
           releaseFileNames.substring(0, releaseFileNames.length() - 1);
-    } 
-    
+    }
+
     return releaseFileNames;
   }
+  
+  /* see superclass */
+  @Override
+  public Map<String, Long> mapInactiveMembers(Long refsetId) throws Exception {
+
+    ConceptRefsetMemberList inactiveMembers = findMembersForRefset(refsetId, "", null, false);
+
+    if (inactiveMembers.getObjects().size() > 0) {
+      final Map<String, Long> inactiveMemberConceptIds = new HashMap<>();
+      for (final ConceptRefsetMember inactiveMember : inactiveMembers
+          .getObjects()) {
+        inactiveMemberConceptIds.put(inactiveMember.getConceptId(),
+            inactiveMember.getId());
+      }
+
+      return inactiveMemberConceptIds;
+    } else {
+      return null;
+    }
+  }  
+  
 }

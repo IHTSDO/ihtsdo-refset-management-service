@@ -8,7 +8,6 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -404,6 +403,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         conceptIds.add(member.getConceptId());
       }
 
+      final Map<String, Long> inactiveMemberConceptIdsMap =
+          refsetService.mapInactiveMembers(refset.getId());
+
       ConceptRefsetMemberList list = new ConceptRefsetMemberListJpa();
       for (Concept concept : resolvedFromExpression.getObjects()) {
         // Only add where the refset doesn't already have a member
@@ -418,7 +420,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
           member.setActive(true);
           member.setConceptActive(true);
           member.setLastModifiedBy(userName);
-          ConceptRefsetMember newMember = refsetService.addMember(member);
+          ConceptRefsetMember newMember =
+              refsetService.addMember(member, inactiveMemberConceptIdsMap);
           list.addObject(newMember);
         }
       }
@@ -756,7 +759,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
           // Clear out the name, since it may be different in the new
           // terminology/version it's getting cloned into
           member.setConceptName(TerminologyHandler.REQUIRES_NAME_LOOKUP);
-          refsetService.addMember(member);
+          refsetService.addMember(member, null);
         }
         // Resolve definition if INTENSIONAL
       } else if (refset.getType() == Refset.Type.INTENSIONAL) {
@@ -769,7 +772,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
             member2.setConceptName(TerminologyHandler.REQUIRES_NAME_LOOKUP);
             member2.setRefset(newRefset);
             member2.setId(null);
-            refsetService.addMember(member2);
+            refsetService.addMember(member2, null);
             newRefset.addMember(member2);
           }
         }
@@ -1006,12 +1009,12 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       }
 
       // TODO: get inclusions and exclusions
-      final List<ConceptRefsetMember> inclusions = refsetService
-          .findMembersForRefset(refset.getId(), "memberType:INCLUSION", null)
-          .getObjects();
-      final List<ConceptRefsetMember> exclusions = refsetService
-          .findMembersForRefset(refset.getId(), "memberType:EXCLUSION", null)
-          .getObjects();
+      final List<ConceptRefsetMember> inclusions =
+          refsetService.findMembersForRefset(refset.getId(),
+              "memberType:INCLUSION", null, true).getObjects();
+      final List<ConceptRefsetMember> exclusions =
+          refsetService.findMembersForRefset(refset.getId(),
+              "memberType:EXCLUSION", null, true).getObjects();
       // export the definition
       return handler.exportDefinition(refset, inclusions, exclusions);
 
@@ -1068,7 +1071,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
           refsetService.findMembersForRefset(refset.getId(),
               query == null ? "(memberType:INCLUSION OR memberType:MEMBER)"
                   : query + " AND (memberType:INCLUSION OR memberType:MEMBER)",
-              pfs).getObjects());
+              pfs, true).getObjects());
 
     } catch (Exception e) {
       handleException(e, "trying to export members");
@@ -1081,6 +1084,16 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
   }
 
   /**
+   * Export diff report.
+   *
+   * @param reportToken the report token
+   * @param migrationTerminology the migration terminology
+   * @param migrationVersion the migration version
+   * @param action the action
+   * @param reportFileName the report file name
+   * @param authToken the auth token
+   * @return the input stream
+   * @throws Exception the exception
    * @POST @Path("/compare/files/{id:[0-9][0-9]*}")
    * @ApiOperation(value = "Compares two map files", notes = "Compares two files
    *                     and saves the comparison report to the file system.",
@@ -1404,7 +1417,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       // Check if member already exists, then skip
       final ConceptRefsetMemberList members =
           refsetService.findMembersForRefset(refset.getId(),
-              "conceptId:" + member.getConceptId(), null);
+              "conceptId:" + member.getConceptId(), null, true);
       if (members.getTotalCount() > 0) {
         // Member already exists
         Logger.getLogger(getClass())
@@ -1479,13 +1492,16 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       refsetService.handleLazyInit(refset);
 
       final ConceptRefsetMemberList preAdditionsRefsetMemberList =
-          refsetService.findMembersForRefset(refset.getId(), "", null);
+          refsetService.findMembersForRefset(refset.getId(), "", null, true);
       final List<ConceptRefsetMember> preAdditionsRefsetMembers =
           preAdditionsRefsetMemberList.getObjects();
 
       final String userName =
           authorizeProject(refsetService, refset.getProject().getId(),
               securityService, authToken, "add new member", UserRole.AUTHOR);
+
+      final Map<String, Long> inactiveMemberConceptIdsMap =
+          refsetService.mapInactiveMembers(refset.getId());
 
       for (final ConceptRefsetMemberJpa member : members) {
 
@@ -1510,7 +1526,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
           member.setConceptName(TerminologyHandler.REQUIRES_NAME_LOOKUP);
 
           member.setLastModifiedBy(userName);
-          ConceptRefsetMember newMember = refsetService.addMember(member);
+          ConceptRefsetMember newMember =
+              refsetService.addMember(member, inactiveMemberConceptIdsMap);
           addCount++;
 
           addLogEntry(refsetService, userName, "ADD member",
@@ -1613,7 +1630,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       refsetService.setTransactionPerOperation(false);
       refsetService.beginTransaction();
       for (final ConceptRefsetMember member : refsetService
-          .findMembersForRefset(refsetId, "", null).getObjects()) {
+          .findMembersForRefset(refsetId, "", null, true).getObjects()) {
         refsetService.removeMember(member.getId());
         removeCount++;
 
@@ -1682,7 +1699,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         }
 
         ConceptRefsetMemberList list =
-            refsetService.findMembersForRefset(refsetId, query, pfs);
+            refsetService.findMembersForRefset(refsetId, query, pfs, true);
         for (ConceptRefsetMember member : list.getObjects()) {
           if (language != null && !language.isEmpty()
               && !language.contentEquals("en")) {
@@ -1727,7 +1744,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         return list;
       } else if (translated != null) {
         final ConceptRefsetMemberList list = refsetService
-            .findMembersForRefset(refsetId, query, new PfsParameterJpa());
+            .findMembersForRefset(refsetId, query, new PfsParameterJpa(), true);
         for (ConceptRefsetMember member : list.getObjects()) {
           refsetService.handleLazyInit(member);
         }
@@ -2121,7 +2138,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
           member.setRefset(refsetCopy);
           member.setId(null);
           member.setLastModifiedBy(userName);
-          refsetService.addMember(member);
+          refsetService.addMember(member, null);
 
           // Add to in-memory data structure for later use
           refsetCopy.addMember(member);
@@ -2430,7 +2447,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
 
       // copy definition from staged to origin refset
       // should be identical unless we implement definition changes
-      refset.setDefinitionClauses(new ArrayList<DefinitionClause>(stagedRefset.getDefinitionClauses()));
+      refset.setDefinitionClauses(
+          new ArrayList<DefinitionClause>(stagedRefset.getDefinitionClauses()));
 
       // Remove the staged refset change and set staging type back to null
       // and update version
@@ -3454,6 +3472,10 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       }
       Logger.getLogger(getClass()).info("  refset count = " + memberMap.size());
 
+      // Get any inactivated members as well
+      final Map<String, Long> inactiveMemberConceptIdsMap =
+          refsetService.mapInactiveMembers(refset.getId());
+
       if (memberMap.size() == 0 && handler.isDeltaHandler()) {
         throw new LocalException(
             "A delta import handler should only be used if a refset already has members.");
@@ -3506,7 +3528,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
           member.setSynonyms(null);
 
           member.setLastModifiedBy(userName);
-          refsetService.addMember(member);
+          refsetService.addMember(member, inactiveMemberConceptIdsMap);
 
           memberMap.put(member.getConceptId(), member);
           if (objectCt % commitCt == 0) {
