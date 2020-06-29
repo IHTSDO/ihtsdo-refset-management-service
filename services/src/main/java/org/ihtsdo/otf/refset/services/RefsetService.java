@@ -5,6 +5,7 @@ package org.ihtsdo.otf.refset.services;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import org.ihtsdo.otf.refset.ConceptRefsetMemberSynonym;
 import org.ihtsdo.otf.refset.Note;
@@ -88,12 +89,32 @@ public interface RefsetService extends ReleaseService {
     throws Exception;
 
   /**
+   * Adds the member.
+   *
+   * @param member the member
+   * @param inactiveMemberConceptIdsMap the inactive member concept ids
+   * @return the concept refset member
+   * @throws Exception the exception
+   */
+  public ConceptRefsetMember addMember(ConceptRefsetMember member,
+    Map<String, Long> inactiveMemberConceptIdsMap) throws Exception;
+
+  /**
    * Removes the refset member.
    *
    * @param id the id
    * @throws Exception the exception
    */
   public void removeMember(Long id) throws Exception;
+
+  /**
+   * Removes the member.
+   *
+   * @param id the id
+   * @param force the force
+   * @throws Exception the exception
+   */
+  public void removeMember(Long id, Boolean force) throws Exception;
 
   /**
    * Returns the refset descriptor ref set member.
@@ -136,11 +157,12 @@ public interface RefsetService extends ReleaseService {
    * @param refsetId the refset id
    * @param query the query
    * @param pfs the pfs
+   * @param active the active
    * @return the simple ref set member list
    * @throws Exception the exception
    */
   public ConceptRefsetMemberList findMembersForRefset(Long refsetId,
-    String query, PfsParameter pfs) throws Exception;
+    String query, PfsParameter pfs, Boolean active) throws Exception;
 
   /**
    * Returns the import refset handler.
@@ -315,6 +337,7 @@ public interface RefsetService extends ReleaseService {
    * @param refsetId the refset
    * @param label the label
    * @param background the background
+   * @param lookupSynonyms the lookup synonyms
    * @throws Exception the exception
    */
   public void lookupMemberNames(Long refsetId, String label, boolean background,
@@ -489,5 +512,26 @@ public interface RefsetService extends ReleaseService {
    */
   public String getDisplayNameForMember(Long memberId, String language)
     throws Exception;
+
+  /**
+   * Returns the migration file names.
+   *
+   * @param projectId the project id
+   * @param refsetId the refset id
+   * @return the migration file names
+   * @throws Exception the exception
+   */
+  public String getMigrationFileNames(String projectId, String refsetId)
+    throws Exception;
+
+  /**
+   * Lookup all inactive members of the given refset, and return a map of:
+   * ConceptId -> Id This is used to greatly increase efficiency for addMember.
+   *
+   * @param refsetId the refset id
+   * @return the map
+   * @throws Exception the exception
+   */
+  public Map<String, Long> mapInactiveMembers(Long refsetId) throws Exception;
 
 }

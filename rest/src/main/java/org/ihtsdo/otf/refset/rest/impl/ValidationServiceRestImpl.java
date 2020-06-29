@@ -282,7 +282,7 @@ public class ValidationServiceRestImpl extends RootServiceRestImpl
       final MemberValidationResultList list =
           new MemberValidationResultListJpa();
       final ConceptRefsetMemberList members =
-          refsetService.findMembersForRefset(refsetId, null, null);
+          refsetService.findMembersForRefset(refsetId, null, null, true);
       for (final ConceptRefsetMember member : members.getObjects()) {
         final ValidationResult result =
             validationService.validateMember(member, null, refsetService);

@@ -234,6 +234,7 @@ public class TranslationJpaUnitTest extends ModelUnitSupport {
     tester.include("descriptionSort");
     tester.include("provisional");
     tester.include("organizationSort");
+    tester.include("active");
 
     assertTrue(tester.testNotAnalyzedIndexedFields());
 
