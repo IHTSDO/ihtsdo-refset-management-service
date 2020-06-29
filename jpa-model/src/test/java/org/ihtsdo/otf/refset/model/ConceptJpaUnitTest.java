@@ -176,6 +176,7 @@ public class ConceptJpaUnitTest extends ModelUnitSupport {
     tester.include("translationId");
     tester.include("translationTerminologyId");
     tester.include("revision");
+    tester.include("active");
 
     assertTrue(tester.testNotAnalyzedIndexedFields());
 

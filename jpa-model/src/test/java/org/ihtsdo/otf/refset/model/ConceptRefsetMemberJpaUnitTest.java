@@ -210,7 +210,8 @@ public class ConceptRefsetMemberJpaUnitTest extends ModelUnitSupport {
     tester.include("refsetId");
     tester.include("memberType");
     tester.include("conceptNameSort");
-
+    tester.include("active");
+    
     assertTrue(tester.testNotAnalyzedIndexedFields());
 
   }
