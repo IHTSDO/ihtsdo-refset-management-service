@@ -2740,27 +2740,28 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
 
       List<ConceptRefsetMember> commonMembersList =
           membersInCommonMap.get(reportToken);
+      List<ConceptRefsetMember> newCommonMembersList = new ArrayList<ConceptRefsetMember>(commonMembersList);
 
       // if the value is null, throw an exception
-      if (commonMembersList == null) {
+      if (newCommonMembersList == null) {
         throw new LocalException("No members in common map was found.");
       }
 
       // if conceptActive is indicated, filter the member list by active/retired
       if (conceptActive != null) {
         List<ConceptRefsetMember> matchingActiveList = new ArrayList<>();
-        for (ConceptRefsetMember member : commonMembersList) {
+        for (ConceptRefsetMember member : newCommonMembersList) {
           if ((conceptActive && member.isConceptActive())
               || (!conceptActive && !member.isConceptActive())) {
             matchingActiveList.add(member);
           }
         }
-        commonMembersList = matchingActiveList;
+        newCommonMembersList = matchingActiveList;
       }
 
       final ConceptRefsetMemberList list = new ConceptRefsetMemberListJpa();
       final int[] totalCt = new int[1];
-      list.setObjects(refsetService.applyPfsToList(commonMembersList,
+      list.setObjects(refsetService.applyPfsToList(newCommonMembersList,
           ConceptRefsetMember.class, totalCt, pfs));
       list.setTotalCount(totalCt[0]);
       return list;
