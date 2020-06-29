@@ -116,6 +116,9 @@ public class ExportReportHandler {
             style.setFont(font);
 
             Sheet sheet = wb.createSheet("Report");
+            for (int i = 0; i < 5; i++) {
+              sheet.setColumnWidth(i, 50 * 256);
+            }
 
             // Create header row and add cells
             int rownum = 0;
@@ -367,9 +370,10 @@ public class ExportReportHandler {
               makeMemberRowHelper(member, wb, sheet, rownum++, cell.getCellStyle());
             }
 
-            for (int i = 0; i < 4; i++) {
-                sheet.autoSizeColumn(i);
-            } 
+            
+      /*
+       * for (int i = 0; i < 4; i++) { sheet.autoSizeColumn(i); }
+       */
         } catch (Exception e) {
             throw new LocalException(e.getMessage(), e);
         }
