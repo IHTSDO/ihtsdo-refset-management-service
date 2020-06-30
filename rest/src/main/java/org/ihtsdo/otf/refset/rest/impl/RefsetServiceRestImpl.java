@@ -2473,7 +2473,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       refsetService.removeStagedRefsetChange(change.getId());
 
       // remove the refset
-      refsetService.removeRefset(stagedRefset.getId(), false);
+      refsetService.removeRefset(stagedRefset.getId(), true);
 
       refsetService.commitClearBegin();
 
