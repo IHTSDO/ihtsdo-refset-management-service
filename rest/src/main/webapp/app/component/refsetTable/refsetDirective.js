@@ -11,6 +11,7 @@ tsApp
       '$routeParams',
       '$sce',
       '$interval',
+      '$timeout',
       'utilService',
       'securityService',
       'projectService',
@@ -19,7 +20,7 @@ tsApp
       'workflowService',
       'validationService',
       'appConfig',
-      function($uibModal, $location, $window, $route, $routeParams, $sce, $interval, utilService,
+      function($uibModal, $location, $window, $route, $routeParams, $sce, $interval, $timeout, utilService,
         securityService, projectService, refsetService, releaseService, workflowService,
         validationService, appConfig) {
         console.debug('configure refsetTable directive');
@@ -123,6 +124,9 @@ tsApp
               $scope.ioImportHandlers = [];
               $scope.ioExportHandlers = [];
               $scope.isSnowowl = false;
+              
+
+              $scope.migrationFiles = new Array();
 
               // Refset Changed handler
               $scope.$on('refset:refsetChanged', function(event, data) {
@@ -659,6 +663,20 @@ tsApp
                     }
                   }
                 });
+                // check if migration files are on server available for download
+                $scope.migrationFiles = new Array();
+                refsetService.getMigrationFileNames($scope.project.id, $scope.selected.refset.terminologyId).then(
+                  function(data) {
+                    if (data != '') {                     
+                    var fileNames = data.split("\|");
+                    for (var i = 0, l = fileNames.length; i < l; i++) {
+                      $scope.migrationFiles.push(fileNames[i]);
+                      // Have the files sorted in reverse order, so the most recent is on top.
+                      $scope.migrationFiles.sort();
+                      $scope.migrationFiles.reverse();
+                    }
+                    }
+                  });
               };
 
               // Selects a member (setting $scope.selected.member)
@@ -1784,14 +1802,14 @@ tsApp
                 $scope.terminologySelected = function(terminology) {
                   $scope.versions = refsetService.filterTerminologyVersions(
                     $scope.project.terminologyHandlerKey, terminology, $scope.localMetadata.versions);
-					if ($scope.project.terminologyHandlerKey !== 'PUBLIC-BROWSER') {                  
-						if (terminology === 'SNOMEDCT') {
-                    		$scope.refset.version = "MAIN";
-                  		} else {
-                   			 $scope.refset.version = "MAIN/" + terminology;
-                  		}
-					}
-                };
+                  if ($scope.project.terminologyHandlerKey === 'MANAGED-SERVICE') {
+                    if (terminology === 'SNOMEDCT') {
+                      $scope.refset.version = "MAIN";
+                    } else {
+                      $scope.refset.version = "MAIN/" + terminology;
+                    }
+                  }
+		                };
 
                 // Handle version selected
                 $scope.versionSelected = function(version) {
@@ -3129,7 +3147,7 @@ tsApp
                 $scope.terminologySelected = function(terminology) {
                   $scope.versions = refsetService.filterTerminologyVersions(
                     $scope.project.terminologyHandlerKey, terminology, $scope.metadata.versions);
-                  if ($scope.project.terminologyHandlerKey !== 'PUBLIC-BROWSER') {
+                  if ($scope.project.terminologyHandlerKey === 'MANAGED-SERVICE') {
                     if (terminology === 'SNOMEDCT') {
                       $scope.refset.version = "MAIN";
                     } else {
@@ -3334,7 +3352,7 @@ tsApp
                 $scope.terminologySelected = function(terminology) {
                   $scope.versions = refsetService.filterTerminologyVersions(
                     $scope.project.terminologyHandlerKey, terminology, $scope.metadata.versions);
-                  if ($scope.project.terminologyHandlerKey !== 'PUBLIC-BROWSER') {
+                  if ($scope.project.terminologyHandlerKey === 'MANAGED-SERVICE') {
                     if (terminology === 'SNOMEDCT') {
                       $scope.refset.version = "MAIN";
                     } else {
@@ -3881,8 +3899,22 @@ tsApp
                   return utilService.getSortIndicator(table, field, $scope.paging);
                 };
 
-                $scope.exportDiffReport = function() {
-                  refsetService.exportDiffReport('migration', $scope.reportToken, $scope.refset, $scope.newTerminology, $scope.newVersion);
+                $scope.exportDiffReport = function(action) {
+                  refsetService.exportDiffReport(action, $scope.reportToken, $scope.refset, $scope.newTerminology, $scope.newVersion);
+                  // update migration files list
+                  $scope.migrationFiles = new Array();
+                  refsetService.getMigrationFileNames($scope.project.id, $scope.refset.terminologyId).then(
+                    function(data) {
+                      if (data != '') {                     
+                      var fileNames = data.split("\|");
+                      for (var i = 0, l = fileNames.length; i < l; i++) {
+                        $scope.migrationFiles.push(fileNames[i]);
+                        // Have the files sorted in reverse order, so the most recent is on top.
+                        $scope.migrationFiles.sort();
+                        $scope.migrationFiles.reverse();
+                      }
+                      }
+                    });
                 }
 
                 $scope.testTerminologyVersion = function() {
@@ -4131,6 +4163,7 @@ tsApp
                       function(data) {
                         $scope.reportToken = data;
                         $scope.getDiffReport();
+                        $scope.exportDiffReport('Migrate');
                       },
                       // Error
                       function(data) {
@@ -4231,6 +4264,8 @@ tsApp
 
                 // Save for later, allow state to be resumed
                 $scope.saveForLater = function(refset) {
+                  // added solely for delay to migration files update
+                  startLookup(refset);
                   // updates refset on close
                   $uibModalInstance.close(refset);
                 };
@@ -4739,6 +4774,8 @@ tsApp
 
               $scope.getFilters();
 
+              
+              
               // end
 
             } ]

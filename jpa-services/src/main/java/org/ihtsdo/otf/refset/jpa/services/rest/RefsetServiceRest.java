@@ -669,12 +669,14 @@ public interface RefsetServiceRest {
    * @param reportToken the report token
    * @param terminology the terminology
    * @param version the version
+   * @param action the action
+   * @param reportFileName the report file name
    * @param authToken the auth token
    * @return the input stream
    * @throws Exception the exception
    */
-  public InputStream exportDiffReport(String reportToken, String terminology,
-    String version, String authToken) throws Exception;
+  public InputStream exportDiffReport(String reportToken, String migrationTerminology,
+    String migrationVersion, String action, String reportFileName, String authToken) throws Exception;
 
   /**
    * Export refset duplicates report.
@@ -733,5 +735,17 @@ public interface RefsetServiceRest {
    */
   public void startLookupMemberNames(Long refsetId, Boolean background,
     String authToken) throws Exception;
+
+  /**
+   * Returns the migration file names.
+   *
+   * @param projectId the project id
+   * @param refsetId the refset id
+   * @param authToken the auth token
+   * @return the migration file names
+   * @throws Exception the exception
+   */
+  public String getMigrationFileNames(String projectId, String refsetId, String authToken)
+    throws Exception;
 
 }

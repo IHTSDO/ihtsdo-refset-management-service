@@ -1675,7 +1675,16 @@ public class PatchDataMojo extends AbstractRttMojo {
     StringBuilder projectIdStringBuilder = new StringBuilder();
     for (Project prj : translationService.getProjects().getObjects()) {
       Project project = translationService.getProject(prj.getId());
-      if (!project.getTerminologyHandlerKey().equals("PUBLIC-BROWSER")) {
+      
+      // Update SNOMED International Project to be an AUTHORING-INTL project
+      if(project.getId().equals(1L)) {
+        ct++;
+        project.setTerminologyHandlerKey("AUTHORING-INTL");
+        translationService.updateProject(project);
+      }
+      
+      // Change all MANAGED-SERVICE projects to point to prod-snowstorm
+      else if (project.getTerminologyHandlerKey().equals("MANAGED-SERVICE")) {
         ct++;
         project.setTerminologyHandlerUrl(
             "https://prod-snowstorm.ihtsdotools.org/snowstorm/snomed-ct");
@@ -1707,11 +1716,11 @@ public class PatchDataMojo extends AbstractRttMojo {
       }
     }
 
-    // update non-PUBLIC-BROWSER refset terminology and version branches
+    // update MANAGED-SERVICE refset terminology and version branches
     ct = 0;
     for (Refset ref : translationService.getRefsets().getObjects()) {
       Refset refset = translationService.getRefset(ref.getId());
-      if (!refset.getProject().getTerminologyHandlerKey().equals("PUBLIC-BROWSER")) {
+      if (refset.getProject().getTerminologyHandlerKey().equals("MANAGED-SERVICE")) {
         ct++;
         String old_version = refset.getVersion();
         System.out.println("REFSET " + refset.getId() + " Old terminology: " + refset.getTerminology() + " Old version: " + old_version);
@@ -1742,13 +1751,13 @@ public class PatchDataMojo extends AbstractRttMojo {
     getLog().info("refsets updated final ct = " + ct);
     translationService.commitClearBegin();
     
-    // update non-PUBLIC-BROWSER translation terminology and version branches
+    // update MANAGED-SERVICE translation terminology and version branches
     ct = 0;
     for (Translation trans : translationService.getTranslations()
         .getObjects()) {
       Translation translation =
           translationService.getTranslation(trans.getId());
-      if (!translation.getProject().getTerminologyHandlerKey().equals("PUBLIC-BROWSER")) {
+      if (translation.getProject().getTerminologyHandlerKey().equals("MANAGED-SERVICE")) {
         ct++;
         String old_version = translation.getVersion();
 
