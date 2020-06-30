@@ -563,7 +563,8 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
 
     // If this member is part of a project that has stable UUIDs,
     // inactivate instead of removing
-    if (getMember(id).getRefset().getProject().isStableUUIDs()) {
+    // Do NOT inactivate if this is a provisional refset - we want those fully removed.
+    if (getMember(id).getRefset().getProject().isStableUUIDs() && !getMember(id).getRefset().isProvisional()) {
       inactivateMember(id);
       return;
     }
