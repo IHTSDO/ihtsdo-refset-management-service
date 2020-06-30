@@ -103,7 +103,7 @@ public class BrowserTerminologyHandler extends AbstractTerminologyHandler {
     if (version == null) {
       getTerminologyEditions();
     } else {
-      final List<Terminology> list = getTerminologyVersions(terminology);
+      final List<Terminology> list = getTerminologyVersions(terminology, false);
       for (final Terminology t : list) {
         if (version.equals(t.getVersion())) {
           return true;
@@ -182,8 +182,8 @@ public class BrowserTerminologyHandler extends AbstractTerminologyHandler {
 
   /* see superclass */
   @Override
-  public List<Terminology> getTerminologyVersions(String edition)
-    throws Exception {
+  public List<Terminology> getTerminologyVersions(String edition,
+    Boolean showFutureVersions) throws Exception {
     final List<Terminology> list = new ArrayList<Terminology>();
     // Make a webservice call
     final Client client = ClientBuilder.newClient();
@@ -1210,7 +1210,7 @@ public class BrowserTerminologyHandler extends AbstractTerminologyHandler {
         .info("  get translation extensions languages from branches - " + url);
     return null;
   }
-  
+
   /* see superclass */
   @Override
   public int getMaxBatchLookupSize() throws Exception {

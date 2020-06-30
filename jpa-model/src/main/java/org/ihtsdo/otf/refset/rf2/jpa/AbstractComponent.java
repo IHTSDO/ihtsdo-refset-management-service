@@ -153,6 +153,7 @@ public abstract class AbstractComponent implements Component {
   }
 
   /* see superclass */
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   @Override
   public boolean isActive() {
     return active;

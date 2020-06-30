@@ -27,10 +27,8 @@ public interface TerminologyHandler extends Configurable {
       "name lookup in progress";
 
   /** The Constant REQUIRES_NAME_LOOKUP. */
-  public final static String REQUIRES_NAME_LOOKUP =
-      "requires name lookup";
-  
-  
+  public final static String REQUIRES_NAME_LOOKUP = "requires name lookup";
+
   /**
    * Copy the handler. This is needed used because of how the terminology
    * handler is instantiated. One template object is created, and then copies of
@@ -63,11 +61,12 @@ public interface TerminologyHandler extends Configurable {
    * Returns the terminology versions.
    *
    * @param edition the edition
+   * @param showFutureVersions the show future versions
    * @return the terminology versions
    * @throws Exception the exception
    */
-  public List<Terminology> getTerminologyVersions(String edition)
-    throws Exception;
+  public List<Terminology> getTerminologyVersions(String edition,
+    Boolean showFutureVersions) throws Exception;
 
   /**
    * Resolve expression.

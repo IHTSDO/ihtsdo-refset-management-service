@@ -601,8 +601,27 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   public List<ConceptRefsetMember> getMembers() {
     if (members == null) {
       members = new ArrayList<>();
+      return members;
     }
-    return members;
+    List<ConceptRefsetMember> activeMembers = new ArrayList<>();
+    for (ConceptRefsetMember member : members) {
+      if (member.isActive()) {
+        activeMembers.add(member);
+      }
+    }
+    return activeMembers;
+  }
+
+
+  /* see superclass */
+  @Override
+  public List<ConceptRefsetMember> getMembers(Boolean includeInactives) {
+
+    if (!includeInactives) {
+      return getMembers();
+    } else {
+      return members;
+    }
   }
 
   /* see superclass */
