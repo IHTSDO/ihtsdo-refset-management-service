@@ -3,6 +3,8 @@
  */
 package org.ihtsdo.otf.refset.rest.impl;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
@@ -1153,7 +1155,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       InputStream reportStream = reportHandler.exportReport(report,
           refsetService, migrationTerminology, migrationVersion,
           getHeaders(headers), membersInCommon);
-
+      
       // Create dir structure to write report to disk
       String outputDirString =
           ConfigUtility.getConfigProperties().getProperty("report.base.dir");
@@ -1169,20 +1171,34 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         refsetDir.mkdirs();
       }
 
+      // copy the reportStream so that it can be processed twice
+      // once for saving to the file on the server
+      // once for returning to the client for immediate download
+      ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+      byte[] buffer = new byte[8 * 1024];
+      int bytesRead;
+      while ((bytesRead = reportStream.read(buffer)) > -1) {
+        baos.write(buffer, 0, bytesRead);
+      }
+      baos.flush();
+
+      InputStream is1 = new ByteArrayInputStream(baos.toByteArray());
+      InputStream is2 = new ByteArrayInputStream(baos.toByteArray());
+
       // Write report file to disk
       File exportFile = new File(refsetDir, reportFileName);
       OutputStream outStream = new FileOutputStream(exportFile);
 
-      byte[] buffer = new byte[8 * 1024];
-      int bytesRead;
-      while ((bytesRead = reportStream.read(buffer)) != -1) {
+      bytesRead = 0;
+      while ((bytesRead = is1.read(buffer)) != -1) {
         outStream.write(buffer, 0, bytesRead);
       }
       IOUtils.closeQuietly(reportStream);
       IOUtils.closeQuietly(outStream);
 
       // Return report stream to user for download
-      return reportStream;
+      return is2;
 
     } catch (Exception e) {
       handleException(e, "trying to export report");
