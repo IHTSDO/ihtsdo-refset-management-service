@@ -1631,18 +1631,49 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
             translationConceptTerminologyIds.add(id);
           }
 
-          final ConceptList translationCons = handler.getConcepts(
-              translationConceptTerminologyIds, terminology, version, false);
+          
+          Logger.getLogger(RefsetServiceJpa.this.getClass())
+          .info("LOOKUP translation members for lookup ct = " + translationConceptTerminologyIds.size());
+          if (translationConceptTerminologyIds.size() > 0) {
+            int i = 0;
 
-          // Update translation concept names
-          for (final Concept con : translationCons.getObjects()) {
-            if (terminologyIdToTranslationConceptIds
-                .get(con.getTerminologyId()) != null) {
-              for (Long conceptId : terminologyIdToTranslationConceptIds
-                  .get(con.getTerminologyId())) {
-                Concept concept = translationService.getConcept(conceptId);
-                concept.setName(con.getName());
-                translationService.updateConcept(concept);
+            while (i < translationConceptTerminologyIds.size()) {
+
+              if (Thread.interrupted()) {
+                lookupCanceled = true;
+                throw new InterruptedException(
+                    "lookup process has been canceled");
+              }
+
+              final List<String> termIds = new ArrayList<>();
+
+              // If we're looking up synonyms, only lookup as many concepts per
+              // batch as specified by the handler
+              int batchLookupSize =
+                  lookupSynonyms ? handler.getMaxBatchLookupSize() : 101;
+
+              // Create list of conceptIds for all members (batch-size depends
+              // on
+              // the handler)
+              for (int j = 0; (j < batchLookupSize
+                  && i < translationConceptTerminologyIds.size()); j++, i++) {
+                termIds.add(translationConceptTerminologyIds.get(i));
+              }
+
+              final ConceptList translationCons =
+                  handler.getConcepts(termIds, terminology, version, false);
+
+              // Update translation concept names
+              for (final Concept con : translationCons.getObjects()) {
+                if (terminologyIdToTranslationConceptIds
+                    .get(con.getTerminologyId()) != null) {
+                  for (Long conceptId : terminologyIdToTranslationConceptIds
+                      .get(con.getTerminologyId())) {
+                    Concept concept = translationService.getConcept(conceptId);
+                    concept.setName(con.getName());
+                    translationService.updateConcept(concept);
+                  }
+                }
               }
             }
           }
