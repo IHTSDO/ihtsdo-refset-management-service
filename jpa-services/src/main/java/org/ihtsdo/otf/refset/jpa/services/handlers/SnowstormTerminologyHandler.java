@@ -802,8 +802,8 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     concept.setModuleId(doc.get("moduleId").asText());
     concept.setDefinitionStatusId(doc.get("definitionStatus").asText());
     JsonNode fsn = doc.get("fsn");
-    String term = fsn == null ? ""
-        : fsn.get("term") == null ? "" : fsn.get("term").asText();
+    String term = fsn == null ? UNABLE_TO_DETERMINE_NAME
+        : fsn.get("term") == null ? UNABLE_TO_DETERMINE_NAME : fsn.get("term").asText();
     concept.setName(term);
 
     concept.setPublishable(true);
@@ -846,18 +846,26 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
             final LanguageRefsetMember member = new LanguageRefsetMemberJpa();
             member.setActive(true);
             member.setDescriptionId(terminologyId);
-            String key = language.fieldNames().next();
-            member.setRefsetId(key);
-            member.setAcceptabilityId(language.get(key).asText());
-            if (member.getAcceptabilityId().equals("PREFERRED")) {
-              member.setAcceptabilityId("900000000000548007");
-            } else if (member.getAcceptabilityId().equals("ACCEPTABLE")) {
-              member.setAcceptabilityId("900000000000549004");
+            if (language.fieldNames().hasNext()) {
+              String key = language.fieldNames().next();
+              member.setRefsetId(key);
+              member.setAcceptabilityId(language.get(key).asText());
+              if (member.getAcceptabilityId().equals("PREFERRED")) {
+                member.setAcceptabilityId("900000000000548007");
+              } else if (member.getAcceptabilityId().equals("ACCEPTABLE")) {
+                member.setAcceptabilityId("900000000000549004");
+              }
+              description.getLanguageRefsetMembers().add(member);
             }
-            description.getLanguageRefsetMembers().add(member);
           }
         }
 
+        if (concept.getName().equals(UNABLE_TO_DETERMINE_NAME)) {
+          if (desc.get("type").asText().equals("FSN")) {
+            String pt = description.getTerm().substring(0,description.getTerm().indexOf('(') - 1 );
+            concept.setName(pt);
+          }
+        }
         concept.getDescriptions().add(description);
       }
     }
@@ -1170,7 +1178,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
             conceptNode.get("definitionStatus").asText());
 
         // pt.term is the name
-        if (conceptNode.get("pt") != null) {
+        if (conceptNode.get("pt") != null && conceptNode.get("pt").get("term") != null) {
           concept.setName(conceptNode.get("pt").get("term").asText());
         } else {
           concept.setName(UNABLE_TO_DETERMINE_NAME);
@@ -1207,23 +1215,34 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
             description.setTerminologyId(desc.get("descriptionId").asText());
 
             description.setTypeId(desc.get("typeId").asText());
+            
+            if (concept.getName().equals(UNABLE_TO_DETERMINE_NAME)) {
+              if (desc.get("type").asText().equals("FSN")) {
+                String pt = description.getTerm().substring(0,description.getTerm().indexOf('(') - 1 );
+                concept.setName(pt);
+              }
+            }
 
             if (description.isActive()) {
               for (final JsonNode language : desc
                   .findValues("acceptabilityMap")) {
+               
                 final LanguageRefsetMember member =
                     new LanguageRefsetMemberJpa();
                 member.setActive(true);
                 member.setDescriptionId(concept.getTerminologyId());
-                String key = language.fieldNames().next();
-                member.setRefsetId(key);
-                member.setAcceptabilityId(language.get(key).asText());
-                if (member.getAcceptabilityId().equals("PREFERRED")) {
-                  member.setAcceptabilityId("900000000000548007");
-                } else if (member.getAcceptabilityId().equals("ACCEPTABLE")) {
-                  member.setAcceptabilityId("900000000000549004");
+               
+                if(language != null && language.fieldNames().hasNext()) {
+                  String key = language.fieldNames().next();
+                  member.setRefsetId(key);
+                  member.setAcceptabilityId(language.get(key).asText());
+                  if (member.getAcceptabilityId().equals("PREFERRED")) {
+                    member.setAcceptabilityId("900000000000548007");
+                  } else if (member.getAcceptabilityId().equals("ACCEPTABLE")) {
+                    member.setAcceptabilityId("900000000000549004");
+                  }
+                  description.getLanguageRefsetMembers().add(member);
                 }
-                description.getLanguageRefsetMembers().add(member);
               }
             }
 
@@ -1397,15 +1416,18 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
                       new LanguageRefsetMemberJpa();
                   member.setActive(true);
                   member.setDescriptionId(concept.getTerminologyId());
-                  String key = language.fieldNames().next();
-                  member.setRefsetId(key);
-                  member.setAcceptabilityId(language.get(key).asText());
-                  if (member.getAcceptabilityId().equals("PREFERRED")) {
-                    member.setAcceptabilityId("900000000000548007");
-                  } else if (member.getAcceptabilityId().equals("ACCEPTABLE")) {
-                    member.setAcceptabilityId("900000000000549004");
+                  if (language.fieldNames().hasNext()) {
+                    String key = language.fieldNames().next();
+                    member.setRefsetId(key);
+                    member.setAcceptabilityId(language.get(key).asText());
+                    if (member.getAcceptabilityId().equals("PREFERRED")) {
+                      member.setAcceptabilityId("900000000000548007");
+                    } else if (member.getAcceptabilityId()
+                        .equals("ACCEPTABLE")) {
+                      member.setAcceptabilityId("900000000000549004");
+                    }
+                    description.getLanguageRefsetMembers().add(member);
                   }
-                  description.getLanguageRefsetMembers().add(member);
                 }
               }
 
