@@ -1217,7 +1217,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
             description.setTypeId(desc.get("typeId").asText());
             
             if (concept.getName().equals(UNABLE_TO_DETERMINE_NAME)) {
-              if (desc.get("type").asText().equals("FSN")) {
+              if (desc.get("type").asText().equals("FSN") && desc.get("active").asText().equals("true")) {
                 String pt = description.getTerm().substring(0,description.getTerm().indexOf('(') - 1 );
                 concept.setName(pt);
               }
@@ -1255,7 +1255,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
             final Relationship rel = new RelationshipJpa();
 
             rel.setActive(relNode.get("active").asText().equals("true"));
-            // Skip inactive descriptions
+            // Skip inactive relationships
             if (!rel.isActive()) {
               continue;
             }
@@ -1371,7 +1371,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
               conceptNode.get("definitionStatus").asText());
 
           // pt.term is the name
-          if (conceptNode.get("pt") != null) {
+          if (conceptNode.get("pt") != null && conceptNode.get("pt").get("term") != null) {
             concept.setName(conceptNode.get("pt").get("term").asText());
           } else {
             concept.setName(UNABLE_TO_DETERMINE_NAME);
@@ -1409,6 +1409,13 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
 
               description.setTypeId(desc.get("typeId").asText());
 
+              if (concept.getName().equals(UNABLE_TO_DETERMINE_NAME)) {
+                if (desc.get("type").asText().equals("FSN") && desc.get("active").asText().equals("true")) {
+                  String pt = description.getTerm().substring(0,description.getTerm().indexOf('(') - 1 );
+                  concept.setName(pt);
+                }
+              }              
+              
               if (description.isActive()) {
                 for (final JsonNode language : desc
                     .findValues("acceptabilityMap")) {
@@ -1440,7 +1447,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
               final Relationship rel = new RelationshipJpa();
 
               rel.setActive(relNode.get("active").asText().equals("true"));
-              // Skip inactive descriptions
+              // Skip inactive relationships
               if (!rel.isActive()) {
                 continue;
               }
@@ -1574,7 +1581,11 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
             conceptNode.get("definitionStatus").asText());
 
         // pt.term is the name
-        concept.setName(conceptNode.get("pt").get("term").asText());
+        if (conceptNode.get("pt") != null && conceptNode.get("pt").get("term") != null) {
+          concept.setName(conceptNode.get("pt").get("term").asText());
+        } else {
+          concept.setName(UNABLE_TO_DETERMINE_NAME);
+        }
 
         concept.setPublishable(true);
         concept.setPublished(true);
