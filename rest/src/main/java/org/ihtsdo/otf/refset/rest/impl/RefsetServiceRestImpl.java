@@ -2463,8 +2463,10 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
 
       // copy definition from staged to origin refset
       // should be identical unless we implement definition changes
-      refset.setDefinitionClauses(
-          new ArrayList<DefinitionClause>(stagedRefset.getDefinitionClauses()));
+      refset.setDefinitionClauses(stagedRefset.getDefinitionClauses());
+      
+      // clear out stagedRefset clauses, to avoid concurrent modification error
+      stagedRefset.setDefinitionClauses(new ArrayList<>());
 
       // Remove the staged refset change and set staging type back to null
       // and update version
