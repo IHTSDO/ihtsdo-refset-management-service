@@ -2468,8 +2468,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       refset.setDefinitionClauses(stagedRefset.getDefinitionClauses());
 
       // also set staged definition to the origin definition
-      // This seems weird, but it allows the stagedRefset removal below to
-      // remove the clause as well. Otherwise, we end up with 'orphaned' clauses
+      // This seems weird, but if we don't we end up with 'orphaned' clauses
       // in the database
       stagedRefset.setDefinitionClauses(originDefinitionClauses);
 
