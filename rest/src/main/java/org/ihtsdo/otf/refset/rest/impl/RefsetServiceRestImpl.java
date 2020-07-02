@@ -1155,7 +1155,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       InputStream reportStream = reportHandler.exportReport(report,
           refsetService, migrationTerminology, migrationVersion,
           getHeaders(headers), membersInCommon);
-      
+
       // Create dir structure to write report to disk
       String outputDirString =
           ConfigUtility.getConfigProperties().getProperty("report.base.dir");
@@ -2463,10 +2463,15 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
 
       // copy definition from staged to origin refset
       // should be identical unless we implement definition changes
+      List<DefinitionClause> originDefinitionClauses =
+          refset.getDefinitionClauses();
       refset.setDefinitionClauses(stagedRefset.getDefinitionClauses());
-      
-      // clear out stagedRefset clauses, to avoid concurrent modification error
-      stagedRefset.setDefinitionClauses(new ArrayList<>());
+
+      // also set staged definition to the origin definition
+      // This seems weird, but it allows the stagedRefset removal below to
+      // remove the clause as well. Otherwise, we end up with 'orphaned' clauses
+      // in the database
+      stagedRefset.setDefinitionClauses(originDefinitionClauses);
 
       // Remove the staged refset change and set staging type back to null
       // and update version
@@ -2758,7 +2763,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
 
       List<ConceptRefsetMember> commonMembersList =
           membersInCommonMap.get(reportToken);
-      List<ConceptRefsetMember> newCommonMembersList = new ArrayList<ConceptRefsetMember>(commonMembersList);
+      List<ConceptRefsetMember> newCommonMembersList =
+          new ArrayList<ConceptRefsetMember>(commonMembersList);
 
       // if the value is null, throw an exception
       if (newCommonMembersList == null) {
