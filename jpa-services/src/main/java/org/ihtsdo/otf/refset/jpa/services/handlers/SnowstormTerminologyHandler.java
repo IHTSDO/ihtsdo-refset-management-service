@@ -30,7 +30,6 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.Response.Status.Family;
 
 import org.apache.log4j.Logger;
-import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Terminology;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
@@ -78,12 +77,12 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
 
   /** The terminologies for URL expiration date. */
   private static Date terminologiesForURLexpirationDate = new Date();
-  
+
   /** The generic user cookie. */
-  private static String genericUserCookie = null;  
-  
+  private static String genericUserCookie = null;
+
   /** The generic user cookie expiration date. */
-  private static Date genericUserCookieExpirationDate = new Date();  
+  private static Date genericUserCookieExpirationDate = new Date();
 
   /** The ids to ignore. */
   private static List<String> idsToIgnore = new ArrayList<>();
@@ -156,11 +155,11 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     final WebTarget target =
         client.target(url + "/branches/" + (version == null ? "" : version));
 
-    final Response response = target.request(accept)
-        .header("Authorization", authHeader)
-        .header("Cookie",
-            getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
-        .get();
+    final Response response =
+        target.request(accept).header("Authorization", authHeader)
+            .header("Cookie", getGenericUserCookie() != null
+                ? getGenericUserCookie() : getCookieHeader())
+            .get();
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -169,7 +168,8 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     // this case, clear out the generic use cookie so the next call can re-login
     else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
       genericUserCookie = null;
-      throw new LocalException("Connection with the terminology server has expired. Please reload the page to reconnect.");
+      throw new LocalException(
+          "Connection with the terminology server has expired. Please reload the page to reconnect.");
     } else {
       throw new LocalException(
           "Unexpected terminology server failure. Message = " + resultString);
@@ -230,12 +230,12 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     Logger.getLogger(getClass())
         .debug("  Get terminology editions - " + url + "/codesystems");
     final WebTarget target = client.target(url + "/codesystems");
-    final Response response = target.request(accept)
-        .header("Authorization", authHeader)
-        .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
-        .header("Cookie",
-            getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
-        .get();
+    final Response response =
+        target.request(accept).header("Authorization", authHeader)
+            .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
+            .header("Cookie", getGenericUserCookie() != null
+                ? getGenericUserCookie() : getCookieHeader())
+            .get();
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -244,7 +244,8 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     // this case, clear out the generic use cookie so the next call can re-login
     else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
       genericUserCookie = null;
-      throw new LocalException("Connection with the terminology server has expired. Please reload the page to reconnect.");
+      throw new LocalException(
+          "Connection with the terminology server has expired. Please reload the page to reconnect.");
     } else {
       throw new LocalException(
           "Unexpected terminology server failure. Message = " + resultString);
@@ -268,23 +269,23 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
 
   /* see superclass */
   @Override
-  public List<Terminology> getTerminologyVersions(String edition, Boolean showFutureVersions)
-    throws Exception {
+  public List<Terminology> getTerminologyVersions(String edition,
+    Boolean showFutureVersions) throws Exception {
     final List<Terminology> list = new ArrayList<Terminology>();
     // Make a webservice call to get codesystems
     final Client client = ClientBuilder.newClient();
-    Logger.getLogger(getClass()).debug("  Get terminology versions - " + url
-        + "/codesystems/" + edition + "/versions"
+    Logger.getLogger(getClass())
+        .debug("  Get terminology versions - " + url + "/codesystems/" + edition
+            + "/versions"
             + (showFutureVersions ? "?showFutureVersions=true" : ""));
-    WebTarget target =
-        client.target(url + "/codesystems/" + edition + "/versions"
-            + (showFutureVersions ? "?showFutureVersions=true" : ""));
-    Response response = target.request(accept)
-        .header("Authorization", authHeader)
-        .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
-        .header("Cookie",
-            getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
-        .get();
+    WebTarget target = client.target(url + "/codesystems/" + edition
+        + "/versions" + (showFutureVersions ? "?showFutureVersions=true" : ""));
+    Response response =
+        target.request(accept).header("Authorization", authHeader)
+            .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
+            .header("Cookie", getGenericUserCookie() != null
+                ? getGenericUserCookie() : getCookieHeader())
+            .get();
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -293,7 +294,8 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     // this case, clear out the generic use cookie so the next call can re-login
     else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
       genericUserCookie = null;
-      throw new LocalException("Connection with the terminology server has expired. Please reload the page to reconnect.");
+      throw new LocalException(
+          "Connection with the terminology server has expired. Please reload the page to reconnect.");
     } else {
       throw new LocalException(
           "Unexpected terminology server failure. Message = " + resultString);
@@ -327,8 +329,9 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
      * 
      * response = target.request(accept).header("Authorization", authHeader)
      * .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6") .header("Cookie",
-     * getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader()).get();
-     * resultString = response.readEntity(String.class); if
+     * getGenericUserCookie() != null ? getGenericUserCookie() :
+     * getCookieHeader()).get(); resultString =
+     * response.readEntity(String.class); if
      * (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) { // n/a }
      * else {
      * 
@@ -368,12 +371,12 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     WebTarget target =
         client.target(url + "/browser/" + version + "/concepts/" + conceptId);
 
-    Response response = target.request(accept)
-        .header("Authorization", authHeader)
-        .header("Accept-Language", getAcceptLanguage(terminology, version))
-        .header("Cookie",
-            getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
-        .get();
+    Response response =
+        target.request(accept).header("Authorization", authHeader)
+            .header("Accept-Language", getAcceptLanguage(terminology, version))
+            .header("Cookie", getGenericUserCookie() != null
+                ? getGenericUserCookie() : getCookieHeader())
+            .get();
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -382,7 +385,8 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     // this case, clear out the generic use cookie so the next call can re-login
     else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
       genericUserCookie = null;
-      throw new LocalException("Connection with the terminology server has expired. Please reload the page to reconnect.");
+      throw new LocalException(
+          "Connection with the terminology server has expired. Please reload the page to reconnect.");
     } else {
 
       // Here's the messy part about trying to parse the return error message
@@ -459,6 +463,8 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     // Make a webservice call to SnowOwl to get concept
     final Client client = ClientBuilder.newClient();
 
+    final StringBuilder lookupErrors = new StringBuilder();
+
     PfsParameter localPfs = pfs;
     if (localPfs == null) {
       localPfs = new PfsParameterJpa();
@@ -476,19 +482,19 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     // and make a second call if needed
     final int initialMaxLimit = 200;
 
-    WebTarget target = client.target(url + "/" + version + "/concepts?ecl="
+    String targetUri = url + "/" + version + "/concepts?ecl="
         + URLEncoder.encode(expr, "UTF-8").replaceAll(" ", "%20") + "&limit="
-        + Math.min(initialMaxLimit, localPfs.getMaxResults()) + "&expand=pt()");
-    Logger.getLogger(getClass()).info(url + "/" + version + "/concepts?ecl="
-        + URLEncoder.encode(expr, "UTF-8").replaceAll(" ", "%20") + "&limit="
-        + Math.min(initialMaxLimit, localPfs.getMaxResults()) + "&expand=pt()");
+        + Math.min(initialMaxLimit, localPfs.getMaxResults()) + "&expand=pt()";
 
-    Response response = target.request(accept)
-        .header("Authorization", authHeader)
-        .header("Accept-Language", getAcceptLanguage(terminology, version))
-        .header("Cookie",
-            getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
-        .get();
+    WebTarget target = client.target(targetUri);
+    Logger.getLogger(getClass()).info(targetUri);
+
+    Response response =
+        target.request(accept).header("Authorization", authHeader)
+            .header("Accept-Language", getAcceptLanguage(terminology, version))
+            .header("Cookie", getGenericUserCookie() != null
+                ? getGenericUserCookie() : getCookieHeader())
+            .get();
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -497,7 +503,8 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     // this case, clear out the generic use cookie so the next call can re-login
     else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
       genericUserCookie = null;
-      throw new LocalException("Connection with the terminology server has expired. Please reload the page to reconnect.");
+      throw new LocalException(
+          "Connection with the terminology server has expired. Please reload the page to reconnect.");
     } else {
 
       // Here's the messy part about trying to parse the return error message
@@ -578,12 +585,19 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
           .setDefinitionStatusId(conceptNode.get("definitionStatus").asText());
 
       // pt.term is the name
-      JsonNode pt = conceptNode.get("pt");
-      if (pt == null) {
-        Logger.getLogger(getClass()).info("pt without term: " + concept);
-        continue;
+      if (conceptNode.get("pt") != null
+          && conceptNode.get("pt").get("term") != null) {
+        concept.setName(conceptNode.get("pt").get("term").asText());
+      } else {
+        concept.setName(UNABLE_TO_DETERMINE_NAME);
+
+        lookupErrors.append("  URI: ").append(targetUri).append("\r\n");
+        lookupErrors.append("  CONCEPT ID: ").append(concept.getTerminologyId())
+            .append("\r\n");
+        lookupErrors.append("  ERROR: ")
+            .append("\"pt\" node is null or missing \"term\" subnode")
+            .append("\r\n\r\n");
       }
-      concept.setName(pt.get("term") != null ? pt.get("term").asText() : "");
 
       concept.setPublishable(true);
       concept.setPublished(true);
@@ -594,24 +608,32 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     // If the total is over the initial max limit and pfs max results is too.
     while (total > initialMaxLimit && localPfs.getMaxResults() > initialMaxLimit
         && conceptList.getCount() < total) {
-      target = client.target(url + "/" + version + "/concepts?ecl="
+
+      targetUri = url + "/" + version + "/concepts?ecl="
           + URLEncoder.encode(expr, "UTF-8") + "&limit=200"
           /* + (total - initialMaxLimit) */ + "&searchAfter=" + searchAfter
-          + "&expand=pt()");
+          + "&expand=pt()";
+
+      target = client.target(targetUri);
+      Logger.getLogger(getClass()).info(targetUri);
+
       response = target.request(accept).header("Authorization", authHeader)
           .header("Accept-Language", getAcceptLanguage(terminology, version))
-          .header("Cookie",
-              getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
+          .header("Cookie", getGenericUserCookie() != null
+              ? getGenericUserCookie() : getCookieHeader())
           .get();
+
       resultString = response.readEntity(String.class);
       if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
         // n/a
       }
       // If the generic user is logged out, it returns a 403 Forbidden error. In
-      // this case, clear out the generic use cookie so the next call can re-login
+      // this case, clear out the generic use cookie so the next call can
+      // re-login
       else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
         genericUserCookie = null;
-        throw new LocalException("Connection with the terminology server has expired. Please reload the page to reconnect.");
+        throw new LocalException(
+            "Connection with the terminology server has expired. Please reload the page to reconnect.");
       } else {
         throw new LocalException(
             "Unexpected terminology server failure. Message = " + resultString);
@@ -637,11 +659,20 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
         concept.setModuleId(conceptNode.get("moduleId").asText());
         concept.setDefinitionStatusId(
             conceptNode.get("definitionStatus").asText());
+
         // pt.term is the name
-        if (conceptNode.get("pt") != null) {
+        if (conceptNode.get("pt") != null
+            && conceptNode.get("pt").get("term") != null) {
           concept.setName(conceptNode.get("pt").get("term").asText());
         } else {
           concept.setName(UNABLE_TO_DETERMINE_NAME);
+
+          lookupErrors.append("  URI: ").append(targetUri).append("\r\n");
+          lookupErrors.append("  CONCEPT ID: ")
+              .append(concept.getTerminologyId()).append("\r\n");
+          lookupErrors.append("  ERROR: ")
+              .append("\"pt\" node is null or missing \"term\" subnode")
+              .append("\r\n\r\n");
         }
 
         concept.setPublishable(true);
@@ -649,6 +680,10 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
 
         conceptList.addObject(concept);
       }
+    }
+
+    if (lookupErrors.length() != 0) {
+      sendLookupErrorEmail(lookupErrors.toString());
     }
 
     conceptList.setTotalCount(total);
@@ -668,12 +703,12 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     WebTarget target = client.target(url + "/" + version + "/concepts?ecl="
         + URLEncoder.encode(expr, "UTF-8").replaceAll(" ", "%20") + "&limit=1");
 
-    Response response = target.request(accept)
-        .header("Authorization", authHeader)
-        .header("Accept-Language", getAcceptLanguage(terminology, version))
-        .header("Cookie",
-            getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
-        .get();
+    Response response =
+        target.request(accept).header("Authorization", authHeader)
+            .header("Accept-Language", getAcceptLanguage(terminology, version))
+            .header("Cookie", getGenericUserCookie() != null
+                ? getGenericUserCookie() : getCookieHeader())
+            .get();
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -682,7 +717,8 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     // this case, clear out the generic use cookie so the next call can re-login
     else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
       genericUserCookie = null;
-      throw new LocalException("Connection with the terminology server has expired. Please reload the page to reconnect.");
+      throw new LocalException(
+          "Connection with the terminology server has expired. Please reload the page to reconnect.");
     } else {
 
       // Here's the messy part about trying to parse the return error message
@@ -711,15 +747,20 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     // version = "MAIN/2015-01-31";
     // Make a webservice call to Snowstorm to get concept
     final Client client = ClientBuilder.newClient();
-    final WebTarget target = client
-        .target(url + "/browser/" + version + "/concepts/" + terminologyId);
 
-    Logger.getLogger(getClass()).info("  get full concept: " + terminologyId
-        + "- " + target.getUri().toString());
+    final StringBuilder lookupErrors = new StringBuilder();
+
+    String targetUri =
+        url + "/browser/" + version + "/concepts/" + terminologyId;
+    final WebTarget target = client.target(targetUri);
+
+    Logger.getLogger(getClass())
+        .info("  get full concept: " + terminologyId + "- " + targetUri);
 
     final String resultString = retryWithDelay(target, 500, 3, accept,
         authHeader, getAcceptLanguage(terminology, version),
-        getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader());
+        getGenericUserCookie() != null ? getGenericUserCookie()
+            : getCookieHeader());
 
     /**
      * <pre>
@@ -801,10 +842,20 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     concept.setLastModifiedBy(terminology);
     concept.setModuleId(doc.get("moduleId").asText());
     concept.setDefinitionStatusId(doc.get("definitionStatus").asText());
-    JsonNode fsn = doc.get("fsn");
-    String term = fsn == null ? ""
-        : fsn.get("term") == null ? "" : fsn.get("term").asText();
-    concept.setName(term);
+
+    // fsn.term is the name
+    if (doc.get("fsn") != null && doc.get("fsn").get("term") != null) {
+      concept.setName(doc.get("fsn").get("term").asText());
+    } else {
+      concept.setName(UNABLE_TO_DETERMINE_NAME);
+
+      lookupErrors.append("  URI: ").append(targetUri).append("\r\n");
+      lookupErrors.append("  CONCEPT ID: ").append(concept.getTerminologyId())
+          .append("\r\n");
+      lookupErrors.append("  ERROR: ")
+          .append("\"fsn\" node is null or missing \"term\" subnode")
+          .append("\r\n\r\n");
+    }
 
     concept.setPublishable(true);
     concept.setPublished(true);
@@ -843,18 +894,31 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
         // }
         if (description.isActive()) {
           for (final JsonNode language : desc.findValues("acceptabilityMap")) {
+
             final LanguageRefsetMember member = new LanguageRefsetMemberJpa();
             member.setActive(true);
             member.setDescriptionId(terminologyId);
-            String key = language.fieldNames().next();
-            member.setRefsetId(key);
-            member.setAcceptabilityId(language.get(key).asText());
-            if (member.getAcceptabilityId().equals("PREFERRED")) {
-              member.setAcceptabilityId("900000000000548007");
-            } else if (member.getAcceptabilityId().equals("ACCEPTABLE")) {
-              member.setAcceptabilityId("900000000000549004");
+
+            if (language != null && language.fieldNames().hasNext()) {
+              String key = language.fieldNames().next();
+              member.setRefsetId(key);
+              member.setAcceptabilityId(language.get(key).asText());
+              if (member.getAcceptabilityId().equals("PREFERRED")) {
+                member.setAcceptabilityId("900000000000548007");
+              } else if (member.getAcceptabilityId().equals("ACCEPTABLE")) {
+                member.setAcceptabilityId("900000000000549004");
+              }
+              description.getLanguageRefsetMembers().add(member);
+            } else {
+              lookupErrors.append("  URI: ").append(targetUri).append("\r\n");
+              lookupErrors.append("  CONCEPT ID: ")
+                  .append(concept.getTerminologyId()).append("\r\n");
+              lookupErrors.append("  DESCRIPTION ID: ")
+                  .append(description.getTerminologyId()).append("\r\n");
+              lookupErrors.append("  ERROR: ")
+                  .append("\"acceptabilityMap\" node is null or empty")
+                  .append("\r\n\r\n");
             }
-            description.getLanguageRefsetMembers().add(member);
           }
         }
 
@@ -920,6 +984,10 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
       }
     }
 
+    if (lookupErrors.length() != 0) {
+      sendLookupErrorEmail(lookupErrors.toString());
+    }
+
     return concept;
   }
 
@@ -960,6 +1028,8 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
       // Make a webservice call to SnowOwl to get concept
       final Client client = ClientBuilder.newClient();
 
+      final StringBuilder lookupErrors = new StringBuilder();
+
       PfsParameter localPfs = new PfsParameterJpa();
 
       if (localPfs.getStartIndex() == -1) {
@@ -985,21 +1055,18 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
       }
       String expr = query.toString();
 
-      WebTarget target = client.target(url + "/browser/" + version
-          + "/concepts?conceptIds="
+      String targetUri = url + "/browser/" + version + "/concepts?conceptIds="
           + URLEncoder.encode(expr, "UTF-8").replaceAll(" ", "%20") + "&limit="
-          + Math.min(initialMaxLimit, localPfs.getMaxResults()));
-      Logger.getLogger(getClass())
-          .info(url + "/browser/" + version + "/concepts?conceptIds="
-              + URLEncoder.encode(expr, "UTF-8").replaceAll(" ", "%20")
-              + "&limit="
-              + Math.min(initialMaxLimit, localPfs.getMaxResults()));
+          + Math.min(initialMaxLimit, localPfs.getMaxResults());
+
+      WebTarget target = client.target(targetUri);
+      Logger.getLogger(getClass()).info(targetUri);
 
       Response response = target.request(accept)
           .header("Authorization", authHeader)
           .header("Accept-Language", getAcceptLanguage(terminology, version))
-          .header("Cookie",
-              getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
+          .header("Cookie", getGenericUserCookie() != null
+              ? getGenericUserCookie() : getCookieHeader())
           .get();
 
       String resultString = response.readEntity(String.class);
@@ -1007,10 +1074,12 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
         // n/a
       }
       // If the generic user is logged out, it returns a 403 Forbidden error. In
-      // this case, clear out the generic use cookie so the next call can re-login
+      // this case, clear out the generic use cookie so the next call can
+      // re-login
       else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
         genericUserCookie = null;
-        throw new LocalException("Connection with the terminology server has expired. Please reload the page to reconnect.");
+        throw new LocalException(
+            "Connection with the terminology server has expired. Please reload the page to reconnect.");
       } else {
 
         // Here's the messy part about trying to parse the return error message
@@ -1170,10 +1239,18 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
             conceptNode.get("definitionStatus").asText());
 
         // pt.term is the name
-        if (conceptNode.get("pt") != null) {
+        if (conceptNode.get("pt") != null
+            && conceptNode.get("pt").get("term") != null) {
           concept.setName(conceptNode.get("pt").get("term").asText());
         } else {
           concept.setName(UNABLE_TO_DETERMINE_NAME);
+
+          lookupErrors.append("  URI: ").append(targetUri).append("\r\n");
+          lookupErrors.append("  CONCEPT ID: ")
+              .append(concept.getTerminologyId()).append("\r\n");
+          lookupErrors.append("  ERROR: ")
+              .append("\"pt\" node is null or missing \"term\" subnode")
+              .append("\r\n\r\n");
         }
 
         concept.setPublishable(true);
@@ -1211,19 +1288,33 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
             if (description.isActive()) {
               for (final JsonNode language : desc
                   .findValues("acceptabilityMap")) {
+
                 final LanguageRefsetMember member =
                     new LanguageRefsetMemberJpa();
                 member.setActive(true);
                 member.setDescriptionId(concept.getTerminologyId());
-                String key = language.fieldNames().next();
-                member.setRefsetId(key);
-                member.setAcceptabilityId(language.get(key).asText());
-                if (member.getAcceptabilityId().equals("PREFERRED")) {
-                  member.setAcceptabilityId("900000000000548007");
-                } else if (member.getAcceptabilityId().equals("ACCEPTABLE")) {
-                  member.setAcceptabilityId("900000000000549004");
+
+                if (language != null && language.fieldNames().hasNext()) {
+                  String key = language.fieldNames().next();
+                  member.setRefsetId(key);
+                  member.setAcceptabilityId(language.get(key).asText());
+                  if (member.getAcceptabilityId().equals("PREFERRED")) {
+                    member.setAcceptabilityId("900000000000548007");
+                  } else if (member.getAcceptabilityId().equals("ACCEPTABLE")) {
+                    member.setAcceptabilityId("900000000000549004");
+                  }
+                  description.getLanguageRefsetMembers().add(member);
+                } else {
+                  lookupErrors.append("  URI: ").append(targetUri)
+                      .append("\r\n");
+                  lookupErrors.append("  CONCEPT ID: ")
+                      .append(concept.getTerminologyId()).append("\r\n");
+                  lookupErrors.append("  DESCRIPTION ID: ")
+                      .append(description.getTerminologyId()).append("\r\n");
+                  lookupErrors.append("  ERROR: ")
+                      .append("\"acceptabilityMap\" node is null or empty")
+                      .append("\r\n\r\n");
                 }
-                description.getLanguageRefsetMembers().add(member);
               }
             }
 
@@ -1236,7 +1327,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
             final Relationship rel = new RelationshipJpa();
 
             rel.setActive(relNode.get("active").asText().equals("true"));
-            // Skip inactive descriptions
+            // Skip inactive relationships
             if (!rel.isActive()) {
               continue;
             }
@@ -1296,31 +1387,32 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
       // If the total is over the initial max limit and pfs max results is too.
       if (total > initialMaxLimit
           && localPfs.getMaxResults() > initialMaxLimit) {
-        target =
-            client.target(url + "/browser/" + version + "/concepts?conceptIds="
-                + URLEncoder.encode(expr, "UTF-8").replaceAll(" ", "%20")
-                + "&limit=" + (total - initialMaxLimit) + "&searchAfter="
-                + searchAfter);
-        Logger.getLogger(getClass())
-            .info(url + "/browser/" + version + "/concepts?conceptIds="
-                + URLEncoder.encode(expr, "UTF-8").replaceAll(" ", "%20")
-                + "&limit=" + (total - initialMaxLimit) + "&searchAfter="
-                + searchAfter);
+
+        targetUri = url + "/browser/" + version + "/concepts?conceptIds="
+            + URLEncoder.encode(expr, "UTF-8").replaceAll(" ", "%20")
+            + "&limit=" + (total - initialMaxLimit) + "&searchAfter="
+            + searchAfter;
+        target = client.target(targetUri);
+        Logger.getLogger(getClass()).info(targetUri);
 
         response = target.request(accept).header("Authorization", authHeader)
             .header("Accept-Language", getAcceptLanguage(terminology, version))
-            .header("Cookie", getGenericUserCookie() != null ? getGenericUserCookie()
-                : getCookieHeader())
+            .header("Cookie", getGenericUserCookie() != null
+                ? getGenericUserCookie() : getCookieHeader())
             .get();
         resultString = response.readEntity(String.class);
         if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
           // n/a
         }
-        // If the generic user is logged out, it returns a 403 Forbidden error. In
-        // this case, clear out the generic use cookie so the next call can re-login
-        else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
+        // If the generic user is logged out, it returns a 403 Forbidden error.
+        // In
+        // this case, clear out the generic use cookie so the next call can
+        // re-login
+        else if (response.getStatusInfo().getReasonPhrase()
+            .equals("Forbidden")) {
           genericUserCookie = null;
-          throw new LocalException("Connection with the terminology server has expired. Please reload the page to reconnect.");
+          throw new LocalException(
+              "Connection with the terminology server has expired. Please reload the page to reconnect.");
         } else {
           throw new LocalException(
               "Unexpected terminology server failure. Message = "
@@ -1352,10 +1444,19 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
               conceptNode.get("definitionStatus").asText());
 
           // pt.term is the name
-          if (conceptNode.get("pt") != null) {
+          if (conceptNode.get("pt") != null
+              && conceptNode.get("pt").get("term") != null) {
             concept.setName(conceptNode.get("pt").get("term").asText());
           } else {
             concept.setName(UNABLE_TO_DETERMINE_NAME);
+
+            lookupErrors.append("  URI: ").append(targetUri).append("\r\n");
+            lookupErrors.append("  CONCEPT ID: ")
+                .append(concept.getTerminologyId()).append("\r\n");
+            lookupErrors.append("  ERROR: ")
+                .append("\"pt\" node is null or missing \"term\" subnode")
+                .append("\r\n\r\n");
+
           }
 
           concept.setPublishable(true);
@@ -1393,19 +1494,34 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
               if (description.isActive()) {
                 for (final JsonNode language : desc
                     .findValues("acceptabilityMap")) {
+
                   final LanguageRefsetMember member =
                       new LanguageRefsetMemberJpa();
                   member.setActive(true);
                   member.setDescriptionId(concept.getTerminologyId());
-                  String key = language.fieldNames().next();
-                  member.setRefsetId(key);
-                  member.setAcceptabilityId(language.get(key).asText());
-                  if (member.getAcceptabilityId().equals("PREFERRED")) {
-                    member.setAcceptabilityId("900000000000548007");
-                  } else if (member.getAcceptabilityId().equals("ACCEPTABLE")) {
-                    member.setAcceptabilityId("900000000000549004");
+
+                  if (language != null && language.fieldNames().hasNext()) {
+                    String key = language.fieldNames().next();
+                    member.setRefsetId(key);
+                    member.setAcceptabilityId(language.get(key).asText());
+                    if (member.getAcceptabilityId().equals("PREFERRED")) {
+                      member.setAcceptabilityId("900000000000548007");
+                    } else if (member.getAcceptabilityId()
+                        .equals("ACCEPTABLE")) {
+                      member.setAcceptabilityId("900000000000549004");
+                    }
+                    description.getLanguageRefsetMembers().add(member);
+                  } else {
+                    lookupErrors.append("  URI: ").append(targetUri)
+                        .append("\r\n");
+                    lookupErrors.append("  CONCEPT ID: ")
+                        .append(concept.getTerminologyId()).append("\r\n");
+                    lookupErrors.append("  DESCRIPTION ID: ")
+                        .append(description.getTerminologyId()).append("\r\n");
+                    lookupErrors.append("  ERROR: ")
+                        .append("\"acceptabilityMap\" node is null or empty")
+                        .append("\r\n\r\n");
                   }
-                  description.getLanguageRefsetMembers().add(member);
                 }
               }
 
@@ -1418,7 +1534,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
               final Relationship rel = new RelationshipJpa();
 
               rel.setActive(relNode.get("active").asText().equals("true"));
-              // Skip inactive descriptions
+              // Skip inactive relationships
               if (!rel.isActive()) {
                 continue;
               }
@@ -1477,6 +1593,10 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
         }
       }
 
+      if (lookupErrors.length() != 0) {
+        sendLookupErrorEmail(lookupErrors.toString());
+      }
+
       conceptList.setTotalCount(total);
       return conceptList;
 
@@ -1499,25 +1619,31 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
 
       final Client client = ClientBuilder.newClient();
 
-      WebTarget target = client.target(url + "/" + version + "/concepts?"
-          + query + "&limit=" + terminologyIds.size());
-      Logger.getLogger(getClass()).info(target.getUri().toString());
+      final StringBuilder lookupErrors = new StringBuilder();
+
+      String targetUri = url + "/" + version + "/concepts?" + query + "&limit="
+          + terminologyIds.size();
+
+      WebTarget target = client.target(targetUri);
+      Logger.getLogger(getClass()).info(targetUri);
 
       Response response = target.request(accept)
           .header("Authorization", authHeader)
           .header("Accept-Language", getAcceptLanguage(terminology, version))
-          .header("Cookie",
-              getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
+          .header("Cookie", getGenericUserCookie() != null
+              ? getGenericUserCookie() : getCookieHeader())
           .get();
       String resultString = response.readEntity(String.class);
       if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
         // n/a
       }
       // If the generic user is logged out, it returns a 403 Forbidden error. In
-      // this case, clear out the generic use cookie so the next call can re-login
+      // this case, clear out the generic use cookie so the next call can
+      // re-login
       else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
         genericUserCookie = null;
-        throw new LocalException("Connection with the terminology server has expired. Please reload the page to reconnect.");
+        throw new LocalException(
+            "Connection with the terminology server has expired. Please reload the page to reconnect.");
       } else {
 
         // Here's the messy part about trying to parse the return error message
@@ -1552,12 +1678,29 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
             conceptNode.get("definitionStatus").asText());
 
         // pt.term is the name
-        concept.setName(conceptNode.get("pt").get("term").asText());
+        if (conceptNode.get("pt") != null
+            && conceptNode.get("pt").get("term") != null) {
+          concept.setName(conceptNode.get("pt").get("term").asText());
+        } else {
+          concept.setName(UNABLE_TO_DETERMINE_NAME);
+
+          lookupErrors.append("  URI: ").append(targetUri).append("\r\n");
+          lookupErrors.append("  CONCEPT ID: ")
+              .append(concept.getTerminologyId()).append("\r\n");
+          lookupErrors.append("  ERROR: ")
+              .append("\"pt\" node is null or missing \"term\" subnode")
+              .append("\r\n\r\n");
+
+        }
 
         concept.setPublishable(true);
         concept.setPublished(true);
 
         conceptList.addObject(concept);
+      }
+
+      if (lookupErrors.length() != 0) {
+        sendLookupErrorEmail(lookupErrors.toString());
       }
 
       conceptList.setTotalCount(total);
@@ -1579,6 +1722,8 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     final ConceptList conceptList = new ConceptListJpa();
     // Make a webservice call to browser api
     final Client client = ClientBuilder.newClient();
+
+    final StringBuilder lookupErrors = new StringBuilder();
 
     PfsParameter localPfs = pfs;
     if (localPfs == null) {
@@ -1603,23 +1748,23 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     // this is because we no longer have the offset parameter to do paging and
     // keeping track
     // of the searchAfter parameter is too complicated for our current needs
-    final WebTarget target =
-        useTerm
-            ? client
-                .target(url + "/" + version + "/concepts?term="
-                    + URLEncoder.encode(localQuery, "UTF-8").replaceAll(" ",
-                        "%20")
-                    + "&limit=100" + "&expand=pt(),fsn()")
-            : client.target(url + "/" + version + "/concepts/"
-                + URLEncoder.encode(localQuery, "UTF-8").replaceAll(" ", "%20")
-                + "?expand=pt()");
 
-    final Response response = target.request(accept)
-        .header("Authorization", authHeader)
-        .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
-        .header("Cookie",
-            getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
-        .get();
+    String targetUri = useTerm
+        ? url + "/" + version + "/concepts?term="
+            + URLEncoder.encode(localQuery, "UTF-8").replaceAll(" ", "%20")
+            + "&limit=100" + "&expand=pt(),fsn()"
+        : url + "/" + version + "/concepts/"
+            + URLEncoder.encode(localQuery, "UTF-8").replaceAll(" ", "%20")
+            + "?expand=pt()";
+
+    final WebTarget target = client.target(targetUri);
+
+    final Response response =
+        target.request(accept).header("Authorization", authHeader)
+            .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
+            .header("Cookie", getGenericUserCookie() != null
+                ? getGenericUserCookie() : getCookieHeader())
+            .get();
 
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -1629,7 +1774,8 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     // this case, clear out the generic use cookie so the next call can re-login
     else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
       genericUserCookie = null;
-      throw new LocalException("Connection with the terminology server has expired. Please reload the page to reconnect.");
+      throw new LocalException(
+          "Connection with the terminology server has expired. Please reload the page to reconnect.");
     } else {
       throw new LocalException(
           "Unexpected terminology server failure. Message = " + resultString);
@@ -1654,7 +1800,20 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
         desc.setActive(entry.get("active").asText().equals("true"));
         String term = pt == null ? ""
             : pt.get("term") == null ? "" : pt.get("term").asText();
-        desc.setTerm(term);
+
+        if (pt != null && pt.get("term") != null) {
+          desc.setTerm(pt.get("term").asText());
+        } else {
+          desc.setTerm(UNABLE_TO_DETERMINE_NAME);
+
+          lookupErrors.append("  URI: ").append(targetUri).append("\r\n");
+          lookupErrors.append("  CONCEPT ID: ").append(conceptId)
+              .append("\r\n");
+          lookupErrors.append("  ERROR: ")
+              .append("\"pt\" node is null or missing \"term\" subnode")
+              .append("\r\n\r\n");
+        }
+
         if (conceptMap.containsKey(conceptId)) {
           final Concept concept = conceptMap.get(conceptId);
           if (desc.isActive() || !localPfs.getActiveOnly()) {
@@ -1676,9 +1835,20 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
                 .setDefinitionStatusId(entry.get("definitionStatus").asText());
             concept.setTerminologyId(conceptId);
             concept.setModuleId(entry.get("moduleId").asText());
-            term = fsn == null ? ""
-                : fsn.get("term") == null ? "" : fsn.get("term").asText();
-            concept.setName(term);
+
+            if (fsn != null && fsn.get("term") != null) {
+              concept.setName(fsn.get("term").asText());
+            } else {
+              concept.setName(UNABLE_TO_DETERMINE_NAME);
+
+              lookupErrors.append("  URI: ").append(targetUri).append("\r\n");
+              lookupErrors.append("  CONCEPT ID: ")
+                  .append(concept.getTerminologyId()).append("\r\n");
+              lookupErrors.append("  ERROR: ")
+                  .append("\"fsn\" node is null or missing \"term\" subnode")
+                  .append("\r\n\r\n");
+            }
+
             concept.setPublishable(true);
             concept.setPublished(true);
 
@@ -1713,10 +1883,19 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
       concept.setLastModifiedBy(terminology);
       concept.setModuleId(doc.get("moduleId").asText());
       concept.setDefinitionStatusId(doc.get("definitionStatus").asText());
-      JsonNode fsn = doc.get("fsn");
-      String term = fsn == null ? ""
-          : fsn.get("term") == null ? "" : fsn.get("term").asText();
-      concept.setName(term);
+
+      if (doc.get("fsn") != null && doc.get("pt").get("term") != null) {
+        concept.setName(doc.get("pt").get("term").asText());
+      } else {
+        concept.setName(UNABLE_TO_DETERMINE_NAME);
+
+        lookupErrors.append("  URI: ").append(targetUri).append("\r\n");
+        lookupErrors.append("  CONCEPT ID: ").append(concept.getTerminologyId())
+            .append("\r\n");
+        lookupErrors.append("  ERROR: ")
+            .append("\"pt\" node is null or missing \"term\" subnode")
+            .append("\r\n\r\n");
+      }
 
       concept.setPublishable(true);
       concept.setPublished(true);
@@ -1726,6 +1905,11 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
       // Set total count
       conceptList.setTotalCount(conceptList.getCount());
     }
+
+    if (lookupErrors.length() != 0) {
+      sendLookupErrorEmail(lookupErrors.toString());
+    }
+
     return conceptList;
   }
 
@@ -1775,12 +1959,12 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     final Client client = ClientBuilder.newClient();
     final WebTarget target = client.target(url + "/browser/" + version
         + "/concepts/" + terminologyId + "/parents");
-    final Response response = target.request(accept)
-        .header("Authorization", authHeader)
-        .header("Accept-Language", getAcceptLanguage(terminology, version))
-        .header("Cookie",
-            getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
-        .get();
+    final Response response =
+        target.request(accept).header("Authorization", authHeader)
+            .header("Accept-Language", getAcceptLanguage(terminology, version))
+            .header("Cookie", getGenericUserCookie() != null
+                ? getGenericUserCookie() : getCookieHeader())
+            .get();
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -1789,7 +1973,8 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     // this case, clear out the generic use cookie so the next call can re-login
     else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
       genericUserCookie = null;
-      throw new LocalException("Connection with the terminology server has expired. Please reload the page to reconnect.");
+      throw new LocalException(
+          "Connection with the terminology server has expired. Please reload the page to reconnect.");
     } else if (response.getStatusInfo() == Status.BAD_REQUEST) {
       throw new LocalException(getErrorMessage(resultString));
     } else {
@@ -1850,12 +2035,12 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     final Client client = ClientBuilder.newClient();
     final WebTarget target = client.target(url + "/browser/" + version
         + "/concepts/" + terminologyId + "/children?form=inferred");
-    final Response response = target.request(accept)
-        .header("Authorization", authHeader)
-        .header("Accept-Language", getAcceptLanguage(terminology, version))
-        .header("Cookie",
-            getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
-        .get();
+    final Response response =
+        target.request(accept).header("Authorization", authHeader)
+            .header("Accept-Language", getAcceptLanguage(terminology, version))
+            .header("Cookie", getGenericUserCookie() != null
+                ? getGenericUserCookie() : getCookieHeader())
+            .get();
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -1864,7 +2049,8 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     // this case, clear out the generic use cookie so the next call can re-login
     else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
       genericUserCookie = null;
-      throw new LocalException("Connection with the terminology server has expired. Please reload the page to reconnect.");
+      throw new LocalException(
+          "Connection with the terminology server has expired. Please reload the page to reconnect.");
     } else if (response.getStatusInfo() == Status.BAD_REQUEST) {
       throw new LocalException(getErrorMessage(resultString));
     } else {
@@ -1982,12 +2168,12 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
                 .encode("<900000000000506000", "UTF-8").replaceAll(" ", "%20")
             + "&limit=" + localPfs.getMaxResults() + "&offset=0");
 
-    Response response = target.request(accept)
-        .header("Authorization", authHeader)
-        .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
-        .header("Cookie",
-            getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
-        .get();
+    Response response =
+        target.request(accept).header("Authorization", authHeader)
+            .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
+            .header("Cookie", getGenericUserCookie() != null
+                ? getGenericUserCookie() : getCookieHeader())
+            .get();
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -1996,7 +2182,8 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     // this case, clear out the generic use cookie so the next call can re-login
     else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
       genericUserCookie = null;
-      throw new LocalException("Connection with the terminology server has expired. Please reload the page to reconnect.");
+      throw new LocalException(
+          "Connection with the terminology server has expired. Please reload the page to reconnect.");
     } else if (response.getStatusInfo() == Status.BAD_REQUEST) {
       throw new LocalException(getErrorMessage(resultString));
     } else {
@@ -2043,12 +2230,12 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     WebTarget target =
         client.target(url + "/branches?" + "limit=" + localPfs.getMaxResults());
 
-    Response response = target.request(accept)
-        .header("Authorization", authHeader)
-        .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
-        .header("Cookie",
-            getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
-        .get();
+    Response response =
+        target.request(accept).header("Authorization", authHeader)
+            .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
+            .header("Cookie", getGenericUserCookie() != null
+                ? getGenericUserCookie() : getCookieHeader())
+            .get();
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -2057,7 +2244,8 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     // this case, clear out the generic use cookie so the next call can re-login
     else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
       genericUserCookie = null;
-      throw new LocalException("Connection with the terminology server has expired. Please reload the page to reconnect.");
+      throw new LocalException(
+          "Connection with the terminology server has expired. Please reload the page to reconnect.");
     } else {
 
       throw new LocalException(
@@ -2103,12 +2291,12 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     final WebTarget target = client
         .target(url + "/codesystems?" + "limit=" + localPfs.getMaxResults());
 
-    final Response response = target.request(accept)
-        .header("Authorization", authHeader)
-        .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
-        .header("Cookie",
-            getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
-        .get();
+    final Response response =
+        target.request(accept).header("Authorization", authHeader)
+            .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
+            .header("Cookie", getGenericUserCookie() != null
+                ? getGenericUserCookie() : getCookieHeader())
+            .get();
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() != Family.SUCCESSFUL) {
       throw new LocalException(
@@ -2177,12 +2365,12 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
 
     final Client client = ClientBuilder.newClient();
     final WebTarget target = client.target(url + "/codesystems/" + terminology);
-    final Response response = target.request(accept)
-        .header("Authorization", authHeader)
-        .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
-        .header("Cookie",
-            getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
-        .get();
+    final Response response =
+        target.request(accept).header("Authorization", authHeader)
+            .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
+            .header("Cookie", getGenericUserCookie() != null
+                ? getGenericUserCookie() : getCookieHeader())
+            .get();
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -2191,7 +2379,8 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     // this case, clear out the generic use cookie so the next call can re-login
     else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
       genericUserCookie = null;
-      throw new LocalException("Connection with the terminology server has expired. Please reload the page to reconnect.");
+      throw new LocalException(
+          "Connection with the terminology server has expired. Please reload the page to reconnect.");
     } else {
       throw new LocalException(
           "Unexpected terminology server failure. Message = " + resultString);
@@ -2218,12 +2407,12 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
    * @throws Exception the exception
    */
   private String getGenericUserCookie() throws Exception {
-    
+
     // Check if the generic user cookie is expired and needs to be cleared
     // and re-read
     if (new Date().after(genericUserCookieExpirationDate)) {
       genericUserCookie = null;
-      
+
       // Set the new expiration date for tomorrow
       Calendar now = Calendar.getInstance();
       now.add(Calendar.HOUR, 24);
@@ -2233,7 +2422,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     if (genericUserCookie != null) {
       return genericUserCookie;
     }
-    
+
     // Login the generic user, then save and return the cookie
     final String userName = ConfigUtility.getConfigProperties()
         .getProperty("generic.user.userName");
@@ -2286,6 +2475,32 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
   @Override
   public int getMaxBatchLookupSize() throws Exception {
     return maxBatchLookupSize;
+  }
+
+  /**
+   * Send lookup error email.
+   *
+   * @param msg the msg
+   * @throws Exception the exception
+   */
+  private void sendLookupErrorEmail(String msg) throws Exception {
+
+    Properties config = ConfigUtility.getConfigProperties();
+    if (config.getProperty("mail.enabled") != null
+        && config.getProperty("mail.enabled").equals("true")
+        && config.getProperty("mail.smtp.to") != null) {
+      String from = null;
+      if (config.containsKey("mail.smtp.from")) {
+        from = config.getProperty("mail.smtp.from");
+      } else {
+        from = config.getProperty("mail.smtp.user");
+      }
+
+      ConfigUtility.sendEmail("[Refset Server] Concept Lookup Error", from,
+          config.getProperty("mail.smtp.to"), msg, config,
+          "true".equals(config.get("mail.smtp.auth")));
+
+    }
   }
 
 }

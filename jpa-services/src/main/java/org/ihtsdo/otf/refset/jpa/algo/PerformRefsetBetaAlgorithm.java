@@ -20,6 +20,7 @@ import org.ihtsdo.otf.refset.jpa.ReleaseArtifactJpa;
 import org.ihtsdo.otf.refset.jpa.ReleaseInfoJpa;
 import org.ihtsdo.otf.refset.jpa.services.RefsetServiceJpa;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
+import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
 import org.ihtsdo.otf.refset.services.handlers.ExportRefsetHandler;
 import org.ihtsdo.otf.refset.services.helpers.ProgressEvent;
 import org.ihtsdo.otf.refset.services.helpers.ProgressListener;
@@ -175,9 +176,10 @@ public class PerformRefsetBetaAlgorithm extends RefsetServiceJpa implements
         if ((member.getMemberType() == Refset.MemberType.MEMBER || member
             .getMemberType() == Refset.MemberType.INCLUSION)
             && !oldMemberMap.containsKey(member.getConceptId())) {
-          member.setActive(true);
-          member.setEffectiveTime(stageReleaseInfo.getEffectiveTime());
-          delta.add(member);
+          final ConceptRefsetMember deltaMember = new ConceptRefsetMemberJpa(member);
+          deltaMember.setActive(true);
+          deltaMember.setEffectiveTime(stageReleaseInfo.getEffectiveTime());
+          delta.add(deltaMember);
         }
 
         // Only mark it as retired if the terminology id is the same
@@ -186,9 +188,10 @@ public class PerformRefsetBetaAlgorithm extends RefsetServiceJpa implements
             && oldMemberMap.containsKey(member.getConceptId())) {
           final ConceptRefsetMember oldMember =
               oldMemberMap.get(member.getConceptId());
-          oldMember.setActive(false);
-          oldMember.setEffectiveTime(stageReleaseInfo.getEffectiveTime());
-          delta.add(member);
+          final ConceptRefsetMember deltaMember = new ConceptRefsetMemberJpa(oldMember);
+          deltaMember.setActive(false);
+          deltaMember.setEffectiveTime(stageReleaseInfo.getEffectiveTime());
+          delta.add(deltaMember);
         }
 
       }
@@ -199,9 +202,10 @@ public class PerformRefsetBetaAlgorithm extends RefsetServiceJpa implements
         if ((member.getMemberType() == Refset.MemberType.MEMBER || member
             .getMemberType() == Refset.MemberType.INCLUSION)
             && !newMemberMap.containsKey(member.getConceptId())) {
-          member.setActive(false);
-          member.setEffectiveTime(stageReleaseInfo.getEffectiveTime());
-          delta.add(member);
+          final ConceptRefsetMember deltaMember = new ConceptRefsetMemberJpa(member);
+          deltaMember.setActive(false);
+          deltaMember.setEffectiveTime(stageReleaseInfo.getEffectiveTime());
+          delta.add(deltaMember);
         }
       }
 
