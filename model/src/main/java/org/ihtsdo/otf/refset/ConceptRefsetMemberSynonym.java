@@ -66,4 +66,19 @@ public interface ConceptRefsetMemberSynonym extends HasId {
    * @param member the new member
    */
   public void setMember(ConceptRefsetMember member);
+
+  /**
+   * Checks if is active.
+   *
+   * @return true, if is active
+   */
+  public boolean isActive();
+
+  /**
+   * Sets the active.
+   *
+   * @param active the new active
+   */
+  public void setActive(boolean active);
+
 }
