@@ -57,6 +57,11 @@ public class ConceptRefsetMemberSynonymJpa
   /** The term type. */
   private String termType;
 
+  /** The active. */
+  @Column(nullable = false)
+  private boolean active = true;
+
+  
   /**
    * The default constructor.
    */
@@ -73,7 +78,8 @@ public class ConceptRefsetMemberSynonymJpa
    * @param member the member
    */
   public ConceptRefsetMemberSynonymJpa(String synonym, String language,
-      String termType, ConceptRefsetMember member) {
+      String termType, ConceptRefsetMember member, boolean active) {
+    setActive(active);
     setSynonym(synonym);
     setLanguage(language);
     setTermType(termType);
@@ -86,6 +92,7 @@ public class ConceptRefsetMemberSynonymJpa
    * @param synonym the synonym
    */
   public ConceptRefsetMemberSynonymJpa(ConceptRefsetMemberSynonym synonym) {
+    setActive(synonym.isActive());
     setSynonym(synonym.getSynonym());
     setLanguage(synonym.getLanguage());
     setTermType(synonym.getTermType());
@@ -190,6 +197,20 @@ public class ConceptRefsetMemberSynonymJpa
     this.synonym = synonym;
   }
 
+  /* see superclass */
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  @Override
+  public boolean isActive() {
+    return active;
+  }
+  
+
+  /* see superclass */
+  @Override
+  public void setActive(boolean active) {
+    this.active = active;
+  }
+  
   /* see superclass */
   @Override
   public int hashCode() {
