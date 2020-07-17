@@ -1680,6 +1680,7 @@ public class PatchDataMojo extends AbstractRttMojo {
       if(project.getId().equals(1L)) {
         ct++;
         project.setTerminologyHandlerKey("AUTHORING-INTL");
+        project.setTerminologyHandlerUrl("https://prod-snowstorm.ihtsdotools.org/snowstorm/snomed-ct");
         translationService.updateProject(project);
       }
       
