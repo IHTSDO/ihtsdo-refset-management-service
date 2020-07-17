@@ -473,6 +473,14 @@
               <a href="{{link}}" target="_blank">{{link}}</a>
             </td>
           </tr>
+          <tr ng-show="value == 'BETA'">
+            <td>
+              <b>Url</b>
+            </td>
+            <td>
+              <a href="{{link + '&beta=true'}}" target="_blank">{{link + '&beta=true'}}</a>
+            </td>
+          </tr>
           <tr ng-show="selected.refset.type == 'INTENSIONAL'">
             <td>
               <b>Definition</b>
