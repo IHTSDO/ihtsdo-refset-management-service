@@ -2248,6 +2248,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
         ) {
           ConceptRefsetMemberSynonym synonym =
               new ConceptRefsetMemberSynonymJpa();
+          synonym.setActive(d.isActive());
           synonym.setSynonym(d.getTerm());
           synonym.setLanguage(d.getLanguageCode());
           if ("900000000000003001".equals(d.getTypeId())) {
@@ -2290,6 +2291,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
       ) {
         ConceptRefsetMemberSynonym synonym =
             new ConceptRefsetMemberSynonymJpa();
+        synonym.setActive(d.isActive());
         synonym.setSynonym(d.getTerm());
         synonym.setLanguage(d.getLanguageCode());
         if ("900000000000003001".equals(d.getTypeId())) {
