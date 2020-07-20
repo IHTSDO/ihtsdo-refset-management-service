@@ -78,7 +78,7 @@ public class ConceptRefsetMemberJpaUnitTest extends ModelUnitSupport {
     r2.setProject(new ProjectJpa());
 
     l1 = new ArrayList<ConceptRefsetMemberSynonym>();
-    l1.add(new ConceptRefsetMemberSynonymJpa("Test1","en","PT",null));
+    l1.add(new ConceptRefsetMemberSynonymJpa("Test1","en","PT",null, true));
 
     l2 = (List) new ArrayList();
     l2.add(null);
