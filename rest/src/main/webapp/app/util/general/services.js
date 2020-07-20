@@ -807,7 +807,7 @@ tsApp.service('securityService', [
       console.debug('removeUser');
       var deferred = $q.defer();
 
-      // Add user
+      // Remove user
       gpService.increment();
       $http['delete'](securityUrl + 'user/remove/' + user.id).then(
       // success
