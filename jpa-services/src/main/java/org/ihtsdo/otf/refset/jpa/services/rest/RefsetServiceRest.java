@@ -171,13 +171,14 @@ public interface RefsetServiceRest {
    * @param refsetId the refset id
    * @param ioHandlerInfoId the io handler info id
    * @param query the query
+   * @param language the language
    * @param pfs the pfs
    * @param authToken the auth token
    * @return the input stream
    * @throws Exception the exception
    */
   public InputStream exportMembers(Long refsetId, String ioHandlerInfoId,
-    String query, PfsParameterJpa pfs, String authToken) throws Exception;
+    String query, String language, PfsParameterJpa pfs, String authToken) throws Exception;
 
   /**
    * Adds the refset member.

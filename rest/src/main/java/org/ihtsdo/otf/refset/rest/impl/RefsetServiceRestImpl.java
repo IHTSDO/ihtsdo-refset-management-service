@@ -1040,13 +1040,14 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
     @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
     @ApiParam(value = "Import handler id, e.g. \"DEFAULT\"", required = true) @QueryParam("handlerId") String ioHandlerInfoId,
     @ApiParam(value = "Query, e.g. \"aspirin\"", required = true) @QueryParam("query") String query,
+    @ApiParam(value = "Language, e.g. es", required = false) @QueryParam("language") String language,
     @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
     Logger.getLogger(getClass())
         .info("RESTful call GET (Refset): /export/members " + refsetId + ", "
-            + ioHandlerInfoId);
+            + ioHandlerInfoId + ", " + query + ", " + language);
 
     final RefsetService refsetService =
         new RefsetServiceJpa(getHeaders(headers));
@@ -1068,12 +1069,27 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         throw new Exception("invalid handler id " + ioHandlerInfoId);
       }
 
-      // export the members
-      return handler.exportMembers(refset,
+      List<ConceptRefsetMember> list =
           refsetService.findMembersForRefset(refset.getId(),
               query == null ? "(memberType:INCLUSION OR memberType:MEMBER)"
                   : query + " AND (memberType:INCLUSION OR memberType:MEMBER)",
-              pfs, true).getObjects());
+              pfs, true).getObjects();
+      
+      for (ConceptRefsetMember member : list) {
+        if (language != null && !language.isEmpty()
+            && !language.contentEquals("en")) {
+          String displayName =
+              refsetService.getDisplayNameForMember(member.getId(), language);
+          if (displayName != null) {
+            member.setConceptName(displayName);
+          }
+        }
+        refsetService.handleLazyInit(member);
+      }
+      
+      // export the members
+      return handler.exportMembers(refset,
+          list);
 
     } catch (Exception e) {
       handleException(e, "trying to export members");

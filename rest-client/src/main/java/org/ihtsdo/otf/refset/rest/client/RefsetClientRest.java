@@ -276,7 +276,7 @@ public class RefsetClientRest extends RootClientRest
   /* see superclass */
   @Override
   public InputStream exportMembers(Long refsetId, String ioHandlerInfoId,
-    String query, PfsParameterJpa pfs, String authToken) throws Exception {
+    String query, String language, PfsParameterJpa pfs, String authToken) throws Exception {
     Logger.getLogger(getClass())
         .debug("Refset Client - export refset members - " + refsetId + ", "
             + ioHandlerInfoId);

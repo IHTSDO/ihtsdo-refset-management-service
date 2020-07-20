@@ -2197,6 +2197,9 @@ tsApp
                     query : function() {
                       return $scope.paging['member'].filter;
                     },
+                    language : function() {
+                      return $scope.preferredLanguage;
+                    },
                     pfs : function() {
                       var pfs = prepPfs();
                       pfs.startIndex = -1;
@@ -2218,12 +2221,13 @@ tsApp
               
               // Import/Export controller
               var ImportExportModalCtrl = function($scope, $uibModalInstance, refset, metadata,
-                operation, type, ioHandlers, query, pfs) {
+                operation, type, ioHandlers, query, language, pfs) {
                 console.debug('Entered import export modal control', refset.id, ioHandlers,
                   operation, type);
                 $scope.refset = refset;
                 $scope.metadata = metadata;
                 $scope.query = query;
+                $scope.language = language;
                 $scope.pfs = pfs;
                 $scope.ioHandlers = [];
                 // Skip "with name" handlers if user is not logged in
@@ -2267,7 +2271,7 @@ tsApp
                   }
                   if (type === 'Refset Members') {
                     refsetService.exportMembers($scope.refset, $scope.selectedIoHandler,
-                      $scope.query, $scope.pfs);
+                      $scope.query, $scope.language, $scope.pfs);
                   }
                   $uibModalInstance.close(refset);
                 };
