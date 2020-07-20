@@ -921,12 +921,13 @@ tsApp.service('refsetService', [
           });
     };
 
-    this.exportMembers = function(refset, handler, query, pfs) {
+    this.exportMembers = function(refset, handler, query, language, pfs) {
       console.debug('exportMembers');
       gpService.increment();
       $http.post(
         refsetUrl + 'export/members?refsetId=' + refset.id + '&handlerId=' + handler.id
-          + (query ? '&query=' + utilService.prepQuery(query) : ""), pfs).then(
+          + (query ? '&query=' + utilService.prepQuery(query) : "") 
+          + (language ? '&language=' + language : ""), pfs).then(
         // Success
         function(response) {
           var blob = new Blob([ response.data ], {
