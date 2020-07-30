@@ -55,6 +55,7 @@ import org.ihtsdo.otf.refset.jpa.helpers.ReleaseInfoListJpa;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.rf2.Description;
+import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
 import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.RefsetDescriptorRefsetMemberJpa;
@@ -796,16 +797,19 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
 
   /* see superclass */
   @Override
-  public String getDisplayNameForMember(Long memberId, String language)
+  public String getDisplayNameForMember(Long memberId, String language, Boolean fsn)
     throws Exception {
     Logger.getLogger(getClass()).debug(
-        "Refset Service - get display name for refset member " + memberId);
+        "Refset Service - get display name for refset member " + memberId + ", " + language + ", " + fsn);
+    
     final javax.persistence.Query query = manager
         .createQuery("select a from ConceptRefsetMemberSynonymJpa a where "
-            + "a.member.id = :memberId and a.language = :language and a.termType = 'PT'");
+            + "a.member.id = :memberId and a.termType = :termType "
+            + "and a.languageRefsetId = :languageRefsetId and a.active = true");
     try {
       query.setParameter("memberId", memberId);
-      query.setParameter("language", language);
+      query.setParameter("termType", fsn ? "FSN" : "PT");
+      query.setParameter("languageRefsetId", language);
       final ConceptRefsetMemberSynonym synonym =
           (ConceptRefsetMemberSynonym) query.getSingleResult();
       return synonym.getSynonym();
@@ -2251,24 +2255,35 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
           synonym.setActive(d.isActive());
           synonym.setSynonym(d.getTerm());
           synonym.setLanguage(d.getLanguageCode());
-          if ("900000000000003001".equals(d.getTypeId())) {
-            synonym.setTermType("FSN");
-          } else {
-            if (d.getLanguageRefsetMembers() == null
-                || d.getLanguageRefsetMembers().size() == 0) {
-              synonym.setTermType("UNKNOWN");
-            } else if ("900000000000548007".equals(
-                d.getLanguageRefsetMembers().get(0).getAcceptabilityId())) {
-              synonym.setTermType("PT");
-            } else {
-              synonym.setTermType("SY");
+          if (d.getLanguageRefsetMembers() == null
+              || d.getLanguageRefsetMembers().size() == 0) {
+            synonym.setTermType("UNKNOWN");
+            synonym.setMember(member);
+            // Make sure to only add unique synonyms. Block duplicates
+            if (!member.getSynonyms().contains(synonym)) {
+              refsetService.addConceptRefsetMemberSynonym(synonym);
+              member.getSynonyms().add(synonym);
             }
-          }
-          synonym.setMember(member);
-          // Make sure to only add unique synonyms. Block duplicates
-          if (!member.getSynonyms().contains(synonym)) {
-            refsetService.addConceptRefsetMemberSynonym(synonym);
-            member.getSynonyms().add(synonym);
+            continue;
+          } 
+          for (LanguageRefsetMember lrm : d.getLanguageRefsetMembers()) {
+            if ("900000000000003001".equals(d.getTypeId())) {
+              synonym.setTermType("FSN");
+            } else {
+              if ("900000000000548007".equals(
+                  lrm.getAcceptabilityId())) {
+                synonym.setTermType("PT");
+              } else {
+                synonym.setTermType("SY");
+              }
+            }
+            synonym.setLanguageRefsetId(lrm.getRefsetId());
+            synonym.setMember(member);
+            // Make sure to only add unique synonyms. Block duplicates
+            if (!member.getSynonyms().contains(synonym)) {
+              refsetService.addConceptRefsetMemberSynonym(synonym);
+              member.getSynonyms().add(synonym);
+            }
           }
         }
       }
@@ -2294,24 +2309,35 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
         synonym.setActive(d.isActive());
         synonym.setSynonym(d.getTerm());
         synonym.setLanguage(d.getLanguageCode());
-        if ("900000000000003001".equals(d.getTypeId())) {
-          synonym.setTermType("FSN");
-        } else {
-          if (d.getLanguageRefsetMembers() == null
-              || d.getLanguageRefsetMembers().size() == 0) {
-            synonym.setTermType("UNKNOWN");
-          } else if ("900000000000548007".equals(
-              d.getLanguageRefsetMembers().get(0).getAcceptabilityId())) {
-            synonym.setTermType("PT");
-          } else {
-            synonym.setTermType("SY");
+        if (d.getLanguageRefsetMembers() == null
+            || d.getLanguageRefsetMembers().size() == 0) {
+          synonym.setTermType("UNKNOWN");
+          synonym.setMember(member);
+          // Make sure to only add unique synonyms. Block duplicates
+          if (!member.getSynonyms().contains(synonym)) {
+            refsetService.addConceptRefsetMemberSynonym(synonym);
+            member.getSynonyms().add(synonym);
           }
-        }
-        synonym.setMember(member);
-        // Make sure to only add unique synonyms. Block duplicates
-        if (!member.getSynonyms().contains(synonym)) {
-          refsetService.addConceptRefsetMemberSynonym(synonym);
-          member.getSynonyms().add(synonym);
+          continue;
+        } 
+        for (LanguageRefsetMember lrm : d.getLanguageRefsetMembers()) {
+          if ("900000000000003001".equals(d.getTypeId())) {
+            synonym.setTermType("FSN");
+          } else {
+            if ("900000000000548007".equals(
+                lrm.getAcceptabilityId())) {
+              synonym.setTermType("PT");
+            } else {
+              synonym.setTermType("SY");
+            }
+          }
+          synonym.setLanguageRefsetId(lrm.getRefsetId());
+          synonym.setMember(member);
+          // Make sure to only add unique synonyms. Block duplicates
+          if (!member.getSynonyms().contains(synonym)) {
+            refsetService.addConceptRefsetMemberSynonym(synonym);
+            member.getSynonyms().add(synonym);
+          }
         }
       }
     }

@@ -507,10 +507,11 @@ public interface RefsetService extends ReleaseService {
    *
    * @param memberId the member id
    * @param language the language
+   * @param fsn 
    * @return the display name for member
    * @throws Exception the exception
    */
-  public String getDisplayNameForMember(Long memberId, String language)
+  public String getDisplayNameForMember(Long memberId, String language, Boolean fsn)
     throws Exception;
 
   /**
@@ -533,5 +534,6 @@ public interface RefsetService extends ReleaseService {
    * @throws Exception the exception
    */
   public Map<String, Long> mapInactiveMembers(Long refsetId) throws Exception;
+
 
 }

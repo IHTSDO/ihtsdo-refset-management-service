@@ -393,7 +393,7 @@ tsApp.service('refsetService', [
     };
 
     // find members for refset
-    this.findRefsetMembersForQuery = function(refsetId, query, pfs, translated, language) {
+    this.findRefsetMembersForQuery = function(refsetId, query, pfs, translated, language, fsn) {
       console.debug('findRefsetMembersForQuery');
       var deferred = $q.defer();
 
@@ -401,7 +401,8 @@ tsApp.service('refsetService', [
       gpService.increment();
       $http.post(
         refsetUrl + 'members?refsetId=' + refsetId + '&query=' + utilService.prepQuery(query)
-           + (language != null ? '&language=' + language : '') + (translated != null ? '&translated=' + translated : ''), utilService.prepPfs(pfs))
+           + (language != null ? '&language=' + language : '') + (fsn != null ? '&fsn=' + fsn : '')
+           + (translated != null ? '&translated=' + translated : ''), utilService.prepPfs(pfs))
         .then(
         // success
         function(response) {
@@ -758,7 +759,7 @@ tsApp.service('refsetService', [
 
     // get required language refsets for branch
     this.getRequiredLanguageRefsets = function(refsetId) {
-      console.debug('getRequiredLangaugeRefsets');
+      console.debug('getRequiredLanguageRefsets');
       var deferred = $q.defer();
 
       // Get required language refsets
@@ -921,13 +922,14 @@ tsApp.service('refsetService', [
           });
     };
 
-    this.exportMembers = function(refset, handler, query, language, pfs) {
+    this.exportMembers = function(refset, handler, query, language, pfs, fsn) {
       console.debug('exportMembers');
       gpService.increment();
+      
       $http.post(
         refsetUrl + 'export/members?refsetId=' + refset.id + '&handlerId=' + handler.id
           + (query ? '&query=' + utilService.prepQuery(query) : "") 
-          + (language ? '&language=' + language : ""), pfs).then(
+          + (language ? '&language=' + language : "") + (fsn != null ? '&fsn=' + fsn : ""), pfs).then(
         // Success
         function(response) {
           var blob = new Blob([ response.data ], {
