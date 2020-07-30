@@ -64,7 +64,6 @@ tsApp
               $scope.showDuplicatesExport = false;
               $scope.conceptIds = [];
               $scope.showImportFromExistingProject = false;
-              $scope.preferredLanguage = 'en';
               
               // Page metadata
               var memberTypes = [ 'Member', 'Exclusion', 'Inclusion', 'Active', 'Inactive',
@@ -441,22 +440,17 @@ tsApp
                 var pfs = prepPfs();
                 var value = $scope.paging['member'].typeFilter;
                 var translated;
-                var language = $scope.preferredLanguage;
                 
-                // Drop any dialect code when doing lookups.
-                // This is possibly temporary
-                if(language.length > 2){
-                  language = language.substring(0,2);
-                }
-
                 if (value == 'Translated') {
                   translated = true;
                 } else if (value == 'Not Translated') {
                   translated = false;
                 }
-
+                var language = $scope.selected.refset.preferredLanguage;
+                
+                var fsn = language != null ? language.value.endsWith(" (FSN)") : false;
                 refsetService.findRefsetMembersForQuery(refset.id, $scope.paging['member'].filter,
-                  pfs, translated, language).then(
+                  pfs, translated, language.key, fsn).then(
                   // Success
                   function(data) {
                     refset.members = data.members;
@@ -630,6 +624,19 @@ tsApp
                 return utilService.getSortIndicator(table, lfield, $scope.paging);
               };
 
+              $scope.preferredLanguageValid = function() {
+                if ($scope.selected.refset.preferredLanguage == null) {
+                  return false;
+                }
+                for (var i = 0; i < $scope.requiredLanguages.length; i++) {
+                  if ($scope.requiredLanguages[i].key == $scope.selected.refset.preferredLanguage.key) {
+                    $scope.selected.refset.preferredLanguage = $scope.requiredLanguages[i];
+                    return true;
+                  }
+                }
+                return false;
+              }
+              
               // Selects a refset (setting $scope.selected.refset).
               // Looks up current release info and members.
               $scope.selectRefset = function(refset) {
@@ -639,11 +646,12 @@ tsApp
                 $scope.selected.terminology = refset.terminology;
                 $scope.selected.version = refset.version;
                 refsetService.getRequiredLanguageRefsets(refset.id).then(function(data) {
-                  $scope.requiredLanguages = data.strings;
+                  $scope.requiredLanguages = data.keyValuePairs;
                   // If new refset doesn't contain the most recently selected preferred language, revert to english
-                  if(!$scope.requiredLanguages.includes($scope.preferredLanguage)){
-                    $scope.preferredLanguage = "en";
+                  if(!$scope.preferredLanguageValid()){
+                    $scope.selected.refset.preferredLanguage = $scope.requiredLanguages[0];
                   }
+                  
                   $scope.getRefsetReleaseInfo(refset);
                   $scope.getMembers(refset);
                   $scope.getStandardDescriptionTypes(refset.terminology, refset.version);
@@ -2198,7 +2206,7 @@ tsApp
                       return $scope.paging['member'].filter;
                     },
                     language : function() {
-                      return $scope.preferredLanguage;
+                      return $scope.selected.refset.preferredLanguage;
                     },
                     pfs : function() {
                       var pfs = prepPfs();
@@ -2214,7 +2222,8 @@ tsApp
                   if (loperation == 'Import') {
                     $scope.handleWorkflow(data);
                   } else {
-                    refsetService.fireRefsetChanged(data);
+                    // not necessary and deletes the selected language/dialects 
+                    //refsetService.fireRefsetChanged(data);
                   }
                 });
               };
@@ -2270,8 +2279,9 @@ tsApp
                     refsetService.exportDefinition($scope.refset, $scope.selectedIoHandler);
                   }
                   if (type === 'Refset Members') {
+                    var fsn = $scope.language.value.endsWith(" (FSN)");
                     refsetService.exportMembers($scope.refset, $scope.selectedIoHandler,
-                      $scope.query, $scope.language, $scope.pfs);
+                      $scope.query, $scope.language.key, $scope.pfs, fsn);
                   }
                   $uibModalInstance.close(refset);
                 };

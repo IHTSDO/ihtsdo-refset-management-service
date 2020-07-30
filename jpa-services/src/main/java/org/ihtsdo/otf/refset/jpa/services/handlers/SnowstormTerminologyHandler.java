@@ -33,6 +33,8 @@ import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.Terminology;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
+import org.ihtsdo.otf.refset.helpers.KeyValuePair;
+import org.ihtsdo.otf.refset.helpers.KeyValuePairList;
 import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.TranslationExtensionLanguage;
@@ -2356,7 +2358,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
 
   /* see superclass */
   @Override
-  public List<String> getRequiredLanguageRefsets(String terminology,
+  public KeyValuePairList getRequiredLanguageRefsets(String terminology,
     String version) throws Exception {
     Logger.getLogger(getClass()).info(
         "  get required language refsets  - " + terminology + ", " + version);
@@ -2386,18 +2388,62 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
           "Unexpected terminology server failure. Message = " + resultString);
     }
 
+    KeyValuePairList requiredLanguageRefsetIdMap = new KeyValuePairList();
+    
     final ObjectMapper mapper = new ObjectMapper();
     final JsonNode doc = mapper.readTree(resultString);
 
-    JsonNode languageNode = doc.get("languages");
-    List<String> requiredLanguageList = new ArrayList<>();
-    String[] languages = languageNode.toString().split(",");
-    for (String language : languages) {
-      requiredLanguageList.add(language.substring(language.indexOf('"') + 1,
-          language.indexOf(':') - 1));
+    String[] refsetIds;
+    JsonNode referenceSetsNode = doc.get("defaultLanguageReferenceSets");
+    if (referenceSetsNode != null) {
+      String allRefsetIds = referenceSetsNode.toString();
+      allRefsetIds = allRefsetIds.replaceAll("\"", "");
+      allRefsetIds = allRefsetIds.replace("[", "");
+      allRefsetIds = allRefsetIds.replace("]", "");
+      refsetIds = allRefsetIds.split(","); 
+    } else {
+      refsetIds = new String[] {};
     }
-    Collections.sort(requiredLanguageList);
-    return requiredLanguageList;
+     
+    KeyValuePair pair = new KeyValuePair();     
+    pair.setKey("900000000000509007");
+    pair.setValue("United States of America English");
+    requiredLanguageRefsetIdMap.addKeyValuePair(pair);
+    
+    // add each of the non US-PT languageRefsetIds to the return list
+    for (String refsetId : refsetIds) {
+      if (refsetId.contentEquals("900000000000509007")) {
+        continue;
+      }
+      pair = new KeyValuePair();
+      pair.setKey(refsetId);
+      // look up refset concept to get the official refset description 
+      Concept languageRefsetConcept = getFullConcept(refsetId, terminology, version);
+      for (Description desc : languageRefsetConcept.getDescriptions()) {
+        // get language refset description but strip out the repetitive part
+        if (desc.getTerm().endsWith("language reference set")) {
+          pair.setValue(desc.getTerm().substring(0, desc.getTerm().indexOf(" language reference set")));
+        }
+      }     
+      requiredLanguageRefsetIdMap.addKeyValuePair(pair);
+    }
+    
+    
+    // if languageRefsetMembers aren't returned (such as on SNOMEDCT non-extension branch),
+    // add US and GB English as defaults
+    if (requiredLanguageRefsetIdMap.getKeyValuePairs().size() == 1) {     
+      pair = new KeyValuePair();
+      pair.setKey("900000000000508004");
+      pair.setValue("Great Britain English");
+      requiredLanguageRefsetIdMap.addKeyValuePair(pair);  
+    }
+    
+    pair = new KeyValuePair();
+    pair.setKey("900000000000509007");
+    pair.setValue("United States of America English (FSN)");
+    requiredLanguageRefsetIdMap.addKeyValuePair(pair);
+    
+    return requiredLanguageRefsetIdMap;
   }
 
   /**
