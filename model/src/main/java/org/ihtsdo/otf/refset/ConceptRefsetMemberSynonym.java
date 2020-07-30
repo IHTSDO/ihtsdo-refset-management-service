@@ -81,4 +81,17 @@ public interface ConceptRefsetMemberSynonym extends HasId {
    */
   public void setActive(boolean active);
 
+  /**
+   * Returns the language refset id.
+   *
+   * @return the language refset id
+   */
+  public String getLanguageRefsetId();
+  
+  /**
+   * Sets the language refset id.
+   *
+   * @param languageRefsetId the language refset id
+   */
+  public void setLanguageRefsetId(String languageRefsetId);
 }
