@@ -277,6 +277,12 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl
     try {
       authorizeApp(securityService, authToken, "remove user", UserRole.USER);
 
+      // Remove user preferences, if any
+      UserPreferences userPreferences = securityService.getUser(id).getUserPreferences();
+      if(userPreferences != null) {
+        securityService.removeUserPreferences(userPreferences.getId());
+      }
+      
       // Remove user
       securityService.removeUser(id);
     } catch (Exception e) {
