@@ -172,13 +172,14 @@ public interface RefsetServiceRest {
    * @param ioHandlerInfoId the io handler info id
    * @param query the query
    * @param language the language
+   * @param fsn the fsn
    * @param pfs the pfs
    * @param authToken the auth token
    * @return the input stream
    * @throws Exception the exception
    */
   public InputStream exportMembers(Long refsetId, String ioHandlerInfoId,
-    String query, String language, PfsParameterJpa pfs, String authToken) throws Exception;
+    String query, String language, Boolean fsn, PfsParameterJpa pfs, String authToken) throws Exception;
 
   /**
    * Adds the refset member.
@@ -228,6 +229,7 @@ public interface RefsetServiceRest {
    * @param refsetId the refset id
    * @param query the query
    * @param language the language
+   * @param fsn the fsn
    * @param translated the translated
    * @param pfs the pfs
    * @param authToken the auth token
@@ -235,7 +237,7 @@ public interface RefsetServiceRest {
    * @throws Exception the exception
    */
   public ConceptRefsetMemberList findRefsetMembersForQuery(Long refsetId,
-    String query, String language, Boolean translated, PfsParameterJpa pfs,
+    String query, String language, Boolean fsn, Boolean translated, PfsParameterJpa pfs,
     String authToken) throws Exception;
 
   /**
@@ -723,7 +725,7 @@ public interface RefsetServiceRest {
    * @return the required language refsets
    * @throws Exception the exception
    */
-  public StringList getRequiredLanguageRefsets(Long refsetId, String authToken)
+  public KeyValuePairList getRequiredLanguageRefsets(Long refsetId, String authToken)
     throws Exception;
 
   /**

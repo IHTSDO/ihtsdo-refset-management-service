@@ -275,7 +275,7 @@ public class RefsetLookupRestTest extends RestSupport {
     }
 
     ConceptRefsetMemberList members = refsetService.findRefsetMembersForQuery(
-        refset.getId(), "", null, false, new PfsParameterJpa(), adminAuthToken);
+        refset.getId(), "", null, false, false, new PfsParameterJpa(), adminAuthToken);
 
     // Verify proper name & statues set
     assertTrue(members.getObjects().get(0).getConceptName()

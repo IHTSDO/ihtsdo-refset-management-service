@@ -276,7 +276,7 @@ public class RefsetClientRest extends RootClientRest
   /* see superclass */
   @Override
   public InputStream exportMembers(Long refsetId, String ioHandlerInfoId,
-    String query, String language, PfsParameterJpa pfs, String authToken) throws Exception {
+    String query, String language, Boolean fsn, PfsParameterJpa pfs, String authToken) throws Exception {
     Logger.getLogger(getClass())
         .debug("Refset Client - export refset members - " + refsetId + ", "
             + ioHandlerInfoId);
@@ -405,7 +405,7 @@ public class RefsetClientRest extends RootClientRest
   /* see superclass */
   @Override
   public ConceptRefsetMemberList findRefsetMembersForQuery(Long refsetId,
-    String query, String language, Boolean translated, PfsParameterJpa pfs, String authToken)
+    String query, String language, Boolean fsn, Boolean translated, PfsParameterJpa pfs, String authToken)
     throws Exception {
     Logger.getLogger(getClass())
         .debug("Refset Client - find refset members for query " + refsetId
@@ -1654,7 +1654,7 @@ public class RefsetClientRest extends RootClientRest
   }
 
   @Override
-  public StringList getRequiredLanguageRefsets(Long refsetId, String authToken) throws Exception {
+  public KeyValuePairList getRequiredLanguageRefsets(Long refsetId, String authToken) throws Exception {
 	// TODO Auto-generated method stub
 	return null;
   }

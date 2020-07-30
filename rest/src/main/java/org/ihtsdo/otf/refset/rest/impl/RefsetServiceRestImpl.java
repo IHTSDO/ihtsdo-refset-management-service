@@ -1041,13 +1041,14 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
     @ApiParam(value = "Import handler id, e.g. \"DEFAULT\"", required = true) @QueryParam("handlerId") String ioHandlerInfoId,
     @ApiParam(value = "Query, e.g. \"aspirin\"", required = true) @QueryParam("query") String query,
     @ApiParam(value = "Language, e.g. es", required = false) @QueryParam("language") String language,
+    @ApiParam(value = "Fsn, e.g. true/false/null", required = false) @QueryParam("fsn") Boolean fsn,
     @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
     Logger.getLogger(getClass())
         .info("RESTful call GET (Refset): /export/members " + refsetId + ", "
-            + ioHandlerInfoId + ", " + query + ", " + language);
+            + ioHandlerInfoId + ", " + query + ", " + language + ", " + fsn);
 
     final RefsetService refsetService =
         new RefsetServiceJpa(getHeaders(headers));
@@ -1076,10 +1077,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
               pfs, true).getObjects();
       
       for (ConceptRefsetMember member : list) {
-        if (language != null && !language.isEmpty()
-            && !language.contentEquals("en")) {
+        if (language != null && !language.isEmpty()) {
           String displayName =
-              refsetService.getDisplayNameForMember(member.getId(), language);
+              refsetService.getDisplayNameForMember(member.getId(), language, fsn);
           if (displayName != null) {
             member.setConceptName(displayName);
           }
@@ -1694,6 +1694,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
     @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
     @ApiParam(value = "Query", required = false) @QueryParam("query") String query,
     @ApiParam(value = "Language, e.g. es", required = false) @QueryParam("language") String language,
+    @ApiParam(value = "Fsn, e.g. true/false/null", required = false) @QueryParam("fsn") Boolean fsn,
     @ApiParam(value = "Translated, e.g. true/false/null", required = false) @QueryParam("translated") Boolean translated,
     @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
@@ -1701,8 +1702,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
 
     Logger.getLogger(getClass())
         .info("RESTful call (Refset): find members for query, refsetId:"
-            + refsetId + " query:" + query + " language:" + language + pfs + " "
-            + translated);
+            + refsetId + " query:" + query + " language:" + language + ", " + pfs + ", "
+            + translated + ", " + fsn);
 
     final RefsetService refsetService =
         new RefsetServiceJpa(getHeaders(headers));
@@ -1729,14 +1730,14 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
             && language != null && !language.isEmpty()) {
           pfs.setMaxResults(-1);
         }
-
+        
         ConceptRefsetMemberList list =
             refsetService.findMembersForRefset(refsetId, query, pfs, true);
         for (ConceptRefsetMember member : list.getObjects()) {
           if (language != null && !language.isEmpty()
               && !language.contentEquals("en")) {
             String displayName =
-                refsetService.getDisplayNameForMember(member.getId(), language);
+                refsetService.getDisplayNameForMember(member.getId(), language, fsn);
             if (displayName != null) {
               member.setConceptName(displayName);
             }
@@ -3706,7 +3707,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
   @GET
   @Path("/languages")
   @ApiOperation(value = "Get required language refsets", notes = "Gets list of required language refsets for a branch", response = StringList.class)
-  public StringList getRequiredLanguageRefsets(
+  public KeyValuePairList getRequiredLanguageRefsets(
     @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
@@ -3721,19 +3722,21 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
           securityService, authToken, "get required language refsets",
           UserRole.VIEWER);
 
-      List<String> languagePriorities = refsetService
+      KeyValuePairList languagePriorities = refsetService
           .getTerminologyHandler(refset.getProject(), getHeaders(headers))
           .getRequiredLanguageRefsets(refset.getTerminology(),
               refset.getVersion());
 
       StringList list = new StringList();
-      for (String str : languagePriorities) {
+      /**for (String str : languagePriorities.getKeyValuePairs()) {
         list.addObject(str);
       }
-      if (!list.contains("en")) {
-        list.addObject("en");
+      if (list.contains("en")) {
+        list.removeObject("en");
       }
-      return list;
+      list.addObject("en PT");
+      list.addObject("en FSN"); */
+      return languagePriorities;
 
     } catch (Exception e) {
       handleException(e, "trying to get required language refsets");
