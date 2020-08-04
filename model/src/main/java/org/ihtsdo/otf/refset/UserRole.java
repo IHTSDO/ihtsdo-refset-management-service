@@ -24,6 +24,9 @@ public enum UserRole {
   /**  The user. */
   USER("User"),
   
+  /** The lead. */
+  LEAD("Lead"),
+  
   /** The administrator. */
   ADMIN("Admin");
 
@@ -68,6 +71,9 @@ public enum UserRole {
       return true;
     else if (this == UserRole.USER
         && (role == UserRole.VIEWER || role == UserRole.USER || role == UserRole.AUTHOR))
+      return true;
+    else if (this == UserRole.LEAD
+        && (role == UserRole.VIEWER || role == UserRole.USER || role == UserRole.AUTHOR || role == UserRole.REVIEWER || role == UserRole.REVIEWER2))
       return true;
     else if (this == UserRole.ADMIN)
       return true;

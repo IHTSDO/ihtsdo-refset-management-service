@@ -385,7 +385,7 @@ tsApp
                   $scope.actionStatus = 'All';
                 }
 
-                if ($scope.projects.role != 'ADMIN') {
+                if (!['LEAD','ADMIN'].includes(projects.role)) {
                   pfs.queryRestriction = $scope.paging['assigned'].filter;
                   workflowService.findAssignedConcepts($scope.projects.role, $scope.project.id,
                     translation.id, $scope.user.userName, $scope.actionStatus, pfs).then(
@@ -398,9 +398,9 @@ tsApp
                           nextIndex);
                       }
                     });
-                } else if ($scope.projects.role == 'ADMIN') {
+                } else if (['LEAD','ADMIN'].includes($scope.projects.role)) {
                   pfs.queryRestriction = $scope.paging['assigned'].filter;
-                  workflowService.findAssignedConcepts('ADMIN', $scope.project.id, translation.id,
+                  workflowService.findAssignedConcepts($scope.projects.role, $scope.project.id, translation.id,
                     null, $scope.actionStatus, pfs).then(
                   // Success
                   function(data) {
@@ -570,7 +570,7 @@ tsApp
               $scope.removeTranslation = function(translation) {
 
                 workflowService
-                  .findAssignedConcepts('ADMIN', $scope.project.id, translation.id,
+                  .findAssignedConcepts($scope.projects.role, $scope.project.id, translation.id,
                    null, $scope.actionStatus, {
                       startIndex : 0,
                       maxResults : 1
@@ -586,7 +586,7 @@ tsApp
 
                       // Now check for available concepts
                       workflowService
-                        .findAvailableConcepts('ADMIN', $scope.project.id, translation.id,
+                        .findAvailableConcepts($scope.projects.role, $scope.project.id, translation.id,
                           $scope.user.userName, {
                             startIndex : 0,
                             maxResults : 1
@@ -720,7 +720,7 @@ tsApp
                   queryRestriction : $scope.paging['assigned'].filter
                 };
                 
-                if ($scope.projects.role != 'ADMIN') {
+                if (!['LEAD','ADMIN'].includes(projects.role)) {
                   workflowService.findAssignedConcepts($scope.projects.role, $scope.project.id,
                     $scope.selected.translation.id, userName, $scope.actionStatus, pfs).then(
                     // Success
@@ -1507,6 +1507,7 @@ tsApp
                   if ($scope.role == 'AUTHOR'
                     || $scope.project.userRoleMap[sortedUsers[i].userName] == 'REVIEWER'
                     || $scope.project.userRoleMap[sortedUsers[i].userName] == 'REVIEWER2'
+                    || $scope.project.userRoleMap[sortedUsers[i].userName] == 'LEAD'
                     || $scope.project.userRoleMap[sortedUsers[i].userName] == 'ADMIN') {
                     $scope.assignedUsers.push(sortedUsers[i]);
                   }
@@ -1654,6 +1655,7 @@ tsApp
                 for (var i = 0; i < sortedUsers.length; i++) {
                   if ($scope.role == 'AUTHOR'
                     || $scope.project.userRoleMap[sortedUsers[i].userName].startsWith('REVIEWER')
+                    || $scope.project.userRoleMap[sortedUsers[i].userName].startsWith('LEAD')
                     || $scope.project.userRoleMap[sortedUsers[i].userName] == 'ADMIN') {
                     $scope.assignedUsers.push(sortedUsers[i]);
                   }
