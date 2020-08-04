@@ -184,6 +184,11 @@ tsApp.controller('TabCtrl', [ '$scope', '$interval', '$timeout', 'securityServic
     $scope.isAdmin = function() {
       return securityService.isAdmin();
     };
+    
+        // for ng-show
+    $scope.isLead = function() {
+      return securityService.isLead();
+    };
 
     // for ng-show
     $scope.isUser = function() {
