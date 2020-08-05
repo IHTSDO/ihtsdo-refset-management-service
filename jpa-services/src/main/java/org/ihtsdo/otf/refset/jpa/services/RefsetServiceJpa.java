@@ -818,6 +818,58 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
       return null;
     }
   }
+  
+  @Override
+  public String getFSNNameForConcept(String terminologyId)
+      throws Exception {
+      Logger.getLogger(getClass()).debug(
+          "Refset Service - get fsn name for term " + terminologyId  );
+      
+      final javax.persistence.Query query = manager
+          .createQuery("select a from ConceptJpa a where "
+              + "a.terminologyId = :terminologyId  and a.name LIKE :fsn");
+      try {
+        query.setParameter("terminologyId", terminologyId);
+        query.setParameter("fsn", "% (%");
+        final List<Concept> concepts = query.getResultList();
+        return concepts.get(0).getName();
+      } catch (NoResultException e) {
+        return null;
+      }
+      
+     /** final javax.persistence.Query query = manager
+          .createQuery("select a from ConceptRefsetMemberSynonymJpa a where "
+              + "a.synonym = :synonym and a.termType = :termType "
+              + "and a.language = :language and a.active = true");
+      try {
+      
+        query.setParameter("synonym", pt);
+        query.setParameter("termType", "PT");
+        query.setParameter("language", language);
+        final List<ConceptRefsetMemberSynonym> synonyms = query.getResultList();
+        Long memberId =  synonyms.get(0).getMember().getId();
+        return getDisplayNameForMember(memberId, language, true);
+      } catch (NoResultException e) {
+        return null;
+      }
+      */
+     /** final javax.persistence.Query query = manager
+          .createQuery("select a from ConceptRefsetMemberSynonymJpa a where "
+              + "a.synonym LIKE :synonym and a.termType = :termType "
+              + "and a.language = :language and a.active = true");
+      try {
+      
+      
+        query.setParameter("synonym", pt + " (%");
+        query.setParameter("termType", "FSN" );
+        query.setParameter("language", language);
+        final List<ConceptRefsetMemberSynonym> synonyms = query.getResultList();
+        return synonyms.get(0).getSynonym();
+
+      } catch (NoResultException e) {
+        return null;
+      } */
+   }
 
   /* see superclass */
   @Override

@@ -535,5 +535,14 @@ public interface RefsetService extends ReleaseService {
    */
   public Map<String, Long> mapInactiveMembers(Long refsetId) throws Exception;
 
+  /**
+   * Returns the FSN name for term.
+   *
+   * @param terminologyId terminologyId
+   * @return the FSN name for term
+   * @throws Exception the exception
+   */
+  String getFSNNameForConcept(String terminologyId) throws Exception;
+
 
 }
