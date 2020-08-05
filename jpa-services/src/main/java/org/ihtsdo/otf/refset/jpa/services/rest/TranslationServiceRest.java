@@ -668,4 +668,15 @@ public interface TranslationServiceRest {
    */
   public TranslationSuggestionList getTranslationSuggestionsForConcept(
     Long refsetId, Long conceptId, String authToken) throws Exception;
+
+  /**
+   * Returns the language refset dialect info.
+   *
+   * @param useCase the use case
+   * @param authToken the auth token
+   * @return the language refset dialect info
+   * @throws Exception the exception
+   */
+  KeyValuePairList getLanguageRefsetDialectInfo(String useCase,
+    String authToken) throws Exception;
 }

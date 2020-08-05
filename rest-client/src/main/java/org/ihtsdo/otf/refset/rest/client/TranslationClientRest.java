@@ -1548,4 +1548,11 @@ public class TranslationClientRest extends RootClientRest
     return (TranslationSuggestionList) ConfigUtility.getGraphForString(resultString,
         TranslationSuggestionList.class);
   }
+
+  @Override
+  public KeyValuePairList getLanguageRefsetDialectInfo(String useCase,
+    String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
 }

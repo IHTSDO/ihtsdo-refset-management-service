@@ -1356,6 +1356,27 @@ tsApp.service('translationService', [
       return deferred.promise;
     };
     
+    this.getLanguageRefsetDialectInfo = function(useCase) {
+      console.debug('getLanguageRefsetDialectInfo', useCase);
+      // Setup deferred
+      var deferred = $q.defer();
+
+      $http.get(
+        translationUrl + 'dialects' + (useCase ? '?useCase=' + useCase : '')
+          ).then(
+      // success
+      function(response) {
+        console.debug('  dialects = ', response.data);
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    };
+    
     // end
 
   } ]);

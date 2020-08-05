@@ -6,10 +6,13 @@ package org.ihtsdo.otf.refset.rest.impl;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.UUID;
 
@@ -312,20 +315,34 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
     throws Exception {
     Logger.getLogger(getClass())
         .info("RESTful call PUT (Translation): /add " + translation);
-
-    if (translation.getProject() == null
-        || translation.getProject().getId() == null) {
-      throw new LocalException("A translation must have an associated project");
-    }
-    if (translation.getRefset() == null
-        || translation.getRefset().getId() == null) {
-      throw new LocalException("A translation must have an associated refset");
-    }
+    
     final TranslationService translationService =
         new TranslationServiceJpa(getHeaders(headers));
     translationService.setTransactionPerOperation(false);
     translationService.beginTransaction();
+
     try {
+      if (translation.getProject() == null
+          || translation.getProject().getId() == null) {
+        throw new LocalException(
+            "A translation must have an associated project");
+      }
+      if (translation.getRefset() == null
+          || translation.getRefset().getId() == null) {
+        throw new LocalException(
+            "A translation must have an associated refset");
+      }
+      if (ConfigUtility.getConfigProperties()
+          .containsKey("language.refset.dialect.invalid")) {
+        List<String> invalidLanguageCodes =
+            Arrays.asList(ConfigUtility.getConfigProperties()
+                .getProperty("language.refset.dialect.invalid").split(";"));
+        if (invalidLanguageCodes.contains(translation.getLanguage())) {
+          throw new LocalException(
+              translation.getLanguage() + " is an invalid language code");
+        }
+      }
+
       final String userName =
           authorizeProject(translationService, translation.getProjectId(),
               securityService, authToken, "add translation", UserRole.AUTHOR);
@@ -405,6 +422,16 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
       final String userName = authorizeProject(translationService,
           translation.getProjectId(), securityService, authToken,
           "update translation", UserRole.AUTHOR);
+      
+      if (ConfigUtility.getConfigProperties()
+          .containsKey("language.refset.dialect.invalid")) {
+        List<String> invalidLanguageCodes = Arrays.asList(ConfigUtility.getConfigProperties()
+            .getProperty("language.refset.dialect.invalid").split(";"));
+        if (invalidLanguageCodes.contains(translation.getLanguage())) {
+          throw new LocalException(translation.getLanguage() + " is an invalid language code");
+        }
+      }
+      
       Translation oldTranslation =
           this.getTranslation(translation.getId(), authToken);
       // Check preconditions
@@ -589,10 +616,14 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
         throw new Exception("invalid handler id " + ioHandlerInfoId);
       }
 
-      return handler.exportConcepts(translation,
-          translationService
+      
+      List<Concept> conceptList = translationService
               .findConceptsForTranslation(translation.getId(), query, pfs)
-              .getObjects());
+              .getObjects();
+      
+      
+      
+      return handler.exportConcepts(translation, conceptList);
 
     } catch (Exception e) {
       handleException(e, "trying to export translation concepts");
@@ -3097,6 +3128,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
     }
     return spellingCorrectionHandlerMap.get(translation.getId());
   }
+  
+  
 
   /**
    * Returns the phrase memory handler.
@@ -3807,6 +3840,73 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
       Logger.getLogger(getClass())
           .error("Error importing translation descriptions ", e);
       throw e;
+    }
+  }
+  
+  /* see superclass */
+  @Override
+  @GET
+  @Path("/dialects")
+  @ApiOperation(value = "Get language refset dialect info", notes = "Gets info related to languages and dialects from configuration files.", response = KeyValuePairList.class)
+  public KeyValuePairList getLanguageRefsetDialectInfo(
+    @ApiParam(value = "UseCase, e.g. 'DISPLAY'", required = true) @QueryParam("useCase") String useCase,
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info("RESTful call (Translation): dialects");
+
+    final TranslationService translationService =
+        new TranslationServiceJpa(getHeaders(headers));
+    try {
+      authorizeApp(securityService, authToken, "get dialects", UserRole.VIEWER);
+
+      String key = "language.refset.dialect." + useCase;
+      
+      
+      String[] keys = null;
+      // if useCase is 'ALL', return dialects for all dialect lists
+      if (useCase.contentEquals("ALL") || !ConfigUtility.getConfigProperties()
+          .containsKey("language.refset.dialect")) {
+        keys = ConfigUtility.getConfigProperties()
+            .getProperty("language.refset.dialect").split(",");
+      // otherwise just return the dialect list requested by name e.g. MANAGED-SERVICE
+      } else {
+        if (!ConfigUtility.getConfigProperties()
+            .containsKey(key)) {
+          throw new Exception(
+              "Unable to find " + key + " configuration, serious error.");
+        }
+        keys = new String[]{key};
+      }
+      final KeyValuePairList list = new KeyValuePairList();
+      Map<String, String> map = new HashMap<>();
+      
+      // add the dialect entries for each requested property to the map/list
+      for (String propertyKey : keys) {
+        String infoString =
+            ConfigUtility.getConfigProperties().getProperty("language.refset.dialect." + propertyKey);
+
+        for (final String info : infoString.split(";")) {
+          String[] values = FieldedStringTokenizer.split(info, "|");
+          // return language-country mapped to full-name|languageRefsetId
+          map.put(values[2], values[0] + "|" + values[1]);         
+        }
+      }
+      
+      // put them in map first to ensure uniqueness
+      for (  Entry<String, String> entry : map.entrySet()) {
+        KeyValuePair pair = new KeyValuePair();
+        pair.setKey(entry.getKey());
+        pair.setValue(entry.getValue());
+        list.addKeyValuePair(pair);
+      }
+      Collections.sort(list.getKeyValuePairs());
+      return list;
+    } catch (Exception e) {
+      handleException(e, "trying to get dialect info");
+      return null;
+    } finally {
+      translationService.close();
+      securityService.close();
     }
   }
 }
