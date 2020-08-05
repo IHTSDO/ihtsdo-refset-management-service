@@ -10,6 +10,10 @@
           title="Add local set" class="btn btn-xs btn-primary">Add
           Local Set</button>
       </span>
+      <span ng-show="!isDirectory() && value == 'AVAILABLE' && projects.role != 'REVIEWER'" style="float: right;">
+         <button ng-click="openAddRefsetModal(false);" title="Add refset"
+           class="btn btn-xs btn-primary">Add Refset</button>
+      </span>
       <span class="info-text" ng-show="refsets.totalCount > 10"
         style="float: right; margin-top: 4px">
         Page size: <select ng-model="paging['refset'].pageSize"
@@ -117,13 +121,22 @@
           <!-- Actions header -->
           <!-- PUBLISHED/BETA : no actions row -->
           <!-- not PUBLISHED/BETA -->
-          <th class="col-md-2 col-xs-2" ng-show="!isDirectory()"><span
+          <!-- <th class="col-md-2 col-xs-2" ng-show="!isDirectory()"><span
               ng-show="value == 'AVAILABLE' && projects.role != 'REVIEWER'" style="float: right;">
               <button ng-click="openAddRefsetModal(false);" title="Add refset"
                 class="btn btn-xs btn-primary">Add Refset</button>
             </span></th>
+             -->
+          <th>
+            <i ng-show="value == 'AVAILABLE' && projects.role == 'ADMIN'";
+              ng-click="openBulkAssignRefsetModal('ASSIGN'); $event.stopPropagation()"
+              title="Bulk Assign" class="noul material-icons md-18">assignment_ind</i>
+            <i ng-show="value == 'RELEASE' && projects.role == 'ADMIN'";
+              ng-click="openBulkExportModal(); $event.stopPropagation()"
+              title="Bulk Export" class="noul material-icons md-18">file_download</i>
+          </th>  
         </tr>
-      </thead>
+      </thead>      
       <tbody class="table-select-row">
         <tr ng-repeat="refset in refsets" ng-click="selectRefset(refset);"
           ng-class="{selected: refset.id == selected.refset.id}">
