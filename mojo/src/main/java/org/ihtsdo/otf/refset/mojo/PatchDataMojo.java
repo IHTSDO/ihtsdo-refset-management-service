@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -1928,42 +1929,51 @@ public class PatchDataMojo extends AbstractRttMojo {
       for(Project project : projects) {
 
         getLog().info("Project " + project.getName());
-        
         Project projectCopy = new ProjectJpa(project);
 
         if ("AUTHORING-INTL".equalsIgnoreCase(projectCopy.getTerminologyHandlerKey())
             || "MANAGED-SERVICE".equalsIgnoreCase(projectCopy.getTerminologyHandlerKey())) {
           
-          for(Map.Entry<User, UserRole> userRoleMap : projectCopy.getUserRoleMap().entrySet()) {
-            
-            if (excludeUsernameList.stream().noneMatch(u -> u.equals(userRoleMap.getKey().getUserName()))) {
-              
-              getLog().info("  Update " + userRoleMap.getKey().getUserName() + " to " + UserRole.LEAD.toString());
-              
+          try {
+            projectCopy.getUserRoleMap().forEach((user, userRole) -> {
+              User userCopy = null;
               try {
-
-                User user = securityService.getUser(userRoleMap.getKey().getUserName());            
-                User userCopy = new UserJpa(user);                
+                userCopy = new UserJpa(securityService.getUser(user.getUserName()));
+              }
+              catch (Exception e) {
+                //noop
+              }
+              
+              if (!excludeUsernameList.contains(user.getUserName()) && userRole == UserRole.ADMIN) {
                 
-                projectCopy.getUserRoleMap().remove(userCopy, UserRole.ADMIN);
-                projectCopy.getUserRoleMap().put(userCopy, UserRole.LEAD);
-                projectCopy.setLastModifiedBy("nmarques");
-                projectService.updateProject(projectCopy);
-                user.getProjectRoleMap().remove(projectCopy, UserRole.ADMIN);
-                user.getProjectRoleMap().put(projectCopy, UserRole.LEAD);
-                securityService.updateUser(user);
-                                
-              } catch (Exception e) {
-                getLog().error(
-                    "patch20200730 : Failed to update ", e);
-              }              
-            }
+                getLog().info("  Update " + user.getUserName() + " to " + UserRole.LEAD.toString());
+                
+                try {
+                  
+                  if (userCopy != null) {                          
+                    projectCopy.getUserRoleMap().remove(userCopy, UserRole.ADMIN);
+                    projectCopy.getUserRoleMap().put(userCopy, UserRole.LEAD);
+                    projectCopy.setLastModifiedBy("nmarques");
+                    projectService.updateProject(projectCopy);
+                    userCopy.getProjectRoleMap().remove(projectCopy, UserRole.ADMIN);
+                    userCopy.getProjectRoleMap().put(projectCopy, UserRole.LEAD);
+                    securityService.updateUser(userCopy);
+                  }
+                                  
+                } catch (Exception e) {
+                  getLog().error(
+                      "patch20200730 : Failed to update ", e);
+                }              
+              }
+            });
+          } catch (ConcurrentModificationException cme) {
+            getLog().info(cme.getMessage());
           }
         }
       }
 
       if (!fullReindex) {
-        getLog().info("  Projects");
+        getLog().info("  Projects, Users");
 
         // login as "admin", use token
         final Properties properties = ConfigUtility.getConfigProperties();
