@@ -98,7 +98,7 @@
     </uib-accordion-heading>
     <div class="col-md-12 col-xs-12">
       <h4>
-        <span style="float: right;">
+        <span style="float: right;" ng-if="user.applicationRole == 'ADMIN'">
           <button ng-click="openAddUserModal(luser)" title="Add user"
             class="btn btn-xs btn-primary">Add User</button>
         </span>

@@ -2404,6 +2404,168 @@ tsApp
                 };
               };
               
+              // Bulk Export modal
+              $scope.openBulkExportModal = function() {
+                console.debug('exportModal ');
+
+                var modalInstance = $uibModal.open({
+                  templateUrl : 'app/component/refsetTable/bulkExport.html',
+                  controller : BulkExportModalCtrl,
+                  backdrop : 'static',
+                  resolve : {
+                    project : function() {
+                      return $scope.project;
+                    }
+                  }
+                });
+
+                modalInstance.result.then(
+                  // Success
+                  function(data) {
+                    $scope.handleWorkflow(data);
+                  });
+              };
+              
+              // Bulk Export controller
+              var BulkExportModalCtrl = function($scope, $uibModalInstance, project) {
+                console.debug('Entered bulk export modal control');
+                
+                $scope.project = project;
+                $scope.fileTypeList = [];
+                $scope.stageList = [];
+                $scope.comments = [];
+                $scope.warnings = [];
+                $scope.errors = [];
+                
+                $scope.refsets = [];
+                $scope.filteredRefsets = [];
+                $scope.selectedRefsets = [];
+                $scope.allSelected = false;
+                
+                // Populate picklists
+                $scope.stageList.push('PUBLISHED');
+                $scope.stageList.push('BETA');
+                $scope.selectedStage='PUBLISHED';
+                
+                $scope.fileTypeList.push('ActiveSnapshot');
+                $scope.fileTypeList.push('Delta');
+                $scope.fileTypeList.push('Both');
+                $scope.selectedFileType = 'ActiveSnapshot';
+
+                
+                // Get PUBLISHED and BETA refsets for project
+                var pfs = {
+                  startIndex : -1,
+                  maxResults : -1,
+                  sortField : 'name',
+                  queryRestriction : null,
+                  latestOnly : true
+                };
+                
+                var query = ' AND (workflowStatus:PUBLISHED OR workflowStatus:BETA)';
+
+                refsetService.findRefsetsForQuery('projectId:' + $scope.project.id + query, pfs)
+                  .then(function(data) {
+                    $scope.refsets = data.refsets;
+                    
+                    // Only display PUBLISHED or BETA at a time
+                    $scope.filterRefsets();
+                  });                
+                
+                
+                // Handle filter change
+                $scope.filterRefsets = function(){
+                
+                  console.debug("workflow:", $scope.selectedStage);
+                  
+                  if ($scope.selectedStage && $scope.selectedStage !== "") {
+                    $scope.filteredRefsets = $scope.refsets.filter(
+                      r => r.workflowStatus === $scope.selectedStage);
+                  }
+                  
+                  // Clear out selections
+                  $scope.allSelected = false;
+                  $scope.selectedRefsets = [];                  
+                }
+                
+                $scope.toggleSelectAll = function(){
+                  if($scope.allSelected){
+                    for (var i = 0; i < $scope.filteredRefsets.length; i++) {
+                      $scope.selectedRefsets[$scope.filteredRefsets[i].id] = false;
+                    }
+                    $scope.allSelected = false;
+                  }
+                  else{
+                    for (var i = 0; i < $scope.filteredRefsets.length; i++) {
+                      $scope.selectedRefsets[$scope.filteredRefsets[i].id] = true;
+                    }   
+                    $scope.allSelected = true;
+                  }
+                }
+                
+                $scope.toggleSelection = function(refset) {
+                  // is currently selected
+                  if ($scope.selectedRefsets[refset.id]) {
+                    $scope.selectedRefsets[refset.id] = false;
+                  }
+                  // is newly selected
+                  else {
+                    $scope.selectedRefsets[refset.id] = true;
+                  }
+                };
+                
+                // indicates if a particular row is selected
+                $scope.isRowSelected = function(refset) {
+                  return $scope.selectedRefsets[refset.id];
+                }
+                
+                $scope.isAllSelected = function() {
+                  return $scope.allSelected;
+                }
+                
+                
+                // Handle export
+                $scope.export = function() {
+                  
+                  //  Clear out any previous warnings
+                  $scope.warnings = [];
+                  
+                  // Get release artifacts for all selected refsets
+                  for (var i = 0; i < $scope.filteredRefsets.length; i++) {
+                    if($scope.selectedRefsets[$scope.filteredRefsets[i].id]){
+                      releaseService.findRefsetReleasesForQuery($scope.filteredRefsets[i].id, null, null).then(
+                        function(data) {
+                          var refsetReleaseInfo = data.releaseInfos[0];
+                          var artifacts = refsetReleaseInfo.artifacts;
+                          
+                          // If the user is trying to download deltas and a selected project doesn't have a delta, display a warning
+                          if(($scope.selectedFileType == 'Both' || $scope.selectedFileType == 'Delta') && artifacts.length == 1){
+                            // Need to loop through refsets again because of async calling
+                            for(var k = 0; k < $scope.filteredRefsets.length; k++) {
+                              if($scope.filteredRefsets[k].id == refsetReleaseInfo.refsetId){
+                                $scope.warnings.push($scope.filteredRefsets[k].name + ' has no Delta to download.');
+                              }
+                            }
+                          }
+                          
+                          // Download the files to the user's computer
+                          for(var j = 0; j < artifacts.length; j++){
+                            if($scope.selectedFileType == 'Both' || artifacts[j].name.includes($scope.selectedFileType)){
+                              releaseService.exportReleaseArtifact(artifacts[j]);
+                            }
+                          }
+                        });
+                    }
+                  }
+                };
+
+                $scope.close = function() {
+                  // close the dialog
+                  $uibModalInstance.close();
+                };
+
+              };              
+              
               // Release Process modal
               $scope.openReleaseProcessModal = function(lrefset) {
                 console.debug('releaseProcessModal ', lrefset);
@@ -2753,6 +2915,115 @@ tsApp
 
               };
 
+              // Bulk Assign refset modal
+              $scope.openBulkAssignRefsetModal = function(laction) {
+                console.debug('openBulkAssignRefsetModal ', laction);
+
+                var modalInstance = $uibModal.open({
+                  templateUrl : 'app/component/refsetTable/bulkAssignRefset.html',
+                  controller : BulkAssignRefsetModalCtrl,
+                  backdrop : 'static',
+                  resolve : {
+                    metadata : function() {
+                      return $scope.metadata;
+                    },
+                    action : function() {
+                      return laction;
+                    },
+                    currentUser : function() {
+                      return $scope.user;
+                    },
+                    assignedUsers : function() {
+                      return $scope.projects.assignedUsers;
+                    },
+                    project : function() {
+                      return $scope.project;
+                    },
+                    role : function() {
+                      return $scope.projects.role;
+                    },
+                    tinymceOptions : function() {
+                      return utilService.tinymceOptions;
+                    },
+                    refsetAuthorsMap : function() {
+                      return $scope.refsetAuthorsMap;
+                    },
+                    refsetReviewersMap : function() {
+                      return $scope.refsetReviewersMap;
+                    }
+                  }
+
+                });
+
+                modalInstance.result.then(
+                // Success
+                function(data) {
+                  refsetService.fireRefsetChanged(data);
+                });
+              };
+
+              // BulkAssign refset controller
+              var BulkAssignRefsetModalCtrl = function($scope, $uibModalInstance, $sce, refsets,
+                metadata, action, currentUser, assignedUsers, project, role, tinymceOptions,
+                refsetAuthorsMap, refsetReviewersMap) {
+                console.debug('Entered bulk assign refset modal control', assignedUsers, project.id);
+                $scope.metadata = metadata;
+                $scope.workflowConfig = metadata.workflowConfig;
+                $scope.action = action;
+                $scope.project = project;
+                //$scope.role = workflowService.refsetGetRole(action, role, refset.workflowStatus,
+                //  $scope.workflowConfig);
+                $scope.tinymceOptions = tinymceOptions;
+                $scope.assignedUsers = [];
+                $scope.user = utilService.findBy(assignedUsers, currentUser, 'userName');
+                $scope.note;
+                $scope.errors = [];
+                $scope.feedbackRoleOptions = [];
+
+                // Sort users by name and role restricts
+                var sortedUsers = assignedUsers.sort(utilService.sortBy('name'));
+                for (var i = 0; i < sortedUsers.length; i++) {
+                  if ($scope.role == 'AUTHOR'
+                    || $scope.project.userRoleMap[sortedUsers[i].userName] == 'REVIEWER'
+                    || $scope.project.userRoleMap[sortedUsers[i].userName] == 'REVIEWER2'
+                    || $scope.project.userRoleMap[sortedUsers[i].userName] == 'ADMIN') {
+                    $scope.assignedUsers.push(sortedUsers[i]);
+                  }
+                }
+
+                // Assign
+                $scope.bulkAssignRefsets = function() {
+                  if (!$scope.user) {
+                    $scope.errors[0] = 'The user must be selected. ';
+                    return;
+                  }
+                  
+                  if (action == 'ASSIGN') {
+                    for (var i = 0; i < $scope.refsets.length; i++) {   
+                      $scope.role = workflowService.refsetGetRole(action, role, $scope.refsets[i].workflowStatus,
+                        $scope.workflowConfig);
+                      
+                        workflowService.performWorkflowAction($scope.project.id, $scope.refsets[i].id,
+                          $scope.user.userName, $scope.role, 'ASSIGN').then(
+                        // Success
+                        function(data) {
+                          // Do nothing
+                        },
+                        // Error
+                        function(data) {
+                          handleError($scope.errors, data);
+                        });
+                      }
+                    }
+                  }
+
+                // Dismiss modal
+                $scope.cancel = function() {
+                  $uibModalInstance.dismiss('cancel');
+                };
+
+              };              
+              
               // Log modal
               $scope.openLogModal = function() {
                 console.debug('openLogModal ');

@@ -40,13 +40,14 @@
             ng-options="item.key for item in terminologyHandlers"></select>
           &nbsp;
           <i
-            uib-tooltip="Choose the handler and URL before picking terminology and module."
+            uib-tooltip="Choose the handler before picking terminology and module."
             class="noul material-icons md-18">info</i>
         </td>
         <td ng-if="action==='Edit'">{{project.terminologyHandlerKey}}</td>
       </tr>
-        <!-- Hiding URL on Edit screens, to keep the 'secret' backdoor from being exposed to many users. 
+        <!-- Hiding URL on Add/Edit screens, to keep the 'secret' backdoor from being exposed to many users. 
              Future changes to permissions/roles may have this re-exposed. -->      
+      <!--
       <tr ng-if="action==='Add'">
         <td>
           <b>Handler URL</b>
@@ -60,6 +61,7 @@
         </td>
         <td ng-if="action==='Edit'">{{project.terminologyHandlerUrl}}</td>
       </tr>
+       -->
       <tr>
         <td>
           <b>Terminology</b>
