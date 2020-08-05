@@ -411,8 +411,8 @@ public class PatchDataMojo extends AbstractRttMojo {
       if ("20200611".compareTo(start) >= 0 && "20200611".compareTo(end) <= 0) {
         getLog().info(
             "Processing patch 20200611 - Concept name and synonym lookups for the following projects and/or refsets"); // Patch
-        refsetIds = "24357942,24357945,24931373,24931381,23871126";
-        projectIds = "1701,2053";
+        //refsetIds = "24357942,24357945,24931373,24931381,23871126";
+        //projectIds = "1701,2053";
         patch20200611(workflowService, refsetService, fullReindex);
       }
       
