@@ -1453,7 +1453,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
       return findAvailableEditingConcepts(translation, pfs, service);
     } else if (userRole == UserRole.REVIEWER) {
       return findAvailableReviewConcepts(translation, pfs, service);
-    } else if (userRole == UserRole.ADMIN) {
+    } else if (userRole == UserRole.ADMIN || userRole == UserRole.LEAD) {
       List<Concept> concepts = new ArrayList<>();
       concepts.addAll(findAvailableEditingConcepts(translation, null, service)
           .getObjects());
@@ -1468,7 +1468,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
       return conceptList;
     } else {
       throw new Exception(
-          "User role to find concepts must be AUTHOR, REVIEWER, or ADMIN.");
+          "User role to find concepts must be AUTHOR, REVIEWER, LEAD, or ADMIN.");
     }
   }
 
@@ -1480,7 +1480,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
       return findAvailableEditingRefsets(projectId, pfs, service);
     } else if (userRole == UserRole.REVIEWER) {
       return findAvailableReviewRefsets(projectId, pfs, service);
-    } else if (userRole == UserRole.ADMIN) {
+    } else if (userRole == UserRole.ADMIN || userRole == UserRole.LEAD) {
       List<Refset> refsets = new ArrayList<>();
       refsets.addAll(
           findAvailableEditingRefsets(projectId, null, service).getObjects());
@@ -1495,7 +1495,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
       return list;
     } else {
       throw new Exception(
-          "User role to find refsets must be AUTHOR, REVIEWER, or ADMIN.");
+          "User role to find refsets must be AUTHOR, REVIEWER, LEAD, or ADMIN.");
     }
   }
 
@@ -1522,7 +1522,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
       } else {
         throw new Exception("UserName must always be set");
       }
-    } else if (userRole == UserRole.ADMIN) {
+    } else if (userRole == UserRole.ADMIN || userRole == UserRole.LEAD) {
       if (userName != null && !userName.equals("")) {
         query = "projectId:" + projectId + " AND " + "( (authors:" + userName
             + " AND forAuthoring:true) OR" + "  (reviewers:" + userName
@@ -1533,7 +1533,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
       }
     } else {
       throw new Exception(
-          "User role to find assigned refsets must be AUTHOR, REVIEWER, or ADMIN.");
+          "User role to find assigned refsets must be AUTHOR, REVIEWER, LEAD, or ADMIN.");
     }
     final TrackingRecordList records =
         service.findTrackingRecordsForQuery(query, pfs);
@@ -1569,12 +1569,12 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
               "Unsupported ActionStatus requested: " + actionStatus);
         }
       }
-    } else if (userRole == UserRole.ADMIN) {
+    } else if (userRole == UserRole.ADMIN || userRole == UserRole.LEAD) {
       query = "projectId:" + projectId + " AND translationId:" + translationId
           + " AND (forAuthoring:true OR forReview:true)";
     } else {
       throw new Exception(
-          "User role to find assigned concepts must be AUTHOR, REVIEWER, or ADMIN.");
+          "User role to find assigned concepts must be AUTHOR, REVIEWER, LEAD, or ADMIN.");
     }
     final TrackingRecordList records =
         service.findTrackingRecordsForQuery(query, pfs);
