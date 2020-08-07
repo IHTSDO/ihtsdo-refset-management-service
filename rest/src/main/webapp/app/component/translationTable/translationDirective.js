@@ -2028,15 +2028,31 @@ tsApp
                 $scope.export = function() {
                   if (type == 'Spelling Dictionary') {
                     translationService.exportSpellingDictionary($scope.translation);
+                    $uibModalInstance.close($scope.translation);
                   }
                   if (type == 'Phrase Memory') {
                     translationService.exportPhraseMemory($scope.translation);
+                    $uibModalInstance.close($scope.translation);
                   }
                   if (type == 'Translation') {
-                    translationService.exportConcepts($scope.translation, $scope.selectedIoHandler,
-                      $scope.query, $scope.pfs);
+                    // validate export first
+                    translationService.validateExportConcepts($scope.translation, $scope.selectedIoHandler,
+                      $scope.query, $scope.pfs).then(
+                        // Success
+                        function(data) {
+                          if (data.valid) {
+                            translationService.exportConcepts($scope.translation, $scope.selectedIoHandler,
+                              $scope.query, $scope.pfs)
+                              $uibModalInstance.close($scope.translation);
+                          } else {
+                            $scope.errors = data.errors;
+                          }
+                        },
+                        // Error
+                        function(data) {
+                          handleError($scope.errors, data);
+                        });
                   }
-                  $uibModalInstance.close($scope.translation);
                 };
 
                 // Handle import
@@ -2338,7 +2354,8 @@ tsApp
 
                 $scope.errors = [];
                 $scope.translation = translation;
-                $scope.ioHandlers = ioHandlers;
+                // filter out the TSV export handler option because it is not appropriate for releases
+                $scope.ioHandlers = ioHandlers.filter(function(value, index, arr) { return value.id != 'TSV'; });
                 $scope.selectedIoHandler = $scope.ioHandlers[0];
                 $scope.releaseInfo = [];
                 $scope.validationResult = null;
