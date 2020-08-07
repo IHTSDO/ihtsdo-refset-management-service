@@ -631,9 +631,69 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
       translationService.close();
       securityService.close();
     }
-    return null;
+    return new ByteArrayInputStream("".getBytes("UTF-8"));
   }
 
+  /* see superclass */
+  @POST
+  @Override
+  @Path("/validate/export")
+  @ApiOperation(value = "Validate export translation concepts", notes = "Validates export of the concepts for the specified translation", response = ValidationResult.class)
+  public ValidationResult validateExportConcepts(
+    @ApiParam(value = "Translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
+    @ApiParam(value = "Import handler id, e.g. \"DEFAULT\"", required = true) @QueryParam("handlerId") String ioHandlerInfoId,
+    @ApiParam(value = "Query, e.g. \"aspirin\"", required = true) @QueryParam("query") String query,
+    @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(getClass()).info("RESTful call GET (Translation): /export "
+        + translationId + ", " + ioHandlerInfoId);
+
+    final TranslationService translationService =
+        new TranslationServiceJpa(getHeaders(headers));
+    try {
+      // Load translation
+      final Translation translation =
+          translationService.getTranslation(translationId);
+      if (translation == null) {
+        throw new Exception("Invalid translation id " + translationId);
+      }
+
+      // Authorize the call
+      authorizeApp(securityService, authToken,
+          "find export translation concepts", UserRole.VIEWER);
+
+      // Obtain the export handler
+      final ExportTranslationHandler handler =
+          translationService.getExportTranslationHandler(ioHandlerInfoId);
+      if (handler == null) {
+        throw new Exception("invalid handler id " + ioHandlerInfoId);
+      }
+
+      
+      List<Concept> conceptList = translationService
+              .findConceptsForTranslation(translation.getId(), query, pfs)
+              .getObjects();     
+      
+      handler.exportConcepts(translation, conceptList);
+      
+      ValidationResult result = new ValidationResultJpa();
+      return result;
+
+    } catch (Exception e) {
+      ValidationResult result = new ValidationResultJpa();
+      Set<String> errors = new HashSet<>();
+      errors.add(e.getMessage());
+      result.setErrors(errors);
+      return result;
+    } finally {
+      translationService.close();
+      securityService.close();
+    }
+  }
+
+  
   /* see superclass */
   @Override
   @DELETE

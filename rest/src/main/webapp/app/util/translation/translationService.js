@@ -1054,7 +1054,7 @@ tsApp.service('translationService', [
     // Export concepts
     this.exportConcepts = function(translation, handler, query, pfs) {
       console.debug('exportConcepts');
-
+      var deferred = $q.defer();
       gpService.increment();
       $http.post(
         translationUrl + 'export?translationId=' + translation.id + '&handlerId=' + handler.id
@@ -1084,7 +1084,32 @@ tsApp.service('translationService', [
       function(response) {
         utilService.handleError(response);
         gpService.decrement();
+        deferred.reject(response.data);
       });
+      return deferred.promise;
+    };
+    
+    // Validate export concepts
+    this.validateExportConcepts = function(translation, handler, query, pfs) {
+      console.debug('validateExportConcepts');
+      var deferred = $q.defer();
+      gpService.increment();
+      $http.post(
+        translationUrl + 'validate/export?translationId=' + translation.id + '&handlerId=' + handler.id
+          + (query ? '&query=' + utilService.prepQuery(query) : ""), pfs).then(
+       // success
+          function(response) {
+            console.debug('  validation result = ', response.data);
+            gpService.decrement();
+            deferred.resolve(response.data);
+          },
+          // error
+          function(response) {
+            utilService.handleError(response);
+            gpService.decrement();
+            deferred.reject(response.data);
+          });
+        return deferred.promise;
     };
 
     // Begin import concepts - if validation is result, OK to proceed.
