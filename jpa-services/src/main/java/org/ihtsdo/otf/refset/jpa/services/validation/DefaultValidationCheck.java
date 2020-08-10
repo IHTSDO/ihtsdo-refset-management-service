@@ -87,7 +87,7 @@ public class DefaultValidationCheck extends AbstractValidationCheck {
         && refset.getMembers().size() > 0) {
       result.addError("Only external refsets should have members");
     }
-
+    
     return result;
   }
 
@@ -120,13 +120,13 @@ public class DefaultValidationCheck extends AbstractValidationCheck {
     // Fail for leading whitespace
     for (Description desc : concept.getDescriptions()) {
       if (desc.getTerm().matches("^\\s.*")) {
-        result.addWarning("Description with leading whitespace");
+        result.addWarning("Description with leading whitespace for concept: " + concept.getTerminologyId());
       }
       if (desc.getTerm().matches(".*\\s$")) {
-        result.addWarning("Description with trailing whitespace");
+        result.addWarning("Description with trailing whitespace for concept: " + concept.getTerminologyId());
       }
       if (desc.getTerm().matches(".*\\s\\s.*")) {
-        result.addWarning("Description with duplicate whitespace");
+        result.addWarning("Description with duplicate whitespace for concept: " + concept.getTerminologyId());
       }
 
       // Validate descriptionType length
@@ -151,7 +151,7 @@ public class DefaultValidationCheck extends AbstractValidationCheck {
       }
       if (desc.getTypeId().equals("900000000000003001")
           && !desc.getTerm().matches(".* \\(.*\\)")) {
-        result.addWarning("FSN description without semantic tag");
+        result.addWarning("FSN description without semantic tag for concept: " + concept.getTerminologyId());
       }
 
       //
