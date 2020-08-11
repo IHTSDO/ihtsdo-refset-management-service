@@ -14,9 +14,12 @@ import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.algo.Algorithm;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.LocalException;
+import org.ihtsdo.otf.refset.helpers.PfsParameter;
+import org.ihtsdo.otf.refset.helpers.RefsetList;
 import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
 import org.ihtsdo.otf.refset.jpa.ReleaseInfoJpa;
 import org.ihtsdo.otf.refset.jpa.ValidationResultJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.services.RefsetServiceJpa;
 import org.ihtsdo.otf.refset.services.helpers.ProgressEvent;
 import org.ihtsdo.otf.refset.services.helpers.ProgressListener;
@@ -31,8 +34,8 @@ import org.ihtsdo.otf.refset.services.helpers.ProgressListener;
  * This process is capable of generating notifications, warnings, or errors via
  * a {@link ValidationResult}
  */
-public class BeginRefsetReleaseAlgorthm extends RefsetServiceJpa implements
-    Algorithm {
+public class BeginRefsetReleaseAlgorthm extends RefsetServiceJpa
+    implements Algorithm {
 
   /** Listeners. */
   private List<ProgressListener> listeners = new ArrayList<>();
@@ -80,10 +83,33 @@ public class BeginRefsetReleaseAlgorthm extends RefsetServiceJpa implements
         findRefsetReleasesForQuery(refset.getId(), null, null);
     if (releaseInfoList.getCount() != 0) {
       ReleaseInfo releaseInfo = releaseInfoList.getObjects().get(0);
-      if (releaseInfo != null && releaseInfo.isPublished())
-        throw new LocalException("refset release is already in progress "
-            + refset.getId());
+      if (releaseInfo != null && releaseInfo.isPublished()) {
+        throw new LocalException(
+            "refset release is already in progress " + refset.getId());
+      }
     }
+
+    // Make sure this refset has not already been published with this effective
+    // time
+    PfsParameter pfs = new PfsParameterJpa();
+    pfs.setLatestOnly(true);
+    RefsetList publishedRefset = findRefsetsForQuery("terminologyId:"
+        + refset.getTerminologyId() + " AND workflowStatus:PUBLISHED"
+        + " AND projectId:" + refset.getProject().getId(), pfs);
+
+    if (publishedRefset != null && publishedRefset.getCount() == 1) {
+
+      final String previousReleaseDate = ConfigUtility.DATE_FORMAT
+          .format(publishedRefset.getObjects().get(0).getEffectiveTime());
+      final String submittedReleaseDate =
+          ConfigUtility.DATE_FORMAT.format(effectiveTime);
+
+      if (previousReleaseDate.equals(submittedReleaseDate)) {
+        throw new LocalException("refset has already been released with effectiveTime="
+            + submittedReleaseDate);
+      }
+    }
+
   }
 
   /* see superclass */
