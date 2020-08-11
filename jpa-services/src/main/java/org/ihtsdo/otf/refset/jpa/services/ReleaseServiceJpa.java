@@ -3,6 +3,9 @@
  */
 package org.ihtsdo.otf.refset.jpa.services;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.ReleaseArtifact;
 import org.ihtsdo.otf.refset.ReleaseInfo;
@@ -15,6 +18,11 @@ import org.ihtsdo.otf.refset.services.ReleaseService;
  */
 public class ReleaseServiceJpa extends ProjectServiceJpa
     implements ReleaseService {
+
+  /**
+   * 
+   */
+  static Map<Long, Boolean> bulkBetaInProgressMap = new ConcurrentHashMap<>();
 
   /**
    * Instantiates an empty {@link ReleaseServiceJpa}.
@@ -99,5 +107,34 @@ public class ReleaseServiceJpa extends ProjectServiceJpa
   @Override
   public void handleLazyInit(ReleaseInfo releaseInfo) throws Exception {
     releaseInfo.getArtifacts().size();
+  }
+
+  public void startBulkProcess(Long refsetId, String process) throws Exception {
+    if (process.equals("BETA")) {
+      bulkBetaInProgressMap.put(refsetId, true);
+    } else {
+      throw new Exception("unhandled process:" + process);
+    }
+  }
+
+  public void finishBulkProcess(Long refsetId, String process)
+    throws Exception {
+    if (process.equals("BETA")) {
+      bulkBetaInProgressMap.remove(refsetId);
+    } else {
+      throw new Exception("unhandled process:" + process);
+    }
+  }
+
+  public Boolean getBulkProcessStatus(Long refsetId, String process)
+    throws Exception {
+    if (process.equals("BETA")) {
+      if (bulkBetaInProgressMap.containsKey(refsetId)) {
+        return true;
+      }
+      return false;
+    } else {
+      throw new Exception("unhandled process:" + process);
+    }
   }
 }

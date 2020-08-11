@@ -35,6 +35,8 @@ import org.ihtsdo.otf.refset.services.handlers.IdentifierAssignmentHandler;
 import org.ihtsdo.otf.refset.services.handlers.ImportExportAbstract;
 import org.ihtsdo.otf.refset.services.handlers.ImportTranslationHandler;
 
+import com.google.common.base.CharMatcher;
+
 /**
  * Implementation of an algorithm to import a refset definition.
  */

@@ -1584,7 +1584,7 @@ public class RefsetClientRest extends RootClientRest
   
   /* see superclass */
   @Override
-  public InputStream exportResfetDuplicatesReport(Long refsetId, String ioHandlerInfoId, String[] conceptIts,
+  public InputStream exportResfetDuplicatesReport(Long refsetId, String ioHandlerInfoId, String[] conceptIds,
       String authToken)
     throws Exception {
 
