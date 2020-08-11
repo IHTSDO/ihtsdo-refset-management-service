@@ -411,9 +411,17 @@ public class PatchDataMojo extends AbstractRttMojo {
       if ("20200611".compareTo(start) >= 0 && "20200611".compareTo(end) <= 0) {
         getLog().info(
             "Processing patch 20200611 - Concept name and synonym lookups for the following projects and/or refsets"); // Patch
-        refsetIds = "24357942,24357945,24931373,24931381,23871126";
-        projectIds = "1701,2053";
+        //refsetIds = "24357942,24357945,24931373,24931381,23871126";
+        //projectIds = "1701,2053";
         patch20200611(workflowService, refsetService, fullReindex);
+      }
+      
+      // Patch 20200805
+      // Update Norway language codes
+      if ("20200805".compareTo(start) >= 0 && "20200805".compareTo(end) <= 0) {
+        getLog().info(
+            "Processing patch 20200805 - Update Norway language codes"); // Patch
+        patch20200805(workflowService, translationService);
       }
       
       // Reindex
@@ -1894,5 +1902,48 @@ public class PatchDataMojo extends AbstractRttMojo {
     getLog().info("Completed operation across all project-refset pairs");
     refsetService.commit();
 
+  }
+  
+  private void patch20200805(WorkflowService workflowService,
+    TranslationService translationService) throws Exception {
+    getLog().info("Patch 20200805: Updating Norway language codes");
+    int ct = 0;
+    translationService.setTransactionPerOperation(false);
+    translationService.beginTransaction();
+    for (Translation trans : translationService.getTranslations()
+        .getObjects()) {
+      Translation translation =
+          translationService.getTranslation(trans.getId());
+
+      getLog().info("translation " + translation.getName() + " " + translation.getLanguage());
+      translationService.setTransactionPerOperation(false);
+      String oldLanguage = translation.getLanguage();
+      if (oldLanguage.contentEquals("nb") || oldLanguage.equals("nn") || 
+          oldLanguage.contentEquals("nb_NO") || oldLanguage.equals("nn_NO")) {
+        getLog().info("Updating translation language code " + translation.toString());
+        if (oldLanguage.length() == 2) {
+          translation.setLanguage(oldLanguage + "-NO");
+        } else if (oldLanguage.length() == 5) {
+          translation.setLanguage(oldLanguage.replace('_', '-'));
+        }
+        for (Concept cpt : translation.getConcepts()) {
+          Concept concept = translationService.getConcept(cpt.getId());
+          if (concept == null) {
+            continue;
+          }
+          for (Description desc : concept.getDescriptions()) {
+            desc.setLanguageCode(translation.getLanguage());
+            translationService.updateDescription(desc);
+          }
+          translationService.updateConcept(concept);
+          ct++;
+          if (ct % 100 == 0) {
+            getLog().info("  ct = " + ct);
+            translationService.commitClearBegin();
+          }
+        }
+      }
+    }
+    translationService.commit();
   }
 }
