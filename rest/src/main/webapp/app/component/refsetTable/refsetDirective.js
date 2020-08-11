@@ -145,6 +145,21 @@ tsApp
                 utilService.handleDialogError(errors, error);
               }
 
+              // link to error handling for bulk operations
+              function handleBulkSingleError(errors, data){
+                errors.push(data);
+                utilService.handleBulkDialogErrors();
+              }
+              
+              // link to error handling for bulk operations
+              // works for errors and messages
+              function handleBulkMultiMessages(scopeMessages, messages){
+                for(message of messages){
+                  scopeMessages.push(message);
+                }
+                utilService.handleBulkDialogErrors();
+              }
+              
               // ..
               $scope.getMemberTypes = function() {
                 if ($scope.selected.refset && $scope.selected.refset.translated) {
@@ -2439,7 +2454,7 @@ tsApp
                 
                 $scope.refsets = [];
                 $scope.filteredRefsets = [];
-                $scope.selectedRefsets = [];
+                $scope.selectedRefsetIds = [];
                 $scope.allSelected = false;
                 
                 // Populate picklists
@@ -2485,38 +2500,41 @@ tsApp
                   
                   // Clear out selections
                   $scope.allSelected = false;
-                  $scope.selectedRefsets = [];                  
+                  $scope.selectedRefsetIds = [];                  
                 }
                 
+                
+                // Checkbox controls
                 $scope.toggleSelectAll = function(){
                   if($scope.allSelected){
-                    for (var i = 0; i < $scope.filteredRefsets.length; i++) {
-                      $scope.selectedRefsets[$scope.filteredRefsets[i].id] = false;
+                    for(refset of $scope.filteredRefsets){
+                      $scope.selectedRefsetIds = [];
                     }
                     $scope.allSelected = false;
                   }
                   else{
-                    for (var i = 0; i < $scope.filteredRefsets.length; i++) {
-                      $scope.selectedRefsets[$scope.filteredRefsets[i].id] = true;
-                    }   
+                    $scope.selectedRefsetIds = [];
+                    for(refset of $scope.filteredRefsets){
+                      $scope.selectedRefsetIds.push(refset.id);
+                    }
                     $scope.allSelected = true;
                   }
                 }
                 
                 $scope.toggleSelection = function(refset) {
                   // is currently selected
-                  if ($scope.selectedRefsets[refset.id]) {
-                    $scope.selectedRefsets[refset.id] = false;
+                  if ($scope.selectedRefsetIds.includes(refset.id)) {
+                    $scope.selectedRefsetIds = $scope.selectedRefsetIds.filter(r => r.id !== refset.id);
                   }
                   // is newly selected
                   else {
-                    $scope.selectedRefsets[refset.id] = true;
+                    $scope.selectedRefsetIds.push(refset.id);
                   }
                 };
                 
                 // indicates if a particular row is selected
                 $scope.isRowSelected = function(refset) {
-                  return $scope.selectedRefsets[refset.id];
+                  return $scope.selectedRefsetIds.includes(refset.id);
                 }
                 
                 $scope.isAllSelected = function() {
@@ -2532,7 +2550,7 @@ tsApp
                   
                   // Get release artifacts for all selected refsets
                   for (var i = 0; i < $scope.filteredRefsets.length; i++) {
-                    if($scope.selectedRefsets[$scope.filteredRefsets[i].id]){
+                    if($scope.selectedRefsetIds.includes($scope.filteredRefsets[i].id)){
                       releaseService.findRefsetReleasesForQuery($scope.filteredRefsets[i].id, null, null).then(
                         function(data) {
                           var refsetReleaseInfo = data.releaseInfos[0];
@@ -2722,7 +2740,602 @@ tsApp
 
                 $scope.format = 'yyyyMMdd';
               };
+              
+              // Bulk Release Process modal
+              $scope.openBulkReleaseProcessModal = function() {
+                console.debug('BulkReleaseProcessModal ');
+                var modalInstance = $uibModal.open({
+                  templateUrl : 'app/component/refsetTable/bulkRelease.html',
+                  controller : BulkReleaseProcessModalCtrl,
+                  backdrop : 'static',
+                  resolve : {
+                    project : function() {
+                      return $scope.project;
+                    },
+                    ioHandlers : function() {
+                      return $scope.metadata.refsetExportHandlers;
+                    },
+                    utilService : function() {
+                      return utilService;
+                    }
+                  }
+                });
 
+                modalInstance.result.then(
+                // Success
+                function(data) {
+                  refsetService.fireRefsetChanged(data);
+                });
+              };
+
+
+              // Bulk Release Process controller
+              var BulkReleaseProcessModalCtrl = function($scope, $uibModalInstance, project, ioHandlers,
+                gpService, utilService) {
+                console.debug('Entered bulk release process modal', project.id, ioHandlers);
+
+                $scope.project = project;
+                $scope.ioHandlers = ioHandlers;
+                $scope.selectedIoHandler = $scope.ioHandlers[0];
+                $scope.releaseInfo = [];
+                $scope.status = {
+                  opened : false
+                };                
+                $scope.validationResult = null;
+                $scope.format = 'yyyyMMdd';
+                $scope.effectiveTime = null;
+
+                $scope.errors = [];
+                $scope.warnings = [];
+                
+                $scope.inPublicationProcess = false;
+                
+                $scope.refsets = [];
+                $scope.selectedRefsetTerminologyIds = [];
+                $scope.mostRecentReleaseDate = [];
+                $scope.publishedRefsetTerminologyIds = [];
+                
+                // Progress tracking
+                $scope.lookupInterval = null;
+                $scope.refsetIdsInProcessProgress = [];
+                $scope.refsetIdsProcessCompleted = [];
+                
+                // Error tracking
+                $scope.validatedRefsetIds = [];
+                $scope.failedRefsetIds = [];
+                
+                // Button disabled values
+                $scope.startReleaseDisabled = true;
+                $scope.validateDisabled = true;
+                $scope.betaDisabled = true;
+                $scope.finishDisabled = true;
+                
+                // Stage list
+                $scope.stageList = [];
+                $scope.stageList.push('NONE');
+                $scope.stageList.push('READY_FOR_PUBLICATION');
+                $scope.stageList.push('STARTED');
+                $scope.stageList.push('FAILED');
+                $scope.stageList.push('VALIDATED');
+                $scope.stageList.push('BETA');
+                $scope.stageList.push('ALL');                
+                $scope.selectedStage=('NONE');
+                
+                
+                function lookupRefsets(){
+                                   
+                  // Get Release refsets for project
+                  var pfs = {
+                    startIndex : -1,
+                    maxResults : -1,
+                    sortField : 'name',
+                    queryRestriction : null,
+                    latestOnly : true
+                  };
+                  
+                  var query = ' AND (workflowStatus:READY_FOR_PUBLICATION OR workflowStatus:PUBLISHED)';
+
+                  refsetService.findRefsetsForQuery('projectId:' + $scope.project.id + query, pfs)
+                    .then(
+                      // Success
+                      function(data) {
+                        
+                        //Clear out the existing refset lists, and quickly repopulate
+                        $scope.refsets = [];                 
+                        $scope.refsetIdsProcessCompleted = [];
+                        
+                        for(refset of data.refsets){
+                          // Add non-published refsets to scope list
+                          if(refset.workflowStatus === 'READY_FOR_PUBLICATION'){
+                            $scope.refsets.push(refset);
+                          }
+                          // Use published refsets to determine most recent release date
+                          else{
+                            $scope.mostRecentReleaseDate[refset.terminologyId] = utilService.toSimpleDate(refset.effectiveTime);
+                          }
+                        }
+
+                      // enable/disable action button accordingly
+                      $scope.setButtonDisableValues(); 
+                    });    
+                }               
+
+                // Perform the refset lookup
+                lookupRefsets();
+                
+                // Handle status picklist change
+                $scope.selectRefsets = function(){
+                
+                  console.debug("stage:", $scope.selectedStage);
+                  
+                  //Clear out previous selections
+                  $scope.selectedRefsetTerminologyIds = [];
+                  
+                  if ($scope.selectedStage === 'ALL'){
+                    for(refset of $scope.refsets){
+                      $scope.selectedRefsetTerminologyIds.push(refset.terminologyId);
+                    }
+                  }
+                  else if ($scope.selectedStage === 'NONE'){
+                    // n/a - selections already cleared out
+                  }
+                  else {
+                    for(refset of $scope.refsets){
+                      if($scope.refsetStatus(refset) === $scope.selectedStage){
+                        $scope.selectedRefsetTerminologyIds.push(refset.terminologyId);
+                      }
+                    }                    
+                  }
+                  
+                  // Now that selections have changed, enable/disable buttons accordingly
+                  $scope.setButtonDisableValues();
+                }                
+                
+                // Get the refset's status
+                $scope.refsetStatus = function(refset){
+                  
+                  if(refset.workflowStatus === 'PUBLISHED'){
+                    return;
+                  }
+                  
+                  // Check for in-progress first
+                  if($scope.refsetIdsInProcessProgress.includes(refset.id)){
+                    return 'PROCESSING...';
+                  }
+                  else if ($scope.refsetIdsProcessCompleted.includes(refset.id)){
+                    return 'COMPLETED';
+                  }
+                  
+                  // If refset not in-progress, check it's release status 
+                  if($scope.publishedRefsetTerminologyIds.includes(refset.terminologyId)){
+                    return 'PUBLISHED';
+                  }
+                  else if($scope.failedRefsetIds.includes(refset.id)){
+                    return 'FAILED';
+                  }
+                  else if(refset.inPublicationProcess && refset.stagingType !== 'BETA'){
+                    if($scope.validatedRefsetIds.includes(refset.id)){
+                      return 'VALIDATED';
+                    }
+                    else{
+                      return 'STARTED';
+                    }
+                  }
+                  else if (refset.inPublicationProcess && refset.stagingType === 'BETA'){
+                    return 'BETA';
+                  }
+                  else{
+                    return 'READY_FOR_PUBLICATION';
+                  }
+                }                
+                
+                $scope.getLastReleaseDate = function(refset){
+                  return $scope.mostRecentReleaseDate[refset.terminologyId];
+                }
+                
+                $scope.getSelectedRefsetIds = function(){
+                  var selectedRefsetIds = [];
+                  
+                  for(refset of $scope.refsets){
+                    if(refset.workflowStatus !== 'PUBLISHED' && $scope.selectedRefsetTerminologyIds.includes(refset.terminologyId)){
+                      selectedRefsetIds.push(refset.id);
+                    }
+                  }
+                  
+                  return selectedRefsetIds;
+                }
+                
+                // Determine if specific action is enabled based on refset selection
+                $scope.setButtonDisableValues = function(){
+                  
+                  // Start with all buttons disabled, and enable individual buttons as appropriate
+                  $scope.startReleaseDisabled = true;
+                  $scope.validateDisabled = true;
+                  $scope.betaDisabled = true;
+                  $scope.finishDisabled = true;
+                  
+                  var selectedRefsetsReleaseStatus = '';
+                  
+                  // All selected refsets must have the same status in order to do any bulk processing.
+                  for (refset of $scope.refsets) {
+                    if($scope.selectedRefsetTerminologyIds.includes(refset.terminologyId)){
+                      
+                      //If this is first selected refset, set the Status to compare against
+                      if(selectedRefsetsReleaseStatus === ''){
+                        selectedRefsetsReleaseStatus = $scope.refsetStatus(refset);
+                      }
+                      else if(selectedRefsetsReleaseStatus !== $scope.refsetStatus(refset)){
+                        return;
+                      }
+                      
+                      // If any of the selected refsets failed validation, no actions are allowable
+                      if($scope.refsetStatus(refset) === 'FAILED'){
+                        return;
+                      }
+                    }
+                  }
+                  
+                  if(selectedRefsetsReleaseStatus === 'READY_FOR_PUBLICATION'){
+                    $scope.startReleaseDisabled = false;
+                  }
+                  else if(selectedRefsetsReleaseStatus === 'STARTED'){
+                    $scope.validateDisabled = false;
+                  }
+                  else if(selectedRefsetsReleaseStatus === 'VALIDATED'){
+                    $scope.betaDisabled = false;
+                  }
+                  else if(selectedRefsetsReleaseStatus === 'BETA'){
+                    $scope.finishDisabled = false;
+                  }
+                }
+                
+                // Checkbox controls               
+                $scope.toggleSelection = function(refset) {
+                  // is currently selected
+                  if ($scope.selectedRefsetTerminologyIds.includes(refset.terminologyId)) {
+                    $scope.selectedRefsetTerminologyIds = $scope.selectedRefsetTerminologyIds.filter(r => r !== refset.terminologyId);
+                  }
+                  // is newly selected
+                  else {
+                    $scope.selectedRefsetTerminologyIds.push(refset.terminologyId);
+                  }
+                };
+                
+                // indicates if a particular row is selected
+                $scope.isRowSelected = function(refset) {
+                  return $scope.selectedRefsetTerminologyIds.includes(refset.terminologyId);
+                }
+                
+                $scope.isAllSelected = function() {
+                  return $scope.allSelected;
+                }
+                
+                //
+                // Progress tracking
+                //
+                
+                // Start lookup for process progress
+                $scope.startProcessProgressLookup = function(process) {
+                  
+                    gpService.increment();
+                    // Start if not already running
+                    if (!$scope.lookupInterval) {
+                      $scope.lookupInterval = $interval(function() {
+                        $scope.refreshProcessProgress(process);
+                      }, 2000);
+                    }
+                }                
+                
+                // Refresh Process progress
+                $scope.refreshProcessProgress = function(process) {
+                                   
+                  releaseService.getBulkProcessProgress(process, $scope.getSelectedRefsetIds()).then(
+                  // Success
+                  function(data) {
+                    var refsetIdsStillInProgress = [];
+                    for(refsetId of data.strings){
+                      refsetIdsStillInProgress.push(parseInt(refsetId));
+                    }
+                    
+                    // Any time a refset finishes processing, update in-progress and completed lists
+                    if($scope.refsetIdsInProcessProgress.length !== refsetIdsStillInProgress.length){
+                      for(refsetId of $scope.refsetIdsInProcessProgress){
+                        if(!refsetIdsStillInProgress.includes(refsetId)){
+                          $scope.refsetIdsProcessCompleted.push(refsetId);
+                        }
+                      }
+                      
+                      $scope.refsetIdsInProcessProgress = refsetIdsStillInProgress;
+                    }
+                    
+                    // Once the in-progress list comes back empty, stop the lookup
+                    if(data.strings.length === 0){
+                      gpService.decrement();
+                      $interval.cancel($scope.lookupInterval);
+                      $scope.lookupInterval = null;
+                      lookupRefsets();
+                    }
+                  },
+                  // Error
+                  function(data) {
+                    gpService.decrement();                    
+                    // Cancel automated lookup on error
+                    $interval.cancel($scope.lookupInterval);
+                    $scope.lookupInterval = null;
+                    $scope.refsetIdsInProcessProgress = [];
+                    lookupRefsets();
+                  });
+                };
+                
+                
+                //
+                // Begin releases
+                //
+                $scope.beginRefsetReleases = function(){                 
+                  //Clear out errors and warnings from previous runs
+                  $scope.errors = [];
+                  $scope.warnings = [];
+                  
+                  if (!$scope.effectiveTime) {
+                    window.alert('Release Date cannot be empty');
+                    return;
+                 }
+                                    
+                  releaseService.beginRefsetReleases($scope.getSelectedRefsetIds(),
+                    utilService.toWCISimpleDate($scope.effectiveTime)).then(
+                  // Success
+                  function(data) {
+                    handleBulkMultiMessages($scope.errors, data.errors);
+                    handleBulkMultiMessages($scope.warnings, data.warnings);
+                    
+                    for(refset of $scope.refsets){
+                      
+                      if(!$scope.selectedRefsetTerminologyIds.includes(refset.terminologyId)){
+                        continue;
+                      }
+                      
+                      var refsetHasError = false;
+                      for(error of data.errors){
+                        if(error.includes(refset.terminologyId)){
+                        refsetHasError = true;
+                        break;
+                      }
+                    }
+                    if(refsetHasError){
+                      $scope.failedRefsetIds.push(refset.id);
+                    }
+                  }
+                    
+                    // Relookup refsets to catch any status changes
+                    lookupRefsets();                    
+                  },
+                  // Error
+                  function(data) {
+                    handleBulkSingleError($scope.errors,  data);
+                  });
+                }
+                
+                
+                //
+                // Validate releases
+                //
+                $scope.validateRefsetReleases = function(){
+                  //Clear out errors and warnings from previous runs
+                  $scope.errors = [];
+                  $scope.warnings = [];
+                  
+                  releaseService.validateRefsetReleases($scope.getSelectedRefsetIds()).then(
+                    // Success
+                    function(data) {
+                      handleBulkMultiMessages($scope.errors, data.errors);
+                      handleBulkMultiMessages($scope.warnings, data.warnings);
+                      
+                        for(refset of $scope.refsets){
+                          
+                          if(!$scope.selectedRefsetTerminologyIds.includes(refset.terminologyId)){
+                            continue;
+                          }
+                          
+                          var refsetHasError = false;
+                          for(error of data.errors){
+                            if(error.includes(refset.terminologyId)){
+                            refsetHasError = true;
+                            break;
+                          }
+                        }
+                        if(refsetHasError){
+                          $scope.failedRefsetIds.push(refset.id);
+                        }
+                        else {
+                          $scope.validatedRefsetIds.push(refset.id);
+                        }
+                      }
+                        
+                      // Relookup refsets to catch any status changes
+                      lookupRefsets();                    
+                    },
+                    // Error
+                    function(data) {
+                      handleBulkSingleError($scope.errors,  data);
+                    });
+                }
+                
+                //
+                // Beta releases
+                //
+                $scope.betaRefsetReleases = function() {
+
+                  //Clear out errors and warnings from previous runs
+                  $scope.errors = [];
+                  $scope.warnings = [];                  
+                  
+                  for(refsetId of $scope.getSelectedRefsetIds()){
+                    $scope.refsetIdsInProcessProgress.push(refsetId);
+                  }
+                  
+                  // Start the progress lookup loop
+                  $scope.startProcessProgressLookup('BETA');
+                                    
+                  releaseService.betaRefsetReleases($scope.getSelectedRefsetIds(), $scope.selectedIoHandler.id).then(
+                  // Success
+                    function(data) {
+                      handleBulkMultiMessages($scope.errors, data.errors);
+                      handleBulkMultiMessages($scope.warnings, data.warnings);
+                      
+                        for(refset of $scope.refsets){
+                          
+                          if(!$scope.selectedRefsetTerminologyIds.includes(refset.terminologyId)){
+                            continue;
+                          }             
+                          
+                          var refsetHasError = false;
+                          for(error of data.errors){
+                            if(error.includes(refset.terminologyId)){
+                            refsetHasError = true;
+                            break;
+                          }
+                        }
+                        if(refsetHasError){
+                          $scope.failedRefsetIds.push(refset.id);
+                        }
+                      }
+                        
+                      // Relookup refsets to catch any status changes
+                      lookupRefsets();                    
+                    },
+                  // Error
+                  function(data) {
+                      handleBulkSingleError($scope.errors,  data);
+                  });
+                };
+
+                //
+                // Finish releases
+                //
+                $scope.finishRefsetReleases = function() {
+
+                  //Clear out errors and warnings from previous runs
+                  $scope.errors = [];
+                  $scope.warnings = [];
+                  
+                  releaseService.finishRefsetReleases($scope.getSelectedRefsetIds(), $scope.selectedIoHandler.id).then(
+                  // Success
+                  function(data) {
+                    handleBulkMultiMessages($scope.errors, data.errors);
+                    handleBulkMultiMessages($scope.warnings, data.warnings);
+                    
+                      for(refset of $scope.refsets){
+                        
+                        if(!$scope.selectedRefsetTerminologyIds.includes(refset.terminologyId)){
+                          continue;
+                        }            
+                        
+                        var refsetHasError = false;
+                        for(error of data.errors){
+                          if(error.includes(refset.terminologyId)){
+                          refsetHasError = true;
+                          break;
+                        }
+                      }
+                      if(refsetHasError){
+                        $scope.failedRefsetIds.push(refset.id);
+                      }
+                      else if ($scope.selectedRefsetTerminologyIds.includes(refset.terminologyId)){
+                        $scope.publishedRefsetTerminologyIds.push(refset.terminologyId);
+                      }
+                    }
+                      
+                    // Relookup refsets to catch any status changes
+                    lookupRefsets();                    
+
+                  },
+                  // Error
+                  function(data) {
+                    handleBulkSingleError($scope.errors,  data);
+                  });
+                };
+
+                //
+                // Cancel releases
+                //
+                $scope.cancel = function() {
+                  
+                  //Clear out errors and warnings from previous runs
+                  $scope.errors = [];
+                  $scope.warnings = [];
+                  
+                  var selectedRefsetIds = [];
+                  
+                  for(refset of $scope.refsets){
+                    
+                    if(!$scope.selectedRefsetTerminologyIds.includes(refset.terminologyId)){
+                      continue;
+                    }
+                      
+                    if(refset.inPublicationProcess){
+                      selectedRefsetIds.push(refset.id);
+                    }
+                    // Refsets that are not in publication process (i.e. failed during begin release)
+                    // should just be removed from the Failed and Validated lists
+                    else{
+                      $scope.failedRefsetIds = $scope.failedRefsetIds.filter(r => r !== refset.id);
+                      $scope.validatedRefsetIds = $scope.validatedRefsetIds.filter(r => r !== refset.id);
+                    }
+                  }
+
+                  
+                  // If all selected refsets were not in the publication process, exit now
+                  if(selectedRefsetIds.length === 0){
+                    return;
+                  }
+                  
+                  releaseService.cancelRefsetReleases(selectedRefsetIds).then(
+                  // Success
+                  function(data) {
+                    handleBulkMultiMessages($scope.errors, data.errors);
+                    handleBulkMultiMessages($scope.warnings, data.warnings);
+                    
+                      for(refset of $scope.refsets){
+                                                
+                        if(!$scope.selectedRefsetTerminologyIds.includes(refset.terminologyId)){
+                          continue;
+                        }
+                          
+                        var refsetHasError = false;
+                        for(error of data.errors){
+                          if(error.includes(refset.terminologyId)){
+                          refsetHasError = true;
+                          break;
+                        }
+                      }
+                      if(refsetHasError){
+                        $scope.failedRefsetIds.push(refset.id);
+                        $scope.validatedRefsetIds = $scope.validatedRefsetIds.filter(r => r !== refset.id);
+                      }
+                      // Successfully canceled refsets should no longer be considered failures or validated
+                      else{
+                        $scope.failedRefsetIds = $scope.failedRefsetIds.filter(r => r !== refset.id);
+                        $scope.validatedRefsetIds = $scope.validatedRefsetIds.filter(r => r !== refset.id);
+                      }                      
+                    }
+                      
+                    // Re-lookup refsets to catch any status changes
+                    lookupRefsets();                    
+                    $scope.setButtonDisableValues();
+                  });
+                };
+
+                // Close the window - to return later
+                $scope.close = function() {
+                  $uibModalInstance.close();
+                };
+
+                $scope.open = function($event) {
+                  $scope.status.opened = true;
+                };
+              };              
+
+              
               // Assign refset modal
               $scope.openAssignRefsetModal = function(lrefset, laction) {
                 console.debug('openAssignRefsetModal ', lrefset, laction);
