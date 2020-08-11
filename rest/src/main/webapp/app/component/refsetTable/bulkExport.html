@@ -1,0 +1,72 @@
+<div class="modal-header">
+  <h4 style="display: inline">Bulk Export</h4>
+  <span style="float: right">
+    <i class="noul glyphicon glyphicon-remove"
+      ng-click="close()"></i>
+  </span>
+</div>
+
+<div class="modal-body">
+
+  <div>
+    <table class="table">
+       <tr>
+        <td class="col-md-7 col-xs-7"></td>
+        <td class="col-md-2 col-xs-2">File Type:</td>
+        <td>
+          <select ng-model="selectedFileType"
+            ng-options="fileType as fileType for fileType in fileTypeList ">
+          </select>
+        </td>
+      </tr>
+    </table>
+  </div>
+  
+  <div>
+    <span>
+      Filter by:   
+    </span>
+    <br><br>
+    <span>
+      <select ng-model="selectedStage" ng-change="filterRefsets()"
+            ng-options="stage as stage for stage in stageList | orderBy:'toString()'">
+          </select>
+    </span>
+    <br><br>
+  </div>
+  
+  
+  <div>
+    <table class="table">
+      <tr>
+        <td  class="col-md-1 col-xs-1"> 
+           <input type="checkbox" ng-click="toggleSelectAll()" title="Select/Deselect All Refsets" ng-checked="isAllSelected()" value="{{allSelected}}">
+        </td>
+        <td class="col-md-2 col-xs-2"></td>
+        <td class="col-md-8 col-xs-8"></td>
+      </tr>      
+      <tr ng-repeat="refset in filteredRefsets">
+        <td  class="col-md-1 col-xs-1">
+           <input type="checkbox" ng-click="toggleSelection(refset)" title="Select/Deselect Refset" ng-checked="isRowSelected(refset)" value="{{selectedRefsets[refset.id]}}">
+        </td>
+        <td class="col-md-2 col-xs-2">{{refset.terminologyId}}</td>
+        <td class="col-md-5 col-xs-5">{{refset.name}}</td>
+        <td class="col-md-3 col-xs-3">{{refset.workflowStatus}}</td>
+      </tr>
+    </table>
+  </div>
+  
+        <!-- Errors and warnings-->
+      <span ng-show="warnings.length > 0">
+        <td>&nbsp;</td>
+        <td>
+          <div class="alert alert-warning" ng-repeat="warning in warnings">
+            {{warning}}</div>
+        </td>
+      </span>
+
+  <div class="modal-footer">
+    <button class="btn btn-xs btn-primary" ng-click="export()">Export</button>
+    <button class="btn btn-xs btn-warning" ng-click="close()">Close</button>
+  </div>
+</div>

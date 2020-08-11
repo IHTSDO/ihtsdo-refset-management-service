@@ -1,5 +1,5 @@
-/**
- * Copyright 2015 West Coast Informatics, LLC
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.services;
 
@@ -41,7 +41,7 @@ public interface ReleaseService extends ProjectService {
    * Update release info.
    *
    * @param releaseInfo the release info
-   * @throws Exception
+   * @throws Exception the exception
    */
   public void updateReleaseInfo(ReleaseInfo releaseInfo) throws Exception;
 
@@ -88,5 +88,34 @@ public interface ReleaseService extends ProjectService {
    * @throws Exception the exception
    */
   public ReleaseArtifact getReleaseArtifact(Long id) throws Exception;
+
+  /**
+   * Start bulk process.
+   *
+   * @param refsetId the refset id
+   * @param process the process
+   * @throws Exception the exception
+   */
+  public void startBulkProcess(Long refsetId, String process) throws Exception;
+
+  /**
+   * Finish bulk process.
+   *
+   * @param refsetId the refset id
+   * @param process the process
+   * @throws Exception the exception
+   */
+  public void finishBulkProcess(Long refsetId, String process) throws Exception;
+
+  /**
+   * Gets the bulk process status.
+   *
+   * @param refsetId the refset id
+   * @param process the process
+   * @return the bulk process status
+   * @throws Exception the exception
+   */
+  public Boolean getBulkProcessStatus(Long refsetId, String process)
+    throws Exception;
 
 }
