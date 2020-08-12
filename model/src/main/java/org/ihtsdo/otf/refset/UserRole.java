@@ -73,7 +73,7 @@ public enum UserRole {
         && (role == UserRole.VIEWER || role == UserRole.USER || role == UserRole.AUTHOR))
       return true;
     else if (this == UserRole.LEAD
-        && (role == UserRole.VIEWER || role == UserRole.USER || role == UserRole.AUTHOR || role == UserRole.REVIEWER || role == UserRole.REVIEWER2 && role == UserRole.LEAD))
+        && (role == UserRole.VIEWER || role == UserRole.USER || role == UserRole.AUTHOR || role == UserRole.REVIEWER || role == UserRole.REVIEWER2 || role == UserRole.LEAD))
       return true;
     else if (this == UserRole.ADMIN)
       return true;
