@@ -1666,4 +1666,13 @@ public class RefsetClientRest extends RootClientRest
     return null;
   }
 
+  @Override
+  public StringList getInactiveConceptRefsets(Long projectId, String authToken)
+    throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  
+
 }

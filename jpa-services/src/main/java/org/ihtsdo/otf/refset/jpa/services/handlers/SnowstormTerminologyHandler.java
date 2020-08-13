@@ -1013,6 +1013,134 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     return conceptList.getObjects().get(0);
   }
 
+  @Override
+  public ConceptList getInactiveConcepts(List<String> terminologyIds,
+    String terminology, String version) throws Exception {
+    // If no terminologyIds are specified, return an empty ConceptList
+    ConceptList conceptList = new ConceptListJpa();
+    if (terminologyIds.size() == 0) {
+      return conceptList;
+    }
+
+    // Make a webservice call to SnowOwl to get concept
+    final Client client = ClientBuilder.newClient();
+
+    final StringBuilder lookupErrors = new StringBuilder();
+
+    PfsParameter localPfs = new PfsParameterJpa();
+
+    if (localPfs.getStartIndex() == -1) {
+      localPfs.setStartIndex(0);
+      localPfs.setMaxResults(Integer.MAX_VALUE);
+    }
+
+    // Start by just getting first 100, then check how many remaining ones
+    // there
+    // are
+    // and make a second call if needed
+    final int initialMaxLimit = 500;
+
+    final StringBuilder query = new StringBuilder();
+    for (final String terminologyId : terminologyIds) {
+      // Only lookup stuff with actual digits
+      if (terminologyId.matches("[0-9]*")) {
+        if (query.length() != 0) {
+          query.append(",");
+        }
+        query.append(terminologyId);
+      }
+    }
+    String expr = query.toString();
+
+    String targetUri = url + "/" + version + "/concepts?conceptIds="
+        + URLEncoder.encode(expr, "UTF-8").replaceAll(" ", "%20") + "&activeFilter=false&limit="
+        + Math.min(initialMaxLimit, localPfs.getMaxResults());
+
+    WebTarget target = client.target(targetUri);
+    Logger.getLogger(getClass()).info(targetUri);
+
+    Response response =
+        target.request(accept).header("Authorization", authHeader)
+            .header("Accept-Language", getAcceptLanguage(terminology, version))
+            .header("Cookie", getGenericUserCookie() != null
+                ? getGenericUserCookie() : getCookieHeader())
+            .get();
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    }
+    // If the generic user is logged out, it returns a 403 Forbidden error. In
+    // this case, clear out the generic use cookie so the next call can
+    // re-login
+    else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
+      genericUserCookie = null;
+      throw new LocalException(
+          "Connection with the terminology server has expired. Please reload the page to reconnect.");
+    } else {
+
+      // Here's the messy part about trying to parse the return error message
+      if (resultString.contains("loop did not match anything")) {
+        return new ConceptListJpa();
+      }
+
+      throw new LocalException(
+          "Unexpected terminology server failure. Message = " + resultString);
+    }
+    conceptList = new ConceptListJpa();
+    ObjectMapper mapper = new ObjectMapper();
+    JsonNode doc = mapper.readTree(resultString);
+
+    // get total amount
+    final int total = doc.get("total").asInt();
+    // Get concepts returned in this call (up to 100)
+    if (doc.get("items") == null) {
+      return conceptList;
+    }
+    for (final JsonNode conceptNode : doc.get("items")) {
+      final Concept concept = new ConceptJpa();
+
+      concept.setActive(conceptNode.get("active").asText().equals("true"));
+      concept.setTerminologyId(conceptNode.get("conceptId").asText());
+      if (conceptNode.has("effectiveTime")) {
+        concept.setLastModified(ConfigUtility.DATE_FORMAT
+            .parse(conceptNode.get("effectiveTime").asText()));
+      } else {
+        concept.setLastModified(new Date());
+      }
+      concept.setLastModifiedBy(terminology);
+      concept.setModuleId(conceptNode.get("moduleId").asText());
+      concept.setDefinitionStatusId(
+          conceptNode.get("definitionStatus").asText());
+
+      // pt.term is the name
+      if (conceptNode.get("pt") != null
+          && conceptNode.get("pt").get("term") != null) {
+        concept.setName(conceptNode.get("pt").get("term").asText());
+      } else {
+        concept.setName(UNABLE_TO_DETERMINE_NAME);
+
+        lookupErrors.append("  URI: ").append(targetUri).append("\r\n");
+        lookupErrors.append("  CONCEPT ID: ")
+            .append(concept.getTerminologyId()).append("\r\n");
+        lookupErrors.append("  ERROR: ")
+            .append("\"pt\" node is null or missing \"term\" subnode")
+            .append("\r\n\r\n");
+      }
+
+      concept.setPublishable(true);
+      concept.setPublished(true);
+
+      conceptList.addObject(concept);
+    }
+    if (lookupErrors.length() != 0) {
+      sendLookupErrorEmail(lookupErrors.toString());
+    }
+    conceptList.setTotalCount(total);
+    return conceptList;
+  }
+  
+  
   /* see superclass */
   @Override
   public ConceptList getConcepts(List<String> terminologyIds,

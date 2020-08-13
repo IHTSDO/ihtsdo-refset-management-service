@@ -1363,6 +1363,33 @@ tsApp.service('refsetService', [
       return deferred.promise;
     };
 
+    // 
+    this.getInactiveConcepts = function(projectId) {
+      console.debug('getInactiveConcepts');
+      // Setup deferred
+      var deferred = $q.defer();
+
+      gpService.increment();
+      $http.get(refsetUrl + 'members/inactive?projectId=' + projectId, {
+        headers : {
+          'Content-type' : 'text/plain'
+        }
+      }).then(
+      // success
+      function(response) {
+        console.debug('  refsets with inactive concepts = ', response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    };
+    
     // get the progress of the name/status member lookup process
     this.getLookupProgress = function(refsetId) {
       console.debug('getLookupProgress');

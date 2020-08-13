@@ -3,6 +3,7 @@
  */
 package org.ihtsdo.otf.refset;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -242,5 +243,19 @@ public interface Project extends Searchable {
    * @param stableUUIDs the new stable UUI ds
    */
   public void setStableUUIDs(boolean stableUUIDs);
+
+  /**
+   * Returns the inactive last modified.
+   *
+   * @return the inactive last modified
+   */
+  public Date getInactiveLastModified();
+
+  /**
+   * Sets the inactive last modified.
+   *
+   * @param inactiveLastModified the inactive last modified
+   */
+  public void setInactiveLastModified(Date inactiveLastModified);
 
 }
