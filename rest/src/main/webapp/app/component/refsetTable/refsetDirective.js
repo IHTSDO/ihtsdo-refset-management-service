@@ -2427,6 +2427,7 @@ tsApp
                   templateUrl : 'app/component/refsetTable/bulkExport.html',
                   controller : BulkExportModalCtrl,
                   backdrop : 'static',
+                  windowClass: 'xl-modal-window',
                   resolve : {
                     project : function() {
                       return $scope.project;
@@ -2748,6 +2749,7 @@ tsApp
                   templateUrl : 'app/component/refsetTable/bulkRelease.html',
                   controller : BulkReleaseProcessModalCtrl,
                   backdrop : 'static',
+                  windowClass: 'xxl-modal-window',
                   resolve : {
                     project : function() {
                       return $scope.project;

@@ -263,11 +263,18 @@ a:hover {
 	line-height: 1.5;
 }
 
-.modal-lg {
-	width: 90%;
-	min-width: 900px;
-}
-
 .alert-text {
 	color: red;
+}
+
+.xxl-modal-window .modal-dialog {
+  width: 90%;
+  max-width: 1200px;
+  overflow: hidden;
+}
+
+.xl-modal-window .modal-dialog {
+  width: 70%;
+  max-width: 900px;
+  overflow: hidden;
 }
