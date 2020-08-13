@@ -1217,4 +1217,11 @@ public class BrowserTerminologyHandler extends AbstractTerminologyHandler {
   public int getMaxBatchLookupSize() throws Exception {
     return maxBatchLookupSize;
   }
+
+  @Override
+  public ConceptList getInactiveConcepts(List<String> terminologyIds,
+    String terminology, String version) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
 }

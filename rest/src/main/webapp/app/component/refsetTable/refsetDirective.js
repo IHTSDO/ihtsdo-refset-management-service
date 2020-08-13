@@ -64,6 +64,7 @@ tsApp
               $scope.showDuplicatesExport = false;
               $scope.conceptIds = [];
               $scope.showImportFromExistingProject = false;
+              $scope.disableMigrationButton = true;
               
               // Page metadata
               var memberTypes = [ 'Member', 'Exclusion', 'Inclusion', 'Active', 'Inactive',

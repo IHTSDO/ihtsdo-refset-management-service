@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Date;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -364,6 +365,111 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
     }
   }
 
+  /* see superclass */
+  @Override
+  @GET
+  @Path("/members/inactive")
+  @ApiOperation(value = "Return refsets with inactive members", notes = "Returns names of all refset in the project that have inactive members.", response = StringList.class)
+  public StringList getInactiveConceptRefsets(
+    @ApiParam(value = "Project id, e.g. 3", required = true) @QueryParam("projectId") Long projectId,
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass())
+        .info("RESTful call POST (Refset): /members/inactive for projectId: "
+            + projectId);
+
+    // Create service and configure transaction scope
+    final RefsetService refsetService =
+        new RefsetServiceJpa(getHeaders(headers));
+    refsetService.setTransactionPerOperation(false);
+    refsetService.beginTransaction();
+    
+    Project project = refsetService.getProject(projectId);
+    List<Refset> refsets = project.getRefsets();
+    StringList refsetList = new StringList();
+    
+    try {
+      final String userName = authorizeProject(refsetService,
+          projectId, securityService, authToken,
+          "return inactive members", UserRole.AUTHOR);
+
+      final TerminologyHandler terminologyHandler = refsetService
+          .getTerminologyHandler(project, getHeaders(headers));
+      
+      
+      // for each refset in project
+      for (int k = 0; k < refsets.size(); k++) {
+        
+        Refset refset = refsets.get(k);
+        refset = refsetService.getRefset(refset.getId());
+        if (refset.getWorkflowStatus() == WorkflowStatus.PUBLISHED) {
+          continue;
+        }
+       
+        if(getInactiveConceptsForRefset(refsetService, terminologyHandler, refset).size() > 0) {      
+          refsetList.addObject(refset.getName());
+        }
+      }
+
+      project.setInactiveLastModified(new Date());
+      refsetService.updateProject(project);
+      refsetService.commit();
+      
+      refsetList.setTotalCount(refsetList.getObjects().size());
+      return refsetList;
+      
+    } catch (Exception e) {
+      handleException(e, "returning refsets with inactive concepts");
+    } finally {
+      refsetService.close();
+      securityService.close();
+    }
+    
+    return null;
+  }
+  
+  private List<String> getInactiveConceptsForRefset(RefsetService refsetService,
+    TerminologyHandler terminologyHandler, Refset refset) throws Exception {
+    
+    List<String> inactiveConceptIds = new ArrayList<>();
+    List<Concept> inactiveConcepts = new ArrayList<>();
+    
+    for (int i = 0; i < refset.getMembers().size(); i++) {
+      List<String> conceptIdList = new ArrayList<>();
+      
+      for (int j = 0; i < refset.getMembers().size() && j < 500; i++, j++) {
+        conceptIdList.add(refset.getMembers().get(i).getConceptId());
+      }
+      try {
+        inactiveConcepts
+            .addAll(terminologyHandler.getInactiveConcepts(conceptIdList,
+                refset.getTerminology(), refset.getVersion()).getObjects());
+      } catch (Exception e) {
+        refset.setInactiveConceptCount(-1);
+        refsetService.updateRefset(refset);
+        Logger.getLogger(getClass())
+            .info("  problem determining inactive status on refset = "
+                + refset.getId());
+        e.printStackTrace();
+        continue;
+      }
+    }
+    
+    refset.setInactiveConceptCount(inactiveConcepts.size());
+
+    refsetService.updateRefset(refset);
+    
+    refsetService.commitClearBegin();
+
+    
+    for (Concept cpt : inactiveConcepts) {
+      inactiveConceptIds.add(cpt.getTerminologyId()); 
+    }
+     
+    
+    return inactiveConceptIds;
+  }
+  
   /* see superclass */
   @Override
   @PUT
@@ -2539,7 +2645,12 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       addLogEntry(refsetService, userName, "FINISH MIGRATION",
           refset.getProject().getId(), refset.getId(), refset.toString());
 
+      // reset inactive count to 0 to remove warning banner
+      refset.setInactiveConceptCount(0);
+      refsetService.updateRefset(refset);
+      
       refsetService.commit();
+      
       return refset;
 
     } catch (Exception e) {
