@@ -86,13 +86,13 @@ public interface ReleaseServiceRest {
   /**
    * Begin refset releases.
    *
+   * @param projectId the project id
    * @param refsetIds the refset ids
    * @param effectiveTime the effective time
    * @param authToken the auth token
-   * @return the validation result
    * @throws Exception the exception
    */
-  public ValidationResult beginRefsetReleases(String[] refsetIds,
+  public void beginRefsetReleases(Long projectId, String[] refsetIds,
     String effectiveTime, String authToken) throws Exception;
 
   /**
@@ -107,14 +107,14 @@ public interface ReleaseServiceRest {
     throws Exception;
 
   /**
-   * Perform refset release.
+   * Validate refset releases.
    *
+   * @param projectId the project id
    * @param refsetIds the refset ids
    * @param authToken the auth token
-   * @return the validation result
    * @throws Exception the exception
    */
-  public ValidationResult validateRefsetReleases(String[] refsetIds,
+  public void validateRefsetReleases(Long projectId, String[] refsetIds,
     String authToken) throws Exception;
 
   /**
@@ -132,13 +132,13 @@ public interface ReleaseServiceRest {
   /**
    * Beta refset releases.
    *
+   * @param projectId the project id
    * @param refsetIds the refset ids
    * @param ioHandlerId the io handler id
    * @param authToken the auth token
-   * @return the validation result
    * @throws Exception the exception
    */
-  public ValidationResult betaRefsetReleases(String[] refsetIds,
+  public void betaRefsetReleases(Long projectId, String[] refsetIds,
     String ioHandlerId, String authToken) throws Exception;
 
   /**
@@ -155,12 +155,13 @@ public interface ReleaseServiceRest {
   /**
    * Finish refset releases.
    *
+   * @param projectId the project id
    * @param refsetIds the refset ids
    * @param authToken the auth token
    * @return the validation result
    * @throws Exception the exception
    */
-  public ValidationResult finishRefsetReleases(String[] refsetIds,
+  public void finishRefsetReleases(Long projectId, String[] refsetIds,
     String authToken) throws Exception;
 
   /**
@@ -176,12 +177,12 @@ public interface ReleaseServiceRest {
   /**
    * Cancel refset releases.
    *
+   * @param projectId the project id
    * @param refsetIds the refset ids
    * @param authToken the auth token
-   * @return the validation result
    * @throws Exception the exception
    */
-  public ValidationResult cancelRefsetReleases(String[] refsetIds,
+  public void cancelRefsetReleases(Long projectId, String[] refsetIds,
     String authToken) throws Exception;
 
   /**
@@ -304,6 +305,18 @@ public interface ReleaseServiceRest {
    * @throws Exception the exception
    */
   public StringList getBulkProcessProgress(String[] refsetIds, String process,
+    String authToken) throws Exception;
+
+  /**
+   * Gets the bulk process results.
+   *
+   * @param projectId the project id
+   * @param process the process
+   * @param authToken the auth token
+   * @return the bulk process results
+   * @throws Exception the exception
+   */
+  public ValidationResult getBulkProcessResults(Long projectId, String process,
     String authToken) throws Exception;
 
 }
