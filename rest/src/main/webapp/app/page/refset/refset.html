@@ -14,6 +14,10 @@
           ng-options="item for item in roleOptions"></select>
         <span ng-show="roleOptions.length == 1">{{projects.role}}</span>
       </span>
+      <button class="btn btn-xs btn-primary" 
+        ng-show="showInactiveLookupButton()"
+        ng-click="getInactiveConcepts()"
+        title="Click to search for inactivations.  Last updated {{inactiveDate}}. ">Lookup Inactivations</button>
     </h6>
   </div>
 </div>

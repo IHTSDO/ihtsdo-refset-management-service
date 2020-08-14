@@ -6,13 +6,14 @@ tsApp
       '$scope',
       '$http',
       '$location',
+      '$window',
       'tabService',
       'utilService',
       'securityService',
       'projectService',
       'refsetService',
       'workflowService',
-      function($scope, $http, $location, tabService, utilService, securityService, projectService,
+      function($scope, $http, $location, $window, tabService, utilService, securityService, projectService,
         refsetService, workflowService) {
         console.debug('configure RefsetCtrl');
 
@@ -186,6 +187,35 @@ tsApp
           projectService.fireProjectChanged($scope.project);
         };
 
+        $scope.getInactiveConcepts = function() {
+          if ($window
+            .confirm('Checking for inactive concepts may take a couple of minutes.  Are you sure you want to proceed?')) {
+            refsetService.getInactiveConcepts($scope.project.id).then(// Success
+            function(data) {  
+               var msg = '';
+               for (var i = 0; i < data.totalCount; i++) {
+                 msg += data.strings[i];
+                 msg += '\n';
+               }
+               projectService.fireProjectChanged($scope.project);
+               $scope.getProjects();
+               if (data.totalCount > 0) {
+                 $window.alert('The following refsets have inactive concepts:\n ' + msg);
+               } else {
+                 $window.alert('None of the refsets have inactive concepts.  No further action is required.');
+               }
+            });
+          }
+        }
+
+        $scope.showInactiveLookupButton = function() {
+          if (!$scope.project) {
+            return false;
+          }
+          $scope.inactiveDate  = utilService.toDate($scope.project.inactiveLastModified);
+          return ($scope.project.terminologyHandlerKey == 'MANAGED-SERVICE');           
+        }
+        
         // Lookup terminologies, names, and versions
         $scope.getTerminologyMetadata = function(project) {
           projectService.getTerminologyEditions(project).then(

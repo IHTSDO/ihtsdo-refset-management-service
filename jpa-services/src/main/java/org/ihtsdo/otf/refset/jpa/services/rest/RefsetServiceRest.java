@@ -751,4 +751,15 @@ public interface RefsetServiceRest {
   public String getMigrationFileNames(String projectId, String refsetId, String authToken)
     throws Exception;
 
+  /**
+   * Returns refsets with their inactive concept counts.
+   *
+   * @param projectId the project id
+   * @param authToken the auth token
+   * @return the inactive concepts
+   * @throws Exception the exception
+   */
+  public StringList getInactiveConceptRefsets(Long projectId, String authToken)
+    throws Exception;
+
 }
