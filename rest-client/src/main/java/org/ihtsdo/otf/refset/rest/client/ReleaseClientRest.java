@@ -152,7 +152,7 @@ public class ReleaseClientRest extends RootClientRest
   }
 
   @Override
-  public Refset finishRefsetRelease(Long refsetId, String authToken)
+  public Refset finishRefsetRelease(Long refsetId, Boolean override, String authToken)
     throws Exception {
     Logger.getLogger(getClass())
         .debug("Release Client - finish refset release");

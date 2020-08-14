@@ -368,7 +368,7 @@ public class RefsetReleaseTest extends RestSupport {
     releaseService.betaRefsetRelease(refset1.getId(), "DEFAULT",
         adminAuthToken);
     // Finish release
-    releaseService.finishRefsetRelease(refset1.getId(), adminAuthToken);
+    releaseService.finishRefsetRelease(refset1.getId(), null, adminAuthToken);
     // clean up
     refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
   }
@@ -397,7 +397,7 @@ public class RefsetReleaseTest extends RestSupport {
     releaseService.betaRefsetRelease(refset1.getId(), "DEFAULT",
         adminAuthToken);
     // Finish release
-    releaseService.finishRefsetRelease(refset1.getId(), adminAuthToken);
+    releaseService.finishRefsetRelease(refset1.getId(), null, adminAuthToken);
     // Add 5 members to refset
     ConceptRefsetMemberJpa member1 =
         makeConceptRefsetMember("member1", "123", refset1);
@@ -425,7 +425,7 @@ public class RefsetReleaseTest extends RestSupport {
     releaseService.betaRefsetRelease(refset1.getId(), "DEFAULT",
         adminAuthToken);
     // Finish release
-    releaseService.finishRefsetRelease(refset1.getId(), adminAuthToken);
+    releaseService.finishRefsetRelease(refset1.getId(), null, adminAuthToken);
     // clean up
     refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
   }
@@ -684,7 +684,7 @@ public class RefsetReleaseTest extends RestSupport {
     assertEquals(1, releases.getCount());
 
     // Now finish the release
-    releaseService.finishRefsetRelease(refset.getId(), adminAuthToken);
+    releaseService.finishRefsetRelease(refset.getId(), null, adminAuthToken);
 
     /*
      * Following completed of release
@@ -776,7 +776,7 @@ public class RefsetReleaseTest extends RestSupport {
     releaseService.resumeRelease(refset.getId(), adminAuthToken);
 
     // Finish release
-    releaseService.finishRefsetRelease(refset.getId(), adminAuthToken);
+    releaseService.finishRefsetRelease(refset.getId(), null, adminAuthToken);
 
     // clean up
     refsetService.removeRefset(refset.getId(), true, adminAuthToken);
@@ -829,7 +829,7 @@ public class RefsetReleaseTest extends RestSupport {
     Refset release1 = releaseService.betaRefsetRelease(refset1.getId(),
         "DEFAULT", adminAuthToken);
     // Finish release
-    releaseService.finishRefsetRelease(refset1.getId(), adminAuthToken);
+    releaseService.finishRefsetRelease(refset1.getId(), null, adminAuthToken);
 
     Map<String, Boolean> activeMap = new HashMap<>();
     Map<String, String> etMap = new HashMap<>();
@@ -858,7 +858,7 @@ public class RefsetReleaseTest extends RestSupport {
     Refset release2 = releaseService.betaRefsetRelease(refset1.getId(),
         "DEFAULT", adminAuthToken);
     // Finish release
-    releaseService.finishRefsetRelease(refset1.getId(), adminAuthToken);
+    releaseService.finishRefsetRelease(refset1.getId(), null, adminAuthToken);
     activeMap = new HashMap<>();
     etMap = new HashMap<>();
     activeMap.put("10000001", true);
@@ -899,7 +899,7 @@ public class RefsetReleaseTest extends RestSupport {
     Refset release3 = releaseService.betaRefsetRelease(refset1.getId(),
         "DEFAULT", adminAuthToken);
     // Finish release
-    releaseService.finishRefsetRelease(refset1.getId(), adminAuthToken);
+    releaseService.finishRefsetRelease(refset1.getId(), null, adminAuthToken);
     activeMap = new HashMap<>();
     etMap = new HashMap<>();
     activeMap.put("10000001", false);
@@ -941,7 +941,7 @@ public class RefsetReleaseTest extends RestSupport {
     Refset release4 = releaseService.betaRefsetRelease(refset1.getId(),
         "DEFAULT", adminAuthToken);
     // Finish release
-    releaseService.finishRefsetRelease(refset1.getId(), adminAuthToken);
+    releaseService.finishRefsetRelease(refset1.getId(), null, adminAuthToken);
 
     activeMap = new HashMap<>();
     etMap = new HashMap<>();
@@ -998,7 +998,7 @@ public class RefsetReleaseTest extends RestSupport {
     Refset release1 = releaseService.betaRefsetRelease(refset1.getId(),
         "DEFAULT", adminAuthToken);
     // Finish release
-    releaseService.finishRefsetRelease(refset1.getId(), adminAuthToken);
+    releaseService.finishRefsetRelease(refset1.getId(), null, adminAuthToken);
     Map<String, Boolean> activeMap = new HashMap<>();
     Map<String, String> etMap = new HashMap<>();
     activeMap.put("10519008", true);
@@ -1027,7 +1027,7 @@ public class RefsetReleaseTest extends RestSupport {
     Refset release2 = releaseService.betaRefsetRelease(refset1.getId(),
         "DEFAULT", adminAuthToken);
     // Finish release
-    releaseService.finishRefsetRelease(refset1.getId(), adminAuthToken);
+    releaseService.finishRefsetRelease(refset1.getId(), null, adminAuthToken);
     activeMap = new HashMap<>();
     etMap = new HashMap<>();
     activeMap.put("10519008", false);
@@ -1071,7 +1071,7 @@ public class RefsetReleaseTest extends RestSupport {
     Refset release3 = releaseService.betaRefsetRelease(refset1.getId(),
         "DEFAULT", adminAuthToken);
     // Finish release
-    releaseService.finishRefsetRelease(refset1.getId(), adminAuthToken);
+    releaseService.finishRefsetRelease(refset1.getId(), null, adminAuthToken);
     activeMap = new HashMap<>();
     etMap = new HashMap<>();
     activeMap.put("10519008", true);
@@ -1107,7 +1107,7 @@ public class RefsetReleaseTest extends RestSupport {
     Refset release4 = releaseService.betaRefsetRelease(refset1.getId(),
         "DEFAULT", adminAuthToken);
     // Finish release
-    releaseService.finishRefsetRelease(refset1.getId(), adminAuthToken);
+    releaseService.finishRefsetRelease(refset1.getId(), null, adminAuthToken);
     activeMap = new HashMap<>();
     etMap = new HashMap<>();
     activeMap.put("10519008", true);
@@ -1148,7 +1148,7 @@ public class RefsetReleaseTest extends RestSupport {
     Refset release5 = releaseService.betaRefsetRelease(refset1.getId(),
         "DEFAULT", adminAuthToken);
     // Finish release
-    releaseService.finishRefsetRelease(refset1.getId(), adminAuthToken);
+    releaseService.finishRefsetRelease(refset1.getId(), null, adminAuthToken);
     activeMap = new HashMap<>();
     etMap = new HashMap<>();
     activeMap.put("10519008", true);

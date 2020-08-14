@@ -7,6 +7,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.Date;
+import java.util.List;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -62,6 +63,7 @@ import org.ihtsdo.otf.refset.services.RefsetService;
 import org.ihtsdo.otf.refset.services.ReleaseService;
 import org.ihtsdo.otf.refset.services.SecurityService;
 import org.ihtsdo.otf.refset.services.TranslationService;
+import org.ihtsdo.otf.refset.services.handlers.TerminologyHandler;
 import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 
 import com.wordnik.swagger.annotations.Api;
@@ -751,23 +753,25 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl
   @ApiOperation(value = "Finish refset release", notes = "Finishes the release process by marking the staging release for refset as PUBLISHED", response = RefsetJpa.class)
   public Refset finishRefsetRelease(
     @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
+    @ApiParam(value = "Override, e.g. true/false/null", required = false) @QueryParam("override") Boolean override,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
     Logger.getLogger(getClass())
-        .info("RESTful call GET (Release): /refset/finish " + refsetId);
+        .info("RESTful call GET (Release): /refset/finish " + refsetId + ", " + override);
 
     final PerformRefsetPublishAlgorithm algo =
-        new PerformRefsetPublishAlgorithm();
+        new PerformRefsetPublishAlgorithm(override == null ? false : override);
     algo.setTransactionPerOperation(false);
     algo.beginTransaction();
     try {
       // Load refset
       final Refset refset = algo.getRefset(refsetId);
+      
       if (refset == null) {
         throw new Exception("Invalid refset id " + refsetId);
       }
-
+      
       // Authorize the call
       final String userName =
           authorizeProject(algo, refset.getProject().getId(), securityService,
