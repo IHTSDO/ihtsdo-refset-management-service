@@ -3156,31 +3156,7 @@ tsApp
 
                   // Start the progress lookup loop
                   $scope.startProcessProgressLookup('BEGIN');                  
-
-                    // Do nothing - all validation handling handled by progress tracker                    
-//                    handleBulkMultiMessages($scope.errors, data.errors);
-//                    handleBulkMultiMessages($scope.warnings, data.warnings);
-//                    
-//                    for(refset of $scope.refsets){
-//                      
-//                      if(!$scope.selectedRefsetTerminologyIds.includes(refset.terminologyId)){
-//                        continue;
-//                      }
-//                      
-//                      var refsetHasError = false;
-//                      for(error of data.errors){
-//                        if(error.includes(refset.terminologyId)){
-//                        refsetHasError = true;
-//                        break;
-//                      }
-//                    }
-//                    if(refsetHasError){
-//                      $scope.failedRefsetIds.push(refset.id);
-//                    }
-//                  }
-//                    
-//                    // Relookup refsets to catch any status changes
-//                    lookupRefsets();                    
+                  
                   },
                   // Error
                   function(data) {
@@ -3207,34 +3183,7 @@ tsApp
                       
                     // Start the progress lookup loop
                     $scope.startProcessProgressLookup('VALIDATE');                  
-
-                      // Do nothing - all validation handling handled by progress tracker
-//                      handleBulkMultiMessages($scope.errors, data.errors);
-//                      handleBulkMultiMessages($scope.warnings, data.warnings);
-//                      
-//                        for(refset of $scope.refsets){
-//                          
-//                          if(!$scope.selectedRefsetTerminologyIds.includes(refset.terminologyId)){
-//                            continue;
-//                          }
-//                          
-//                          var refsetHasError = false;
-//                          for(error of data.errors){
-//                            if(error.includes(refset.terminologyId)){
-//                            refsetHasError = true;
-//                            break;
-//                          }
-//                        }
-//                        if(refsetHasError){
-//                          $scope.failedRefsetIds.push(refset.id);
-//                        }
-//                        else {
-//                          $scope.validatedRefsetIds.push(refset.id);
-//                        }
-//                      }
-//                        
-//                      // Relookup refsets to catch any status changes
-//                      lookupRefsets();                    
+                  
                     },
                     // Error
                     function(data) {
@@ -3262,31 +3211,7 @@ tsApp
                       
                     // Start the progress lookup loop
                     $scope.startProcessProgressLookup('BETA');
-                      
-                      // Do nothing - all validation handling handled by progress tracker
-//                      handleBulkMultiMessages($scope.errors, data.errors);
-//                      handleBulkMultiMessages($scope.warnings, data.warnings);
-//                      
-//                        for(refset of $scope.refsets){
-//                          
-//                          if(!$scope.selectedRefsetTerminologyIds.includes(refset.terminologyId)){
-//                            continue;
-//                          }             
-//                          
-//                          var refsetHasError = false;
-//                          for(error of data.errors){
-//                            if(error.includes(refset.terminologyId)){
-//                            refsetHasError = true;
-//                            break;
-//                          }
-//                        }
-//                        if(refsetHasError){
-//                          $scope.failedRefsetIds.push(refset.id);
-//                        }
-//                      }
-//                        
-//                      // Relookup refsets to catch any status changes
-//                      lookupRefsets();                    
+                                         
                     },
                   // Error
                   function(data) {
@@ -3312,36 +3237,7 @@ tsApp
                   // Success
                   function(data) {
                     // Start the progress lookup loop
-                    $scope.startProcessProgressLookup('FINISH');                  
-                    
-                    
-                    // Do nothing - all validation handling handled by progress tracker
-//                    handleBulkMultiMessages($scope.errors, data.errors);
-//                    handleBulkMultiMessages($scope.warnings, data.warnings);
-//                    
-//                      for(refset of $scope.refsets){
-//                        
-//                        if(!$scope.selectedRefsetTerminologyIds.includes(refset.terminologyId)){
-//                          continue;
-//                        }            
-//                        
-//                        var refsetHasError = false;
-//                        for(error of data.errors){
-//                          if(error.includes(refset.terminologyId)){
-//                          refsetHasError = true;
-//                          break;
-//                        }
-//                      }
-//                      if(refsetHasError){
-//                        $scope.failedRefsetIds.push(refset.id);
-//                      }
-//                      else if ($scope.selectedRefsetTerminologyIds.includes(refset.terminologyId)){
-//                        $scope.publishedRefsetTerminologyIds.push(refset.terminologyId);
-//                      }
-//                    }
-//                      
-//                    // Relookup refsets to catch any status changes
-//                    lookupRefsets();                    
+                    $scope.startProcessProgressLookup('FINISH');                                    
 
                   },
                   // Error
@@ -3395,37 +3291,6 @@ tsApp
                   // Start the progress lookup loop
                   $scope.startProcessProgressLookup('CANCEL');  
                     
-                    // Do nothing - all validation handling handled by progress tracker
-//                    handleBulkMultiMessages($scope.errors, data.errors);
-//                    handleBulkMultiMessages($scope.warnings, data.warnings);
-//                    
-//                      for(refset of $scope.refsets){
-//                                                
-//                        if(!$scope.selectedRefsetTerminologyIds.includes(refset.terminologyId)){
-//                          continue;
-//                        }
-//                          
-//                        var refsetHasError = false;
-//                        for(error of data.errors){
-//                          if(error.includes(refset.terminologyId)){
-//                          refsetHasError = true;
-//                          break;
-//                        }
-//                      }
-//                      if(refsetHasError){
-//                        $scope.failedRefsetIds.push(refset.id);
-//                        $scope.validatedRefsetIds = $scope.validatedRefsetIds.filter(r => r !== refset.id);
-//                      }
-//                      // Successfully canceled refsets should no longer be considered failures or validated
-//                      else{
-//                        $scope.failedRefsetIds = $scope.failedRefsetIds.filter(r => r !== refset.id);
-//                        $scope.validatedRefsetIds = $scope.validatedRefsetIds.filter(r => r !== refset.id);
-//                      }                      
-//                    }
-//                      
-//                    // Re-lookup refsets to catch any status changes
-//                    lookupRefsets();                    
-//                    $scope.setButtonDisableValues();
                   },
                   // Error
                   function(data) {
