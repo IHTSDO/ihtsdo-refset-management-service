@@ -2956,8 +2956,11 @@ tsApp
                   $scope.validateDisabled = true;
                   $scope.betaDisabled = true;
                   $scope.finishDisabled = true;
+                  $scope.cancelDisabled = true;
                   
                   var selectedRefsetsReleaseStatus = '';
+                  var multipleTypesSelected = false;
+                  var readyForPublicationOrPublishedSelected = false;
                   
                   // All selected refsets must have the same status in order to do any bulk processing.
                   for (refset of $scope.refsets) {
@@ -2968,27 +2971,45 @@ tsApp
                         selectedRefsetsReleaseStatus = $scope.refsetStatus(refset);
                       }
                       else if(selectedRefsetsReleaseStatus !== $scope.refsetStatus(refset)){
-                        return;
+                        multipleTypesSelected = true;
                       }
                       
-                      // If any of the selected refsets failed validation, no actions are allowable
-                      if($scope.refsetStatus(refset) === 'FAILED'){
-                        return;
+                      if($scope.refsetStatus(refset) === 'READY_FOR_PUBLICATION' || $scope.refsetStatus(refset) === 'PUBLISHED'){
+                        readyForPublicationOrPublishedSelected = true;
                       }
                     }
                   }
                   
-                  if(selectedRefsetsReleaseStatus === 'READY_FOR_PUBLICATION'){
-                    $scope.startReleaseDisabled = false;
+                  // If multiple types are selected, only Cancel is allowed
+                  // As long as none of selected refsets are READY_FOR_PUBLICATION or PUBLISHED
+                  if (multipleTypesSelected && !readyForPublicationOrPublishedSelected){
+                    $scope.cancelDisabled = false;
+                    return;
                   }
-                  else if(selectedRefsetsReleaseStatus === 'STARTED'){
-                    $scope.validateDisabled = false;
-                  }
-                  else if(selectedRefsetsReleaseStatus === 'VALIDATED'){
-                    $scope.betaDisabled = false;
-                  }
-                  else if(selectedRefsetsReleaseStatus === 'BETA'){
-                    $scope.finishDisabled = false;
+                  
+                  // Where there is only one type of status selected, enable buttons accordingly
+                  if(!multipleTypesSelected){
+                    if(selectedRefsetsReleaseStatus === 'READY_FOR_PUBLICATION'){
+                      $scope.startReleaseDisabled = false;
+                    }
+                    else if(selectedRefsetsReleaseStatus === 'STARTED'){
+                      $scope.validateDisabled = false;
+                      $scope.cancelDisabled = false;
+                    }
+                    else if(selectedRefsetsReleaseStatus === 'FAILED'){
+                      $scope.cancelDisabled = false;
+                    }
+                    else if(selectedRefsetsReleaseStatus === 'VALIDATED'){
+                      $scope.betaDisabled = false;
+                      $scope.cancelDisabled = false;
+                    }
+                    else if(selectedRefsetsReleaseStatus === 'BETA'){
+                      $scope.finishDisabled = false;
+                      $scope.cancelDisabled = false;
+                    }
+                    else if(selectedRefsetsReleaseStatus === 'PUBLISHED'){
+                      // No actions are available for PUBLISHED refsets
+                    }
                   }
                 }
                 
@@ -3255,10 +3276,6 @@ tsApp
                   //Clear out errors and warnings from previous runs
                   $scope.errors = [];
                   $scope.warnings = [];
-                  
-                  for(refsetId of $scope.getSelectedRefsetIds()){
-                    $scope.refsetIdsInProcessProgress.push(refsetId);
-                  }
                                           
                   var selectedRefsetIds = [];
                   
@@ -3272,18 +3289,28 @@ tsApp
                       selectedRefsetIds.push(refset.id);
                     }
                     // Refsets that are not in publication process (i.e. failed during begin release)
-                    // should just be removed from the Failed and Validated lists
+                    // should just be removed from the Failed and Validated lists, 
+                    // and added to the Completed list
                     else{
                       $scope.failedRefsetIds = $scope.failedRefsetIds.filter(r => r !== refset.id);
                       $scope.validatedRefsetIds = $scope.validatedRefsetIds.filter(r => r !== refset.id);
+                      $scope.refsetIdsProcessCompleted.push(refset.id);
                     }
                   }
 
                   
                   // If all selected refsets were not in the publication process, exit now
                   if(selectedRefsetIds.length === 0){
+                    lookupRefsets();       
+                    $scope.setButtonDisableValues();  
                     return;
-                  }                
+                  }
+                  // Otherwise, add all in publication refsets to the in progress list
+                  else{
+                    for(refsetId of selectedRefsetIds){
+                      $scope.refsetIdsInProcessProgress.push(refsetId);
+                    }
+                  }
                   
                   releaseService.cancelRefsetReleases($scope.project.id, selectedRefsetIds).then(
                   // Success
