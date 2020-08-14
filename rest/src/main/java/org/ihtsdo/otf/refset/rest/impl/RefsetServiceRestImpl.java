@@ -393,9 +393,6 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
           projectId, securityService, authToken,
           "return inactive members", UserRole.AUTHOR);
 
-      final TerminologyHandler terminologyHandler = refsetService
-          .getTerminologyHandler(project, getHeaders(headers));
-      
       
       // for each refset in project
       for (int k = 0; k < refsets.size(); k++) {
@@ -406,7 +403,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
           continue;
         }
        
-        if(getInactiveConceptsForRefset(refsetService, terminologyHandler, refset).size() > 0) {      
+        if(refsetService.getInactiveConceptsForRefset(refset).size() > 0) {      
           refsetList.addObject(refset.getName());
         }
       }
@@ -428,47 +425,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
     return null;
   }
   
-  private List<String> getInactiveConceptsForRefset(RefsetService refsetService,
-    TerminologyHandler terminologyHandler, Refset refset) throws Exception {
-    
-    List<String> inactiveConceptIds = new ArrayList<>();
-    List<Concept> inactiveConcepts = new ArrayList<>();
-    
-    for (int i = 0; i < refset.getMembers().size(); i++) {
-      List<String> conceptIdList = new ArrayList<>();
-      
-      for (int j = 0; i < refset.getMembers().size() && j < 500; i++, j++) {
-        conceptIdList.add(refset.getMembers().get(i).getConceptId());
-      }
-      try {
-        inactiveConcepts
-            .addAll(terminologyHandler.getInactiveConcepts(conceptIdList,
-                refset.getTerminology(), refset.getVersion()).getObjects());
-      } catch (Exception e) {
-        refset.setInactiveConceptCount(-1);
-        refsetService.updateRefset(refset);
-        Logger.getLogger(getClass())
-            .info("  problem determining inactive status on refset = "
-                + refset.getId());
-        e.printStackTrace();
-        continue;
-      }
-    }
-    
-    refset.setInactiveConceptCount(inactiveConcepts.size());
 
-    refsetService.updateRefset(refset);
-    
-    refsetService.commitClearBegin();
-
-    
-    for (Concept cpt : inactiveConcepts) {
-      inactiveConceptIds.add(cpt.getTerminologyId()); 
-    }
-     
-    
-    return inactiveConceptIds;
-  }
   
   /* see superclass */
   @Override
