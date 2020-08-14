@@ -1,5 +1,5 @@
-/**
- * Copyright 2015 West Coast Informatics, LLC
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.jpa.algo;
 
@@ -52,6 +52,10 @@ public class PerformRefsetPublishAlgorithm extends RefsetServiceJpa
 
   /** The staged refset change. */
   private StagedRefsetChange stagedRefsetChange;
+  
+  private boolean override;
+
+
 
   /**
    * Instantiates an empty {@link PerformRefsetPublishAlgorithm}.
@@ -59,6 +63,11 @@ public class PerformRefsetPublishAlgorithm extends RefsetServiceJpa
    */
   public PerformRefsetPublishAlgorithm() throws Exception {
     super();
+  }
+  
+  public PerformRefsetPublishAlgorithm(boolean override) throws Exception {
+    super();
+    this.override = override;
   }
 
   /* see superclass */
@@ -74,6 +83,12 @@ public class PerformRefsetPublishAlgorithm extends RefsetServiceJpa
         .equals(stagedRefsetChange.getStagedRefset().getWorkflowStatus())) {
       throw new Exception(
           "Refset must be staged and with a workflow status of BETA");
+    }
+    if (!override) {
+      List<String> inactiveConcepts = getInactiveConceptsForRefset(refset);
+      if (inactiveConcepts.size() > 0) {
+        throw new LocalException("Inactive concepts!");
+      }
     }
   }
 
@@ -109,6 +124,11 @@ public class PerformRefsetPublishAlgorithm extends RefsetServiceJpa
     stagedRefset.setProvisional(false);
     stagedRefset.setInPublicationProcess(false);
     stagedRefset.setLastModifiedBy(userName);
+    
+    // user has proceeded with release, regardless of inactive concepts, so remove the inactive indicator flag
+    if (stagedRefset.getInactiveConceptCount() > 0) {
+      stagedRefset.setInactiveConceptCount(0);
+    }
     updateRefset(stagedRefset);
 
     // Update the PUBLISHED refset release info published/planned flags.
@@ -213,4 +233,22 @@ public class PerformRefsetPublishAlgorithm extends RefsetServiceJpa
     return stagedRefset;
   }
 
+  /**
+   * Indicates whether or not override is the case.
+   *
+   * @return <code>true</code> if so, <code>false</code> otherwise
+   */
+  public boolean isOverride() {
+    return override;
+  }
+
+  /**
+   * Sets the override.
+   *
+   * @param override the override
+   */
+  public void setOverride(boolean override) {
+    this.override = override;
+  }
+  
 }
