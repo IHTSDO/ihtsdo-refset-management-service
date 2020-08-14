@@ -1,10 +1,11 @@
-/**
- * Copyright 2015 West Coast Informatics, LLC
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.services;
 
 import org.ihtsdo.otf.refset.ReleaseArtifact;
 import org.ihtsdo.otf.refset.ReleaseInfo;
+import org.ihtsdo.otf.refset.ValidationResult;
 
 /**
  * Generically represents a service for accessing {@link ReleaseInfo}.
@@ -41,7 +42,7 @@ public interface ReleaseService extends ProjectService {
    * Update release info.
    *
    * @param releaseInfo the release info
-   * @throws Exception
+   * @throws Exception the exception
    */
   public void updateReleaseInfo(ReleaseInfo releaseInfo) throws Exception;
 
@@ -89,4 +90,64 @@ public interface ReleaseService extends ProjectService {
    */
   public ReleaseArtifact getReleaseArtifact(Long id) throws Exception;
 
+  /**
+   * Start bulk process.
+   *
+   * @param refsetId the refset id
+   * @param process the process
+   * @throws Exception the exception
+   */
+  public void startBulkProcess(Long refsetId, String process) throws Exception;
+
+  /**
+   * Finish bulk process.
+   *
+   * @param refsetId the refset id
+   * @param process the process
+   * @throws Exception the exception
+   */
+  public void finishBulkProcess(Long refsetId, String process) throws Exception;
+
+  /**
+   * Gets the bulk process status.
+   *
+   * @param refsetId the refset id
+   * @param process the process
+   * @return the bulk process status
+   * @throws Exception the exception
+   */
+  public Boolean getBulkProcessStatus(Long refsetId, String process)
+    throws Exception;
+
+  /**
+   * Sets the bulk process validation result.
+   *
+   * @param projectId the project id
+   * @param process the process
+   * @param validationResult the validation result
+   * @throws Exception the exception
+   */
+  public void setBulkProcessValidationResult(Long projectId, String process,
+    ValidationResult validationResult) throws Exception;
+  
+  /**
+   * Gets the bulk process validation result.
+   *
+   * @param projectId the project id
+   * @param process the process
+   * @return the bulk process validation result
+   * @throws Exception the exception
+   */
+  public ValidationResult getBulkProcessValidationResult(Long projectId,
+    String process) throws Exception;
+
+  /**
+   * Removes the bulk process validation result.
+   *
+   * @param projectId the project id
+   * @param process the process
+   * @throws Exception the exception
+   */
+  public void removeBulkProcessValidationResult(Long projectId, String process)
+    throws Exception;
 }
