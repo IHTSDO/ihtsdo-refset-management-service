@@ -2456,4 +2456,49 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
     }
   }  
   
+  /* see superclass */
+  @Override
+  public List<String> getInactiveConceptsForRefset(Refset refset) throws Exception {
+    
+    final TerminologyHandler terminologyHandler = getTerminologyHandler(refset.getProject(), headers);
+    
+    
+    List<String> inactiveConceptIds = new ArrayList<>();
+    List<Concept> inactiveConcepts = new ArrayList<>();
+    
+    for (int i = 0; i < refset.getMembers().size(); i++) {
+      List<String> conceptIdList = new ArrayList<>();
+      
+      for (int j = 0; i < refset.getMembers().size() && j < 500; i++, j++) {
+        conceptIdList.add(refset.getMembers().get(i).getConceptId());
+      }
+      try {
+        inactiveConcepts
+            .addAll(terminologyHandler.getInactiveConcepts(conceptIdList,
+                refset.getTerminology(), refset.getVersion()).getObjects());
+      } catch (Exception e) {
+        refset.setInactiveConceptCount(-1);
+        updateRefset(refset);
+        Logger.getLogger(getClass())
+            .info("  problem determining inactive status on refset = "
+                + refset.getId());
+        e.printStackTrace();
+        continue;
+      }
+    }
+    
+    refset.setInactiveConceptCount(inactiveConcepts.size());
+
+    updateRefset(refset);
+    
+    //commitClearBegin();
+
+    
+    for (Concept cpt : inactiveConcepts) {
+      inactiveConceptIds.add(cpt.getTerminologyId()); 
+    }
+     
+    
+    return inactiveConceptIds;
+  }
 }

@@ -542,7 +542,16 @@ public interface RefsetService extends ReleaseService {
    * @return the FSN name for term
    * @throws Exception the exception
    */
-  String getFSNNameForConcept(String terminologyId) throws Exception;
+  public String getFSNNameForConcept(String terminologyId) throws Exception;
+
+  /**
+   * Returns the inactive concepts for refset.
+   *
+   * @param refset the refset
+   * @return the inactive concepts for refset
+   * @throws Exception the exception
+   */
+  public List<String> getInactiveConceptsForRefset(Refset refset) throws Exception;
 
 
 }
