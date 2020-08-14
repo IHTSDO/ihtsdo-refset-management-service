@@ -242,6 +242,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
     workflowStatus = refset.getWorkflowStatus();
     project = refset.getProject();
     localSet = refset.isLocalSet();
+    inactiveConceptCount = refset.getInactiveConceptCount();
     enabledFeedbackEvents = new HashSet<>(refset.getEnabledFeedbackEvents());
     for (DefinitionClause definitionClause : refset.getDefinitionClauses()) {
       getDefinitionClauses().add(new DefinitionClauseJpa(definitionClause));
@@ -955,6 +956,11 @@ public class RefsetJpa extends AbstractComponent implements Refset {
       if (other.namespace != null)
         return false;
     } else if (!namespace.equals(other.namespace))
+      return false;
+    if (inactiveConceptCount == null) {
+      if (other.inactiveConceptCount != null)
+        return false;
+    } else if (!inactiveConceptCount.equals(other.inactiveConceptCount))
       return false;
     if (domain == null) {
       if (other.domain != null)
