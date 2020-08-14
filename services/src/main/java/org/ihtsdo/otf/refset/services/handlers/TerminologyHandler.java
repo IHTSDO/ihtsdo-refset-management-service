@@ -299,4 +299,16 @@ public interface TerminologyHandler extends Configurable {
    * @throws Exception the exception
    */
   public int getMaxBatchLookupSize() throws Exception;
+
+  /**
+   * Returns the inactive concepts.
+   *
+   * @param terminologyIds the terminology ids
+   * @param terminology the terminology
+   * @param version the version
+   * @return the inactive concepts
+   * @throws Exception the exception
+   */
+  public ConceptList getInactiveConcepts(List<String> terminologyIds,
+    String terminology, String version) throws Exception;
 }

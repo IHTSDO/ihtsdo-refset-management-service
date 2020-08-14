@@ -1915,4 +1915,11 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     return maxBatchLookupSize;
   }
 
+  @Override
+  public ConceptList getInactiveConcepts(List<String> terminologyIds,
+    String terminology, String version) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
 }

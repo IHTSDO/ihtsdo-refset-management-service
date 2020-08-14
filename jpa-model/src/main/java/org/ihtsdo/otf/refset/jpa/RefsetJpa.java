@@ -202,6 +202,12 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   @IndexedEmbedded(targetElement = RefsetNoteJpa.class)
   private List<Note> notes = new ArrayList<>();
 
+  /** The inactive concept count. */
+  @Column(nullable = true)
+  private Integer inactiveConceptCount;
+
+
+
   /**
    * Instantiates an empty {@link RefsetJpa}.
    */
@@ -851,6 +857,18 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   public void setDomain(String domain) {
     this.domain = domain;
   }
+  
+  /* see superclass */
+  @Override
+  public Integer getInactiveConceptCount() {
+    return inactiveConceptCount;
+  }
+
+  /* see superclass */
+  @Override
+  public void setInactiveConceptCount(Integer inactiveConceptCount) {
+    this.inactiveConceptCount = inactiveConceptCount;
+  }
 
   /* see superclass */
   @Override
@@ -871,6 +889,9 @@ public class RefsetJpa extends AbstractComponent implements Refset {
     result = prime * result + (localSet ? 1231 : 1237);
     result =
         prime * result + ((terminology == null) ? 0 : terminology.hashCode());
+    result =
+        prime * result
+            + ((inactiveConceptCount == null) ? 0 : inactiveConceptCount.hashCode());
     // not version
     result = prime * result + ((name == null) ? 0 : name.hashCode());
     result = prime * result + ((namespace == null) ? 0 : namespace.hashCode());
@@ -964,7 +985,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
         + definitionClauses + ", extUrl=" + externalUrl + ", workflowStatus="
         + workflowStatus + ", domain=" + domain + ", project="
         + (project == null ? null : project.getId()) + ", localSet=" + localSet
-        + "]";
+        + ", inactiveConceptCount=" + getInactiveConceptCount() + "]";
   }
 
 }

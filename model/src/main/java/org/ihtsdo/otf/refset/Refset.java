@@ -524,4 +524,18 @@ public interface Refset extends Component, Searchable {
    */
   public void setTranslated(boolean translated);
 
+  /**
+   * Returns the inactive concept count.
+   *
+   * @return the inactive concept count
+   */
+  public Integer getInactiveConceptCount();
+
+  /**
+   * Sets the inactive concept count.
+   *
+   * @param inactiveConceptCount the inactive concept count
+   */
+  public void setInactiveConceptCount(Integer inactiveConceptCount);
+
 }
