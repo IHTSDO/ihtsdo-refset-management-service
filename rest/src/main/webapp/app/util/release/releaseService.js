@@ -444,13 +444,13 @@ tsApp.service('releaseService', [
       return deferred.promise;
     };
 
-    this.finishRefsetRelease = function(refsetId) {
+    this.finishRefsetRelease = function(refsetId, override) {
       console.debug('finishRefsetRelease');
       var deferred = $q.defer();
 
       // get refset revision
       gpService.increment();
-      $http.get(releaseUrl + 'refset/finish?refsetId=' + refsetId).then(
+      $http.get(releaseUrl + 'refset/finish?refsetId=' + refsetId + (override != null ? '&override=' + override : '')).then(
       // success
       function(response) {
         console.debug('  finish refset release = ', response.data);
@@ -459,7 +459,7 @@ tsApp.service('releaseService', [
       },
       // error
       function(response) {
-        utilService.handleError(response);
+        //utilService.handleError(response);
         gpService.decrement();
         deferred.reject(response.data);
       });
