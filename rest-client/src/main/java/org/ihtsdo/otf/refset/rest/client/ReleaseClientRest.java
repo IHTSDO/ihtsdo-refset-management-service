@@ -83,28 +83,24 @@ public class ReleaseClientRest extends RootClientRest
   }
 
   @Override
-  public ValidationResult validateRefsetReleases(String[] refsetIds,
+  public void validateRefsetReleases(Long projectId, String[] refsetIds,
     String authToken) throws Exception {
     Logger.getLogger(getClass())
         .debug("Release Client - validate refset releases");
 
     Client client = ClientBuilder.newClient();
 
-    WebTarget target = client
-        .target(config.getProperty("base.url") + "/release/refset/validate");
+    WebTarget target = client.target(config.getProperty("base.url")
+        + "/release/refset/validate/" + projectId);
 
     Response response = target.request(MediaType.APPLICATION_XML)
-        .header("Authorization", authToken).put(Entity.xml(refsetIds));
+        .header("Authorization", authToken).post(Entity.xml(refsetIds));
 
-    String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
     } else {
       throw new Exception(response.toString());
     }
-    // converting to object
-    return (ValidationResultJpa) ConfigUtility.getGraphForString(resultString,
-        ValidationResultJpa.class);
   }
 
   @Override
@@ -135,7 +131,7 @@ public class ReleaseClientRest extends RootClientRest
   }
 
   @Override
-  public ValidationResult betaRefsetReleases(String[] refsetIds,
+  public void betaRefsetReleases(Long projectId, String[] refsetIds,
     String ioHandlerId, String authToken) throws Exception {
     Logger.getLogger(getClass()).debug("Release Client - beta refset releases");
     validateNotEmpty(ioHandlerId, "ioHandlerId");
@@ -143,20 +139,16 @@ public class ReleaseClientRest extends RootClientRest
     Client client = ClientBuilder.newClient();
 
     WebTarget target = client.target(config.getProperty("base.url")
-        + "/release/refsets/beta" + "?ioHandlerId=" + ioHandlerId);
+        + "/release/refsets/beta/" + projectId + "?ioHandlerId=" + ioHandlerId);
 
     Response response = target.request(MediaType.APPLICATION_XML)
-        .header("Authorization", authToken).put(Entity.xml(refsetIds));
+        .header("Authorization", authToken).post(Entity.xml(refsetIds));
 
-    String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
     } else {
       throw new Exception(response.toString());
     }
-    // converting to object
-    return (ValidationResultJpa) ConfigUtility.getGraphForString(resultString,
-        ValidationResultJpa.class);
   }
 
   @Override
@@ -186,28 +178,24 @@ public class ReleaseClientRest extends RootClientRest
   }
 
   @Override
-  public ValidationResult finishRefsetReleases(String[] refsetIds,
+  public void finishRefsetReleases(Long projectId, String[] refsetIds,
     String authToken) throws Exception {
     Logger.getLogger(getClass())
         .debug("Release Client - finish refset releases");
 
     Client client = ClientBuilder.newClient();
 
-    WebTarget target = client
-        .target(config.getProperty("base.url") + "/release/refsets/finish");
+    WebTarget target = client.target(config.getProperty("base.url")
+        + "/release/refsets/finish/" + projectId);
 
     Response response = target.request(MediaType.APPLICATION_XML)
-        .header("Authorization", authToken).put(Entity.xml(refsetIds));
+        .header("Authorization", authToken).post(Entity.xml(refsetIds));
 
-    String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
     } else {
       throw new Exception(response.toString());
     }
-    // converting to object
-    return (ValidationResultJpa) ConfigUtility.getGraphForString(resultString,
-        ValidationResultJpa.class);
   }
 
   @Override
@@ -314,30 +302,26 @@ public class ReleaseClientRest extends RootClientRest
   }
 
   @Override
-  public ValidationResult cancelRefsetReleases(String[] refsetIds, String authToken)
-    throws Exception {
+  public void cancelRefsetReleases(Long projectId, String[] refsetIds,
+    String authToken) throws Exception {
     Logger.getLogger(getClass())
         .debug("Release Client - cancel refset releases");
 
     Client client = ClientBuilder.newClient();
 
     WebTarget target = client.target(config.getProperty("base.url")
-        + "/release/refsets/cancel");
+        + "/release/refsets/cancel/" + projectId);
 
     Response response = target.request(MediaType.APPLICATION_XML)
-        .header("Authorization", authToken).put(Entity.xml(refsetIds));
+        .header("Authorization", authToken).post(Entity.xml(refsetIds));
 
-    String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
     } else {
       throw new Exception(response.toString());
     }
-    // converting to object
-    return (ValidationResultJpa) ConfigUtility.getGraphForString(resultString,
-        ValidationResultJpa.class);
   }
-  
+
   @Override
   public void cancelTranslationRelease(Long translationId, String authToken)
     throws Exception {
@@ -596,7 +580,7 @@ public class ReleaseClientRest extends RootClientRest
   }
 
   @Override
-  public ValidationResult beginRefsetReleases(String[] refsetIds,
+  public void beginRefsetReleases(Long projectId, String[] refsetIds,
     String effectiveTime, String authToken) throws Exception {
     Logger.getLogger(getClass())
         .debug("Release Client - begin refset releases");
@@ -606,21 +590,18 @@ public class ReleaseClientRest extends RootClientRest
     String encodedEffectiveTime =
         URLEncoder.encode(effectiveTime, "UTF-8").replaceAll("\\+", "%20");
 
-    WebTarget target = client.target(config.getProperty("base.url")
-        + "/release/refsets/begin" + "?effectiveTime=" + encodedEffectiveTime);
+    WebTarget target =
+        client.target(config.getProperty("base.url") + "/release/refsets/begin/"
+            + projectId + "?effectiveTime=" + encodedEffectiveTime);
 
     Response response = target.request(MediaType.APPLICATION_XML)
-        .header("Authorization", authToken).put(Entity.xml(refsetIds));
+        .header("Authorization", authToken).post(Entity.xml(refsetIds));
 
-    String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
     } else {
       throw new Exception(response.toString());
     }
-    // converting to object
-    return (ValidationResultJpa) ConfigUtility.getGraphForString(resultString,
-        ValidationResultJpa.class);
   }
 
   @Override
@@ -698,7 +679,7 @@ public class ReleaseClientRest extends RootClientRest
       throw new Exception("Unexpected status - " + response.getStatus());
     }
   }
-  
+
   @Override
   public StringList getBulkProcessProgress(String[] refsetIds, String process,
     String authToken) throws Exception {
@@ -722,6 +703,31 @@ public class ReleaseClientRest extends RootClientRest
     // converting to object
     return (StringList) ConfigUtility.getGraphForString(resultString,
         StringList.class);
-  }  
-  
+  }
+
+  @Override
+  public ValidationResult getBulkProcessResults(Long projectId, String process,
+    String authToken) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Release Client - get validation results for completed bulk process");
+    validateNotEmpty(process, "process");
+
+    Client client = ClientBuilder.newClient();
+    WebTarget target = client.target(config.getProperty("base.url")
+        + "/process/results/" + projectId + "?process=" + process);
+
+    Response response = target.request(MediaType.APPLICATION_XML)
+        .header("Authorization", authToken).get();
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+    // converting to object
+    return (ValidationResultJpa) ConfigUtility.getGraphForString(resultString,
+        ValidationResultJpa.class);
+  }
+
 }
