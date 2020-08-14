@@ -48,14 +48,16 @@
         </tr>
       </table>
     </div>
-    <!-- Errors and warnings-->
-    <span ng-show="warnings.length > 0">
-      <td>&nbsp;</td>
-      <td>
-        <div class="alert alert-warning" ng-repeat="warning in warnings">
-          {{warning}}</div>
-      </td>
+    <div class="row">&nbsp;</div>
+    <div class="row">
+      <!-- Errors and warnings-->
+      <span ng-show="warnings.length > 0">
+        <td>
+          <div class="alert alert-warning" ng-repeat="warning in warnings">
+            {{warning}}</div>
+        </td>
     </span>
+    </div>
   </div>
 </div>
 <div class="modal-footer">
