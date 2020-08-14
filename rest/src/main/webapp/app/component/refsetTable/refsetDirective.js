@@ -2718,7 +2718,20 @@ tsApp
                   },
                   // Error
                   function(data) {
-                    handleError($scope.errors, data);
+                    if ($window
+                      .confirm('This refset has inactive concepts.  \nIf you would like to continue the release, press OK.\n\nIf you would like to resolve these concepts:\n1.Press Cancel button here \n2.Press Cancel button on the Release dialog. \n3.Assign the refset to yourself \n4.Run migration on the refset \n5.Restart the release')) {
+                      releaseService.finishRefsetRelease(refset.id, true).then(
+                      // Success
+                      function(data) {
+                        $uibModalInstance.close(refset);
+                      },
+                      // Error
+                      function(data) {
+                        handleError($scope.errors, data);
+                      });
+                    } else {
+                      handleError($scope.errors, data);
+                    }
                   });
                 };
 

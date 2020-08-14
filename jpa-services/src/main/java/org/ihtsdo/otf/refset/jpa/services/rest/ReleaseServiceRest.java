@@ -145,11 +145,12 @@ public interface ReleaseServiceRest {
    * Finish refset release.
    *
    * @param refsetId the refset id
+   * @param override the override
    * @param authToken the auth token
    * @return the refset
    * @throws Exception the exception
    */
-  public Refset finishRefsetRelease(Long refsetId, String authToken)
+  public Refset finishRefsetRelease(Long refsetId, Boolean override, String authToken)
     throws Exception;
 
   /**
@@ -318,5 +319,6 @@ public interface ReleaseServiceRest {
    */
   public ValidationResult getBulkProcessResults(Long projectId, String process,
     String authToken) throws Exception;
+
 
 }
