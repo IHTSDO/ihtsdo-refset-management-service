@@ -1,5 +1,5 @@
-/**
- * Copyright 2015 West Coast Informatics, LLC
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 /*
  * 
@@ -15,6 +15,7 @@ import org.ihtsdo.otf.refset.ReleaseInfo;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
+import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 
 /**
@@ -83,6 +84,18 @@ public interface ReleaseServiceRest {
     String authToken) throws Exception;
 
   /**
+   * Begin refset releases.
+   *
+   * @param projectId the project id
+   * @param refsetIds the refset ids
+   * @param effectiveTime the effective time
+   * @param authToken the auth token
+   * @throws Exception the exception
+   */
+  public void beginRefsetReleases(Long projectId, String[] refsetIds,
+    String effectiveTime, String authToken) throws Exception;
+
+  /**
    * Perform refset release.
    *
    * @param refsetId the refset id
@@ -92,6 +105,17 @@ public interface ReleaseServiceRest {
    */
   public ValidationResult validateRefsetRelease(Long refsetId, String authToken)
     throws Exception;
+
+  /**
+   * Validate refset releases.
+   *
+   * @param projectId the project id
+   * @param refsetIds the refset ids
+   * @param authToken the auth token
+   * @throws Exception the exception
+   */
+  public void validateRefsetReleases(Long projectId, String[] refsetIds,
+    String authToken) throws Exception;
 
   /**
    * Perform refset beta.
@@ -106,6 +130,18 @@ public interface ReleaseServiceRest {
     String authToken) throws Exception;
 
   /**
+   * Beta refset releases.
+   *
+   * @param projectId the project id
+   * @param refsetIds the refset ids
+   * @param ioHandlerId the io handler id
+   * @param authToken the auth token
+   * @throws Exception the exception
+   */
+  public void betaRefsetReleases(Long projectId, String[] refsetIds,
+    String ioHandlerId, String authToken) throws Exception;
+
+  /**
    * Finish refset release.
    *
    * @param refsetId the refset id
@@ -117,6 +153,18 @@ public interface ReleaseServiceRest {
     throws Exception;
 
   /**
+   * Finish refset releases.
+   *
+   * @param projectId the project id
+   * @param refsetIds the refset ids
+   * @param authToken the auth token
+   * @return the validation result
+   * @throws Exception the exception
+   */
+  public void finishRefsetReleases(Long projectId, String[] refsetIds,
+    String authToken) throws Exception;
+
+  /**
    * Cancel refset release.
    *
    * @param refsetId the refset id
@@ -125,6 +173,17 @@ public interface ReleaseServiceRest {
    */
   public void cancelRefsetRelease(Long refsetId, String authToken)
     throws Exception;
+
+  /**
+   * Cancel refset releases.
+   *
+   * @param projectId the project id
+   * @param refsetIds the refset ids
+   * @param authToken the auth token
+   * @throws Exception the exception
+   */
+  public void cancelRefsetReleases(Long projectId, String[] refsetIds,
+    String authToken) throws Exception;
 
   /**
    * Begin translation release.
@@ -235,4 +294,29 @@ public interface ReleaseServiceRest {
    * @throws Exception the exception
    */
   void removeReleaseInfo(Long releaseInfoId, String authToken) throws Exception;
+
+  /**
+   * Gets the bulk process progress.
+   *
+   * @param refsetIds the refset ids
+   * @param process the process
+   * @param authToken the auth token
+   * @return the bulk process progress
+   * @throws Exception the exception
+   */
+  public StringList getBulkProcessProgress(String[] refsetIds, String process,
+    String authToken) throws Exception;
+
+  /**
+   * Gets the bulk process results.
+   *
+   * @param projectId the project id
+   * @param process the process
+   * @param authToken the auth token
+   * @return the bulk process results
+   * @throws Exception the exception
+   */
+  public ValidationResult getBulkProcessResults(Long projectId, String process,
+    String authToken) throws Exception;
+
 }

@@ -1,0 +1,115 @@
+<div class="modal-header">
+  <h4 style="display: inline">Bulk Release</h4>
+  <span style="float: right">
+    <i class="noul glyphicon glyphicon-remove" ng-click="close()"></i>
+  </span>
+</div>
+<div class="modal-body">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-2 col-xs-2">Release Date:</div>
+      <div class="col-md-8 col-xs-8">
+        <p class="input-group">
+          <span class="input-group-btn">
+            <input style="width: 150px" type="text" class="form-control"
+              uib-datepicker-popup="yyyyMMdd" ng-model="effectiveTime"
+              is-open="status.opened" datepicker-options="dateOptions"
+              date-disabled="disabled(date, mode)" ng-required="true"
+              close-text="Close" placeholder="YYYYMMDD" />
+            <button type="button" class="btn btn-xs btn-default"
+              ng-click="open($event)">
+              <i title="Calendar" class="glyphicon glyphicon-calendar"></i>
+            </button>
+          </span>
+        </p>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-2 col-xs-2">I/O Handler:</div>
+      <div class="col-md-8 col-xs-8">
+        <span ng-show="ioHandlers.length>1">
+          <select ng-model="selectedIoHandler"
+            ng-options="item.name for item in ioHandlers"></select>
+        </span>
+        <span ng-show="ioHandlers.length == 1">{{ioHandlers[0].name}}</span>
+      </div>
+    </div>
+    <div class="row">&nbsp;</div>
+    <div class="row">
+      <div class="col-md-2 col-xs-2">Select by:</div>
+      <div class="col-md-8 col-xs-8">
+        <span>
+          <select ng-model="selectedStage" ng-change="selectRefsets()"
+            ng-options="stage as stage for stage in stageList">
+          </select>
+        </span>
+      </div>
+    </div>
+    <div class="row">&nbsp;</div>
+    <div class="row">
+      <table class="table">
+        <thead class="table-select-row">
+          <tr>
+            <th></th>
+            <th>Refset Id</th>
+            <th>Name</th>
+            <th>Version</th>
+            <th>Last Release</th>
+            <th>Release Status</th>
+          </tr>
+        </thead>
+        <tbody class="table-select-row">
+          <tr ng-repeat="refset in refsets">
+            <td class="text-right">
+              <input type="checkbox"
+                ng-click="toggleSelection(refset); setButtonDisableValues()"
+                title="Select/Deselect Refset"
+                ng-checked="isRowSelected(refset)"
+                value="{{selectedRefsets[refset.id]}}">
+            </td>
+            <td>
+              {{refset.terminologyId}}
+            </td>
+            <td>{{refset.name}}</td>
+            <td>{{refset.version}}</td>
+            <td>{{getLastReleaseDate(refset)}}</td>
+            <td>
+              <span ng-show="refsetStatus(refset) != 'FAILED'">{{refsetStatus(refset)}}</span>
+              <span class="alert alert-danger"
+                ng-show="refsetStatus(refset) == 'FAILED'">{{refsetStatus(refset)}}</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <!-- Errors and warnings-->
+  <span ng-show="warnings.length > 0">
+    <td>&nbsp;</td>
+    <td>
+      <div class="alert alert-warning" ng-repeat="warning in warnings">
+        {{warning}}</div>
+    </td>
+  </span>
+  <span ng-show="errors.length > 0">
+    <td>&nbsp;</td>
+    <td>
+      <div class="alert alert-danger alert-error" ng-repeat="error in errors">
+        {{error}}</div>
+    </td>
+  </span>
+</div>
+<div class="modal-footer">
+  <button class="btn btn-xs btn-primary" ng-disabled="startReleaseDisabled"
+    ng-click="beginRefsetReleases()">Start Release</button>
+  <button class="btn btn-xs btn-primary" ng-disabled="validateDisabled"
+    ng-click="validateRefsetReleases()">Validate</button>
+  <button class="btn btn-xs btn-primary" ng-disabled="betaDisabled"
+    ng-click="betaRefsetReleases()">Beta</button>
+  <button class="btn btn-xs btn-primary" ng-disabled="finishDisabled"
+    ng-click="finishRefsetReleases()">Finish</button>
+  <button
+    confirm="Are you sure you want to cancel the releases for all selected refsets?"
+    class="btn btn-xs btn-warning" ng-disabled="cancelDisabled" ng-click="cancel()">Cancel</button>
+  <button class="btn" ng-click="close()">Close</button>
+</div>

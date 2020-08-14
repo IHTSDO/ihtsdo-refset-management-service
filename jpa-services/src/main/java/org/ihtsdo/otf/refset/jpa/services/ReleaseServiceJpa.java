@@ -3,9 +3,13 @@
  */
 package org.ihtsdo.otf.refset.jpa.services;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.ReleaseArtifact;
 import org.ihtsdo.otf.refset.ReleaseInfo;
+import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.jpa.ReleaseArtifactJpa;
 import org.ihtsdo.otf.refset.jpa.ReleaseInfoJpa;
 import org.ihtsdo.otf.refset.services.ReleaseService;
@@ -15,6 +19,17 @@ import org.ihtsdo.otf.refset.services.ReleaseService;
  */
 public class ReleaseServiceJpa extends ProjectServiceJpa
     implements ReleaseService {
+
+  /** The bulk process in progress map. */
+  static Map<String, Boolean> bulkInProgressMap = new ConcurrentHashMap<>();
+
+  /** The bulk validation result map. */
+  /*
+   * Store bulk validation results so they can be sent to the UI once the
+   * process is complete
+   */
+  static Map<String, ValidationResult> bulkValidationResultMap =
+      new ConcurrentHashMap<>();
 
   /**
    * Instantiates an empty {@link ReleaseServiceJpa}.
@@ -100,4 +115,55 @@ public class ReleaseServiceJpa extends ProjectServiceJpa
   public void handleLazyInit(ReleaseInfo releaseInfo) throws Exception {
     releaseInfo.getArtifacts().size();
   }
+
+  /* see superclass */
+  @Override
+  public void startBulkProcess(Long refsetId, String process) throws Exception {
+    bulkInProgressMap.put(refsetId + "|" + process, true);
+  }
+
+  /* see superclass */
+  @Override
+  public void finishBulkProcess(Long refsetId, String process)
+    throws Exception {
+    bulkInProgressMap.remove(refsetId + "|" + process);
+  }
+
+  /* see superclass */
+  @Override
+  public Boolean getBulkProcessStatus(Long refsetId, String process)
+    throws Exception {
+    if (bulkInProgressMap.containsKey(refsetId + "|" + process)) {
+      return true;
+    }
+    return false;
+  }
+
+  /* see superclass */
+  @Override
+  public void setBulkProcessValidationResult(Long projectId, String process,
+    ValidationResult validationResult) throws Exception {
+
+    bulkValidationResultMap.put(projectId + "|" + process, validationResult);
+
+  }
+
+  /* see superclass */
+  @Override
+  public ValidationResult getBulkProcessValidationResult(Long projectId,
+    String process) throws Exception {
+
+    return bulkValidationResultMap.get(projectId + "|" + process);
+
+  }
+
+  /* see superclass */
+  @Override
+  public void removeBulkProcessValidationResult(Long projectId, String process)
+    throws Exception {
+
+    bulkValidationResultMap.remove(projectId + "|" + process);
+
+  }
+
 }
