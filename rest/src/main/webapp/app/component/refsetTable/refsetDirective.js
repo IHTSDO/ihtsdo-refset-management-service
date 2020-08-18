@@ -3802,8 +3802,16 @@ tsApp
                         refsetService.addRefsetMembers($scope.save).then(
                           // Success
                           function(data) {
+                            // Add returned refset members to added list
                             for(var i = 0; i < data.members.length; i++) {
                               $scope.added.push(data.members[i].conceptId)
+                            }
+                            // Invalid concepts weren't added to refset.  
+                            //Anything that was in $scope.save that didn't make it to the final refset, add to invalid list
+                            for(member of $scope.save){
+                              if(!$scope.added.includes(member.conceptId)){
+                                $scope.invalid.push(member.conceptId);
+                              }
                             }
                             console.debug("members added ", data.members.length);
                             $scope.save = [];  // clear
