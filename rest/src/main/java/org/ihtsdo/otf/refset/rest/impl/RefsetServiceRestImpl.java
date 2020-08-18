@@ -9,10 +9,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Date;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -383,27 +383,26 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         new RefsetServiceJpa(getHeaders(headers));
     refsetService.setTransactionPerOperation(false);
     refsetService.beginTransaction();
-    
+
     Project project = refsetService.getProject(projectId);
     List<Refset> refsets = project.getRefsets();
     StringList refsetList = new StringList();
-    
-    try {
-      final String userName = authorizeProject(refsetService,
-          projectId, securityService, authToken,
-          "return inactive members", UserRole.AUTHOR);
 
-      
+    try {
+      final String userName =
+          authorizeProject(refsetService, projectId, securityService, authToken,
+              "return inactive members", UserRole.AUTHOR);
+
       // for each refset in project
       for (int k = 0; k < refsets.size(); k++) {
-        
+
         Refset refset = refsets.get(k);
         refset = refsetService.getRefset(refset.getId());
         if (refset.getWorkflowStatus() == WorkflowStatus.PUBLISHED) {
           continue;
         }
-       
-        if(refsetService.getInactiveConceptsForRefset(refset).size() > 0) {      
+
+        if (refsetService.getInactiveConceptsForRefset(refset).size() > 0) {
           refsetList.addObject(refset.getName());
         }
       }
@@ -411,22 +410,20 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       project.setInactiveLastModified(new Date());
       refsetService.updateProject(project);
       refsetService.commit();
-      
+
       refsetList.setTotalCount(refsetList.getObjects().size());
       return refsetList;
-      
+
     } catch (Exception e) {
       handleException(e, "returning refsets with inactive concepts");
     } finally {
       refsetService.close();
       securityService.close();
     }
-    
+
     return null;
   }
-  
 
-  
   /* see superclass */
   @Override
   @PUT
@@ -1138,21 +1135,20 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
               query == null ? "(memberType:INCLUSION OR memberType:MEMBER)"
                   : query + " AND (memberType:INCLUSION OR memberType:MEMBER)",
               pfs, true).getObjects();
-      
+
       for (ConceptRefsetMember member : list) {
         if (language != null && !language.isEmpty()) {
-          String displayName =
-              refsetService.getDisplayNameForMember(member.getId(), language, fsn);
+          String displayName = refsetService
+              .getDisplayNameForMember(member.getId(), language, fsn);
           if (displayName != null) {
             member.setConceptName(displayName);
           }
         }
         refsetService.handleLazyInit(member);
       }
-      
+
       // export the members
-      return handler.exportMembers(refset,
-          list);
+      return handler.exportMembers(refset, list);
 
     } catch (Exception e) {
       handleException(e, "trying to export members");
@@ -1598,7 +1594,29 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       final Map<String, Long> inactiveMemberConceptIdsMap =
           refsetService.mapInactiveMembers(refset.getId());
 
+      // Lookup all perspective members, and remove any invalid ones (i.e.
+      // conceptIds that aren't findable by the terminology handler)
+      final List<String> conceptIds = new ArrayList<>();
+      for (ConceptRefsetMember member : members) {
+        conceptIds.add(member.getConceptId());
+      }
+
+      final ConceptList validConcepts = refsetService
+          .getTerminologyHandler(refset.getProject(), getHeaders(headers))
+          .getConcepts(conceptIds, refset.getTerminology(), refset.getVersion(),
+              false);
+
+      final Set<String> validConceptIds = new HashSet<>();
+      for (Concept concept : validConcepts.getObjects()) {
+        validConceptIds.add(concept.getTerminologyId());
+      }
+
       for (final ConceptRefsetMemberJpa member : members) {
+
+        // If the member is invalid, don't add to the refset
+        if (!validConceptIds.contains(member.getConceptId())) {
+          continue;
+        }
 
         // Check if member already exists, then skip
         ConceptRefsetMember memberExists =
@@ -1765,8 +1783,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
 
     Logger.getLogger(getClass())
         .info("RESTful call (Refset): find members for query, refsetId:"
-            + refsetId + " query:" + query + " language:" + language + ", " + pfs + ", "
-            + translated + ", " + fsn);
+            + refsetId + " query:" + query + " language:" + language + ", "
+            + pfs + ", " + translated + ", " + fsn);
 
     final RefsetService refsetService =
         new RefsetServiceJpa(getHeaders(headers));
@@ -1793,14 +1811,14 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
             && language != null && !language.isEmpty()) {
           pfs.setMaxResults(-1);
         }
-        
+
         ConceptRefsetMemberList list =
             refsetService.findMembersForRefset(refsetId, query, pfs, true);
         for (ConceptRefsetMember member : list.getObjects()) {
           if (language != null && !language.isEmpty()
               && !language.contentEquals("en")) {
-            String displayName =
-                refsetService.getDisplayNameForMember(member.getId(), language, fsn);
+            String displayName = refsetService
+                .getDisplayNameForMember(member.getId(), language, fsn);
             if (displayName != null) {
               member.setConceptName(displayName);
             }
@@ -2605,9 +2623,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       // reset inactive count to 0 to remove warning banner
       refset.setInactiveConceptCount(0);
       refsetService.updateRefset(refset);
-      
+
       refsetService.commit();
-      
+
       return refset;
 
     } catch (Exception e) {
@@ -3796,14 +3814,12 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
               refset.getVersion());
 
       StringList list = new StringList();
-      /**for (String str : languagePriorities.getKeyValuePairs()) {
-        list.addObject(str);
-      }
-      if (list.contains("en")) {
-        list.removeObject("en");
-      }
-      list.addObject("en PT");
-      list.addObject("en FSN"); */
+      /**
+       * for (String str : languagePriorities.getKeyValuePairs()) {
+       * list.addObject(str); } if (list.contains("en")) {
+       * list.removeObject("en"); } list.addObject("en PT"); list.addObject("en
+       * FSN");
+       */
       return languagePriorities;
 
     } catch (Exception e) {
