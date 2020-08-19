@@ -233,13 +233,11 @@
                   {{refsetLookupProgress[refset.id]}}%</span>
               </button>     
             </span>
-            <span
-              ng-show="refset.inactiveConceptCount > 0">
-              <br />
-              <button class="btn btn-xs btn-warning"  ng-disabled="disableMigrationButton"
-                title="There are records in this refset that are inactive in the dependent package.  This suggests a migration is required.">
-                Migration Required           
-              </button>     
+              <br /><br />
+              <span class="alert alert-warning"
+              ng-show="refset.workflowStatus !== 'PUBLISHED' &&  refset.inactiveConceptCount > 0"
+              title="There are records in this refset that are inactive in the dependent package.  This suggests a migration is required.">
+                Migration Required     
             </span>
             <!-- ASSIGNED actions -->
           <td class="nobreak" ng-show="value == 'ASSIGNED'">
@@ -299,13 +297,11 @@
                 Cancel Lookup
               </button>                
             </span>
-            <span
-              ng-show="refset.inactiveConceptCount > 0">
-              <br />
-              <button class="btn btn-xs btn-warning"  ng-disabled="disableMigrationButton"
-                title="There are records in this refset that are inactive in the dependent package.  This suggests a migration is required.">
-                Migration Required           
-              </button>     
+              <br /><br />
+              <span class="alert alert-warning"
+              ng-show="refset.workflowStatus !== 'PUBLISHED' &&  refset.inactiveConceptCount > 0"
+              title="There are records in this refset that are inactive in the dependent package.  This suggests a migration is required.">
+                Migration Required     
             </span>
           </td>
           <!-- RELEASE actions -->
@@ -355,13 +351,11 @@
                 ng-click="cancelActionForStaged(refset); $event.stopPropagation()"
                 title="Click to cancel release process">Cancel Release</button>
             </span>
-            <span
-              ng-show="refset.inactiveConceptCount > 0">
-              <br />
-              <button class="btn btn-xs btn-warning"  ng-disabled="disableMigrationButton"
-                title="There are records in this refset that are inactive in the dependent package.  This suggests a migration is required.">
-                Migration Required           
-              </button>     
+              <br /><br />
+              <span class="alert alert-warning"
+              ng-show="refset.workflowStatus !== 'PUBLISHED' &&  refset.inactiveConceptCount > 0"
+              title="There are records in this refset that are inactive in the dependent package.  This suggests a migration is required.">
+                Migration Required     
             </span>
           </td>
         </tr>
