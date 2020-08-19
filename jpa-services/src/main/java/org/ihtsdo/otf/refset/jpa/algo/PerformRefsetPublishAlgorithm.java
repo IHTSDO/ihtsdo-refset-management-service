@@ -125,12 +125,6 @@ public class PerformRefsetPublishAlgorithm extends RefsetServiceJpa
     stagedRefset.setInPublicationProcess(false);
     stagedRefset.setLastModifiedBy(userName);
     
-    // user has proceeded with release, regardless of inactive concepts, so remove the inactive indicator flag
-    if (stagedRefset.getInactiveConceptCount() > 0) {
-      stagedRefset.setInactiveConceptCount(0);
-    }
-    updateRefset(stagedRefset);
-
     // Update the PUBLISHED refset release info published/planned flags.
     list = findRefsetReleasesForQuery(stagedRefset.getId(), null, null);
     if (list.getCount() != 1) {
