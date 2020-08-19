@@ -134,23 +134,6 @@ tsApp.controller('DirectoryCtrl',
         }
       };
 
-      // Configure tab and accordion
-      $scope.configureTab = function() {
-        // skip guest user
-        if ($http.defaults.headers.common.Authorization == 'guest') {
-          $scope.accordionState['PUBLISHED'] = true;
-          return;
-        }
-        $scope.user.userPreferences.lastTab = '/directory';
-        if ($scope.user.userPreferences.lastDirectoryAccordion) {
-          $scope.accordionState[$scope.user.userPreferences.lastDirectoryAccordion] = true;
-        } else {
-          // default is published if nothing set
-          $scope.accordionState['PUBLISHED'] = true;
-        }
-        securityService.updateUserPreferences($scope.user.userPreferences);
-      };
-
       // Get $scope.metadata.{import,export}Handlers
       $scope.getIOHandlers = function() {
         refsetService.getImportRefsetHandlers().then(function(data) {
@@ -171,7 +154,12 @@ tsApp.controller('DirectoryCtrl',
       $scope.configureTab = function() {
         // skip guest user
         if ($http.defaults.headers.common.Authorization == 'guest') {
-          $scope.accordionState['PUBLISHED'] = true;
+          if ($routeParams.beta == 'true') {
+            $scope.accordionState['BETA'] = true;
+          }
+          else{
+            $scope.accordionState['PUBLISHED'] = true;
+          }
           return;
         }
         $scope.user.userPreferences.lastTab = '/directory';
@@ -186,8 +174,8 @@ tsApp.controller('DirectoryCtrl',
         } else {
           // default is published if nothing set
           $scope.accordionState['PUBLISHED'] = true;
-          securityService.updateUserPreferences($scope.user.userPreferences);
         }
+        securityService.updateUserPreferences($scope.user.userPreferences);
       };
 
       // Initialize
