@@ -459,7 +459,10 @@ tsApp.service('releaseService', [
       },
       // error
       function(response) {
-        //utilService.handleError(response);
+        // 'Inactive concepts!' errors gets handled specially
+        if(!response.data.includes('Inactive concepts!')){
+          utilService.handleError(response);
+        }
         gpService.decrement();
         deferred.reject(response.data);
       });
