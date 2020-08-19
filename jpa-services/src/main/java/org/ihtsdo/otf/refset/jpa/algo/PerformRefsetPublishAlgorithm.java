@@ -52,10 +52,8 @@ public class PerformRefsetPublishAlgorithm extends RefsetServiceJpa
 
   /** The staged refset change. */
   private StagedRefsetChange stagedRefsetChange;
-  
+
   private boolean override;
-
-
 
   /**
    * Instantiates an empty {@link PerformRefsetPublishAlgorithm}.
@@ -64,7 +62,7 @@ public class PerformRefsetPublishAlgorithm extends RefsetServiceJpa
   public PerformRefsetPublishAlgorithm() throws Exception {
     super();
   }
-  
+
   public PerformRefsetPublishAlgorithm(boolean override) throws Exception {
     super();
     this.override = override;
@@ -84,7 +82,8 @@ public class PerformRefsetPublishAlgorithm extends RefsetServiceJpa
       throw new Exception(
           "Refset must be staged and with a workflow status of BETA");
     }
-    if (!override) {
+    //For MANAGED-SERVICE projects only, check for inactive concepts
+    if (!override && refset.getProject().getTerminologyHandlerKey().equals("MANAGED-SERVICE")) {
       List<String> inactiveConcepts = getInactiveConceptsForRefset(refset);
       if (inactiveConcepts.size() > 0) {
         throw new LocalException("Inactive concepts!");
@@ -124,7 +123,7 @@ public class PerformRefsetPublishAlgorithm extends RefsetServiceJpa
     stagedRefset.setProvisional(false);
     stagedRefset.setInPublicationProcess(false);
     stagedRefset.setLastModifiedBy(userName);
-    
+
     // Update the PUBLISHED refset release info published/planned flags.
     list = findRefsetReleasesForQuery(stagedRefset.getId(), null, null);
     if (list.getCount() != 1) {
@@ -244,5 +243,5 @@ public class PerformRefsetPublishAlgorithm extends RefsetServiceJpa
   public void setOverride(boolean override) {
     this.override = override;
   }
-  
+
 }
