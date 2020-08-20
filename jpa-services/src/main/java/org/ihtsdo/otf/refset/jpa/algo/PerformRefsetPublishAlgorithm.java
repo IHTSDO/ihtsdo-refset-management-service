@@ -53,6 +53,7 @@ public class PerformRefsetPublishAlgorithm extends RefsetServiceJpa
   /** The staged refset change. */
   private StagedRefsetChange stagedRefsetChange;
 
+  /** The override. */
   private boolean override;
 
   /**
@@ -63,6 +64,12 @@ public class PerformRefsetPublishAlgorithm extends RefsetServiceJpa
     super();
   }
 
+  /**
+   * Instantiates a new perform refset publish algorithm.
+   *
+   * @param override the override
+   * @throws Exception the exception
+   */
   public PerformRefsetPublishAlgorithm(boolean override) throws Exception {
     super();
     this.override = override;

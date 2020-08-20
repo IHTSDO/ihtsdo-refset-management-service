@@ -128,10 +128,19 @@
             </span></th>
              -->
           <th>
-            <i ng-show="value == 'AVAILABLE' && projects.role == 'ADMIN'";
-              ng-click="openBulkAssignRefsetModal('ASSIGN'); $event.stopPropagation()"
+            <i ng-show="value == 'AVAILABLE' || (value == 'RELEASE' && projects.role != 'AUTHOR')"
+              ng-click="openBulkWorkflowModal('ASSIGN'); $event.stopPropagation()"
               title="Bulk Assign" class="noul material-icons md-18">assignment_ind</i>
-            <i ng-show="value == 'RELEASE' && projects.role == 'ADMIN'";
+            <i ng-show="value == 'ASSIGNED'"
+              ng-click="openBulkWorkflowModal('UNASSIGN'); $event.stopPropagation()"
+              title="Bulk Unassign" class="noul material-icons md-18">assignment_return</i>
+            <i ng-show="value == 'ASSIGNED' && (projects.role != 'ADMIN' && projects.role != 'LEAD')"
+              ng-click="openBulkWorkflowModal('FINISH'); $event.stopPropagation()"
+              title="Bulk Finish" class="noul material-icons md-18">done</i>
+            <i ng-show="value == 'ASSIGNED' && projects.role == 'REVIEWER'"
+              ng-click="openBulkWorkflowModal('PREPARE_FOR_PUBLICATION'); $event.stopPropagation()"
+              title="Bulk Mark Ready for Publication" class="noul material-icons md-18">open_in_new</i>              
+            <i ng-show="value == 'RELEASE' && projects.role == 'ADMIN'"
               ng-click="openBulkExportModal(); $event.stopPropagation()"
               title="Bulk Export" class="noul material-icons md-18">file_download</i>
             <i ng-show="value == 'RELEASE' && projects.role == 'ADMIN'"
@@ -218,7 +227,7 @@
             <!-- As admin/reviewer, unassign completely and return back to pool-->
             <i
               confirm="Are you sure you want to unassign the refset ({{refset.name}})?"
-              ng-show="isAllowed('UNASSIGN', refset)"
+              ng-show="isAllowed('UNASSIGN', refset) && refset.stagingType != 'MIGRATION'"
               ng-click="unassign(refset,user.userName); $event.stopPropagation()"
               title="Unassign" class="noul material-icons md-18">assignment_return</i>
 
@@ -243,19 +252,19 @@
           <td class="nobreak" ng-show="value == 'ASSIGNED'">
             <i ng-show="projects.role != 'ADMIN'"
               ng-click="openEditRefsetModal(refset); $event.stopPropagation()"
-              title="Edit" class="noul material-icons md-18">edit</i> <i
-              ng-show="!refset.staged"
+              title="Edit" class="noul material-icons md-18">edit</i> 
+            <i ng-show="!refset.staged"
               ng-click="removeRefset(refset); $event.stopPropagation()"
-              title="Remove" class="noul material-icons md-18">delete</i> <i
-              ng-click="unassign(refset, user.userName);" title="Unassign"
-              class="noul material-icons md-18">assignment_return</i> <i
-              ng-show="isAllowed('FEEDBACK', refset)"
+              title="Remove" class="noul material-icons md-18">delete</i> 
+            <i ng-click="unassign(refset, user.userName);" ng-show="refset.stagingType != 'MIGRATION'" title="Unassign"
+              class="noul material-icons md-18">assignment_return</i> 
+            <i ng-show="isAllowed('FEEDBACK', refset)"
               ng-click="openAssignRefsetModal(refset,'FEEDBACK'); $event.stopPropagation()"
               title="Feedback" class="noul material-icons md-18">assignment_returned</i>
-            <i ng-show="isAllowed('FINISH', refset)"
+            <i ng-show="isAllowed('FINISH', refset) && refset.stagingType != 'MIGRATION'"
               ng-click="performWorkflowAction(refset, 'FINISH', user.userName)"
               title="Finish" class="noul material-icons md-18">done</i> <i
-              ng-show="isAllowed('PREPARE_FOR_PUBLICATION', refset)"
+              ng-show="isAllowed('PREPARE_FOR_PUBLICATION', refset)  && refset.stagingType != 'MIGRATION'"
               ng-click="performWorkflowAction(refset, 'PREPARE_FOR_PUBLICATION', user.userName)"
               title="Mark ready for publication"
               class="noul material-icons md-18">open_in_new</i>

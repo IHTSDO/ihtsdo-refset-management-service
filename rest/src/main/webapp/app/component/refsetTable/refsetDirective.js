@@ -2439,7 +2439,7 @@ tsApp
                 modalInstance.result.then(
                   // Success
                   function(data) {
-                    $scope.handleWorkflow(data);
+                    // N/A
                   });
               };
               
@@ -2785,7 +2785,7 @@ tsApp
                 modalInstance.result.then(
                 // Success
                 function(data) {
-                  refsetService.fireRefsetChanged(data);
+                  // N/A
                 });
               };
 
@@ -3547,14 +3547,15 @@ tsApp
 
               };
 
-              // Bulk Assign refset modal
-              $scope.openBulkAssignRefsetModal = function(laction) {
-                console.debug('openBulkAssignRefsetModal ', laction);
+              // Bulk workflow modal
+              $scope.openBulkWorkflowModal = function(laction) {
+                console.debug('openBulkWorkflowModal ', laction);
 
                 var modalInstance = $uibModal.open({
-                  templateUrl : 'app/component/refsetTable/bulkAssignRefset.html',
-                  controller : BulkAssignRefsetModalCtrl,
+                  templateUrl : 'app/component/refsetTable/bulkWorkflow.html',
+                  controller : BulkWorkflowModalCtrl,
                   backdrop : 'static',
+                  windowClass: 'xxl-modal-window',                  
                   resolve : {
                     metadata : function() {
                       return $scope.metadata;
@@ -3574,14 +3575,8 @@ tsApp
                     role : function() {
                       return $scope.projects.role;
                     },
-                    tinymceOptions : function() {
-                      return utilService.tinymceOptions;
-                    },
-                    refsetAuthorsMap : function() {
-                      return $scope.refsetAuthorsMap;
-                    },
-                    refsetReviewersMap : function() {
-                      return $scope.refsetReviewersMap;
+                    value : function() {
+                      return $scope.value;
                     }
                   }
 
@@ -3590,71 +3585,332 @@ tsApp
                 modalInstance.result.then(
                 // Success
                 function(data) {
-                  refsetService.fireRefsetChanged(data);
+                  // N/A
                 });
               };
 
-              // BulkAssign refset controller
-              var BulkAssignRefsetModalCtrl = function($scope, $uibModalInstance, $sce, refsets,
-                metadata, action, currentUser, assignedUsers, project, role, tinymceOptions,
-                refsetAuthorsMap, refsetReviewersMap) {
-                console.debug('Entered bulk assign refset modal control', assignedUsers, project.id);
+              // Bulk Workflow controller
+              var BulkWorkflowModalCtrl = function($scope, $uibModalInstance, $sce,
+                metadata, action, currentUser, assignedUsers, project, role, value) {
+                console.debug('Entered bulk workflow modal control', assignedUsers, project.id);
                 $scope.metadata = metadata;
                 $scope.workflowConfig = metadata.workflowConfig;
                 $scope.action = action;
                 $scope.project = project;
-                //$scope.role = workflowService.refsetGetRole(action, role, refset.workflowStatus,
-                //  $scope.workflowConfig);
-                $scope.tinymceOptions = tinymceOptions;
+                $scope.role = role;
+                $scope.value = value;
                 $scope.assignedUsers = [];
                 $scope.user = utilService.findBy(assignedUsers, currentUser, 'userName');
-                $scope.note;
+                $scope.selectedUser = $scope.user;
+                
                 $scope.errors = [];
-                $scope.feedbackRoleOptions = [];
 
-                // Sort users by name and role restricts
-                var sortedUsers = assignedUsers.sort(utilService.sortBy('name'));
-                for (var i = 0; i < sortedUsers.length; i++) {
-                  if ($scope.role == 'AUTHOR'
-                    || $scope.project.userRoleMap[sortedUsers[i].userName] == 'REVIEWER'
-                    || $scope.project.userRoleMap[sortedUsers[i].userName] == 'REVIEWER2'
-                    || $scope.project.userRoleMap[sortedUsers[i].userName] == 'ADMIN') {
-                    $scope.assignedUsers.push(sortedUsers[i]);
+                $scope.refsets = [];
+                $scope.selectedRefsetIds = [];   
+                $scope.allSelected = false;
+                $scope.selectedWorkflowStatus = '';
+
+                // Button disabled values
+                $scope.assignDisabled = true;                
+                
+                // Status tracking
+                $scope.failedRefsetIds = [];
+                $scope.successfulRefsetIds = [];
+
+                // WorkflowStatus list (only used for ASSIGN)
+                $scope.workflowStatusList = [];
+                $scope.workflowStatusList.push('NEW');
+                $scope.workflowStatusList.push('EDITING_DONE');
+                
+                
+                // Convert an array of tracking records to an array of refsets.
+                $scope.getRefsetsFromRecords = function(records) {
+                  var refsets = new Array();
+                  for (var i = 0; i < records.length; i++) {
+                    refsets.push(records[i].refset);
+                  }
+                  return refsets;
+                };                
+                
+                function lookupRefsets(){
+                  
+                  // Get refsets based on action and value
+                  var pfs = {
+                    startIndex : -1,
+                    maxResults : -1,
+                    queryRestriction : null,
+                    latestOnly : true
+                  };
+                  
+                  if ($scope.value == 'AVAILABLE') {
+                    workflowService.findAvailableRefsets(role, $scope.project.id,
+                      $scope.user.userName, pfs).then(function(data) {
+                      $scope.refsets = data.refsets;
+                      if(role == 'AUTHOR'){
+                        $scope.selectedWorkflowStatus = 'NEW';
+                        $scope.setButtonDisableValues();
+                      }
+                      if(role == 'REVIEWER'){
+                        $scope.selectedWorkflowStatus = 'EDITING_DONE';
+                        $scope.setButtonDisableValues();
+                      }
+                    });
+                  }                  
+                  
+                  if ($scope.value == 'ASSIGNED' && (role == 'ADMIN' || role == 'LEAD')) {
+                    workflowService
+                      .findAssignedRefsets(role, $scope.project.id, null, pfs)
+                      .then(
+                        // Success
+                        function(data) {
+                          $scope.refsets = $scope.getRefsetsFromRecords(data.records);
+                        });
+                  }
+                  
+                  if ($scope.value == 'ASSIGNED' && role != 'ADMIN' && role != 'LEAD') {
+                    workflowService
+                      .findAssignedRefsets(role, $scope.project.id, $scope.user.userName, pfs)
+                      .then(
+                        // Success
+                        function(data) {
+                          for(refset of $scope.getRefsetsFromRecords(data.records)){
+                            if(action == 'PREPARE_FOR_PUBLICATION' && refset.workflowStatus != 'REVIEW_DONE'){
+                                continue;
+                            }
+                            if(action == 'FINISH' && refset.workflowStatus == 'REVIEW_DONE'){
+                              continue;
+                            }
+                            $scope.refsets.push(refset);
+                          }
+                        });
+                  }
+                  
+                  if ($scope.value == 'RELEASE') {
+                    var query = ' AND revision:false AND workflowStatus:READY_FOR_PUBLICATION';
+                    
+                    refsetService.findRefsetsForQuery('projectId:' + $scope.project.id + query, pfs).then(
+                      function(data) {
+                        $scope.refsets = data.refsets;
+                      });
+                  }
+                }                       
+                
+                // Run the lookup
+                lookupRefsets();
+                
+                // Handle workflowStatus picklist change
+                $scope.selectRefsets = function(){
+                
+                  console.debug("stage:", $scope.selectedWorkflowStatus);
+                  
+                  //Clear out previous selections
+                  $scope.selectedRefsetIds = [];
+                  for(refset of $scope.refsets){
+                    if(refset.workflowStatus === $scope.selectedWorkflowStatus){
+                      $scope.selectedRefsetIds.push(refset.id);
+                    }
+                  }                    
+                  
+                  // Now that selections have changed, enable/disable buttons accordingly
+                  $scope.setButtonDisableValues();
+                }                   
+                
+                // Get the refset's status
+                $scope.refsetStatus = function(refset){
+                  
+                  if($scope.successfulRefsetIds.includes(refset.id)){
+                    return "COMPLETED";
+                  }
+                  else if($scope.failedRefsetIds.includes(refset.id)){
+                    return 'FAILED';
+                  }
+                  else{
+                    return '';
+                  }
+                }                    
+                
+                // Determine if specific action is enabled based on refset selection
+                $scope.setButtonDisableValues = function(){
+
+                  $scope.assignDisabled = false;
+
+                  if(role == 'AUTHOR'){
+                    $scope.selectedWorkflowStatus = 'NEW';
+                  }
+                  else if(role == 'REVIEWER'){
+                    $scope.selectedWorkflowStatus = 'EDITING_DONE';
+                  }
+                  // For admins and leads, all selected refsets must have the same workflowStatus in order to assign.
+                  else{
+                    
+                    $scope.selectedWorkflowStatus = ''
+                    var multipleWorkflowsStatusesSelected = false;
+                      
+                    for (refset of $scope.refsets) {
+                      if($scope.selectedRefsetIds.includes(refset.id)){
+                        
+                        //If this is first selected refset, set the Status to compare against
+                        if($scope.selectedWorkflowStatus === ''){
+                          $scope.selectedWorkflowStatus = refset.workflowStatus;
+                        }
+                        else if($scope.selectedWorkflowStatus !== refset.workflowStatus){
+                          multipleWorkflowsStatusesSelected = true;
+                          break;
+                        }
+                      }
+                    }
+                    
+                    if(multipleWorkflowsStatusesSelected){
+                      $scope.selectedWorkflowStatus = '';
+                      $scope.assignDisabled = true;
+                    }
+                  }
+                  
+                  // Based on which workflow is selected, update the available assigned users
+                  $scope.setAssignedUsers();
+                }                  
+                  
+                // Checkbox controls   
+                $scope.toggleSelectAll = function(){
+                  if($scope.allSelected){
+                    for(refset of $scope.refsets){
+                      $scope.selectedRefsetIds = [];
+                    }
+                    $scope.allSelected = false;
+                  }
+                  else{
+                    $scope.selectedRefsetIds = [];
+                    for(refset of $scope.refsets){
+                      // Don't select disabled refsets
+                      if(refset.inPublicationProcess || refset.stagingType == 'MIGRATION'){
+                        continue;
+                      }
+                      $scope.selectedRefsetIds.push(refset.id);
+                    }
+                    $scope.allSelected = true;
+                  }
+                }
+                
+                $scope.toggleSelection = function(refset) {
+                  // is currently selected
+                  if ($scope.selectedRefsetIds.includes(refset.id)) {
+                    $scope.selectedRefsetIds = $scope.selectedRefsetIds.filter(r => r !== refset.id);
+                  }
+                  // is newly selected
+                  else {
+                    $scope.selectedRefsetIds.push(refset.id);
+                  }
+                  // Update all selected
+                  if($scope.refsets.length == $scope.selectedRefsetIds.length){
+                    $scope.allSelected = true;
+                  }
+                  else{
+                    $scope.allSelected = false;
+                  }
+                };
+                
+                // indicates if a particular row is selected
+                $scope.isRowSelected = function(refset) {
+                  return $scope.selectedRefsetIds.includes(refset.id);
+                }
+                
+                $scope.isAllSelected = function() {
+                  return $scope.allSelected;
+                }                
+                
+                                
+                $scope.setAssignedUsers = function() {
+                  $scope.assignedUsers = [];
+                  
+                  // Only show available users when the assign button is available
+                  if($scope.assignDisabled && $scope.action == 'ASSIGN'){
+                    $scope.selectedUser = '';
+                  }
+                  else{
+                    // Sort users by name, role restricts, and selected workflowStatuses
+                    var sortedUsers = assignedUsers.sort(utilService.sortBy('name'));
+                    for (var i = 0; i < sortedUsers.length; i++) {
+                      if (($scope.project.userRoleMap[sortedUsers[i].userName] == 'AUTHOR' && $scope.selectedWorkflowStatus == 'NEW')
+                        || $scope.project.userRoleMap[sortedUsers[i].userName] == 'REVIEWER'
+                        || $scope.project.userRoleMap[sortedUsers[i].userName] == 'REVIEWER2'
+                        || $scope.project.userRoleMap[sortedUsers[i].userName] == 'LEAD'
+                        || $scope.project.userRoleMap[sortedUsers[i].userName] == 'ADMIN') {
+                        $scope.assignedUsers.push(sortedUsers[i]);
+                      }
+                    }
                   }
                 }
 
-                // Assign
-                $scope.bulkAssignRefsets = function() {
-                  if (!$scope.user) {
-                    $scope.errors[0] = 'The user must be selected. ';
+                // Bulk Workflow
+                $scope.bulkWorkflow = function() {
+                  //Clear out errors from previous runs
+                  $scope.errors = [];
+
+                  if($scope.selectedRefsetIds.length == 0){
+                    $scope.errors[0] = 'No refsets selected ';
                     return;
                   }
                   
                   if (action == 'ASSIGN') {
-                    for (var i = 0; i < $scope.refsets.length; i++) {   
-                      $scope.role = workflowService.refsetGetRole(action, role, $scope.refsets[i].workflowStatus,
-                        $scope.workflowConfig);
-                      
-                        workflowService.performWorkflowAction($scope.project.id, $scope.refsets[i].id,
-                          $scope.user.userName, $scope.role, 'ASSIGN').then(
-                        // Success
-                        function(data) {
-                          // Do nothing
-                        },
-                        // Error
-                        function(data) {
-                          handleError($scope.errors, data);
-                        });
-                      }
+                    if (!$scope.user || $scope.user == 'undefined') {
+                      $scope.errors[0] = 'The user must be selected. ';
+                      return;
                     }
                   }
+                  
+                  for(refsetId of $scope.selectedRefsetIds){
+                    if($scope.successfulRefsetIds.includes(refsetId)){
+                      $scope.errors[0] = 'Cannot perform workflow action on already completed refset. ';
+                      return;
+                    }
+                  }
+                  
+                  workflowService.performWorkflowActions($scope.project.id, $scope.selectedRefsetIds,
+                    $scope.selectedUser.userName, $scope.role, action).then(
+                  // Success
+                  function(data) {
+                    // Use validationResult to update status and populate errors
+                    handleBulkMultiMessages($scope.errors, data.errors);
+                    
+                    for(refset of $scope.refsets){
+                      
+                      if(!$scope.selectedRefsetIds.includes(refset.id)){
+                        continue;
+                      }             
+                      
+                      var refsetHasError = false;
+                      for(error of data.errors){
+                        if(error.includes(refset.terminologyId)){
+                          refsetHasError = true;
+                          break;
+                        }
+                      }
+                      
+                    // If the refset has an 'error' validation result
+                    if(refsetHasError){
+                      $scope.failedRefsetIds.push(refset.id);
+                    }
+                    // If the refset has no 'error' validation results
+                    else{
+                      refsetService.fireRefsetChanged(refset);
+                      $scope.successfulRefsetIds.push(refset.id);
+                    }
+                  }                    
+                    
 
-                // Dismiss modal
-                $scope.cancel = function() {
-                  $uibModalInstance.dismiss('cancel');
+                  },
+                  // Error
+                  function(data) {
+                    handleBulkSingleError($scope.errors,  data);
+                  });           
+                }
+
+                // Close modal
+                $scope.close = function() {
+                  // close the dialog
+                  $uibModalInstance.close();
                 };
-
-              };              
+              };  
               
               // Log modal
               $scope.openLogModal = function() {

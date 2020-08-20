@@ -22,10 +22,12 @@ import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.UserRole;
+import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.RefsetList;
 import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.helpers.TranslationList;
+import org.ihtsdo.otf.refset.jpa.ValidationResultJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.RefsetListJpa;
@@ -183,6 +185,81 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl
       securityService.close();
     }
     return null;
+  }
+
+  /* see superclass */
+  @Override
+  @POST
+  @Path("/refsets/{action}")
+  @ApiOperation(value = "Perform workflow action on selected refsets", notes = "Performs the specified action on the specified refsets as the specified user", response = ValidationResultJpa.class)
+  public ValidationResult performWorkflowActions(
+    @ApiParam(value = "Project id, e.g. 5", required = false) @QueryParam("projectId") Long projectId,
+    @ApiParam(value = "List of refset ids", required = true) String[] refsetIds,
+    @ApiParam(value = "User name, e.g. admin", required = true) @QueryParam("userName") String userName,
+    @ApiParam(value = "Project role, e.g. AUTHOR", required = true) @QueryParam("projectRole") String projectRole,
+    @ApiParam(value = "Workflow action, e.g. 'SAVE'", required = true) @PathParam("action") String action,
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info("RESTful POST call (Workflow): /refsets/"
+        + action + ", " + userName + ", " + projectRole + ", " + refsetIds);
+
+    // Test preconditions
+    if (projectId == null || refsetIds == null || userName == null) {
+      handleException(new Exception("Required parameter has a null value"), "");
+    }
+
+    final WorkflowService workflowService = new WorkflowServiceJpa();
+
+    final ValidationResult validationResults = new ValidationResultJpa();
+
+    try {
+
+      final User user = securityService.getUser(userName);
+
+      authorizeProject(workflowService, projectId, securityService, authToken,
+          "perform workflow action on refset", UserRole.AUTHOR);
+
+      final WorkflowConfig workflowConfig = getWorkflowConfig(projectId, authToken);
+
+      
+      for (String refsetIdStr : refsetIds) {
+
+        final Long refsetId = Long.parseLong(refsetIdStr);
+        final Refset refset = workflowService.getRefset(refsetId);
+
+        try {
+
+          // Check for specific role for each action
+          String actionRole = workflowConfig.getRefsetRoleMap().get(action + projectRole + refset.getWorkflowStatus());
+          if(actionRole == null || actionRole.isEmpty()) {
+            actionRole = workflowConfig.getRefsetRoleMap().get(action + projectRole + "*");
+          }
+          
+          final TrackingRecord record = workflowService.performWorkflowAction(
+              refsetId, user, UserRole.valueOf(actionRole != null ? actionRole : projectRole),
+              WorkflowAction.valueOf(action));
+
+          addLogEntry(workflowService, userName, "WORKFLOW action", projectId,
+              refsetId,
+              action + " as " + projectRole + " on refset " + refsetId);
+
+        } catch (Exception e) {
+          if (refset == null) {
+            validationResults.addError(e.getMessage());
+          } else {
+            validationResults
+                .addError(refset.getTerminologyId() + ": " + e.getMessage());
+          }
+        }
+      }
+
+    } catch (Exception e) {
+      handleException(e, "trying to perform workflow action on refsets");
+    } finally {
+      workflowService.close();
+      securityService.close();
+    }
+    return validationResults;
   }
 
   /* see superclass */
