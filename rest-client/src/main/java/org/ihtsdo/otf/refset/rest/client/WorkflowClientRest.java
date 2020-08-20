@@ -15,11 +15,13 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status.Family;
 
 import org.apache.log4j.Logger;
+import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.RefsetList;
 import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.helpers.TranslationList;
+import org.ihtsdo.otf.refset.jpa.ValidationResultJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.RefsetListJpa;
@@ -109,6 +111,40 @@ public class WorkflowClientRest extends RootClientRest
     return (TrackingRecord) ConfigUtility.getGraphForString(resultString,
         TrackingRecordJpa.class);
   }
+  
+  /* see superclass */
+  @Override
+  public ValidationResult performWorkflowActions(Long projectId, String[] refsetIds,
+    String userName, String projectRole, String action, String authToken)
+    throws Exception {
+    Logger.getLogger(getClass())
+        .debug("Workflow Client - perform workflow action " + refsetIds + ", "
+            + userName + ", " + action);
+
+    validateNotEmpty(projectId, "projectId");
+    validateNotEmpty(userName, "userName");
+    validateNotEmpty(userName, "projectRole");
+    validateNotEmpty(action, "action");
+
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url") + "/workflow/refsets/"
+            + action + "?projectId=" + projectId + "&userName=" + userName + "&projectRole=" + projectRole);
+
+    Response response = target.request(MediaType.APPLICATION_XML)
+        .header("Authorization", authToken).post(Entity.xml(refsetIds));
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(resultString);
+    }
+
+    // converting to object
+    return (ValidationResult) ConfigUtility.getGraphForString(resultString,
+        ValidationResultJpa.class);
+  }  
 
   /* see superclass */
   @Override
