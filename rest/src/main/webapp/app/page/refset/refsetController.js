@@ -156,8 +156,8 @@ tsApp
                           }
 
                           // Force the initial choice to be "AUTHOR" instead of
-                          // "ADMIN"
-                          if ($scope.projects.role == 'ADMIN'
+                          // "LEAD"/"ADMIN"
+                          if (['LEAD','ADMIN'].includes($scope.projects.role)
                             && !$scope.user.userPreferences.lastProjectRole) {
                             $scope.projects.role = 'AUTHOR';
                           }
@@ -332,6 +332,11 @@ tsApp
           });
         };
 
+        // Determine whether the user is a project lead
+        $scope.isProjectLead = function() {
+          return $scope.projects.role == 'LEAD';
+        };
+        
         // Determine whether the user is a project admin
         $scope.isProjectAdmin = function() {
           return $scope.projects.role == 'ADMIN';
