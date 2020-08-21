@@ -2552,6 +2552,9 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
         if (desc.getTerm().endsWith("language reference set")) {
           pair.setValue(desc.getTerm().substring(0, desc.getTerm().indexOf(" language reference set")));
         }
+        if (desc.getTerm().endsWith("(metadato fundacional)")) {
+          pair.setValue(desc.getTerm().substring(0, desc.getTerm().indexOf(" (metadato fundacional)")));
+        }
       }     
       requiredLanguageRefsetIdMap.addKeyValuePair(pair);
     }
