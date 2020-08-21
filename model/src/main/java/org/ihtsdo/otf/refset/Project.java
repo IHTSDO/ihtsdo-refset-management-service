@@ -258,4 +258,20 @@ public interface Project extends Searchable {
    */
   public void setInactiveLastModified(Date inactiveLastModified);
 
+  /**
+   * Gets the refesh descriptions last modified.
+   *
+   * @return the refesh descriptions last modified
+   */
+  public Date getRefeshDescriptionsLastModified();
+
+  /**
+   * Sets the refesh descriptions last modified.
+   *
+   * @param inactiveLastModified the new refesh descriptions last modified
+   */
+  public void setRefeshDescriptionsLastModified(Date inactiveLastModified);
+  
+  
+  
 }

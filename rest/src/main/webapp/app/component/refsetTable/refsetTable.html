@@ -9,6 +9,7 @@
         <button ng-click="openAddRefsetModal(true); $event.stopPropagation()"
           title="Add local set" class="btn btn-xs btn-primary">Add
           Local Set</button>
+          <br />
       </span>
       <span ng-show="!isDirectory() && value == 'AVAILABLE' && projects.role != 'REVIEWER'" style="float: right;">
          <button ng-click="openAddRefsetModal(false);" title="Add refset"
@@ -231,7 +232,15 @@
               ng-click="unassign(refset,user.userName); $event.stopPropagation()"
               title="Unassign" class="noul material-icons md-18">assignment_return</i>
 
-             <span
+            <!-- Refresh/start buttons if lookup in progress -->
+            <span
+              ng-show="!refset.lookupInProgress && refset.lookupRequired">
+              <br />
+              <button class="btn btn-xs btn-warning"
+                ng-click="startLookup(refset)" title="Click to restart lookup">Restart
+                Lookup</button>               
+            </span>
+            <span
               ng-show="isLookupInProgress(refset)">
               <br />
               <button class="btn btn-xs btn-warning"
@@ -240,7 +249,13 @@
                 Refresh
                 <span ng-show="refsetLookupProgress[refset.id]">
                   {{refsetLookupProgress[refset.id]}}%</span>
-              </button>     
+              </button>
+              <br /><br />
+              <button class="btn btn-xs btn-warning"
+                ng-click="cancelLookup(refset)"
+                title="Click to cancel the lookup process">
+                Cancel Lookup
+              </button>                
             </span>
               <br /><br />
               <span class="alert alert-warning"
@@ -360,6 +375,31 @@
                 ng-click="cancelActionForStaged(refset); $event.stopPropagation()"
                 title="Click to cancel release process">Cancel Release</button>
             </span>
+            <!-- Refresh/start buttons if lookup in progress -->
+            <span
+              ng-show="!refset.lookupInProgress && refset.lookupRequired">
+              <br />
+              <button class="btn btn-xs btn-warning"
+                ng-click="startLookup(refset)" title="Click to restart lookup">Restart
+                Lookup</button>               
+            </span>
+            <span
+              ng-show="isLookupInProgress(refset)">
+              <br />
+              <button class="btn btn-xs btn-warning"
+                ng-click="refreshLookupProgress(refset)"
+                title="Click to refresh lookup progress">
+                Refresh
+                <span ng-show="refsetLookupProgress[refset.id]">
+                  {{refsetLookupProgress[refset.id]}}%</span>
+              </button>
+              <br /><br />
+              <button class="btn btn-xs btn-warning"
+                ng-click="cancelLookup(refset)"
+                title="Click to cancel the lookup process">
+                Cancel Lookup
+              </button>                
+            </span>            
               <br /><br />
               <span class="alert alert-warning"
               ng-show="refset.workflowStatus !== 'PUBLISHED' &&  refset.inactiveConceptCount > 0"

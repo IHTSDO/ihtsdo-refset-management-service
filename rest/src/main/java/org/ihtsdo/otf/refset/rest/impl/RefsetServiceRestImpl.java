@@ -426,6 +426,153 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
 
   /* see superclass */
   @Override
+  @GET
+  @Path("/members/refresh")
+  @ApiOperation(value = "Refresh descriptions for project", notes = "Re-look up all refsets' concepts to catch any recently updated descriptions")
+  public void refreshDescriptions(
+    @ApiParam(value = "Project id, e.g. 3", required = true) @QueryParam("projectId") Long projectId,
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass())
+        .info("RESTful call GET (Refset): /members/refresh for projectId: "
+            + projectId);
+
+    // Create service and configure transaction scope
+    final RefsetService refsetService =
+        new RefsetServiceJpa(getHeaders(headers));
+    refsetService.setTransactionPerOperation(false);
+    refsetService.beginTransaction();
+
+    Project project = refsetService.getProject(projectId);
+    List<Refset> refsets = project.getRefsets();
+    
+    // We won't be running lookup on all refsets, so create a new list to handle
+    List<Long> refsetIdsToLookup = new ArrayList<>();
+    for (int k = 0; k < refsets.size(); k++) {
+      if(!refsets.get(k).getWorkflowStatus().equals(WorkflowStatus.PUBLISHED)) {
+        refsetIdsToLookup.add(refsets.get(k).getId());
+      }
+    }
+
+    // Set the lookupProgress message
+    refsetService.setBulkLookupProgress(projectId,
+        "0 of " + refsetIdsToLookup.size() + " completed.");
+
+    final Thread t = new Thread(new Runnable() {
+
+      /* see superclass */
+      @Override
+      public void run() {
+
+        try {
+          final String userName =
+              authorizeProject(refsetService, projectId, securityService,
+                  authToken, "return inactive members", UserRole.AUTHOR);
+
+          int count = 0;
+          int completedCount = 0;
+
+          // for each refset in project
+          for (Long refsetId : refsetIdsToLookup) {
+
+            Refset refset = refsetService.getRefset(refsetId);
+
+            Logger.getLogger(getClass()).info(
+                "RESTful call GET (Refset) : Starting concept lookup for refset "
+                    + refset.getId() + ": " + refset.getName());
+
+            refsetService.handleLazyInit(refset);
+
+            // Flag all members as requiring name re-lookup
+            for (ConceptRefsetMember member : refset.getMembers()) {
+              member.setConceptName(TerminologyHandler.REQUIRES_NAME_LOOKUP);
+              refsetService.updateMember(member);
+
+              refsetService.logAndCommit(++count, RootService.logCt,
+                  RootService.commitCt);
+            }
+
+            refset.setLookupRequired(true);
+            refsetService.updateRefset(refset);
+
+            refsetService.commitClearBegin();
+
+            // Kick off lookup member process, and wait until it finishes before
+            // starting on next refset
+            refsetService.lookupMemberNames(refset.getId(),
+                "refresh descriptions", false, true);
+
+            Logger.getLogger(getClass()).info(
+                "RESTful call GET (Refset) : Completed concept lookup for refset "
+                    + refset.getId() + ": " + refset.getName());
+
+            // After every refset lookup is completed, update the lookupProgress
+            // message
+            refsetService.setBulkLookupProgress(projectId,
+                ++completedCount + " of " + refsetIdsToLookup.size() + " completed.");
+
+          }
+
+          project.setRefeshDescriptionsLastModified(new Date());
+          refsetService.updateProject(project);
+          refsetService.commit();
+
+          return;
+
+        } catch (Exception e) {
+          handleException(e, "refresh descriptions");
+        } finally {
+          try {
+            refsetService.close();
+            securityService.close();
+          } catch (Exception e) {
+            // Do nothing
+          }
+        }
+
+        return;
+      }
+    });
+
+    t.start();
+
+    return;
+  }
+
+  /* see superclass */
+  @Override
+  @GET
+  @Path("/lookup/progress/message")
+  @ApiOperation(value = "Get progress of bulk lookup process", notes = "Returns the process progress message for specified project's bulk lookup", response = String.class)
+  @Produces({
+      MediaType.TEXT_PLAIN
+  })
+  public String getBulkLookupProgressMessage(
+    @ApiParam(value = "Project id, e.g. 3", required = true) @QueryParam("projectId") Long projectId,
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass())
+        .info("RESTful call GET (Refset): /lookup/progress , " + projectId);
+
+    final RefsetService refsetService = new RefsetServiceJpa();
+
+    String returnMessage = "";
+
+    try {
+      returnMessage = refsetService.getBulkLookupProgress(projectId);
+
+      return returnMessage;
+    } catch (Exception e) {
+      handleException(e, "trying to find the bulk process status for refsets");
+    } finally {
+      refsetService.close();
+      securityService.close();
+    }
+    return null;
+  }
+
+  /* see superclass */
+  @Override
   @PUT
   @Consumes("text/plain")
   @Path("/members/add")

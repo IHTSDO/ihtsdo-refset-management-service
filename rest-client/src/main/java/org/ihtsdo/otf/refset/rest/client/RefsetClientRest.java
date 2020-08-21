@@ -1,5 +1,5 @@
-/**
- * Copyright 2015 West Coast Informatics, LLC
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.rest.client;
 
@@ -276,7 +276,8 @@ public class RefsetClientRest extends RootClientRest
   /* see superclass */
   @Override
   public InputStream exportMembers(Long refsetId, String ioHandlerInfoId,
-    String query, String language, Boolean fsn, PfsParameterJpa pfs, String authToken) throws Exception {
+    String query, String language, Boolean fsn, PfsParameterJpa pfs,
+    String authToken) throws Exception {
     Logger.getLogger(getClass())
         .debug("Refset Client - export refset members - " + refsetId + ", "
             + ioHandlerInfoId);
@@ -329,13 +330,12 @@ public class RefsetClientRest extends RootClientRest
     return (ConceptRefsetMemberJpa) ConfigUtility
         .getGraphForString(resultString, ConceptRefsetMemberJpa.class);
   }
-  
+
   /* see superclass */
   @Override
-  public ConceptRefsetMemberList addRefsetMembers(ConceptRefsetMemberJpa[] members,
-    String authToken) throws Exception {
-    Logger.getLogger(getClass())
-        .debug("Refset Client - add refset members");
+  public ConceptRefsetMemberList addRefsetMembers(
+    ConceptRefsetMemberJpa[] members, String authToken) throws Exception {
+    Logger.getLogger(getClass()).debug("Refset Client - add refset members");
 
     Client client = ClientBuilder.newClient();
     WebTarget target =
@@ -405,8 +405,8 @@ public class RefsetClientRest extends RootClientRest
   /* see superclass */
   @Override
   public ConceptRefsetMemberList findRefsetMembersForQuery(Long refsetId,
-    String query, String language, Boolean fsn, Boolean translated, PfsParameterJpa pfs, String authToken)
-    throws Exception {
+    String query, String language, Boolean fsn, Boolean translated,
+    PfsParameterJpa pfs, String authToken) throws Exception {
     Logger.getLogger(getClass())
         .debug("Refset Client - find refset members for query " + refsetId
             + ", " + query);
@@ -797,12 +797,12 @@ public class RefsetClientRest extends RootClientRest
     return (ValidationResultJpa) ConfigUtility.getGraphForString(resultString,
         ValidationResultJpa.class);
   }
-  
 
   /* see superclass */
   @Override
   public ValidationResult beginImportMembers(Long refsetId,
-    String ioHandlerInfoId, String[] conceptIds, String authToken) throws Exception {
+    String ioHandlerInfoId, String[] conceptIds, String authToken)
+    throws Exception {
     Logger.getLogger(getClass()).debug("Refset Client - begin import members");
     validateNotEmpty(refsetId, "refsetId");
     validateNotEmpty(ioHandlerInfoId, "ioHandlerInfoId");
@@ -1265,8 +1265,7 @@ public class RefsetClientRest extends RootClientRest
 
   /* see superclass */
   @Override
-  public void cancelLookup(Long refsetId, String authToken)
-    throws Exception {
+  public void cancelLookup(Long refsetId, String authToken) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Rest Client - cancel the lookup of names and statuses of refset members process "
             + refsetId);
@@ -1283,11 +1282,11 @@ public class RefsetClientRest extends RootClientRest
     } else {
       throw new Exception(response.toString());
     }
-  }  
-  
+  }
+
   /* see superclass */
   @Override
-  public void startLookupMemberNames(Long refsetId, Boolean background, 
+  public void startLookupMemberNames(Long refsetId, Boolean background,
     String authToken) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Rest Client - start lookup of names and statuses of refset members "
@@ -1308,6 +1307,7 @@ public class RefsetClientRest extends RootClientRest
     }
   }
 
+  /* see superclass */
   @Override
   public ConceptRefsetMemberList addRefsetMembersForExpression(Long refsetId,
     String expression, String authToken) throws Exception {
@@ -1337,6 +1337,7 @@ public class RefsetClientRest extends RootClientRest
         .getGraphForString(resultString, ConceptRefsetMemberListJpa.class);
   }
 
+  /* see superclass */
   @Override
   public void removeRefsetMembersForExpression(Long refsetId, String expression,
     String authToken) throws Exception {
@@ -1364,6 +1365,7 @@ public class RefsetClientRest extends RootClientRest
 
   }
 
+  /* see superclass */
   @Override
   public void optimizeDefinition(Long refsetId, String authToken)
     throws Exception {
@@ -1443,6 +1445,7 @@ public class RefsetClientRest extends RootClientRest
         RefsetJpa.class);
   }
 
+  /* see superclass */
   @Override
   public Long getOriginForStagedRefsetId(Long stagedRefsetId, String authToken)
     throws Exception {
@@ -1468,6 +1471,7 @@ public class RefsetClientRest extends RootClientRest
     return originId;
   }
 
+  /* see superclass */
   @Override
   public Integer countExpression(Long projectId, String expression,
     String terminology, String version, String authToken) throws Exception {
@@ -1559,17 +1563,17 @@ public class RefsetClientRest extends RootClientRest
 
   /* see superclass */
   @Override
-  public InputStream exportDiffReport(String reportToken, String terminology, 
-		  String version, String action, String reportFileName, String authToken)
+  public InputStream exportDiffReport(String reportToken, String terminology,
+    String version, String action, String reportFileName, String authToken)
     throws Exception {
     Logger.getLogger(getClass())
         .debug("Refset Client - export diff report - " + reportToken);
 
     Client client = ClientBuilder.newClient();
     WebTarget target = client.target(config.getProperty("base.url")
-        + "/refset/export/report" + "?reportToken=" + reportToken + 
-        "&terminology=" + terminology + "&version=" + version + 
-        "&action=" + action + "&reportFileName=" + reportFileName);
+        + "/refset/export/report" + "?reportToken=" + reportToken
+        + "&terminology=" + terminology + "&version=" + version + "&action="
+        + action + "&reportFileName=" + reportFileName);
     Response response = target.request(MediaType.APPLICATION_OCTET_STREAM)
         .header("Authorization", authToken).get();
 
@@ -1581,17 +1585,18 @@ public class RefsetClientRest extends RootClientRest
     }
     return in;
   }
-  
+
   /* see superclass */
   @Override
-  public InputStream exportResfetDuplicatesReport(Long refsetId, String ioHandlerInfoId, String[] conceptIds,
-      String authToken)
+  public InputStream exportResfetDuplicatesReport(Long refsetId,
+    String ioHandlerInfoId, String[] conceptIds, String authToken)
     throws Exception {
 
     Client client = ClientBuilder.newClient();
-    WebTarget target = client.target(config.getProperty("base.url") + "/refset/export/report" + "?reportToken="
-        + "FIX" + "&terminology=" + "FIX" + "&version=" + "FIX");
-    
+    WebTarget target = client.target(config.getProperty("base.url")
+        + "/refset/export/report" + "?reportToken=" + "FIX" + "&terminology="
+        + "FIX" + "&version=" + "FIX");
+
     Response response = target.request(MediaType.APPLICATION_OCTET_STREAM)
         .header("Authorization", authToken).get();
 
@@ -1604,6 +1609,7 @@ public class RefsetClientRest extends RootClientRest
     return in;
   }
 
+  /* see superclass */
   @Override
   public Refset convertRefset(Long refsetId, String refsetType,
     String authToken) throws Exception {
@@ -1629,6 +1635,7 @@ public class RefsetClientRest extends RootClientRest
         RefsetJpa.class);
   }
 
+  /* see superclass */
   @Override
   public Boolean isTerminologyVersionValid(Long projectId, String terminology,
     String version, String authToken) throws Exception {
@@ -1653,12 +1660,15 @@ public class RefsetClientRest extends RootClientRest
 
   }
 
+  /* see superclass */
   @Override
-  public KeyValuePairList getRequiredLanguageRefsets(Long refsetId, String authToken) throws Exception {
-	// TODO Auto-generated method stub
-	return null;
+  public KeyValuePairList getRequiredLanguageRefsets(Long refsetId,
+    String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
   }
 
+  /* see superclass */
   @Override
   public String getMigrationFileNames(String projectIdName, String refsetIdName,
     String authToken) throws Exception {
@@ -1666,6 +1676,7 @@ public class RefsetClientRest extends RootClientRest
     return null;
   }
 
+  /* see superclass */
   @Override
   public StringList getInactiveConceptRefsets(Long projectId, String authToken)
     throws Exception {
@@ -1673,6 +1684,51 @@ public class RefsetClientRest extends RootClientRest
     return null;
   }
 
-  
+  /* see superclass */
+  @Override
+  public void refreshDescriptions(Long projectId, String authToken)
+    throws Exception {
+    Logger.getLogger(getClass())
+        .debug("Refset Client - refresh descriptions: " + projectId);
+    validateNotEmpty(projectId, "projectId");
+
+    Client client = ClientBuilder.newClient();
+
+    WebTarget target = client.target(config.getProperty("base.url")
+        + "/members/refresh?projectId=" + projectId);
+
+    Response response = target.request(MediaType.APPLICATION_XML)
+        .header("Authorization", authToken).get();
+
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+  }
+
+  /* see superclass */
+  @Override
+  public String getBulkLookupProgressMessage(Long projectId, String authToken)
+    throws Exception {
+    Logger.getLogger(getClass())
+        .debug("Refset Client - get bulk lookup progress: " + projectId);
+    validateNotEmpty(projectId, "projectId");
+
+    final Client client = ClientBuilder.newClient();
+    final WebTarget target = client.target(config.getProperty("base.url")
+        + "/lookup/progress?projectId=" + projectId);
+
+    final Response response = target.request(MediaType.APPLICATION_XML)
+        .header("Authorization", authToken).get();
+
+    final String progressMessage = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+    return progressMessage;
+  }
 
 }
