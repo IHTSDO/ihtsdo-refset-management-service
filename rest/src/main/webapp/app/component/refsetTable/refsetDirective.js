@@ -3605,6 +3605,7 @@ tsApp
                 $scope.selectedUser = $scope.user;
                 
                 $scope.errors = [];
+                $scope.warnings = [];
 
                 $scope.refsets = [];
                 $scope.selectedRefsetIds = [];   
@@ -3733,6 +3734,10 @@ tsApp
                 // Determine if specific action is enabled based on refset selection
                 $scope.setButtonDisableValues = function(){
 
+                  // Only applicable for "ASSIGN" actions
+                  if($scope.value !== 'ASSIGN'){
+                    return;
+                  }
                   $scope.assignDisabled = false;
 
                   if(role == 'AUTHOR'){
@@ -3761,9 +3766,17 @@ tsApp
                       }
                     }
                     
+                    if($scope.selectedRefsetIds.length == 0){
+                      $scope.assignDisabled = true;
+                    }
+                    
                     if(multipleWorkflowsStatusesSelected){
+                      $scope.warnings.push('Only one Workflow Status type can be assigned at a time');
                       $scope.selectedWorkflowStatus = '';
                       $scope.assignDisabled = true;
+                    }
+                    else{
+                      $scope.warnings = [];
                     }
                   }
                   
