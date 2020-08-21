@@ -1390,6 +1390,29 @@ tsApp.service('refsetService', [
       return deferred.promise;
     };
     
+    // Re-lookup all members for all active refsets, to pick up any description changes
+    this.refreshDescriptions = function(projectId) {
+      console.debug('refreshDescriptions');
+      // Setup deferred
+      var deferred = $q.defer();
+
+      gpService.increment();
+      $http.get(refsetUrl + 'members/refresh?projectId=' + projectId).then(
+      // success
+      function(response) {
+        console.debug(' project refsets descriptions refreshing ');
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    };    
+    
     // get the progress of the name/status member lookup process
     this.getLookupProgress = function(refsetId) {
       console.debug('getLookupProgress');
@@ -1456,6 +1479,26 @@ tsApp.service('refsetService', [
       return deferred.promise;
     };    
 
+    // Get the progress message string for a project's bulkLookup process
+    this.getBulkLookupProgressMessage = function(projectId) {
+      console.debug('getBulkLookupProgressMessage');
+      // Setup deferred
+      var deferred = $q.defer();
+
+      $http.get(refsetUrl + 'lookup/progress/message?projectId=' + projectId).then(
+      // success
+      function(response) {
+        console.debug('  lookup progress message returned ');
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    };    
+    
     // get the count of items in the resolved expression
     this.countExpression = function(projectId, expression, terminology, version) {
       console.debug('count expression', projectId, expression, terminology, version);
