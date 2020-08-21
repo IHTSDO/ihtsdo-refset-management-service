@@ -116,7 +116,7 @@
             </span> / <span ng-click="setSortField('translation','terminology')">
               Terminology
               <span ng-bind="getSortIndicator('translation','terminology')"></span>
-            </span> <span ng-show="projects.role == 'ADMIN' || value == 'RELEASE'">
+            </span> <span ng-show="['LEAD','ADMIN'].includes(projects.role) || value == 'RELEASE'">
               /
               <span ng-click="setSortField('translation','workflowStatus')">
                 Status</span>
@@ -153,7 +153,7 @@
             </span>
             <span ng-show="!translation.effectiveTime">
               <br />{{toDate(translation.lastModified)}}
-              <span ng-show="projects.role == 'ADMIN'">
+              <span ng-show="['LEAD','ADMIN'].includes(projects.role)">
                 <br />{{translation.lastModifiedBy}}
               </span>
             </span>
@@ -174,7 +174,7 @@
               {{translation.version}} </span>
 
             <span ng-show="!isDirectory()">
-              <span ng-show="projects.role == 'ADMIN' || value == 'RELEASE'">
+              <span ng-show="['LEAD','ADMIN'].includes(projects.role) || value == 'RELEASE'">
                 <br />{{translation.workflowStatus}}
               </span>
             </span>
@@ -183,7 +183,7 @@
 
           <!-- EDITING actions -->
           <td class="nobreak"
-            ng-show="value == 'EDITING' && projects.role != 'ADMIN'">
+            ng-show="value == 'EDITING' && !['LEAD','ADMIN'].includes(projects.role)">
             <i
               ng-click="openEditTranslationModal(translation); $event.stopPropagation()"
               title="Edit" class="noul material-icons md-18">edit</i>
@@ -244,9 +244,9 @@
 
           </td>
 
-          <!-- EDITING ADMIN actions -->
+          <!-- EDITING LEAD actions -->
           <td class="nobreak"
-            ng-show="value == 'EDITING' && projects.role =='ADMIN'">
+            ng-show="value == 'EDITING' && ['LEAD','ADMIN'].includes(projects.role)">
             <i
               ng-click="openEditTranslationModal(translation); $event.stopPropagation()"
               title="Edit" class="noul material-icons md-18">edit</i>
@@ -576,7 +576,7 @@
               ng-click="setSortField('available','lastModified', selected.translation)">
               Last Modified
               <span ng-bind="getSortIndicator('available','lastModified')"></span>
-            </span> <span ng-show="projects.role == 'ADMIN'">
+            </span> <span ng-show="['LEAD','ADMIN'].includes(projects.role)">
               /
               <span
                 ng-click="setSortField('available','workflowStatus', selected.translation)">
@@ -588,13 +588,13 @@
               Actions
               <!-- Assign -->
               <i
-                ng-show="selected.translation.available.totalCount > 0 && projects.role != 'ADMIN'"
+                ng-show="selected.translation.available.totalCount > 0 && !['LEAD','ADMIN'].includes(projects.role)"
                 ng-click="openBatchAssignConceptModal('Available'); $event.stopPropagation()"
                 title="Assign batch" class="noul material-icons md-18">assignment_ind</i>
 
               <i
-                ng-show="selected.translation.available.totalCount > 0 && projects.role == 'ADMIN'"
-                title="Assign batch - not allowed as ADMIN"
+                ng-show="selected.translation.available.totalCount > 0 && ['LEAD','ADMIN'].includes(projects.role)"
+                title="Assign batch - not allowed as LEAD or ADMIN"
                 class="md-grey material-icons md-18">assignment_ind</i>
             </span></th>
         </tr>
@@ -615,7 +615,7 @@
           </td>
           <td ng-show="projects.role != 'AUTHOR'">
             {{toDate(concept.lastModified)}}
-            <span ng-show="projects.role == 'ADMIN'">
+            <span ng-show="['LEAD','ADMIN'].includes(projects.role)">
               <br /> {{concept.workflowStatus}}
             </span>
           </td>
@@ -630,10 +630,10 @@
             <!-- Unassign - n/a - these are available concepts -->
 
             <!-- Notes -->
-            <i ng-show="projects.role != 'ADMIN' && concept.notes.length > 0"
+            <i ng-show="!['LEAD','ADMIN'].includes(projects.role) && concept.notes.length > 0"
               ng-click="openNotesModal(concept, 'Concept'); $event.stopPropagation()"
               title="Edit concept notes" class="noul material-icons md-18">assignment</i>
-            <i ng-show="projects.role != 'ADMIN' && concept.notes.length == 0"
+            <i ng-show="!['LEAD','ADMIN'].includes(projects.role) && concept.notes.length == 0"
               ng-click="openNotesModal(concept, 'Concept'); $event.stopPropagation()"
               title="Add concept notes" class="md-grey material-icons md-18">assignment</i>
 
@@ -708,7 +708,7 @@
               ng-click="setSortField('assigned','lastModified', selected.translation)">
               Last Modified
               <span ng-bind="getSortIndicator('assigned','lastModified')"></span>
-            </span> <span ng-show="projects.role == 'ADMIN'">
+            </span> <span ng-show="['LEAD','ADMIN'].includes(projects.role)">
               <br />/
               <span
                 ng-click="setSortField('assigned','workflowStatus', selected.translation)">
@@ -724,11 +724,11 @@
                 ng-click="unassignAll(user.userName)" title="Unassign all"
                 class="noul material-icons md-18">assignment_return</i>
               <i
-                ng-show="selected.translation.assigned.totalCount > 0 && projects.role != 'ADMIN'"
+                ng-show="selected.translation.assigned.totalCount > 0 && !['LEAD','ADMIN'].includes(projects.role)"
                 ng-click="finishAll(user.userName)" title="Finish all"
                 class="noul material-icons md-18">done</i>
               <i
-                ng-show="selected.translation.assigned.totalCount > 0 && projects.role != 'ADMIN' && projects.role != 'AUTHOR'"
+                ng-show="selected.translation.assigned.totalCount > 0 && !['LEAD','ADMIN','AUTHOR'].includes(projects.role)"
                 ng-click="publishAll(user.userName)" title="Publish all"
                 class="noul material-icons md-18">open_in_new</i>
             </span>
@@ -761,7 +761,7 @@
           </td>
           <td>
             {{toDate(record.lastModified)}}
-            <span ng-show="projects.role == 'ADMIN'">
+            <span ng-show="['LEAD','ADMIN'].includes(projects.role)">
               <!-- Need to show how to effectively display this info, user can look at the log to see the info -->
               <!--               <br />
               <span ng-show="record.authors.length > 0">
@@ -782,7 +782,7 @@
           <!-- Actions -->
           <td class="nobreak">
             <!-- Edit -->
-            <i ng-show="projects.role != 'ADMIN'"
+            <i ng-show="!['LEAD','ADMIN'].includes(projects.role)"
               confirm="Save/Next on the edit concept modal may not work as expected when table is sorted on 'Last Modified' -- consider sorting on a different field."
               confirm-if="paging['assigned'].sortField == 'lastModified'"
               ng-click="openEditConceptModal(record.concept, $index); $event.stopPropagation()"
@@ -931,7 +931,7 @@
                 Time<span ng-bind="getSortIndicator('concept','effectiveTime')"></span>
               </th>
               <th class="col-md-2 col-xs-2" ng-show="value == 'EDITING'">Actions <i
-                  ng-show="selected.translation.concepts.totalCount > 0 && projects.role != 'ADMIN'"
+                  ng-show="selected.translation.concepts.totalCount > 0 && !['LEAD','ADMIN'].includes(projects.role)"
                   ng-click="openBatchAssignConceptModal('Finished'); $event.stopPropagation()"
                   title="Assign batch" class="noul material-icons md-18">assignment_ind</i></th>
             </tr>
@@ -952,17 +952,17 @@
               </td>
               <td ng-show="!isDirectory() && value !='RELEASE'">
                 {{toDate(concept.lastModified)}}
-                <span ng-show="projects.role == 'ADMIN'">
+                <span ng-show="['LEAD','ADMIN'].includes(projects.role)">
                   <br />{{concept.lastModifiedBy}} <br />{{concept.workflowStatus}}
                 </span>
               </td>
               <td ng-show="isDirectory() || value == 'RELEASE'">{{toSimpleDate(concept.effectiveTime)}}</td>
               <td class="nobreak" ng-show="value == 'EDITING'">
                 <!-- Assign (for error fixing) -->
-                <i ng-show="projects.role != 'ADMIN'"
+                <i ng-show="!['LEAD','ADMIN'].includes(projects.role)"
                   ng-click="openAssignConceptModal(concept, 'ASSIGN'); $event.stopPropagation()"
                   title="Assign" class="noul material-icons md-18">assignment_ind</i>
-                <!-- Unassign (for ADMIN fixing) -->
+                <!-- Unassign (for LEAD fixing) -->
                 <i ng-show="isAllowed('UNASSIGN', concept)"
                   title="Unassign concept"
                   ng-click="unassign(concept, user.userName)"
@@ -975,11 +975,11 @@
                   title="Remove concept" class="noul material-icons md-18">delete</i>
                 <!-- Notes -->
                 <i
-                  ng-show="projects.role != 'ADMIN' && concept.notes.length > 0"
+                  ng-show="!['LEAD','ADMIN'].includes(projects.role) && concept.notes.length > 0"
                   ng-click="openNotesModal(concept, 'Concept'); $event.stopPropagation()"
                   title="Edit concept notes" class="noul material-icons md-18">assignment</i>
                 <i
-                  ng-show="projects.role != 'ADMIN' && concept.notes.length == 0"
+                  ng-show="!['LEAD','ADMIN'].includes(projects.role) && concept.notes.length == 0"
                   ng-click="openNotesModal(concept, 'Concept'); $event.stopPropagation()"
                   title="Add concept notes" class="md-grey material-icons md-18">assignment</i>
 

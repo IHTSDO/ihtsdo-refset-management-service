@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -43,11 +44,15 @@ import org.ihtsdo.otf.refset.ConceptRefsetMemberSynonym;
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
+import org.ihtsdo.otf.refset.User;
+import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.ProjectList;
 import org.ihtsdo.otf.refset.jpa.ConceptRefsetMemberSynonymJpa;
+import org.ihtsdo.otf.refset.jpa.ProjectJpa;
+import org.ihtsdo.otf.refset.jpa.UserJpa;
 import org.ihtsdo.otf.refset.jpa.services.ProjectServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.RefsetServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
@@ -416,6 +421,15 @@ public class PatchDataMojo extends AbstractRttMojo {
         patch20200611(workflowService, refsetService, fullReindex);
       }
       
+      // Patch 20200730
+      // Add new role LEAD - move users from Admin to Lead with exclusions.
+      if ("20200730".compareTo(start) >= 0 && "20200730".compareTo(end) <= 0) {
+        getLog().info(
+            "Processing patch 20200730 - Add new role LEAD - move users from Admin to Lead with exclusions"); // Patch
+        patch20200730( fullReindex);
+      }
+      
+
       // Patch 20200805
       // Update Norway language codes
       if ("20200805".compareTo(start) >= 0 && "20200805".compareTo(end) <= 0) {
@@ -423,7 +437,7 @@ public class PatchDataMojo extends AbstractRttMojo {
             "Processing patch 20200805 - Update Norway language codes"); // Patch
         patch20200805(workflowService, translationService);
       }
-      
+
       // Reindex
       if (fullReindex) {
         getLog().info("  Reindex");
@@ -1903,6 +1917,87 @@ public class PatchDataMojo extends AbstractRttMojo {
     refsetService.commit();
 
   }
+
+  /**
+   * Patch 20200730.
+   *
+   * @param boolean fullReindex
+   * @throws Exception the exception
+   */
+  private void patch20200730(boolean fullReindex) {
+    
+    try (final ProjectService projectService = new ProjectServiceJpa();
+        final SecurityService securityService = new  SecurityServiceJpa()) {
+      
+      final List<String> excludeUsernameList = 
+          Arrays.asList("aatkinson", "tshird", "rdavidson","cmorris", "jschofield", "bcarlsen","rwood", 
+              "nmarques", "dshapiro","jefron"); 
+      
+      List<Project> projects = projectService.getProjects().getObjects();
+      
+      for(Project project : projects) {
+
+        getLog().info("Project " + project.getName());
+        Project projectCopy = new ProjectJpa(project);
+
+        if ("AUTHORING-INTL".equalsIgnoreCase(projectCopy.getTerminologyHandlerKey())
+            || "MANAGED-SERVICE".equalsIgnoreCase(projectCopy.getTerminologyHandlerKey())) {
+          
+          try {
+            projectCopy.getUserRoleMap().forEach((user, userRole) -> {
+              User userCopy = null;
+              try {
+                userCopy = new UserJpa(securityService.getUser(user.getUserName()));
+              }
+              catch (Exception e) {
+                //noop
+              }
+              
+              if (!excludeUsernameList.contains(user.getUserName()) && userRole == UserRole.ADMIN) {
+                
+                getLog().info("  Update " + user.getUserName() + " to " + UserRole.LEAD.toString());
+                
+                try {
+                  
+                  if (userCopy != null) {                          
+                    projectCopy.getUserRoleMap().remove(userCopy, UserRole.ADMIN);
+                    projectCopy.getUserRoleMap().put(userCopy, UserRole.LEAD);
+                    projectCopy.setLastModifiedBy("nmarques");
+                    projectService.updateProject(projectCopy);
+                    userCopy.getProjectRoleMap().remove(projectCopy, UserRole.ADMIN);
+                    userCopy.getProjectRoleMap().put(projectCopy, UserRole.LEAD);
+                    securityService.updateUser(userCopy);
+                  }
+                                  
+                } catch (Exception e) {
+                  getLog().error(
+                      "patch20200730 : Failed to update ", e);
+                }              
+              }
+            });
+          } catch (ConcurrentModificationException cme) {
+            getLog().info(cme.getMessage());
+          }
+        }
+      }
+
+      if (!fullReindex) {
+        getLog().info("  Projects, Users");
+
+        // login as "admin", use token
+        final Properties properties = ConfigUtility.getConfigProperties();
+        String authToken =
+            securityService.authenticate(properties.getProperty("admin.user"),
+                properties.getProperty("admin.password")).getAuthToken();
+        ProjectServiceRestImpl contentService = new ProjectServiceRestImpl();
+        contentService.luceneReindex("ProjectJpa, UserJpa", null, null, authToken);
+      }
+
+    } catch (Exception e) {
+      getLog().error("patch20200730 : Failed to update all projects", e);
+    }
+  }
+
   
   private void patch20200805(WorkflowService workflowService,
     TranslationService translationService) throws Exception {

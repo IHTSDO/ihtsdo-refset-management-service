@@ -258,7 +258,7 @@ tsApp
                 }
 
                 // on TrackingRecords, not on Refsets table
-                if ($scope.value == 'ASSIGNED' && $scope.projects.role == 'ADMIN') {
+                if ($scope.value == 'ASSIGNED' && ['LEAD','ADMIN'].includes($scope.projects.role)) {
                   if (pfs.queryRestriction && $scope.paging['refset'].filter) {
                     pfs.queryRestriction = pfs.queryRestriction + " AND ";
                   }
@@ -266,7 +266,7 @@ tsApp
                     pfs.queryRestriction = pfs.queryRestriction + $scope.paging['refset'].filter;
                   }
                   workflowService
-                    .findAssignedRefsets('ADMIN', $scope.project.id, null, pfs)
+                    .findAssignedRefsets($scope.projects.role, $scope.project.id, null, pfs)
                     .then(
                       // Success
                       function(data) {
@@ -286,7 +286,7 @@ tsApp
                         $scope.reselect();
                       });
                 }
-                if ($scope.value == 'ASSIGNED' && $scope.projects.role != 'ADMIN') {
+                if ($scope.value == 'ASSIGNED' && !['LEAD','ADMIN'].includes($scope.projects.role)) {
                   if (pfs.queryRestriction && $scope.paging['refset'].filter) {
                     pfs.queryRestriction = pfs.queryRestriction + " AND ";
                   }
@@ -726,7 +726,7 @@ tsApp
 
               // Remove a refset
               $scope.removeRefset = function(refset) {
-                workflowService.findAssignedRefsets('ADMIN', $scope.project.id, null, {
+                workflowService.findAssignedRefsets($scope.projects.role, $scope.project.id, null, {
                   startIndex : 0,
                   maxResults : 1,
                   queryRestriction : 'refsetId:' + refset.id
@@ -3469,6 +3469,7 @@ tsApp
                   if ($scope.role == 'AUTHOR'
                     || $scope.project.userRoleMap[sortedUsers[i].userName] == 'REVIEWER'
                     || $scope.project.userRoleMap[sortedUsers[i].userName] == 'REVIEWER2'
+                    || $scope.project.userRoleMap[sortedUsers[i].userName] == 'LEAD'
                     || $scope.project.userRoleMap[sortedUsers[i].userName] == 'ADMIN') {
                     $scope.assignedUsers.push(sortedUsers[i]);
                   }
