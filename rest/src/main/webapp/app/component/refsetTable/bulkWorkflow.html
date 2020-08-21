@@ -6,7 +6,7 @@
 </div>
 <div class="modal-body">
   <div class="container">
-    <div class="row" ng-show="action == 'ASSIGN' && role == 'ADMIN'">
+    <div class="row" ng-show="action == 'ASSIGN' && (role == 'ADMIN' || role == 'LEAD')">
       <div class="col-md-2 col-xs-2">Select by:</div>
       <div class="col-md-8 col-xs-8">
         <span>
@@ -23,6 +23,9 @@
         <span ng-show="assignedUsers.length > 1">
           <select ng-model="selectedUser" ng-options="item.name for item in assignedUsers"></select>
         </span>
+        <span ng-show="selectedRefsetIds.length == 0 && assignedUsers.length == 0">
+          Select some refsets to activate user-list
+        </span>                
       </div>
     </div>
     <div class="row">&nbsp;</div>
@@ -60,9 +63,9 @@
               <span ng-show="refsetStatus(refset) != 'FAILED'">{{refsetStatus(refset)}}</span>
               <span class="alert alert-danger"
                 ng-show="refsetStatus(refset) == 'FAILED'">{{refsetStatus(refset)}}</span>
-              <span class="alert alert-warning"
+              <span class="alert alert-warning" title="Cannot assign refset mid-release"
                 ng-show="refset.inPublicationProcess">Release in progress</span>
-              <span class="alert alert-warning"
+              <span class="alert alert-warning" title="Cannot assign/unassign refset mid-migration" 
                 ng-show="refset.stagingType == 'MIGRATION'">Migration in progress</span>                
             </td>
           </tr>
@@ -70,7 +73,16 @@
       </table>
     </div>
   </div>
-  <!-- Errors-->
+</div>
+<div>
+    <!-- Errors and warnings-->
+  <span ng-show="warnings.length > 0">
+    <td>&nbsp;</td>
+    <td>
+      <div class="alert alert-warning" ng-repeat="warning in warnings">
+        {{warning}}</div>
+    </td>
+  </span>
   <span ng-show="errors.length > 0">
     <td>&nbsp;</td>
     <td>
