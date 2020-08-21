@@ -9,7 +9,6 @@
         <button ng-click="openAddRefsetModal(true); $event.stopPropagation()"
           title="Add local set" class="btn btn-xs btn-primary">Add
           Local Set</button>
-          <br />
       </span>
       <span ng-show="!isDirectory() && value == 'AVAILABLE' && projects.role != 'REVIEWER'" style="float: right;">
          <button ng-click="openAddRefsetModal(false);" title="Add refset"
@@ -141,7 +140,7 @@
             <i ng-show="value == 'ASSIGNED' && projects.role == 'REVIEWER'"
               ng-click="openBulkWorkflowModal('PREPARE_FOR_PUBLICATION'); $event.stopPropagation()"
               title="Bulk Mark Ready for Publication" class="noul material-icons md-18">open_in_new</i>              
-            <i ng-show="value == 'RELEASE' && projects.role == 'ADMIN'"
+            <i ng-show="value == 'RELEASE'"
               ng-click="openBulkExportModal(); $event.stopPropagation()"
               title="Bulk Export" class="noul material-icons md-18">file_download</i>
             <i ng-show="value == 'RELEASE' && projects.role == 'ADMIN'"
@@ -231,6 +230,9 @@
               ng-show="isAllowed('UNASSIGN', refset) && refset.stagingType != 'MIGRATION'"
               ng-click="unassign(refset,user.userName); $event.stopPropagation()"
               title="Unassign" class="noul material-icons md-18">assignment_return</i>
+            <i
+              ng-show="isAllowed('UNASSIGN', refset) && refset.stagingType == 'MIGRATION'"
+              title="Cannot unassign refset mid-migration" class="inactive material-icons md-18">assignment_return</i>              
 
             <!-- Refresh/start buttons if lookup in progress -->
             <span
@@ -271,18 +273,30 @@
             <i ng-show="!refset.staged"
               ng-click="removeRefset(refset); $event.stopPropagation()"
               title="Remove" class="noul material-icons md-18">delete</i> 
-            <i ng-click="unassign(refset, user.userName);" ng-show="refset.stagingType != 'MIGRATION'" title="Unassign"
-              class="noul material-icons md-18">assignment_return</i> 
-            <i ng-show="isAllowed('FEEDBACK', refset)"
+            <i ng-show="refset.staged"
+              title="Cannot remove refset mid-migration" class="inactive material-icons md-18">delete</i>               
+            <i ng-show="!refset.staged" 
+              ng-click="unassign(refset, user.userName);"
+              title="Unassign" class="noul material-icons md-18">assignment_return</i> 
+            <i ng-show="refset.staged" title="Cannot unassign refset mid-migration" 
+              class="inactive material-icons md-18">assignment_return</i>                 
+            <i ng-show="isAllowed('FEEDBACK', refset) && !refset.staged"
               ng-click="openAssignRefsetModal(refset,'FEEDBACK'); $event.stopPropagation()"
               title="Feedback" class="noul material-icons md-18">assignment_returned</i>
-            <i ng-show="isAllowed('FINISH', refset) && refset.stagingType != 'MIGRATION'"
+            <i ng-show="isAllowed('FEEDBACK', refset) && refset.staged" title="Cannot feedback refset mid-migration" 
+              class="inactive material-icons md-18">assignment_returned</i>              
+            <i ng-show="isAllowed('FINISH', refset) && !refset.staged"
               ng-click="performWorkflowAction(refset, 'FINISH', user.userName)"
-              title="Finish" class="noul material-icons md-18">done</i> <i
-              ng-show="isAllowed('PREPARE_FOR_PUBLICATION', refset)  && refset.stagingType != 'MIGRATION'"
+              title="Finish" class="noul material-icons md-18">done</i> 
+            <i ng-show="isAllowed('FINISH', refset) && refset.staged" title="Cannot finish refset mid-migration" 
+              class="inactive material-icons md-18">done</i> 
+
+            <i ng-show="isAllowed('PREPARE_FOR_PUBLICATION', refset)  && !refset.staged"
               ng-click="performWorkflowAction(refset, 'PREPARE_FOR_PUBLICATION', user.userName)"
-              title="Mark ready for publication"
-              class="noul material-icons md-18">open_in_new</i>
+              title="Mark ready for publication" class="noul material-icons md-18">open_in_new</i>
+            <i ng-show="isAllowed('PREPARE_FOR_PUBLICATION', refset)  && refset.staged" title="Cannot mark refset ready for publication mid-migration" 
+              class="inactive material-icons md-18">open_in_new</i>
+                            
             <!-- Cancel buttons if migration in progress -->
             <span ng-show="refset.stagingType == 'IMPORT'">
               <br />
@@ -330,18 +344,23 @@
           </td>
           <!-- RELEASE actions -->
           <td class="nobreak" ng-show="value == 'RELEASE'">
-            <i
-              ng-show="refset.workflowStatus != 'PUBLISHED' && refset.workflowStatus != 'BETA'"
+            <i ng-show="refset.workflowStatus != 'PUBLISHED' && refset.workflowStatus != 'BETA'"
               ng-click="openEditRefsetModal(refset); $event.stopPropagation()"
-              title="Edit" class="noul material-icons md-18">edit</i> <i
-              confirm="Are you sure you want to remove the refset ({{refset.name}})?"
+              title="Edit" class="noul material-icons md-18">edit</i> 
+            <i confirm="Are you sure you want to remove the refset ({{refset.name}})?"
               ng-show="['LEAD','ADMIN'].includes(projects.role) && !refset.staged && !refset.inPublicationProcess && (refset.workflowStatus == 'PUBLISHED' || refset.workflowStatus == 'READY_FOR_PUBLICATION')"
               ng-click="removeRefset(refset); $event.stopPropagation()"
               title="Remove" class="noul material-icons md-18">delete</i>
+            <i ng-show="['LEAD','ADMIN'].includes(projects.role) && (refset.staged || refset.inPublicationProcess) && (refset.workflowStatus == 'PUBLISHED' || refset.workflowStatus == 'READY_FOR_PUBLICATION')"
+              ng-click="removeRefset(refset); $event.stopPropagation()"
+              title="Cannot remove refset mid-release" class="inactive material-icons md-18">delete</i>              
             <!-- TODO -->
             <i ng-show="isAllowed('ASSIGN', refset) && !refset.inPublicationProcess"
               ng-click="openAssignRefsetModal(refset,'ASSIGN'); $event.stopPropagation()"
               title="Assign" class="noul material-icons md-18">assignment_ind</i>
+            <i ng-show="isAllowed('ASSIGN', refset) && refset.inPublicationProcess"
+              ng-click="openAssignRefsetModal(refset,'ASSIGN'); $event.stopPropagation()"
+              title="Cannot assign refset mid-release" class="inactive material-icons md-18">assignment_ind</i>              
             <i ng-show="isAllowed('FEEDBACK', refset)"
               ng-click="openAssignRefsetModal(refset,'FEEDBACK'); $event.stopPropagation()"
               title="Feedback" class="noul material-icons md-18">assignment_returned</i>
@@ -351,8 +370,7 @@
               ng-click="openReleaseProcessModal(refset); $event.stopPropagation()"
               title="Start release process" class="noul material-icons md-18">open_in_new</i>
             <i
-              ng-show="refset.workflowStatus == 'READY_FOR_PUBLICATION' && 
-                        refset.inPublicationProcess"
+              ng-show="projects.role == 'ADMIN' && refset.workflowStatus == 'READY_FOR_PUBLICATION' && refset.inPublicationProcess"
               ng-click="openReleaseProcessModal(refset); $event.stopPropagation()"
               title="Continue release processing"
               class="noul material-icons md-18">open_in_new</i> <i
@@ -363,18 +381,24 @@
               class="noul material-icons md-18">open_in_new</i>
             <span
               ng-show="refset.workflowStatus == 'READY_FOR_PUBLICATION' && 
-                        refset.inPublicationProcess">
+                        refset.inPublicationProcess && projects.role == 'ADMIN'">
               <br />
               <button class="btn btn-xs btn-warning" ng-disabled="cancelling"
                 ng-click="cancelAction(refset); $event.stopPropagation()"
                 title="Click to cancel release process">Cancel Release</button>
             </span>
-            <span ng-show="refset.workflowStatus == 'BETA'">
+            <span ng-show="refset.workflowStatus == 'BETA' && projects.role == 'ADMIN'">
               <br />
               <button class="btn btn-xs btn-warning" ng-disabled="cancelling"
                 ng-click="cancelActionForStaged(refset); $event.stopPropagation()"
                 title="Click to cancel release process">Cancel Release</button>
             </span>
+            <span 
+              ng-show="((refset.workflowStatus == 'READY_FOR_PUBLICATION' && refset.inPublicationProcess) || refset.workflowStatus == 'BETA') && projects.role != 'ADMIN'"
+              title="Release in progress, and must be completed by an Admin">
+              <br /><br />
+              <span class="alert alert-warning">Release in progress</span>
+            </span>            
             <!-- Refresh/start buttons if lookup in progress -->
             <span
               ng-show="!refset.lookupInProgress && refset.lookupRequired">
@@ -399,12 +423,11 @@
                 title="Click to cancel the lookup process">
                 Cancel Lookup
               </button>                
-            </span>            
+            </span>
+            <span ng-show="refset.workflowStatus !== 'PUBLISHED' &&  refset.inactiveConceptCount > 0"
+              title="There are records in this refset that are inactive in the dependent package.  This suggests a migration is required.">            
               <br /><br />
-              <span class="alert alert-warning"
-              ng-show="refset.workflowStatus !== 'PUBLISHED' &&  refset.inactiveConceptCount > 0"
-              title="There are records in this refset that are inactive in the dependent package.  This suggests a migration is required.">
-                Migration Required     
+              <span class="alert alert-warning">Migration Required</span>     
             </span>
           </td>
         </tr>

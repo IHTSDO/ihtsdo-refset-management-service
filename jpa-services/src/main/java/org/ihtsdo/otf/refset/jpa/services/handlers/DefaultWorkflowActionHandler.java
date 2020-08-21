@@ -1247,7 +1247,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     refsetAllowedMap.put("ASSIGN" + "ADMIN" + "REVIEW_IN_PROGRESS", true);
     refsetAllowedMap.put("ASSIGN" + "ADMIN" + "REVIEW_DONE", true);
     refsetAllowedMap.put("ASSIGN" + "ADMIN" + "READY_FOR_PUBLICATION", true);
-    //refsetAllowedMap.put("UNASSIGN" + "ADMIN" + "NEW", true);
+    
     refsetAllowedMap.put("UNASSIGN" + "ADMIN" + "EDITING_IN_PROGRESS", true);
     refsetAllowedMap.put("UNASSIGN" + "ADMIN" + "EDITING_DONE", true);
     refsetAllowedMap.put("UNASSIGN" + "ADMIN" + "REVIEW_NEW", true);
@@ -1262,7 +1262,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     refsetAllowedMap.put("ASSIGN" + "LEAD" + "REVIEW_IN_PROGRESS", true);
     refsetAllowedMap.put("ASSIGN" + "LEAD" + "REVIEW_DONE", true);
     refsetAllowedMap.put("ASSIGN" + "LEAD" + "READY_FOR_PUBLICATION", true);
-    refsetAllowedMap.put("UNASSIGN" + "LEAD" + "NEW", true);
+    
     refsetAllowedMap.put("UNASSIGN" + "LEAD" + "EDITING_IN_PROGRESS", true);
     refsetAllowedMap.put("UNASSIGN" + "LEAD" + "EDITING_DONE", true);
     refsetAllowedMap.put("UNASSIGN" + "LEAD" + "REVIEW_NEW", true);
@@ -1271,9 +1271,6 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
 
     // Refset Author Options
     refsetAllowedMap.put("ASSIGN" + "AUTHOR" + "NEW", true);
-    // refsetAllowedMap.put("ASSIGN" + "AUTHOR" + "READY_FOR_PUBLICATION",
-    // true);
-    // refsetAllowedMap.put("UNASSIGN" + "AUTHOR" + "NEW", true);
     refsetAllowedMap.put("UNASSIGN" + "AUTHOR" + "EDITING_IN_PROGRESS", true);
     refsetAllowedMap.put("UNASSIGN" + "AUTHOR" + "EDITING_DONE", true);
     refsetAllowedMap.put("SAVE" + "AUTHOR" + "NEW", true);
@@ -1301,6 +1298,9 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     refsetAllowedMap.put("FEEDBACK" + "ADMIN" + "REVIEW_NEW", true);
     refsetAllowedMap.put("FEEDBACK" + "ADMIN" + "REVIEW_IN_PROGRESS", true);
     refsetAllowedMap.put("FEEDBACK" + "ADMIN" + "REVIEW_DONE", true);
+    refsetAllowedMap.put("FEEDBACK" + "LEAD" + "REVIEW_NEW", true);
+    refsetAllowedMap.put("FEEDBACK" + "LEAD" + "REVIEW_IN_PROGRESS", true);
+    refsetAllowedMap.put("FEEDBACK" + "LEAD" + "REVIEW_DONE", true);    
     refsetAllowedMap.put("FEEDBACK" + "REVIEWER" + "REVIEW_NEW", true);
     refsetAllowedMap.put("FEEDBACK" + "REVIEWER" + "REVIEW_IN_PROGRESS", true);
     refsetAllowedMap.put("FEEDBACK" + "REVIEWER" + "REVIEW_DONE", true);
@@ -1313,12 +1313,20 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     refsetRoleMap.put("ASSIGN" + "ADMIN" + "NEW", "AUTHOR");
     refsetRoleMap.put("ASSIGN" + "ADMIN" + "READY_FOR_PUBLICATION", "AUTHOR");
     refsetRoleMap.put("ASSIGN" + "ADMIN" + "*", "REVIEWER");
+    refsetRoleMap.put("ASSIGN" + "LEAD" + "NEW", "AUTHOR");
+    refsetRoleMap.put("ASSIGN" + "LEAD" + "READY_FOR_PUBLICATION", "AUTHOR");
+    refsetRoleMap.put("ASSIGN" + "LEAD" + "*", "REVIEWER");    
     refsetRoleMap.put("ASSIGN" + "REVIEWER" + "READY_FOR_PUBLICATION",
         "AUTHOR");
+    
     refsetRoleMap.put("UNASSIGN" + "ADMIN" + "NEW", "AUTHOR");
     refsetRoleMap.put("UNASSIGN" + "ADMIN" + "EDITING_IN_PROGRESS", "AUTHOR");
     refsetRoleMap.put("UNASSIGN" + "ADMIN" + "EDITING_DONE", "AUTHOR");
     refsetRoleMap.put("UNASSIGN" + "ADMIN" + "*", "REVIEWER");
+    refsetRoleMap.put("UNASSIGN" + "LEAD" + "NEW", "AUTHOR");
+    refsetRoleMap.put("UNASSIGN" + "LEAD" + "EDITING_IN_PROGRESS", "AUTHOR");
+    refsetRoleMap.put("UNASSIGN" + "LEAD" + "EDITING_DONE", "AUTHOR");
+    refsetRoleMap.put("UNASSIGN" + "LEAD" + "*", "REVIEWER");    
 
     /*
      * refsetRoleMap.put("FEEDBACK" + "ADMIN" + "REVIEW_NEW", "AUTHOR");
@@ -1421,13 +1429,23 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     translationRoleMap.put("ASSIGN" + "ADMIN" + "READY_FOR_PUBLICATION",
         "AUTHOR");
     translationRoleMap.put("ASSIGN" + "ADMIN" + "*", "REVIEWER");
+    translationRoleMap.put("ASSIGN" + "LEAD" + "NEW", "AUTHOR");
+    translationRoleMap.put("ASSIGN" + "LEAD" + "READY_FOR_PUBLICATION",
+        "AUTHOR");
+    translationRoleMap.put("ASSIGN" + "LEAD" + "*", "REVIEWER");    
     translationRoleMap.put("ASSIGN" + "REVIEWER" + "READY_FOR_PUBLICATION",
         "AUTHOR");
+    
     translationRoleMap.put("UNASSIGN" + "ADMIN" + "NEW", "AUTHOR");
     translationRoleMap.put("UNASSIGN" + "ADMIN" + "EDITING_IN_PROGRESS",
         "AUTHOR");
     translationRoleMap.put("UNASSIGN" + "ADMIN" + "EDITING_DONE", "AUTHOR");
     translationRoleMap.put("UNASSIGN" + "ADMIN" + "*", "REVIEWER");
+    translationRoleMap.put("UNASSIGN" + "LEAD" + "NEW", "AUTHOR");
+    translationRoleMap.put("UNASSIGN" + "LEAD" + "EDITING_IN_PROGRESS",
+        "AUTHOR");
+    translationRoleMap.put("UNASSIGN" + "LEAD" + "EDITING_DONE", "AUTHOR");
+    translationRoleMap.put("UNASSIGN" + "LEAD" + "*", "REVIEWER");    
     /*
      * translationRoleMap.put("FEEDBACK" + "ADMIN" + "REVIEW_NEW", "AUTHOR");
      * translationRoleMap.put("FEEDBACK" + "ADMIN" + "REVIEW_IN_PROGRESS",
