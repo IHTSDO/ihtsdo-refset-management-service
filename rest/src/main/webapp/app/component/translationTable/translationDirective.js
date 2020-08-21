@@ -1979,6 +1979,9 @@ tsApp
                       var pfs = prepPfs();
                       pfs.startIndex = -1;
                       return pfs;
+                    },
+                    project : function() {
+                      return $scope.project;
                     }
                   }
                 });
@@ -1992,7 +1995,7 @@ tsApp
 
               // Import/Export controller
               var ImportExportModalCtrl = function($scope, $uibModalInstance, translation,
-                metadata, operation, type, ioHandlers, query, pfs) {
+                metadata, operation, type, ioHandlers, query, pfs, project) {
                 console.debug('Entered import export modal control');
 
                 $scope.translation = translation;
@@ -2001,6 +2004,11 @@ tsApp
                 $scope.pfs = pfs;
                 $scope.ioHandlers = ioHandlers;
                 $scope.selectedIoHandler = null;
+                $scope.project = project;
+                // TSV export only available for MANAGED-SERVICE projects
+                if ($scope.project.terminologyHandlerKey != 'MANAGED-SERVICE') {
+                  $scope.ioHandlers = ioHandlers.filter(function(value, index, arr) { return value.id != 'TSV'; });
+                }
                 for (var i = 0; i < ioHandlers.length; i++) {
                   // Choose first one if only one
                   if ($scope.selectedIoHandler == null) {
