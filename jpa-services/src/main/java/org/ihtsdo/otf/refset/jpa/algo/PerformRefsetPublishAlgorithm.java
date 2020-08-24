@@ -93,7 +93,8 @@ public class PerformRefsetPublishAlgorithm extends RefsetServiceJpa
     if (!override && refset.getProject().getTerminologyHandlerKey().equals("MANAGED-SERVICE")) {
       List<String> inactiveConcepts = getInactiveConceptsForRefset(refset);
       if (inactiveConcepts.size() > 0) {
-        throw new LocalException("Inactive concepts!");
+        throw new LocalException("This refset has " + inactiveConcepts.size()
+        + " inactive concepts identified in dependent package.  This suggests a migration is required.");
       }
     }
   }
