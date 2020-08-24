@@ -165,6 +165,12 @@ public class ProjectJpa implements Project {
   @Column(nullable = true)
   @Temporal(TemporalType.TIMESTAMP)
   private Date inactiveLastModified = new Date();
+
+
+  /** The refesh descriptions last modified. */
+  @Column(nullable = true)
+  @Temporal(TemporalType.TIMESTAMP)
+  private Date refeshDescriptionsLastModified = new Date();
   
 
   /**
@@ -272,7 +278,21 @@ public class ProjectJpa implements Project {
     this.inactiveLastModified = inactiveLastModified;
   }
 
+  /* see superclass */
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  @DateBridge(resolution = Resolution.SECOND)
+  @SortableField
+  @Override
+  public Date getRefeshDescriptionsLastModified() {
+    return refeshDescriptionsLastModified;
+  }
 
+  /* see superclass */
+  @Override
+  public void setRefeshDescriptionsLastModified(Date refeshDescriptionsLastModified) {
+    this.refeshDescriptionsLastModified = refeshDescriptionsLastModified;
+  } 
+  
   /* see superclass */
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   @Override
