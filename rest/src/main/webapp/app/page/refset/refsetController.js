@@ -207,7 +207,7 @@ tsApp
                projectService.fireProjectChanged($scope.project);
                $scope.getProjects();
                if (data.totalCount > 0) {
-                 $window.alert('The following refsets have inactive concepts:\n ' + msg);
+                 $window.alert('The following refsets have inactive concepts:\n' + msg);
                } else {
                  $window.alert('None of the refsets have inactive concepts.  No further action is required.');
                }
