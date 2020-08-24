@@ -2629,7 +2629,7 @@ tsApp
 
               // Release Process controller
               var ReleaseProcessModalCtrl = function($scope, $uibModalInstance, refset, ioHandlers,
-                utilService) {
+                gpService, utilService) {
                 console.debug('Entered release process modal', refset.id, ioHandlers);
 
                 $scope.refset = refset;
@@ -2642,7 +2642,12 @@ tsApp
                 $scope.status = {
                   opened : false
                 };
+                
                 $scope.errors = [];
+                $scope.warnings = [];
+
+                // Progress tracking
+                $scope.lookupInterval = null;               
 
                 if (refset.stagingType == 'BETA') {
                   releaseService.resumeRelease(refset.id).then(
@@ -2656,6 +2661,74 @@ tsApp
                   });
                 }
 
+                //
+                // Progress tracking
+                //
+                
+                // Start lookup for process progress
+                $scope.startProcessProgressLookup = function(process) {
+                  
+                    gpService.increment();
+                    // Start if not already running
+                    if (!$scope.lookupInterval) {
+                      $scope.lookupInterval = $interval(function() {
+                        $scope.refreshProcessProgress(process);
+                      }, 2000);
+                    }
+                }                
+                
+                // Refresh Process progress
+                $scope.refreshProcessProgress = function(process) {
+                                   
+                  releaseService.getProcessProgress(process, $scope.refset.id).then(
+                  // Success
+                  function(data) {
+                    
+                    // Once refset is finished processing (i.e. process progress returns false), 
+                    // stop the lookup and get the validation results
+                    if(data === false){
+                      gpService.decrement();
+                      $interval.cancel($scope.lookupInterval);
+                      $scope.lookupInterval = null;
+                      
+                      // Now that the process is done, get any warnings or errors
+                      releaseService.getProcessResults($scope.refset.id, process).then(
+                        // Success
+                        function(data) {
+                          handleBulkMultiMessages($scope.errors, data.errors);
+                          handleBulkMultiMessages($scope.warnings, data.warnings);
+                                                    
+                          // On successful BEGIN, lookup the refset release info
+                          if(process == 'BEGIN'){
+                            var pfs = {
+                              startIndex : -1,
+                              maxResults : 10,
+                              sortField : null,
+                              ascending : null,
+                              queryRestriction : null
+                            };
+                            releaseService.findRefsetReleasesForQuery(refset.id, null, pfs).then(
+                              function(data) {
+                                $scope.releaseInfo = data.releaseInfos[0];
+                              });
+                          }
+                        },
+                      // Error
+                      function(data) {
+                        handleBulkSingleError($scope.errors,  data);
+                      });
+                      
+                    }
+                  },
+                  // Error
+                  function(data) {
+                    gpService.decrement();                    
+                    // Cancel automated lookup on error
+                    $interval.cancel($scope.lookupInterval);
+                    $scope.lookupInterval = null;
+                  });
+                };                
+                
                 // Begin release
                 $scope.beginRefsetRelease = function(refset) {
 
@@ -2663,16 +2736,13 @@ tsApp
                      window.alert('Release Date cannot be empty');
                      return;
                   }
-                
-                  //TODO set up for background process monitoring
-                  //TODO have refreshProgress call lookup and assign ReleaseInfo when BEGIN finishes
-                  
+                                  
                   releaseService.beginRefsetRelease(refset.id,
                     utilService.toWCISimpleDate(refset.effectiveTime)).then(
                   // Success
                   function(data) {
-                    $scope.releaseInfo = data;
                     $scope.refset.inPublicationProcess = true;
+                    $scope.startProcessProgressLookup('BEGIN');
                   },
                   // Error
                   function(data) {
@@ -2688,6 +2758,14 @@ tsApp
                   // Success
                   function(data) {
                     $scope.validationResult = data;
+                    for(warning of data.warnings){
+                      if (warning.includes('inactive concepts')){
+                        var splitted = warning.split(" ");
+                        var inactiveConceptCount = splitted[3];
+                        $window.alert('This refset has ' + inactiveConceptCount + ' inactive concepts.  \nIf you would like to continue the release:\n1. Press OK button here.\n2. Press Beta on the Release dialog.\n\nIf you would like to resolve these concepts:\n1. Press OK button here. \n2. Press Cancel button on the Release dialog. \n3. Assign the refset to yourself. \n4. Run migration on the refset. \n5. Restart the release');
+                        break;
+                      }
+                    }                    
                     refsetService.fireRefsetChanged(refset);
                   },
                   // Error
@@ -2724,7 +2802,7 @@ tsApp
                     // 'Inactive concepts!' errors gets handled specially
                     if(data.includes('Inactive concepts!')){
                       if ($window
-                        .confirm('This refset has inactive concepts.  \nIf you would like to continue the release, press OK.\n\nIf you would like to resolve these concepts:\n1.Press Cancel button here \n2.Press Cancel button on the Release dialog. \n3.Assign the refset to yourself \n4.Run migration on the refset \n5.Restart the release')) {
+                        .confirm('This refset has inactive concepts.  \nIf you would like to continue the release, press OK.\n\nIf you would like to resolve these concepts:\n1. Press Cancel button here \n2. Press Cancel button on the Release dialog. \n3. Assign the refset to yourself. \n4. Run migration on the refset. \n5. Restart the release.')) {
                         releaseService.finishRefsetRelease(refset.id, true).then(
                         // Success
                         function(data) {

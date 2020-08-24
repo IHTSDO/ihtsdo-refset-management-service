@@ -616,13 +616,13 @@ tsApp.service('releaseService', [
       });
     };
 
-    // find all refsets that are still progressing through specified bulk process
-    this.getBulkProcessProgress = function(process, refsetIds) {
-      console.debug('getBulkProcessProgress');
+    // find if refset is still progressing through specified process
+    this.getProcessProgress = function(process, refsetId) {
+      console.debug('getProcessProgress');
       // Setup deferred
       var deferred = $q.defer();
 
-      $http.post(releaseUrl + 'lookup/progress?process=' + process, refsetIds).then(
+      $http.post(releaseUrl + 'lookup/progress?process=' + process, refsetId).then(
       // success
       function(response) {
         console.debug('  process progress returned ');
@@ -636,13 +636,53 @@ tsApp.service('releaseService', [
       return deferred.promise;
     };
 
-    // gets the validation result from a completed bulk process run
+    // gets the validation result from a completed process run
+    this.getProcessResult = function(refsetId, process) {
+      console.debug('getProcessProgress');
+      // Setup deferred
+      var deferred = $q.defer();
+
+      $http.get(releaseUrl + 'process/results/' + refsetId + '?process=' + process).then(
+      // success
+      function(response) {
+        console.debug('  process results returned ');
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    };    
+    
+    // find all refsets that are still progressing through specified bulk process
+    this.getBulkProcessProgress = function(process, refsetIds) {
+      console.debug('getBulkProcessProgress');
+      // Setup deferred
+      var deferred = $q.defer();
+
+      $http.post(releaseUrl + 'lookup/progress/bulk?process=' + process, refsetIds).then(
+      // success
+      function(response) {
+        console.debug('  process progress returned ');
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    };
+
+    // gets the validation results from a completed bulk process run
     this.getBulkProcessResults = function(projectId, process) {
       console.debug('getBulkProcessProgress');
       // Setup deferred
       var deferred = $q.defer();
 
-      $http.get(releaseUrl + 'process/results/' + projectId + '?process=' + process).then(
+      $http.get(releaseUrl + 'process/results/bulk/' + projectId + '?process=' + process).then(
       // success
       function(response) {
         console.debug('  process results returned ');

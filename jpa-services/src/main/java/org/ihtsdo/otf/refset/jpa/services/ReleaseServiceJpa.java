@@ -20,15 +20,15 @@ import org.ihtsdo.otf.refset.services.ReleaseService;
 public class ReleaseServiceJpa extends ProjectServiceJpa
     implements ReleaseService {
 
-  /** The bulk process in progress map. */
-  static Map<String, Boolean> bulkInProgressMap = new ConcurrentHashMap<>();
+  /** The process in progress map. */
+  static Map<String, Boolean> processInProgressMap = new ConcurrentHashMap<>();
 
-  /** The bulk validation result map. */
+  /** The process validation result map. */
   /*
-   * Store bulk validation results so they can be sent to the UI once the
+   * Store process validation results so they can be sent to the UI once the
    * process is complete
    */
-  static Map<String, ValidationResult> bulkValidationResultMap =
+  static Map<String, ValidationResult> processValidationResultMap =
       new ConcurrentHashMap<>();
 
   /**
@@ -118,22 +118,22 @@ public class ReleaseServiceJpa extends ProjectServiceJpa
 
   /* see superclass */
   @Override
-  public void startBulkProcess(Long refsetId, String process) throws Exception {
-    bulkInProgressMap.put(refsetId + "|" + process, true);
+  public void startProcess(Long refsetId, String process) throws Exception {
+    processInProgressMap.put(refsetId + "|" + process, true);
   }
 
   /* see superclass */
   @Override
-  public void finishBulkProcess(Long refsetId, String process)
+  public void finishProcess(Long refsetId, String process)
     throws Exception {
-    bulkInProgressMap.remove(refsetId + "|" + process);
+    processInProgressMap.remove(refsetId + "|" + process);
   }
 
   /* see superclass */
   @Override
-  public Boolean getBulkProcessStatus(Long refsetId, String process)
+  public Boolean getProcessProgressStatus(Long refsetId, String process)
     throws Exception {
-    if (bulkInProgressMap.containsKey(refsetId + "|" + process)) {
+    if (processInProgressMap.containsKey(refsetId + "|" + process)) {
       return true;
     }
     return false;
@@ -141,28 +141,28 @@ public class ReleaseServiceJpa extends ProjectServiceJpa
 
   /* see superclass */
   @Override
-  public void setBulkProcessValidationResult(Long projectId, String process,
+  public void setProcessValidationResult(Long projectId, String process,
     ValidationResult validationResult) throws Exception {
 
-    bulkValidationResultMap.put(projectId + "|" + process, validationResult);
+    processValidationResultMap.put(projectId + "|" + process, validationResult);
 
   }
 
   /* see superclass */
   @Override
-  public ValidationResult getBulkProcessValidationResult(Long projectId,
+  public ValidationResult getProcessValidationResult(Long projectId,
     String process) throws Exception {
 
-    return bulkValidationResultMap.get(projectId + "|" + process);
+    return processValidationResultMap.get(projectId + "|" + process);
 
   }
 
   /* see superclass */
   @Override
-  public void removeBulkProcessValidationResult(Long projectId, String process)
+  public void removeProcessValidationResult(Long projectId, String process)
     throws Exception {
 
-    bulkValidationResultMap.remove(projectId + "|" + process);
+    processValidationResultMap.remove(projectId + "|" + process);
 
   }
 

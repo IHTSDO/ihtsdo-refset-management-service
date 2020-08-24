@@ -77,10 +77,9 @@ public interface ReleaseServiceRest {
    * @param refsetId the refset id
    * @param effectiveTime the effective time of the release
    * @param authToken the auth token
-   * @return the release info
    * @throws Exception the exception
    */
-  public ReleaseInfo beginRefsetRelease(Long refsetId, String effectiveTime,
+  public void beginRefsetRelease(Long refsetId, String effectiveTime,
     String authToken) throws Exception;
 
   /**
@@ -150,8 +149,8 @@ public interface ReleaseServiceRest {
    * @return the refset
    * @throws Exception the exception
    */
-  public Refset finishRefsetRelease(Long refsetId, Boolean override, String authToken)
-    throws Exception;
+  public Refset finishRefsetRelease(Long refsetId, Boolean override,
+    String authToken) throws Exception;
 
   /**
    * Finish refset releases.
@@ -297,6 +296,30 @@ public interface ReleaseServiceRest {
   void removeReleaseInfo(Long releaseInfoId, String authToken) throws Exception;
 
   /**
+   * Gets the process progress.
+   *
+   * @param refsetId the refset id
+   * @param process the process
+   * @param authToken the auth token
+   * @return the process progress
+   * @throws Exception the exception
+   */
+  public Boolean getProcessProgress(Long refsetId, String process,
+    String authToken) throws Exception;
+
+  /**
+   * Gets the process results.
+   *
+   * @param refsetId the refset id
+   * @param process the process
+   * @param authToken the auth token
+   * @return the process results
+   * @throws Exception the exception
+   */
+  public ValidationResult getProcessResults(Long refsetId, String process,
+    String authToken) throws Exception;
+
+  /**
    * Gets the bulk process progress.
    *
    * @param refsetIds the refset ids
@@ -319,6 +342,5 @@ public interface ReleaseServiceRest {
    */
   public ValidationResult getBulkProcessResults(Long projectId, String process,
     String authToken) throws Exception;
-
 
 }

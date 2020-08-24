@@ -21,6 +21,9 @@ import org.ihtsdo.otf.refset.jpa.ReleaseInfoJpa;
 import org.ihtsdo.otf.refset.jpa.ValidationResultJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.services.RefsetServiceJpa;
+import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
+import org.ihtsdo.otf.refset.services.RootService;
+import org.ihtsdo.otf.refset.services.handlers.TerminologyHandler;
 import org.ihtsdo.otf.refset.services.helpers.ProgressEvent;
 import org.ihtsdo.otf.refset.services.helpers.ProgressListener;
 
@@ -83,7 +86,7 @@ public class BeginRefsetReleaseAlgorthm extends RefsetServiceJpa
         findRefsetReleasesForQuery(refset.getId(), null, null);
     if (releaseInfoList.getCount() != 0) {
       ReleaseInfo releaseInfo = releaseInfoList.getObjects().get(0);
-      if (releaseInfo != null && releaseInfo.isPublished()) {
+      if (releaseInfo != null) {
         throw new LocalException(
             "refset release is already in progress " + refset.getId());
       }
@@ -105,8 +108,9 @@ public class BeginRefsetReleaseAlgorthm extends RefsetServiceJpa
           ConfigUtility.DATE_FORMAT.format(effectiveTime);
 
       if (previousReleaseDate.equals(submittedReleaseDate)) {
-        throw new LocalException("refset has already been released with effectiveTime="
-            + submittedReleaseDate);
+        throw new LocalException(
+            "refset has already been released with effectiveTime="
+                + submittedReleaseDate);
       }
     }
 
@@ -115,7 +119,7 @@ public class BeginRefsetReleaseAlgorthm extends RefsetServiceJpa
   /* see superclass */
   @Override
   public void compute() throws Exception {
-    Logger.getLogger(getClass()).info("  Create a relaseInfo object");
+    Logger.getLogger(getClass()).info("  Create a releaseInfo object");
     // Create and add a release info
     releaseInfo = new ReleaseInfoJpa();
     String name = ConfigUtility.DATE_FORMAT.format(effectiveTime);
@@ -131,7 +135,31 @@ public class BeginRefsetReleaseAlgorthm extends RefsetServiceJpa
     releaseInfo.setPublished(false);
     releaseInfo = addReleaseInfo(releaseInfo);
 
-    Logger.getLogger(getClass()).info("  Update refset");
+    // For MANAGED-SERVICE projects only, re-lookup all refset member names and
+    // descriptions
+    if (refset.getProject().getTerminologyHandlerKey()
+        .equals("MANAGED-SERVICE")) {
+      int count = 0;
+
+      handleLazyInit(refset);
+      
+      for (ConceptRefsetMember member : refset.getMembers()) {
+        member.setConceptName(TerminologyHandler.REQUIRES_NAME_LOOKUP);
+        updateMember(member);
+
+        logAndCommit(++count, RootService.logCt, RootService.commitCt);
+      }
+
+      refset.setLookupRequired(true);
+      updateRefset(refset);
+
+      commitClearBegin();
+
+      // Look up members and synonyms for this refset
+      lookupMemberNames(refset.getId(), "beginning release", false, true);
+    }
+
+    Logger.getLogger(getClass()).info("  Begin Refset Release");
     refset.setInPublicationProcess(true);
     refset.setLastModifiedBy(userName);
     updateRefset(refset);
