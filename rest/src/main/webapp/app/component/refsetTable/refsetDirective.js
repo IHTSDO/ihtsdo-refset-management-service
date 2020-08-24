@@ -2663,7 +2663,10 @@ tsApp
                      window.alert('Release Date cannot be empty');
                      return;
                   }
-                	
+                
+                  //TODO set up for background process monitoring
+                  //TODO have refreshProgress call lookup and assign ReleaseInfo when BEGIN finishes
+                  
                   releaseService.beginRefsetRelease(refset.id,
                     utilService.toWCISimpleDate(refset.effectiveTime)).then(
                   // Success
@@ -3735,7 +3738,7 @@ tsApp
                 $scope.setButtonDisableValues = function(){
 
                   // Only applicable for "ASSIGN" actions
-                  if($scope.value !== 'ASSIGN'){
+                  if($scope.action !== 'ASSIGN'){
                     return;
                   }
                   $scope.assignDisabled = false;
