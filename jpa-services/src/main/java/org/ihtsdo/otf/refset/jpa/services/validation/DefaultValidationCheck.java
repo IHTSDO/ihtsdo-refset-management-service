@@ -1,10 +1,11 @@
-/**
- * Copyright 2015 West Coast Informatics, LLC
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.jpa.services.validation;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.Set;
@@ -87,6 +88,23 @@ public class DefaultValidationCheck extends AbstractValidationCheck {
     if (refset.getType() == Refset.Type.EXTERNAL
         && refset.getMembers().size() > 0) {
       result.addError("Only external refsets should have members");
+    }
+
+    // For MANAGED-SERVICE projects only, check for inactive concepts at
+    // publication time
+    if (refset.isInPublicationProcess() && refset.getProject()
+        .getTerminologyHandlerKey().equals("MANAGED-SERVICE")) {
+      try {
+        List<String> inactiveConcepts =
+            service.getInactiveConceptsForRefset(refset);
+        if (inactiveConcepts.size() > 0) {
+          result.addWarning("This refset has " + inactiveConcepts.size()
+              + " inactive concepts identified in dependent package.  This suggests a migration is required.");
+        }
+      } catch (Exception e) {
+        result.addError(
+            "Error while checking for inactive concepts: " + e.getMessage());
+      }
     }
 
     return result;

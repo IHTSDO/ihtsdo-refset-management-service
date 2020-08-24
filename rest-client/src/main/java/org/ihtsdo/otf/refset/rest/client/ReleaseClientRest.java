@@ -551,7 +551,7 @@ public class ReleaseClientRest extends RootClientRest
   }
 
   @Override
-  public ReleaseInfo beginRefsetRelease(Long refsetId, String effectiveTime,
+  public void beginRefsetRelease(Long refsetId, String effectiveTime,
     String authToken) throws Exception {
     Logger.getLogger(getClass()).debug("Release Client - begin refset release");
     validateNotEmpty(refsetId, "refsetId");
@@ -568,15 +568,13 @@ public class ReleaseClientRest extends RootClientRest
     Response response = target.request(MediaType.APPLICATION_XML)
         .header("Authorization", authToken).get();
 
-    String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
     } else {
       throw new Exception(response.toString());
     }
-    // converting to object
-    return (ReleaseInfoJpa) ConfigUtility.getGraphForString(resultString,
-        ReleaseInfoJpa.class);
+
+    return;
   }
 
   @Override
@@ -681,6 +679,56 @@ public class ReleaseClientRest extends RootClientRest
   }
 
   @Override
+  public Boolean getProcessProgress(Long refsetId, String process,
+    String authToken) throws Exception {
+    Logger.getLogger(getClass())
+        .debug("Release Client - get progress in process");
+    validateNotEmpty(process, "process");
+
+    Client client = ClientBuilder.newClient();
+    WebTarget target = client.target(config.getProperty("base.url")
+        + "/release/lookup/progress" + "?process=" + process);
+
+    Response response = target.request(MediaType.APPLICATION_XML)
+        .header("Authorization", authToken).put(Entity.xml(refsetId));
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+    // converting to object
+    return (Boolean) ConfigUtility.getGraphForString(resultString,
+        Boolean.class);
+  }
+
+  @Override
+  public ValidationResult getProcessResults(Long refsetId, String process,
+    String authToken) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Release Client - get validation results for completed process");
+    validateNotEmpty(process, "process");
+
+    Client client = ClientBuilder.newClient();
+    WebTarget target = client.target(config.getProperty("base.url")
+        + "/process/results/" + refsetId + "?process=" + process);
+
+    Response response = target.request(MediaType.APPLICATION_XML)
+        .header("Authorization", authToken).get();
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+    // converting to object
+    return (ValidationResultJpa) ConfigUtility.getGraphForString(resultString,
+        ValidationResultJpa.class);
+  }  
+  
+  @Override
   public StringList getBulkProcessProgress(String[] refsetIds, String process,
     String authToken) throws Exception {
     Logger.getLogger(getClass())
@@ -689,7 +737,7 @@ public class ReleaseClientRest extends RootClientRest
 
     Client client = ClientBuilder.newClient();
     WebTarget target = client.target(config.getProperty("base.url")
-        + "/release/lookup/progress" + "?process=" + process);
+        + "/release/lookup/progress/bulk" + "?process=" + process);
 
     Response response = target.request(MediaType.APPLICATION_XML)
         .header("Authorization", authToken).put(Entity.xml(refsetIds));
@@ -714,7 +762,7 @@ public class ReleaseClientRest extends RootClientRest
 
     Client client = ClientBuilder.newClient();
     WebTarget target = client.target(config.getProperty("base.url")
-        + "/process/results/" + projectId + "?process=" + process);
+        + "/process/results/bulk/" + projectId + "?process=" + process);
 
     Response response = target.request(MediaType.APPLICATION_XML)
         .header("Authorization", authToken).get();

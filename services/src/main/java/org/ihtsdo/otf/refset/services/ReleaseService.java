@@ -91,63 +91,67 @@ public interface ReleaseService extends ProjectService {
   public ReleaseArtifact getReleaseArtifact(Long id) throws Exception;
 
   /**
-   * Start bulk process.
+   * Start process.
    *
    * @param refsetId the refset id
    * @param process the process
    * @throws Exception the exception
    */
-  public void startBulkProcess(Long refsetId, String process) throws Exception;
+  public void startProcess(Long refsetId, String process) throws Exception;
 
   /**
-   * Finish bulk process.
+   * Finish process.
    *
    * @param refsetId the refset id
    * @param process the process
    * @throws Exception the exception
    */
-  public void finishBulkProcess(Long refsetId, String process) throws Exception;
+  public void finishProcess(Long refsetId, String process) throws Exception;
+
 
   /**
-   * Gets the bulk process status.
+   * Gets the process progress status.
    *
    * @param refsetId the refset id
    * @param process the process
-   * @return the bulk process status
+   * @return the process progress status
    * @throws Exception the exception
    */
-  public Boolean getBulkProcessStatus(Long refsetId, String process)
+  public Boolean getProcessProgressStatus(Long refsetId, String process)
     throws Exception;
 
+
   /**
-   * Sets the bulk process validation result.
+   * Sets the process validation result.
    *
    * @param projectId the project id
    * @param process the process
    * @param validationResult the validation result
    * @throws Exception the exception
    */
-  public void setBulkProcessValidationResult(Long projectId, String process,
+  public void setProcessValidationResult(Long projectId, String process,
     ValidationResult validationResult) throws Exception;
   
-  /**
-   * Gets the bulk process validation result.
-   *
-   * @param projectId the project id
-   * @param process the process
-   * @return the bulk process validation result
-   * @throws Exception the exception
-   */
-  public ValidationResult getBulkProcessValidationResult(Long projectId,
-    String process) throws Exception;
 
   /**
-   * Removes the bulk process validation result.
+   * Gets the process validation result.
+   *
+   * @param projectId the project id
+   * @param process the process
+   * @return the process validation result
+   * @throws Exception the exception
+   */
+  public ValidationResult getProcessValidationResult(Long projectId,
+    String process) throws Exception;
+
+
+  /**
+   * Removes the process validation result.
    *
    * @param projectId the project id
    * @param process the process
    * @throws Exception the exception
    */
-  public void removeBulkProcessValidationResult(Long projectId, String process)
+  public void removeProcessValidationResult(Long projectId, String process)
     throws Exception;
 }
