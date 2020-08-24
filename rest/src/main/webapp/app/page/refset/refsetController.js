@@ -7,14 +7,16 @@ tsApp
       '$http',
       '$location',
       '$window',
+      '$interval',
       'tabService',
       'utilService',
       'securityService',
       'projectService',
       'refsetService',
       'workflowService',
-      function($scope, $http, $location, $window, tabService, utilService, securityService, projectService,
-        refsetService, workflowService) {
+      'gpService',
+      function($scope, $http, $location, $window, $interval, tabService, utilService, securityService, projectService,
+        refsetService, workflowService, gpService) {
         console.debug('configure RefsetCtrl');
 
         // Handle resetting tabs on 'back' button
@@ -64,6 +66,11 @@ tsApp
           count : 0
         };
 
+        // Progress tracking
+        $scope.lookupInterval = null;
+        $scope.refreshDescriptionsInProgress = false;
+        $scope.lookupProgressMessage = '';
+        
         // Get $scope.projects
         $scope.getProjects = function() {
 
@@ -149,8 +156,8 @@ tsApp
                           }
 
                           // Force the initial choice to be "AUTHOR" instead of
-                          // "ADMIN"
-                          if ($scope.projects.role == 'ADMIN'
+                          // "LEAD"/"ADMIN"
+                          if (['LEAD','ADMIN'].includes($scope.projects.role)
                             && !$scope.user.userPreferences.lastProjectRole) {
                             $scope.projects.role = 'AUTHOR';
                           }
@@ -218,6 +225,90 @@ tsApp
           $scope.inactiveDate  = utilService.toDate($scope.project.inactiveLastModified);
           return ($scope.project.terminologyHandlerKey == 'MANAGED-SERVICE');           
         }
+
+        $scope.refreshDescriptions = function() {
+          if ($window
+            .confirm('Refreshing descriptions may take several minutes.  Are you sure you want to proceed?')) {
+              refsetService.refreshDescriptions($scope.project.id).then(
+              // Success
+              function(data) {  
+                $scope.startRefreshDescriptionsProgressLookup($scope.project.id);
+              },
+              // Error
+              function(data) {  
+                handleError($scope.errors, data);
+              });
+            }
+          }        
+        
+        $scope.showRefreshDescriptionsButton = function() {
+          if (!$scope.project) {
+            return false;
+          }
+          $scope.refreshDescriptionsDate  = utilService.toDate($scope.project.refeshDescriptionsLastModified);
+          return ($scope.project.terminologyHandlerKey == 'MANAGED-SERVICE' && !$scope.refreshDescriptionsInProgress);        
+        }        
+        
+        
+        $scope.showDescriptionProgressButton = function() {
+          if($scope.refreshDescriptionsInProgress){
+            return true;
+          }
+          return false;
+        }
+                
+        
+        //
+        // Refresh descriptions Progress tracking
+        //
+        
+        // Start lookup for process progress
+        $scope.startRefreshDescriptionsProgressLookup = function(projectId) {
+          
+            $scope.lookupProgressMessage = '';
+            $scope.refreshDescriptionsInProgress = true;
+            
+            gpService.increment();
+            // Start if not already running
+            if (!$scope.lookupInterval) {
+                $scope.lookupInterval = $interval(function() {
+                  $scope.refreshLookupProgressMessage(projectId);
+                }, 2000);              
+            }
+        }                
+        
+        // Refresh Process progress
+        $scope.refreshLookupProgressMessage = function(projectId) {
+                           
+          refsetService.getBulkLookupProgressMessage(projectId).then(
+          // Success
+          function(data) {
+            $scope.lookupProgressMessage = data;
+            
+            //Response message is in "x of y completed" format.
+            //If x and y are the same, the run is finished.
+            if(data != null && data !== ''){
+              var splitted = data.split(" ");
+              if(splitted[0] == splitted[2]){
+                gpService.decrement();                    
+                // Cancel automated lookup on success
+                $interval.cancel($scope.lookupInterval);
+                $scope.lookupInterval = null;
+                $scope.refreshDescriptionsInProgress = false;
+                projectService.fireProjectChanged($scope.project);
+              }
+            }
+          },
+          // Error
+          function(data) {
+            gpService.decrement();                    
+            // Cancel automated lookup on error
+            $interval.cancel($scope.lookupInterval);
+            $scope.lookupInterval = null;
+            $scope.refreshDescriptionsInProgress = false;
+            projectService.fireProjectChanged($scope.project);
+          });
+        };        
         
         // Lookup terminologies, names, and versions
         $scope.getTerminologyMetadata = function(project) {
@@ -244,6 +335,11 @@ tsApp
           });
         };
 
+        // Determine whether the user is a project lead
+        $scope.isProjectLead = function() {
+          return $scope.projects.role == 'LEAD';
+        };
+        
         // Determine whether the user is a project admin
         $scope.isProjectAdmin = function() {
           return $scope.projects.role == 'ADMIN';

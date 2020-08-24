@@ -90,6 +90,11 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
   static Map<Long, Integer> lookupProgressMap = new ConcurrentHashMap<>();
 
   /**
+   * The bulk lookup process in progress map. projectId -> "x of y completed"
+   */
+  static Map<Long, String> bulkLookupProgressMap = new ConcurrentHashMap<>();
+
+  /**
    * Keep track of which threads are associated with each refset, so they can be
    * canceled by the user.
    */
@@ -493,8 +498,8 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
 
     // If the refset contains any inactive members, check each member to be
     // added against the list of inactive members' concept Ids
-    if (inactiveMemberConceptIdsMap != null
-        && inactiveMemberConceptIdsMap.keySet().contains(member.getConceptId())) {
+    if (inactiveMemberConceptIdsMap != null && inactiveMemberConceptIdsMap
+        .keySet().contains(member.getConceptId())) {
       ConceptRefsetMember inactiveMember =
           getMember(inactiveMemberConceptIdsMap.get(member.getConceptId()));
       member.setId(inactiveMember.getId());
@@ -564,8 +569,10 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
 
     // If this member is part of a project that has stable UUIDs,
     // inactivate instead of removing
-    // Do NOT inactivate if this is a provisional refset - we want those fully removed.
-    if (getMember(id).getRefset().getProject().isStableUUIDs() && !getMember(id).getRefset().isProvisional()) {
+    // Do NOT inactivate if this is a provisional refset - we want those fully
+    // removed.
+    if (getMember(id).getRefset().getProject().isStableUUIDs()
+        && !getMember(id).getRefset().isProvisional()) {
       inactivateMember(id);
       return;
     }
@@ -797,11 +804,12 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
 
   /* see superclass */
   @Override
-  public String getDisplayNameForMember(Long memberId, String language, Boolean fsn)
-    throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Refset Service - get display name for refset member " + memberId + ", " + language + ", " + fsn);
-    
+  public String getDisplayNameForMember(Long memberId, String language,
+    Boolean fsn) throws Exception {
+    Logger.getLogger(getClass())
+        .debug("Refset Service - get display name for refset member " + memberId
+            + ", " + language + ", " + fsn);
+
     final javax.persistence.Query query = manager
         .createQuery("select a from ConceptRefsetMemberSynonymJpa a where "
             + "a.member.id = :memberId and a.termType = :termType "
@@ -818,58 +826,52 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
       return null;
     }
   }
-  
-  @Override
-  public String getFSNNameForConcept(String terminologyId)
-      throws Exception {
-      Logger.getLogger(getClass()).debug(
-          "Refset Service - get fsn name for term " + terminologyId  );
-      
-      final javax.persistence.Query query = manager
-          .createQuery("select a from ConceptJpa a where "
-              + "a.terminologyId = :terminologyId  and a.name LIKE :fsn");
-      try {
-        query.setParameter("terminologyId", terminologyId);
-        query.setParameter("fsn", "% (%");
-        final List<Concept> concepts = query.getResultList();
-        return concepts.get(0).getName();
-      } catch (NoResultException e) {
-        return null;
-      }
-      
-     /** final javax.persistence.Query query = manager
-          .createQuery("select a from ConceptRefsetMemberSynonymJpa a where "
-              + "a.synonym = :synonym and a.termType = :termType "
-              + "and a.language = :language and a.active = true");
-      try {
-      
-        query.setParameter("synonym", pt);
-        query.setParameter("termType", "PT");
-        query.setParameter("language", language);
-        final List<ConceptRefsetMemberSynonym> synonyms = query.getResultList();
-        Long memberId =  synonyms.get(0).getMember().getId();
-        return getDisplayNameForMember(memberId, language, true);
-      } catch (NoResultException e) {
-        return null;
-      }
-      */
-     /** final javax.persistence.Query query = manager
-          .createQuery("select a from ConceptRefsetMemberSynonymJpa a where "
-              + "a.synonym LIKE :synonym and a.termType = :termType "
-              + "and a.language = :language and a.active = true");
-      try {
-      
-      
-        query.setParameter("synonym", pt + " (%");
-        query.setParameter("termType", "FSN" );
-        query.setParameter("language", language);
-        final List<ConceptRefsetMemberSynonym> synonyms = query.getResultList();
-        return synonyms.get(0).getSynonym();
 
-      } catch (NoResultException e) {
-        return null;
-      } */
-   }
+  @Override
+  public String getFSNNameForConcept(String terminologyId) throws Exception {
+    Logger.getLogger(getClass())
+        .debug("Refset Service - get fsn name for term " + terminologyId);
+
+    final javax.persistence.Query query =
+        manager.createQuery("select a from ConceptJpa a where "
+            + "a.terminologyId = :terminologyId  and a.name LIKE :fsn");
+    try {
+      query.setParameter("terminologyId", terminologyId);
+      query.setParameter("fsn", "% (%");
+      final List<Concept> concepts = query.getResultList();
+      return concepts.get(0).getName();
+    } catch (NoResultException e) {
+      return null;
+    }
+
+    /**
+     * final javax.persistence.Query query = manager .createQuery("select a from
+     * ConceptRefsetMemberSynonymJpa a where " + "a.synonym = :synonym and
+     * a.termType = :termType " + "and a.language = :language and a.active =
+     * true"); try {
+     * 
+     * query.setParameter("synonym", pt); query.setParameter("termType", "PT");
+     * query.setParameter("language", language); final
+     * List<ConceptRefsetMemberSynonym> synonyms = query.getResultList(); Long
+     * memberId = synonyms.get(0).getMember().getId(); return
+     * getDisplayNameForMember(memberId, language, true); } catch
+     * (NoResultException e) { return null; }
+     */
+    /**
+     * final javax.persistence.Query query = manager .createQuery("select a from
+     * ConceptRefsetMemberSynonymJpa a where " + "a.synonym LIKE :synonym and
+     * a.termType = :termType " + "and a.language = :language and a.active =
+     * true"); try {
+     * 
+     * 
+     * query.setParameter("synonym", pt + " (%"); query.setParameter("termType",
+     * "FSN" ); query.setParameter("language", language); final
+     * List<ConceptRefsetMemberSynonym> synonyms = query.getResultList(); return
+     * synonyms.get(0).getSynonym();
+     * 
+     * } catch (NoResultException e) { return null; }
+     */
+  }
 
   /* see superclass */
   @Override
@@ -1053,7 +1055,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
           member.setEffectiveTime(effectiveTime);
         refsetCopy.getMembers().add(member);
 
-        addMember(member,null);
+        addMember(member, null);
         for (ConceptRefsetMemberSynonym synonym : synonymList) {
           synonym.setMember(member);
           synonym.setId(null);
@@ -1380,6 +1382,52 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
 
   /* see superclass */
   @Override
+  public String getBulkLookupProgress(Long projectId) throws Exception {
+
+    String returnMessage = "";
+
+    if (bulkLookupProgressMap.containsKey(projectId)) {
+      returnMessage = bulkLookupProgressMap.get(projectId);
+    }
+
+    Logger.getLogger(getClass())
+        .info("Refset Service - getBulkLookupProgress - " + projectId + ": "
+            + returnMessage);
+
+    if(returnMessage == null || returnMessage.isEmpty()) {
+      return returnMessage;
+    }
+    
+    //Check if all lookups are completed
+    //Return message format is "x of y completed"
+    //If x and y are the same, it's done, so we can clear out the progress
+    String[] splitMessage = returnMessage.split("\\s+");
+    if(splitMessage[0].equals(splitMessage[2])) {
+      clearBulkLookupProgress(projectId);
+    }
+
+    return returnMessage;
+  }
+
+  /* see superclass */
+  @Override
+  public void setBulkLookupProgress(Long projectId, String processMessage)
+    throws Exception {
+
+    bulkLookupProgressMap.put(projectId, processMessage);
+
+  }
+
+  /* see superclass */
+  @Override
+  public void clearBulkLookupProgress(Long projectId) throws Exception {
+
+    bulkLookupProgressMap.remove(projectId);
+
+  }
+
+  /* see superclass */
+  @Override
   public void cancelLookup(Long objectId) throws Exception {
 
     Logger.getLogger(getClass())
@@ -1687,9 +1735,9 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
             translationConceptTerminologyIds.add(id);
           }
 
-          
           Logger.getLogger(RefsetServiceJpa.this.getClass())
-          .info("LOOKUP translation members for lookup ct = " + translationConceptTerminologyIds.size());
+              .info("LOOKUP translation members for lookup ct = "
+                  + translationConceptTerminologyIds.size());
           if (translationConceptTerminologyIds.size() > 0) {
             int i = 0;
 
@@ -2317,13 +2365,12 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
               member.getSynonyms().add(synonym);
             }
             continue;
-          } 
+          }
           for (LanguageRefsetMember lrm : d.getLanguageRefsetMembers()) {
             if ("900000000000003001".equals(d.getTypeId())) {
               synonym.setTermType("FSN");
             } else {
-              if ("900000000000548007".equals(
-                  lrm.getAcceptabilityId())) {
+              if ("900000000000548007".equals(lrm.getAcceptabilityId())) {
                 synonym.setTermType("PT");
               } else {
                 synonym.setTermType("SY");
@@ -2371,13 +2418,12 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
             member.getSynonyms().add(synonym);
           }
           continue;
-        } 
+        }
         for (LanguageRefsetMember lrm : d.getLanguageRefsetMembers()) {
           if ("900000000000003001".equals(d.getTypeId())) {
             synonym.setTermType("FSN");
           } else {
-            if ("900000000000548007".equals(
-                lrm.getAcceptabilityId())) {
+            if ("900000000000548007".equals(lrm.getAcceptabilityId())) {
               synonym.setTermType("PT");
             } else {
               synonym.setTermType("SY");
@@ -2435,12 +2481,13 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
 
     return releaseFileNames;
   }
-  
+
   /* see superclass */
   @Override
   public Map<String, Long> mapInactiveMembers(Long refsetId) throws Exception {
 
-    ConceptRefsetMemberList inactiveMembers = findMembersForRefset(refsetId, "", null, false);
+    ConceptRefsetMemberList inactiveMembers =
+        findMembersForRefset(refsetId, "", null, false);
 
     if (inactiveMembers.getObjects().size() > 0) {
       final Map<String, Long> inactiveMemberConceptIds = new HashMap<>();
@@ -2454,21 +2501,22 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
     } else {
       return null;
     }
-  }  
-  
+  }
+
   /* see superclass */
   @Override
-  public List<String> getInactiveConceptsForRefset(Refset refset) throws Exception {
-    
-    final TerminologyHandler terminologyHandler = getTerminologyHandler(refset.getProject(), headers);
-    
-    
+  public List<String> getInactiveConceptsForRefset(Refset refset)
+    throws Exception {
+
+    final TerminologyHandler terminologyHandler =
+        getTerminologyHandler(refset.getProject(), headers);
+
     List<String> inactiveConceptIds = new ArrayList<>();
     List<Concept> inactiveConcepts = new ArrayList<>();
-    
+
     for (int i = 0; i < refset.getMembers().size(); i++) {
       List<String> conceptIdList = new ArrayList<>();
-      
+
       for (int j = 0; i < refset.getMembers().size() && j < 500; i++, j++) {
         conceptIdList.add(refset.getMembers().get(i).getConceptId());
       }
@@ -2486,19 +2534,17 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
         continue;
       }
     }
-    
+
     refset.setInactiveConceptCount(inactiveConcepts.size());
 
     updateRefset(refset);
-    
-    //commitClearBegin();
 
-    
+    // commitClearBegin();
+
     for (Concept cpt : inactiveConcepts) {
-      inactiveConceptIds.add(cpt.getTerminologyId()); 
+      inactiveConceptIds.add(cpt.getTerminologyId());
     }
-     
-    
+
     return inactiveConceptIds;
   }
 }

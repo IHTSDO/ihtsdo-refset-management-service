@@ -18,6 +18,14 @@
         ng-show="showInactiveLookupButton()"
         ng-click="getInactiveConcepts()"
         title="Click to search for inactivations.  Last updated {{inactiveDate}}. ">Lookup Inactivations</button>
+      <button class="btn btn-xs btn-primary" 
+        ng-show="showRefreshDescriptionsButton()"
+        ng-click="refreshDescriptions()"
+        title="Click to lookup descriptions and update any that have changed.  Last updated {{refreshDescriptionsDate}}. ">Refresh Descriptions</button>
+      <button class="btn btn-xs btn-primary" 
+        ng-show="showDescriptionProgressButton()"
+        ng-disabled=true
+        title="Lookups in progress">Refreshing Descriptions - {{lookupProgressMessage}}</button>
     </h6>
   </div>
 </div>

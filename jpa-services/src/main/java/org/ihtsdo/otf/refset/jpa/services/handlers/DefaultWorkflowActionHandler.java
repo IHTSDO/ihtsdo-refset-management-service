@@ -306,21 +306,21 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
           record.getReviewers().remove(user.getUserName());
           record.setForReview(false);
           record.setLastModifiedBy(user.getUserName());
-          
+
           // Change of thought: instead of reverting to previous state, keep any
-          // changes that have been done 
-          
-          refset.setWorkflowStatus(WorkflowStatus.EDITING_DONE);       
-          
-//          // get the origin review refset (e.g. the EDITING_DONE state)
-//          final Refset originRefset =
-//              getOriginRefset(refset.getId(), record.getReviewOriginRevision());
-//          // Restore it.
-//          service.syncRefset(refset.getId(), originRefset);
-//          // Set the flag to avoid saving the refset later, this is the final
-//          // saved state.
-//          skipUpdate = true;
-//          // refset.setWorkflowStatus(WorkflowStatus.EDITING_DONE);
+          // changes that have been done
+
+          refset.setWorkflowStatus(WorkflowStatus.EDITING_DONE);
+
+          // // get the origin review refset (e.g. the EDITING_DONE state)
+          // final Refset originRefset =
+          // getOriginRefset(refset.getId(), record.getReviewOriginRevision());
+          // // Restore it.
+          // service.syncRefset(refset.getId(), originRefset);
+          // // Set the flag to avoid saving the refset later, this is the final
+          // // saved state.
+          // skipUpdate = true;
+          // // refset.setWorkflowStatus(WorkflowStatus.EDITING_DONE);
 
         }
 
@@ -742,20 +742,20 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
 
           // Change of thought: instead of reverting to previous state, keep any
           // changes that have been done
-          
+
           concept.setWorkflowStatus(WorkflowStatus.EDITING_DONE);
-          
-//          // get the origin review concept (e.g. the EDITING_DONE state)
-//          final Concept originConcept = getOriginConcept(concept.getId(),
-//              record.getReviewOriginRevision());
-//          // Restore it.
-//          service.syncConcept(concept.getId(), originConcept);
-//          // Set the flag to avoid saving the refset later, this is the final
-//          // saved state.
-//          skipUpdate = true;
-//          // no need to do this, sync takes care of it
-//          // concept.setWorkflowStatus(WorkflowStatus.EDITING_DONE);
-          
+
+          // // get the origin review concept (e.g. the EDITING_DONE state)
+          // final Concept originConcept = getOriginConcept(concept.getId(),
+          // record.getReviewOriginRevision());
+          // // Restore it.
+          // service.syncConcept(concept.getId(), originConcept);
+          // // Set the flag to avoid saving the refset later, this is the final
+          // // saved state.
+          // skipUpdate = true;
+          // // no need to do this, sync takes care of it
+          // // concept.setWorkflowStatus(WorkflowStatus.EDITING_DONE);
+
         }
         // a READY_FOR_PUBLICATION revision case that has not yet been saved
         // Simply remove the record and revert the revision flag
@@ -1209,6 +1209,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     list.setTotalCount(3);
     list.getObjects().add(UserRole.AUTHOR.toString());
     list.getObjects().add(UserRole.REVIEWER.toString());
+    list.getObjects().add(UserRole.LEAD.toString());
     list.getObjects().add(UserRole.ADMIN.toString());
     return list;
   }
@@ -1220,6 +1221,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     list.setTotalCount(3);
     list.getObjects().add(UserRole.AUTHOR.toString());
     list.getObjects().add(UserRole.REVIEWER.toString());
+    list.getObjects().add(UserRole.LEAD.toString());
     list.getObjects().add(UserRole.ADMIN.toString());
     return list;
   }
@@ -1245,18 +1247,30 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     refsetAllowedMap.put("ASSIGN" + "ADMIN" + "REVIEW_IN_PROGRESS", true);
     refsetAllowedMap.put("ASSIGN" + "ADMIN" + "REVIEW_DONE", true);
     refsetAllowedMap.put("ASSIGN" + "ADMIN" + "READY_FOR_PUBLICATION", true);
-    //refsetAllowedMap.put("UNASSIGN" + "ADMIN" + "NEW", true);
+    
     refsetAllowedMap.put("UNASSIGN" + "ADMIN" + "EDITING_IN_PROGRESS", true);
     refsetAllowedMap.put("UNASSIGN" + "ADMIN" + "EDITING_DONE", true);
     refsetAllowedMap.put("UNASSIGN" + "ADMIN" + "REVIEW_NEW", true);
     refsetAllowedMap.put("UNASSIGN" + "ADMIN" + "REVIEW_IN_PROGRESS", true);
     refsetAllowedMap.put("UNASSIGN" + "ADMIN" + "REVIEW_DONE", true);
 
+    // Refset Lead Options
+    refsetAllowedMap.put("ASSIGN" + "LEAD" + "NEW", true);
+    refsetAllowedMap.put("ASSIGN" + "LEAD" + "EDITING_IN_PROGRESS", true);
+    refsetAllowedMap.put("ASSIGN" + "LEAD" + "EDITING_DONE", true);
+    refsetAllowedMap.put("ASSIGN" + "LEAD" + "REVIEW_NEW", true);
+    refsetAllowedMap.put("ASSIGN" + "LEAD" + "REVIEW_IN_PROGRESS", true);
+    refsetAllowedMap.put("ASSIGN" + "LEAD" + "REVIEW_DONE", true);
+    refsetAllowedMap.put("ASSIGN" + "LEAD" + "READY_FOR_PUBLICATION", true);
+    
+    refsetAllowedMap.put("UNASSIGN" + "LEAD" + "EDITING_IN_PROGRESS", true);
+    refsetAllowedMap.put("UNASSIGN" + "LEAD" + "EDITING_DONE", true);
+    refsetAllowedMap.put("UNASSIGN" + "LEAD" + "REVIEW_NEW", true);
+    refsetAllowedMap.put("UNASSIGN" + "LEAD" + "REVIEW_IN_PROGRESS", true);
+    refsetAllowedMap.put("UNASSIGN" + "LEAD" + "REVIEW_DONE", true);
+
     // Refset Author Options
     refsetAllowedMap.put("ASSIGN" + "AUTHOR" + "NEW", true);
-    // refsetAllowedMap.put("ASSIGN" + "AUTHOR" + "READY_FOR_PUBLICATION",
-    // true);
-    // refsetAllowedMap.put("UNASSIGN" + "AUTHOR" + "NEW", true);
     refsetAllowedMap.put("UNASSIGN" + "AUTHOR" + "EDITING_IN_PROGRESS", true);
     refsetAllowedMap.put("UNASSIGN" + "AUTHOR" + "EDITING_DONE", true);
     refsetAllowedMap.put("SAVE" + "AUTHOR" + "NEW", true);
@@ -1284,6 +1298,9 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     refsetAllowedMap.put("FEEDBACK" + "ADMIN" + "REVIEW_NEW", true);
     refsetAllowedMap.put("FEEDBACK" + "ADMIN" + "REVIEW_IN_PROGRESS", true);
     refsetAllowedMap.put("FEEDBACK" + "ADMIN" + "REVIEW_DONE", true);
+    refsetAllowedMap.put("FEEDBACK" + "LEAD" + "REVIEW_NEW", true);
+    refsetAllowedMap.put("FEEDBACK" + "LEAD" + "REVIEW_IN_PROGRESS", true);
+    refsetAllowedMap.put("FEEDBACK" + "LEAD" + "REVIEW_DONE", true);    
     refsetAllowedMap.put("FEEDBACK" + "REVIEWER" + "REVIEW_NEW", true);
     refsetAllowedMap.put("FEEDBACK" + "REVIEWER" + "REVIEW_IN_PROGRESS", true);
     refsetAllowedMap.put("FEEDBACK" + "REVIEWER" + "REVIEW_DONE", true);
@@ -1296,12 +1313,20 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     refsetRoleMap.put("ASSIGN" + "ADMIN" + "NEW", "AUTHOR");
     refsetRoleMap.put("ASSIGN" + "ADMIN" + "READY_FOR_PUBLICATION", "AUTHOR");
     refsetRoleMap.put("ASSIGN" + "ADMIN" + "*", "REVIEWER");
+    refsetRoleMap.put("ASSIGN" + "LEAD" + "NEW", "AUTHOR");
+    refsetRoleMap.put("ASSIGN" + "LEAD" + "READY_FOR_PUBLICATION", "AUTHOR");
+    refsetRoleMap.put("ASSIGN" + "LEAD" + "*", "REVIEWER");    
     refsetRoleMap.put("ASSIGN" + "REVIEWER" + "READY_FOR_PUBLICATION",
         "AUTHOR");
+    
     refsetRoleMap.put("UNASSIGN" + "ADMIN" + "NEW", "AUTHOR");
     refsetRoleMap.put("UNASSIGN" + "ADMIN" + "EDITING_IN_PROGRESS", "AUTHOR");
     refsetRoleMap.put("UNASSIGN" + "ADMIN" + "EDITING_DONE", "AUTHOR");
     refsetRoleMap.put("UNASSIGN" + "ADMIN" + "*", "REVIEWER");
+    refsetRoleMap.put("UNASSIGN" + "LEAD" + "NEW", "AUTHOR");
+    refsetRoleMap.put("UNASSIGN" + "LEAD" + "EDITING_IN_PROGRESS", "AUTHOR");
+    refsetRoleMap.put("UNASSIGN" + "LEAD" + "EDITING_DONE", "AUTHOR");
+    refsetRoleMap.put("UNASSIGN" + "LEAD" + "*", "REVIEWER");    
 
     /*
      * refsetRoleMap.put("FEEDBACK" + "ADMIN" + "REVIEW_NEW", "AUTHOR");
@@ -1329,8 +1354,20 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     translationAllowedMap.put("UNASSIGN" + "ADMIN" + "REVIEW_IN_PROGRESS",
         true);
     translationAllowedMap.put("UNASSIGN" + "ADMIN" + "REVIEW_DONE", true);
-
     // translationAllowedMap.put("REASSIGN" + "ADMIN" + "*", true);
+    
+    //
+    translationAllowedMap.put("ASSIGN" + "LEAD" + "*", true);
+    translationAllowedMap.put("UNASSIGN" + "LEAD" + "NEW", true);
+    translationAllowedMap.put("UNASSIGN" + "LEAD" + "EDITING_IN_PROGRESS",
+        true);
+    translationAllowedMap.put("UNASSIGN" + "LEAD" + "EDITING_DONE", true);
+    translationAllowedMap.put("UNASSIGN" + "LEAD" + "REVIEW_NEW", true);
+    translationAllowedMap.put("UNASSIGN" + "LEAD" + "REVIEW_IN_PROGRESS",
+        true);
+    translationAllowedMap.put("UNASSIGN" + "LEAD" + "REVIEW_DONE", true);
+    // translationAllowedMap.put("REASSIGN" + "LEAD" + "*", true);
+
 
     // Translation Author Options
     translationAllowedMap.put("ASSIGN" + "AUTHOR" + "NEW", true);
@@ -1373,7 +1410,11 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     translationAllowedMap.put("FEEDBACK" + "ADMIN" + "REVIEW_NEW", true);
     translationAllowedMap.put("FEEDBACK" + "ADMIN" + "REVIEW_IN_PROGRESS",
         true);
+    translationAllowedMap.put("FEEDBACK" + "LEAD" + "REVIEW_NEW", true);
+    translationAllowedMap.put("FEEDBACK" + "LEAD" + "REVIEW_IN_PROGRESS",
+        true);
     translationAllowedMap.put("FEEDBACK" + "ADMIN" + "REVIEW_DONE", true);
+    translationAllowedMap.put("FEEDBACK" + "LEAD" + "REVIEW_DONE", true);
     translationAllowedMap.put("FEEDBACK" + "REVIEWER" + "REVIEW_NEW", true);
     translationAllowedMap.put("FEEDBACK" + "REVIEWER" + "REVIEW_IN_PROGRESS",
         true);
@@ -1388,13 +1429,23 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     translationRoleMap.put("ASSIGN" + "ADMIN" + "READY_FOR_PUBLICATION",
         "AUTHOR");
     translationRoleMap.put("ASSIGN" + "ADMIN" + "*", "REVIEWER");
+    translationRoleMap.put("ASSIGN" + "LEAD" + "NEW", "AUTHOR");
+    translationRoleMap.put("ASSIGN" + "LEAD" + "READY_FOR_PUBLICATION",
+        "AUTHOR");
+    translationRoleMap.put("ASSIGN" + "LEAD" + "*", "REVIEWER");    
     translationRoleMap.put("ASSIGN" + "REVIEWER" + "READY_FOR_PUBLICATION",
         "AUTHOR");
+    
     translationRoleMap.put("UNASSIGN" + "ADMIN" + "NEW", "AUTHOR");
     translationRoleMap.put("UNASSIGN" + "ADMIN" + "EDITING_IN_PROGRESS",
         "AUTHOR");
     translationRoleMap.put("UNASSIGN" + "ADMIN" + "EDITING_DONE", "AUTHOR");
     translationRoleMap.put("UNASSIGN" + "ADMIN" + "*", "REVIEWER");
+    translationRoleMap.put("UNASSIGN" + "LEAD" + "NEW", "AUTHOR");
+    translationRoleMap.put("UNASSIGN" + "LEAD" + "EDITING_IN_PROGRESS",
+        "AUTHOR");
+    translationRoleMap.put("UNASSIGN" + "LEAD" + "EDITING_DONE", "AUTHOR");
+    translationRoleMap.put("UNASSIGN" + "LEAD" + "*", "REVIEWER");    
     /*
      * translationRoleMap.put("FEEDBACK" + "ADMIN" + "REVIEW_NEW", "AUTHOR");
      * translationRoleMap.put("FEEDBACK" + "ADMIN" + "REVIEW_IN_PROGRESS",
@@ -1420,7 +1471,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
       return findAvailableEditingConcepts(translation, pfs, service);
     } else if (userRole == UserRole.REVIEWER) {
       return findAvailableReviewConcepts(translation, pfs, service);
-    } else if (userRole == UserRole.ADMIN) {
+    } else if (userRole == UserRole.ADMIN || userRole == UserRole.LEAD) {
       List<Concept> concepts = new ArrayList<>();
       concepts.addAll(findAvailableEditingConcepts(translation, null, service)
           .getObjects());
@@ -1435,7 +1486,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
       return conceptList;
     } else {
       throw new Exception(
-          "User role to find concepts must be AUTHOR, REVIEWER, or ADMIN.");
+          "User role to find concepts must be AUTHOR, REVIEWER, LEAD, or ADMIN.");
     }
   }
 
@@ -1447,7 +1498,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
       return findAvailableEditingRefsets(projectId, pfs, service);
     } else if (userRole == UserRole.REVIEWER) {
       return findAvailableReviewRefsets(projectId, pfs, service);
-    } else if (userRole == UserRole.ADMIN) {
+    } else if (userRole == UserRole.ADMIN || userRole == UserRole.LEAD) {
       List<Refset> refsets = new ArrayList<>();
       refsets.addAll(
           findAvailableEditingRefsets(projectId, null, service).getObjects());
@@ -1462,7 +1513,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
       return list;
     } else {
       throw new Exception(
-          "User role to find refsets must be AUTHOR, REVIEWER, or ADMIN.");
+          "User role to find refsets must be AUTHOR, REVIEWER, LEAD, or ADMIN.");
     }
   }
 
@@ -1489,7 +1540,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
       } else {
         throw new Exception("UserName must always be set");
       }
-    } else if (userRole == UserRole.ADMIN) {
+    } else if (userRole == UserRole.ADMIN || userRole == UserRole.LEAD) {
       if (userName != null && !userName.equals("")) {
         query = "projectId:" + projectId + " AND " + "( (authors:" + userName
             + " AND forAuthoring:true) OR" + "  (reviewers:" + userName
@@ -1500,7 +1551,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
       }
     } else {
       throw new Exception(
-          "User role to find assigned refsets must be AUTHOR, REVIEWER, or ADMIN.");
+          "User role to find assigned refsets must be AUTHOR, REVIEWER, LEAD, or ADMIN.");
     }
     final TrackingRecordList records =
         service.findTrackingRecordsForQuery(query, pfs);
@@ -1536,12 +1587,12 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
               "Unsupported ActionStatus requested: " + actionStatus);
         }
       }
-    } else if (userRole == UserRole.ADMIN) {
+    } else if (userRole == UserRole.ADMIN || userRole == UserRole.LEAD) {
       query = "projectId:" + projectId + " AND translationId:" + translationId
           + " AND (forAuthoring:true OR forReview:true)";
     } else {
       throw new Exception(
-          "User role to find assigned concepts must be AUTHOR, REVIEWER, or ADMIN.");
+          "User role to find assigned concepts must be AUTHOR, REVIEWER, LEAD, or ADMIN.");
     }
     final TrackingRecordList records =
         service.findTrackingRecordsForQuery(query, pfs);
