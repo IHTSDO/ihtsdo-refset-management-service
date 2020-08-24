@@ -88,11 +88,12 @@ public class ExportTranslationRf2Handler implements ExportTranslationHandler {
         + translation.getTerminologyId() + ", " + translation.getName());
 
     // Use info from nameMapping map and "translation" object to get file names right.
+    String namespace = translation.getProject().getNamespace();
     String languageRefsetMemberFileName = "der2_cRefset_LanguageSnapshot-"
-        + translation.getLanguage().replace('-', '_') + translation.getProject().getNamespace() + "_" + currentDate + ".txt";
+        + translation.getLanguage().replace('-', '_') + (namespace == null ? "nonamespace" : namespace) + "_" + currentDate + ".txt";
     String descriptionDialect = (nameMapping.containsKey(translation.getLanguage()) ? nameMapping.get(translation.getLanguage()) : translation.getLanguage()).replace('-', '_');
     String descriptionFileName = "sct2_Description_Snapshot-"
-        + descriptionDialect + translation.getProject().getNamespace()
+        + descriptionDialect + (namespace == null ? "nonamespace" : namespace)
             + "_" + currentDate + ".txt";
 
     // TODO: rewire this to just extract all descriptions, then all langauges
