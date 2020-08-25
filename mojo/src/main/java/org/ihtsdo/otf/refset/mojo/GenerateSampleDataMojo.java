@@ -724,7 +724,7 @@ public class GenerateSampleDataMojo extends AbstractRttMojo {
           reviewer1.getAuthToken());
       new ReleaseServiceRestImpl().betaRefsetRelease(test9.getId(), "DEFAULT",
           reviewer1.getAuthToken());
-      new ReleaseServiceRestImpl().finishRefsetRelease(test9.getId(),
+      new ReleaseServiceRestImpl().finishRefsetRelease(test9.getId(), null,
           reviewer1.getAuthToken());
 
       // calculate date for tomorrow to ensure different release date than above
@@ -737,7 +737,7 @@ public class GenerateSampleDataMojo extends AbstractRttMojo {
           reviewer1.getAuthToken());
       new ReleaseServiceRestImpl().betaRefsetRelease(test9.getId(), "DEFAULT",
           reviewer1.getAuthToken());
-      new ReleaseServiceRestImpl().finishRefsetRelease(test9.getId(),
+      new ReleaseServiceRestImpl().finishRefsetRelease(test9.getId(), null,
           reviewer1.getAuthToken());
 
       // test 10

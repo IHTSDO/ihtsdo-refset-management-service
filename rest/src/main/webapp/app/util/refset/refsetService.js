@@ -393,7 +393,7 @@ tsApp.service('refsetService', [
     };
 
     // find members for refset
-    this.findRefsetMembersForQuery = function(refsetId, query, pfs, translated, language) {
+    this.findRefsetMembersForQuery = function(refsetId, query, pfs, translated, language, fsn) {
       console.debug('findRefsetMembersForQuery');
       var deferred = $q.defer();
 
@@ -401,7 +401,8 @@ tsApp.service('refsetService', [
       gpService.increment();
       $http.post(
         refsetUrl + 'members?refsetId=' + refsetId + '&query=' + utilService.prepQuery(query)
-           + (language != null ? '&language=' + language : '') + (translated != null ? '&translated=' + translated : ''), utilService.prepPfs(pfs))
+           + (language != null ? '&language=' + language : '') + (fsn != null ? '&fsn=' + fsn : '')
+           + (translated != null ? '&translated=' + translated : ''), utilService.prepPfs(pfs))
         .then(
         // success
         function(response) {
@@ -758,7 +759,7 @@ tsApp.service('refsetService', [
 
     // get required language refsets for branch
     this.getRequiredLanguageRefsets = function(refsetId) {
-      console.debug('getRequiredLangaugeRefsets');
+      console.debug('getRequiredLanguageRefsets');
       var deferred = $q.defer();
 
       // Get required language refsets
@@ -921,12 +922,14 @@ tsApp.service('refsetService', [
           });
     };
 
-    this.exportMembers = function(refset, handler, query, pfs) {
+    this.exportMembers = function(refset, handler, query, language, pfs, fsn) {
       console.debug('exportMembers');
       gpService.increment();
+      
       $http.post(
         refsetUrl + 'export/members?refsetId=' + refset.id + '&handlerId=' + handler.id
-          + (query ? '&query=' + utilService.prepQuery(query) : ""), pfs).then(
+          + (query ? '&query=' + utilService.prepQuery(query) : "") 
+          + (language ? '&language=' + language : "") + (fsn != null ? '&fsn=' + fsn : ""), pfs).then(
         // Success
         function(response) {
           var blob = new Blob([ response.data ], {
@@ -1360,6 +1363,56 @@ tsApp.service('refsetService', [
       return deferred.promise;
     };
 
+    // 
+    this.getInactiveConcepts = function(projectId) {
+      console.debug('getInactiveConcepts');
+      // Setup deferred
+      var deferred = $q.defer();
+
+      gpService.increment();
+      $http.get(refsetUrl + 'members/inactive?projectId=' + projectId, {
+        headers : {
+          'Content-type' : 'text/plain'
+        }
+      }).then(
+      // success
+      function(response) {
+        console.debug('  refsets with inactive concepts = ', response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    };
+    
+    // Re-lookup all members for all active refsets, to pick up any description changes
+    this.refreshDescriptions = function(projectId) {
+      console.debug('refreshDescriptions');
+      // Setup deferred
+      var deferred = $q.defer();
+
+      gpService.increment();
+      $http.get(refsetUrl + 'members/refresh?projectId=' + projectId).then(
+      // success
+      function(response) {
+        console.debug(' project refsets descriptions refreshing ');
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    };    
+    
     // get the progress of the name/status member lookup process
     this.getLookupProgress = function(refsetId) {
       console.debug('getLookupProgress');
@@ -1426,6 +1479,26 @@ tsApp.service('refsetService', [
       return deferred.promise;
     };    
 
+    // Get the progress message string for a project's bulkLookup process
+    this.getBulkLookupProgressMessage = function(projectId) {
+      console.debug('getBulkLookupProgressMessage');
+      // Setup deferred
+      var deferred = $q.defer();
+
+      $http.get(refsetUrl + 'lookup/progress/message?projectId=' + projectId).then(
+      // success
+      function(response) {
+        console.debug('  lookup progress message returned ');
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    };    
+    
     // get the count of items in the resolved expression
     this.countExpression = function(projectId, expression, terminology, version) {
       console.debug('count expression', projectId, expression, terminology, version);

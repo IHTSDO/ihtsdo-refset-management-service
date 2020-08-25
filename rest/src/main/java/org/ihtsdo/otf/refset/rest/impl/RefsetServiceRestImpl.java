@@ -12,6 +12,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -362,6 +363,212 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       refsetService.close();
       securityService.close();
     }
+  }
+
+  /* see superclass */
+  @Override
+  @GET
+  @Path("/members/inactive")
+  @ApiOperation(value = "Return refsets with inactive members", notes = "Returns names of all refset in the project that have inactive members.", response = StringList.class)
+  public StringList getInactiveConceptRefsets(
+    @ApiParam(value = "Project id, e.g. 3", required = true) @QueryParam("projectId") Long projectId,
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass())
+        .info("RESTful call POST (Refset): /members/inactive for projectId: "
+            + projectId);
+
+    // Create service and configure transaction scope
+    final RefsetService refsetService =
+        new RefsetServiceJpa(getHeaders(headers));
+    refsetService.setTransactionPerOperation(false);
+    refsetService.beginTransaction();
+
+    Project project = refsetService.getProject(projectId);
+    List<Refset> refsets = project.getRefsets();
+    StringList refsetList = new StringList();
+
+    try {
+      final String userName =
+          authorizeProject(refsetService, projectId, securityService, authToken,
+              "return inactive members", UserRole.AUTHOR);
+
+      // for each refset in project
+      for (int k = 0; k < refsets.size(); k++) {
+
+        Refset refset = refsets.get(k);
+        refset = refsetService.getRefset(refset.getId());
+        if (refset.getWorkflowStatus() == WorkflowStatus.PUBLISHED) {
+          continue;
+        }
+
+        if (refsetService.getInactiveConceptsForRefset(refset).size() > 0) {
+          refsetList.addObject(refset.getName());
+        }
+      }
+
+      project.setInactiveLastModified(new Date());
+      refsetService.updateProject(project);
+      refsetService.commit();
+
+      refsetList.setTotalCount(refsetList.getObjects().size());
+      return refsetList;
+
+    } catch (Exception e) {
+      handleException(e, "returning refsets with inactive concepts");
+    } finally {
+      refsetService.close();
+      securityService.close();
+    }
+
+    return null;
+  }
+
+  /* see superclass */
+  @Override
+  @GET
+  @Path("/members/refresh")
+  @ApiOperation(value = "Refresh descriptions for project", notes = "Re-look up all refsets' concepts to catch any recently updated descriptions")
+  public void refreshDescriptions(
+    @ApiParam(value = "Project id, e.g. 3", required = true) @QueryParam("projectId") Long projectId,
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass())
+        .info("RESTful call GET (Refset): /members/refresh for projectId: "
+            + projectId);
+
+    // Create service and configure transaction scope
+    final RefsetService refsetService =
+        new RefsetServiceJpa(getHeaders(headers));
+    refsetService.setTransactionPerOperation(false);
+    refsetService.beginTransaction();
+
+    Project project = refsetService.getProject(projectId);
+    List<Refset> refsets = project.getRefsets();
+    
+    // We won't be running lookup on all refsets, so create a new list to handle
+    List<Long> refsetIdsToLookup = new ArrayList<>();
+    for (int k = 0; k < refsets.size(); k++) {
+      if(!refsets.get(k).getWorkflowStatus().equals(WorkflowStatus.PUBLISHED)) {
+        refsetIdsToLookup.add(refsets.get(k).getId());
+      }
+    }
+
+    // Set the lookupProgress message
+    refsetService.setBulkLookupProgress(projectId,
+        "0 of " + refsetIdsToLookup.size() + " completed.");
+
+    final Thread t = new Thread(new Runnable() {
+
+      /* see superclass */
+      @Override
+      public void run() {
+
+        try {
+          final String userName =
+              authorizeProject(refsetService, projectId, securityService,
+                  authToken, "return inactive members", UserRole.AUTHOR);
+
+          int count = 0;
+          int completedCount = 0;
+
+          // for each refset in project
+          for (Long refsetId : refsetIdsToLookup) {
+
+            Refset refset = refsetService.getRefset(refsetId);
+
+            Logger.getLogger(getClass()).info(
+                "RESTful call GET (Refset) : Starting concept lookup for refset "
+                    + refset.getId() + ": " + refset.getName());
+
+            refsetService.handleLazyInit(refset);
+
+            // Flag all members as requiring name re-lookup
+            for (ConceptRefsetMember member : refset.getMembers()) {
+              member.setConceptName(TerminologyHandler.REQUIRES_NAME_LOOKUP);
+              refsetService.updateMember(member);
+
+              refsetService.logAndCommit(++count, RootService.logCt,
+                  RootService.commitCt);
+            }
+
+            refset.setLookupRequired(true);
+            refsetService.updateRefset(refset);
+
+            refsetService.commitClearBegin();
+
+            // Kick off lookup member process, and wait until it finishes before
+            // starting on next refset
+            refsetService.lookupMemberNames(refset.getId(),
+                "refresh descriptions", false, true);
+
+            Logger.getLogger(getClass()).info(
+                "RESTful call GET (Refset) : Completed concept lookup for refset "
+                    + refset.getId() + ": " + refset.getName());
+
+            // After every refset lookup is completed, update the lookupProgress
+            // message
+            refsetService.setBulkLookupProgress(projectId,
+                ++completedCount + " of " + refsetIdsToLookup.size() + " completed.");
+
+          }
+
+          project.setRefeshDescriptionsLastModified(new Date());
+          refsetService.updateProject(project);
+          refsetService.commit();
+
+          return;
+
+        } catch (Exception e) {
+          handleException(e, "refresh descriptions");
+        } finally {
+          try {
+            refsetService.close();
+            securityService.close();
+          } catch (Exception e) {
+            // Do nothing
+          }
+        }
+
+        return;
+      }
+    });
+
+    t.start();
+
+    return;
+  }
+
+  /* see superclass */
+  @Override
+  @GET
+  @Path("/lookup/progress/message")
+  @ApiOperation(value = "Get progress of bulk lookup process", notes = "Returns the process progress message for specified project's bulk lookup", response = String.class)
+  @Produces({
+      MediaType.TEXT_PLAIN
+  })
+  public String getBulkLookupProgressMessage(
+    @ApiParam(value = "Project id, e.g. 3", required = true) @QueryParam("projectId") Long projectId,
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass())
+        .info("RESTful call GET (Refset): /lookup/progress , " + projectId);
+
+    final RefsetService refsetService = new RefsetServiceJpa();
+
+    String returnMessage = "";
+
+    try {
+      returnMessage = refsetService.getBulkLookupProgress(projectId);
+
+      return returnMessage;
+    } catch (Exception e) {
+      handleException(e, "trying to find the bulk process status for refsets");
+    } finally {
+      refsetService.close();
+      securityService.close();
+    }
+    return null;
   }
 
   /* see superclass */
@@ -1040,13 +1247,15 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
     @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
     @ApiParam(value = "Import handler id, e.g. \"DEFAULT\"", required = true) @QueryParam("handlerId") String ioHandlerInfoId,
     @ApiParam(value = "Query, e.g. \"aspirin\"", required = true) @QueryParam("query") String query,
+    @ApiParam(value = "Language, e.g. es", required = false) @QueryParam("language") String language,
+    @ApiParam(value = "Fsn, e.g. true/false/null", required = false) @QueryParam("fsn") Boolean fsn,
     @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
     Logger.getLogger(getClass())
         .info("RESTful call GET (Refset): /export/members " + refsetId + ", "
-            + ioHandlerInfoId);
+            + ioHandlerInfoId + ", " + query + ", " + language + ", " + fsn);
 
     final RefsetService refsetService =
         new RefsetServiceJpa(getHeaders(headers));
@@ -1068,12 +1277,25 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         throw new Exception("invalid handler id " + ioHandlerInfoId);
       }
 
-      // export the members
-      return handler.exportMembers(refset,
+      List<ConceptRefsetMember> list =
           refsetService.findMembersForRefset(refset.getId(),
               query == null ? "(memberType:INCLUSION OR memberType:MEMBER)"
                   : query + " AND (memberType:INCLUSION OR memberType:MEMBER)",
-              pfs, true).getObjects());
+              pfs, true).getObjects();
+
+      for (ConceptRefsetMember member : list) {
+        if (language != null && !language.isEmpty()) {
+          String displayName = refsetService
+              .getDisplayNameForMember(member.getId(), language, fsn);
+          if (displayName != null) {
+            member.setConceptName(displayName);
+          }
+        }
+        refsetService.handleLazyInit(member);
+      }
+
+      // export the members
+      return handler.exportMembers(refset, list);
 
     } catch (Exception e) {
       handleException(e, "trying to export members");
@@ -1519,7 +1741,29 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       final Map<String, Long> inactiveMemberConceptIdsMap =
           refsetService.mapInactiveMembers(refset.getId());
 
+      // Lookup all perspective members, and remove any invalid ones (i.e.
+      // conceptIds that aren't findable by the terminology handler)
+      final List<String> conceptIds = new ArrayList<>();
+      for (ConceptRefsetMember member : members) {
+        conceptIds.add(member.getConceptId());
+      }
+
+      final ConceptList validConcepts = refsetService
+          .getTerminologyHandler(refset.getProject(), getHeaders(headers))
+          .getConcepts(conceptIds, refset.getTerminology(), refset.getVersion(),
+              false);
+
+      final Set<String> validConceptIds = new HashSet<>();
+      for (Concept concept : validConcepts.getObjects()) {
+        validConceptIds.add(concept.getTerminologyId());
+      }
+
       for (final ConceptRefsetMemberJpa member : members) {
+
+        // If the member is invalid, don't add to the refset
+        if (!validConceptIds.contains(member.getConceptId())) {
+          continue;
+        }
 
         // Check if member already exists, then skip
         ConceptRefsetMember memberExists =
@@ -1678,6 +1922,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
     @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
     @ApiParam(value = "Query", required = false) @QueryParam("query") String query,
     @ApiParam(value = "Language, e.g. es", required = false) @QueryParam("language") String language,
+    @ApiParam(value = "Fsn, e.g. true/false/null", required = false) @QueryParam("fsn") Boolean fsn,
     @ApiParam(value = "Translated, e.g. true/false/null", required = false) @QueryParam("translated") Boolean translated,
     @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
@@ -1685,8 +1930,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
 
     Logger.getLogger(getClass())
         .info("RESTful call (Refset): find members for query, refsetId:"
-            + refsetId + " query:" + query + " language:" + language + pfs + " "
-            + translated);
+            + refsetId + " query:" + query + " language:" + language + ", "
+            + pfs + ", " + translated + ", " + fsn);
 
     final RefsetService refsetService =
         new RefsetServiceJpa(getHeaders(headers));
@@ -1719,8 +1964,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         for (ConceptRefsetMember member : list.getObjects()) {
           if (language != null && !language.isEmpty()
               && !language.contentEquals("en")) {
-            String displayName =
-                refsetService.getDisplayNameForMember(member.getId(), language);
+            String displayName = refsetService
+                .getDisplayNameForMember(member.getId(), language, fsn);
             if (displayName != null) {
               member.setConceptName(displayName);
             }
@@ -2522,7 +2767,12 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       addLogEntry(refsetService, userName, "FINISH MIGRATION",
           refset.getProject().getId(), refset.getId(), refset.toString());
 
+      // reset inactive count to 0 to remove warning banner
+      refset.setInactiveConceptCount(0);
+      refsetService.updateRefset(refset);
+
       refsetService.commit();
+
       return refset;
 
     } catch (Exception e) {
@@ -3690,7 +3940,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
   @GET
   @Path("/languages")
   @ApiOperation(value = "Get required language refsets", notes = "Gets list of required language refsets for a branch", response = StringList.class)
-  public StringList getRequiredLanguageRefsets(
+  public KeyValuePairList getRequiredLanguageRefsets(
     @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
@@ -3705,19 +3955,19 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
           securityService, authToken, "get required language refsets",
           UserRole.VIEWER);
 
-      List<String> languagePriorities = refsetService
+      KeyValuePairList languagePriorities = refsetService
           .getTerminologyHandler(refset.getProject(), getHeaders(headers))
           .getRequiredLanguageRefsets(refset.getTerminology(),
               refset.getVersion());
 
       StringList list = new StringList();
-      for (String str : languagePriorities) {
-        list.addObject(str);
-      }
-      if (!list.contains("en")) {
-        list.addObject("en");
-      }
-      return list;
+      /**
+       * for (String str : languagePriorities.getKeyValuePairs()) {
+       * list.addObject(str); } if (list.contains("en")) {
+       * list.removeObject("en"); } list.addObject("en PT"); list.addObject("en
+       * FSN");
+       */
+      return languagePriorities;
 
     } catch (Exception e) {
       handleException(e, "trying to get required language refsets");

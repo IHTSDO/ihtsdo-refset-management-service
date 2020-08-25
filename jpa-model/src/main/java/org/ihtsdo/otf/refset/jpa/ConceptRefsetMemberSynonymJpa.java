@@ -57,6 +57,14 @@ public class ConceptRefsetMemberSynonymJpa
   /** The term type. */
   private String termType;
 
+  /** The active. */
+  @Column(nullable = false)
+  private boolean active = true;
+  
+  /**  The language refset id. */
+  private String languageRefsetId;
+
+  
   /**
    * The default constructor.
    */
@@ -73,11 +81,13 @@ public class ConceptRefsetMemberSynonymJpa
    * @param member the member
    */
   public ConceptRefsetMemberSynonymJpa(String synonym, String language,
-      String termType, ConceptRefsetMember member) {
+      String termType, ConceptRefsetMember member, boolean active, String languageRefsetId) {
+    setActive(active);
     setSynonym(synonym);
     setLanguage(language);
     setTermType(termType);
     setMember(member);
+    setLanguageRefsetId(languageRefsetId);
   }
 
   /**
@@ -86,6 +96,7 @@ public class ConceptRefsetMemberSynonymJpa
    * @param synonym the synonym
    */
   public ConceptRefsetMemberSynonymJpa(ConceptRefsetMemberSynonym synonym) {
+    setActive(synonym.isActive());
     setSynonym(synonym.getSynonym());
     setLanguage(synonym.getLanguage());
     setTermType(synonym.getTermType());
@@ -132,7 +143,7 @@ public class ConceptRefsetMemberSynonymJpa
   @Override
   public String toString() {
     return "ConceptRefsetMemberSynonym [member=" + member + ", getSynonym()="
-        + getSynonym() + ", getLanguage()=" + getLanguage() + ", getTermType()="
+        + getSynonym() + ", getLanguage()=" + getLanguage() + ", getLanguageRefsetId()=" + getLanguageRefsetId() + ", getTermType()="
         + getTermType() + ", getClass()=" + getClass() + ", toString()="
         + super.toString() + "]";
   }
@@ -191,6 +202,36 @@ public class ConceptRefsetMemberSynonymJpa
   }
 
   /* see superclass */
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  @Override
+  public boolean isActive() {
+    return active;
+  }
+  
+
+  /* see superclass */
+  @Override
+  public void setActive(boolean active) {
+    this.active = active;
+  }
+  
+
+  /* see superclass */
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  @Override
+  public String getLanguageRefsetId() {
+    return languageRefsetId;
+  }
+
+  /* see superclass */
+  @Override
+  public void setLanguageRefsetId(String languageRefsetId) {
+    this.languageRefsetId = languageRefsetId;
+  }
+  
+
+  
+  /* see superclass */
   @Override
   public int hashCode() {
     final int prime = 31;
@@ -201,6 +242,8 @@ public class ConceptRefsetMemberSynonymJpa
         + ((getLanguage() == null) ? 0 : getLanguage().hashCode());
     result = prime * result
         + ((getTermType() == null) ? 0 : getTermType().hashCode());
+    result = prime * result
+        + ((getLanguageRefsetId() == null) ? 0 : getLanguageRefsetId().hashCode());
     result =
         prime * result + ((member == null || member.getTerminologyId() == null)
             ? 0 : member.getTerminologyId().hashCode());
@@ -232,6 +275,11 @@ public class ConceptRefsetMemberSynonymJpa
         return false;
     } else if (!getLanguage().equals(other.getLanguage()))
       return false;
+    if (languageRefsetId == null) {
+      if (other.languageRefsetId != null)
+        return false;
+    } else if (!languageRefsetId.equals(other.languageRefsetId))
+      return false;
     if (member == null) {
       if (other.member != null)
         return false;
@@ -244,4 +292,9 @@ public class ConceptRefsetMemberSynonymJpa
     return true;
   }
 
+  
+  
+  
+  
+ 
 }

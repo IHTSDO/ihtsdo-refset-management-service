@@ -7,7 +7,9 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -15,6 +17,7 @@ import java.util.zip.ZipOutputStream;
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
+import org.ihtsdo.otf.refset.helpers.FieldedStringTokenizer;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.Description;
 import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
@@ -27,6 +30,11 @@ public class ExportTranslationRf2Handler implements ExportTranslationHandler {
 
   /** The request cancel flag. */
   boolean requestCancel = false;
+  
+  // map languageRefset file dialect to description file dialect
+  Map<String, String> nameMapping = new HashMap<>();
+  
+  String currentDate = "";
 
   /**
    * Instantiates an empty {@link ExportTranslationRf2Handler}.
@@ -34,6 +42,24 @@ public class ExportTranslationRf2Handler implements ExportTranslationHandler {
    */
   public ExportTranslationRf2Handler() throws Exception {
     super();
+     
+    currentDate = ConfigUtility.DATE_FORMAT.format(new Date());
+    
+    // Check config.properties to see if language contribution to file name needs to be adjusted 
+    String[] keys = ConfigUtility.getConfigProperties()
+          .getProperty("language.refset.dialect").split(",");
+    
+    // add the dialect entries for each requested property to the map/list
+    for (String propertyKey : keys) {
+      String infoString =
+          ConfigUtility.getConfigProperties().getProperty("language.refset.dialect." + propertyKey);
+
+      for (final String info : infoString.split(";")) {
+        String[] values = FieldedStringTokenizer.split(info, "|");
+        // return language-country mapped to full-name|languageRefsetId
+        nameMapping.put(values[2], values[3]);         
+      }
+    }
   }
 
   /* see superclass */
@@ -61,11 +87,14 @@ public class ExportTranslationRf2Handler implements ExportTranslationHandler {
     Logger.getLogger(getClass()).info("Export translation concepts - "
         + translation.getTerminologyId() + ", " + translation.getName());
 
-    // Use info from "translation" object to get file name right.
+    // Use info from nameMapping map and "translation" object to get file names right.
+    String namespace = translation.getProject().getNamespace();
     String languageRefsetMemberFileName = "der2_cRefset_LanguageSnapshot-"
-        + translation.getLanguage() + "_" + translation.getVersion().replaceAll("/", "_") + ".txt";
+        + translation.getLanguage().replace('-', '_') + (namespace == null ? "nonamespace" : namespace) + "_" + currentDate + ".txt";
+    String descriptionDialect = (nameMapping.containsKey(translation.getLanguage()) ? nameMapping.get(translation.getLanguage()) : translation.getLanguage()).replace('-', '_');
     String descriptionFileName = "sct2_Description_Snapshot-"
-        + translation.getLanguage() + "_" + translation.getVersion().replaceAll("/", "_") + ".txt";
+        + descriptionDialect + (namespace == null ? "nonamespace" : namespace)
+            + "_" + currentDate + ".txt";
 
     // TODO: rewire this to just extract all descriptions, then all langauges
     // and call the exportDelta with those. then logic is the same
@@ -179,11 +208,12 @@ public class ExportTranslationRf2Handler implements ExportTranslationHandler {
     Logger.getLogger(getClass()).info("Export translation contents - "
         + translation.getTerminologyId() + ", " + translation.getName());
 
-    // Use info from "translation" object to get file name right.
+    // Use info from nameMapping map and "translation" object to get file names right.
     String languageRefsetMemberFileName = "der2_cRefset_LanguageDelta-"
-        + translation.getLanguage() + "_" + translation.getVersion().replaceAll("/", "_") + ".txt";
-    String descriptionFileName = "sct2_Description_Delta-"
-        + translation.getLanguage() + "_" + translation.getVersion().replaceAll("/", "_") + ".txt";
+        + translation.getLanguage().replace('-', '_') + translation.getProject().getNamespace() + "_" + currentDate + ".txt";
+    String descriptionDialect = (nameMapping.containsKey(translation.getLanguage()) ? nameMapping.get(translation.getLanguage()) : translation.getLanguage()).replace('-', '_');
+    String descriptionFileName = "sct2_Description_Delta-" + descriptionDialect + translation.getProject().getNamespace()
+            + "_" + currentDate + ".txt";
 
     // Write descriptions and language refset entries
     // in SNOMED CT Structure to a .zip file
@@ -303,7 +333,7 @@ public class ExportTranslationRf2Handler implements ExportTranslationHandler {
     return "xder2_translation_"
         + ConfigUtility.toCamelCase(translation.getName()) + type + "_"
         + (namespace == null || namespace.isEmpty() ? "INT" : namespace) + "_"
-        + version + "_" + ConfigUtility.DATE_FORMAT5.format(new Date())
+        + ConfigUtility.DATE_FORMAT5.format(new Date())
         + getFileTypeFilter();
 
   }

@@ -1,10 +1,11 @@
-/**
- * Copyright 2015 West Coast Informatics, LLC
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.jpa.services.validation;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.Set;
@@ -29,11 +30,12 @@ import org.ihtsdo.otf.refset.services.TranslationService;
  */
 public class DefaultValidationCheck extends AbstractValidationCheck {
 
-  
-  private static final Set<String> isoLanguages = new HashSet<>(Arrays.asList(Locale.getISOLanguages()));
-  private static final Set<String> isoCountries = new HashSet<>(Arrays.asList(Locale.getISOCountries()));
-  
-  
+  private static final Set<String> isoLanguages =
+      new HashSet<>(Arrays.asList(Locale.getISOLanguages()));
+
+  private static final Set<String> isoCountries =
+      new HashSet<>(Arrays.asList(Locale.getISOCountries()));
+
   /* see superclass */
   @Override
   public void setProperties(Properties p) {
@@ -88,6 +90,23 @@ public class DefaultValidationCheck extends AbstractValidationCheck {
       result.addError("Only external refsets should have members");
     }
 
+    // For MANAGED-SERVICE projects only, check for inactive concepts at
+    // publication time
+    if (refset.isInPublicationProcess() && refset.getProject()
+        .getTerminologyHandlerKey().equals("MANAGED-SERVICE")) {
+      try {
+        List<String> inactiveConcepts =
+            service.getInactiveConceptsForRefset(refset);
+        if (inactiveConcepts.size() > 0) {
+          result.addWarning("This refset has " + inactiveConcepts.size()
+              + " inactive concepts identified in dependent package.  This suggests a migration is required.");
+        }
+      } catch (Exception e) {
+        result.addError(
+            "Error while checking for inactive concepts: " + e.getMessage());
+      }
+    }
+
     return result;
   }
 
@@ -120,13 +139,16 @@ public class DefaultValidationCheck extends AbstractValidationCheck {
     // Fail for leading whitespace
     for (Description desc : concept.getDescriptions()) {
       if (desc.getTerm().matches("^\\s.*")) {
-        result.addWarning("Description with leading whitespace");
+        result.addWarning("Description with leading whitespace for concept: "
+            + concept.getTerminologyId());
       }
       if (desc.getTerm().matches(".*\\s$")) {
-        result.addWarning("Description with trailing whitespace");
+        result.addWarning("Description with trailing whitespace for concept: "
+            + concept.getTerminologyId());
       }
       if (desc.getTerm().matches(".*\\s\\s.*")) {
-        result.addWarning("Description with duplicate whitespace");
+        result.addWarning("Description with duplicate whitespace for concept: "
+            + concept.getTerminologyId());
       }
 
       // Validate descriptionType length
@@ -137,7 +159,7 @@ public class DefaultValidationCheck extends AbstractValidationCheck {
               + type.getName() + ", " + type.getDescriptionLength());
         }
       }
-      
+
       // count Preferred Synonyms
       if (desc.getTypeId().equals("900000000000013009")
           && desc.getLanguageRefsetMembers().size() > 0
@@ -151,7 +173,8 @@ public class DefaultValidationCheck extends AbstractValidationCheck {
       }
       if (desc.getTypeId().equals("900000000000003001")
           && !desc.getTerm().matches(".* \\(.*\\)")) {
-        result.addWarning("FSN description without semantic tag");
+        result.addWarning("FSN description without semantic tag for concept: "
+            + concept.getTerminologyId());
       }
 
       //
@@ -200,16 +223,16 @@ public class DefaultValidationCheck extends AbstractValidationCheck {
     TranslationService service) throws Exception {
     ValidationResult result = new ValidationResultJpa();
 
-    // The language must be 2 or 5 characters eg. fr or fr-CA    
+    // The language must be 2 or 5 characters eg. fr or fr-CA
     final String language = translation.getLanguage();
-    
+
     // The language should be a 2 letter code matching a language
     if (language == null || "".equals(language.trim())) {
       result.addError("Translation language must be set.");
     } else {
       // validate 2
       if (language.trim().length() == 2) {
-        //  The language should be a 2 letter code matching a language
+        // The language should be a 2 letter code matching a language
         if (!language.toLowerCase().equals(language)) {
           result.addError("Translation language must be lowercase.");
         }
@@ -217,26 +240,26 @@ public class DefaultValidationCheck extends AbstractValidationCheck {
       // validate > 2
       else {
         if (!language.contains("-")) {
-          result.addError("Translation language with dialect must contain a dash (Ex. fr-CA) or exclude dialect (Ex. fr).");
-        }
-        else if (language.trim().length() == 3){
-        	result.addError("language codes with a dash must be followed by a dialect code.");
-        }
-        else {
+          result.addError(
+              "Translation language with dialect must contain a dash (Ex. fr-CA) or exclude dialect (Ex. fr).");
+        } else if (language.trim().length() == 3) {
+          result.addError(
+              "language codes with a dash must be followed by a dialect code.");
+        } else {
           String[] tokens = language.split("-");
 
           if (!isoLanguages.contains(tokens[0])) {
             result.addError("" + tokens[0] + " is not a valid language code.");
           }
           if (!isoCountries.contains(tokens[1])) {
-        	  if (!tokens[1].toUpperCase().equals(tokens[1])){
-                  result.addError("" + tokens[1] + " is not valid - dialect codes must be upper-case.");        		  
-        	  }
-        	  else{
-        		  result.addError("" + tokens[1] + " is not a valid dialect code.");
-        	  }
+            if (!tokens[1].toUpperCase().equals(tokens[1])) {
+              result.addError("" + tokens[1]
+                  + " is not valid - dialect codes must be upper-case.");
+            } else {
+              result.addError("" + tokens[1] + " is not a valid dialect code.");
+            }
           }
-        }        
+        }
       }
     }
 

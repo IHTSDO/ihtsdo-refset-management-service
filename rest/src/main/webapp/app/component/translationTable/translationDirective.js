@@ -385,7 +385,7 @@ tsApp
                   $scope.actionStatus = 'All';
                 }
 
-                if ($scope.projects.role != 'ADMIN') {
+                if (!['LEAD','ADMIN'].includes(projects.role)) {
                   pfs.queryRestriction = $scope.paging['assigned'].filter;
                   workflowService.findAssignedConcepts($scope.projects.role, $scope.project.id,
                     translation.id, $scope.user.userName, $scope.actionStatus, pfs).then(
@@ -398,9 +398,9 @@ tsApp
                           nextIndex);
                       }
                     });
-                } else if ($scope.projects.role == 'ADMIN') {
+                } else if (['LEAD','ADMIN'].includes($scope.projects.role)) {
                   pfs.queryRestriction = $scope.paging['assigned'].filter;
-                  workflowService.findAssignedConcepts('ADMIN', $scope.project.id, translation.id,
+                  workflowService.findAssignedConcepts($scope.projects.role, $scope.project.id, translation.id,
                     null, $scope.actionStatus, pfs).then(
                   // Success
                   function(data) {
@@ -570,7 +570,7 @@ tsApp
               $scope.removeTranslation = function(translation) {
 
                 workflowService
-                  .findAssignedConcepts('ADMIN', $scope.project.id, translation.id,
+                  .findAssignedConcepts($scope.projects.role, $scope.project.id, translation.id,
                    null, $scope.actionStatus, {
                       startIndex : 0,
                       maxResults : 1
@@ -586,7 +586,7 @@ tsApp
 
                       // Now check for available concepts
                       workflowService
-                        .findAvailableConcepts('ADMIN', $scope.project.id, translation.id,
+                        .findAvailableConcepts($scope.projects.role, $scope.project.id, translation.id,
                           $scope.user.userName, {
                             startIndex : 0,
                             maxResults : 1
@@ -720,7 +720,7 @@ tsApp
                   queryRestriction : $scope.paging['assigned'].filter
                 };
                 
-                if ($scope.projects.role != 'ADMIN') {
+                if (!['LEAD','ADMIN'].includes(projects.role)) {
                   workflowService.findAssignedConcepts($scope.projects.role, $scope.project.id,
                     $scope.selected.translation.id, userName, $scope.actionStatus, pfs).then(
                     // Success
@@ -1507,6 +1507,7 @@ tsApp
                   if ($scope.role == 'AUTHOR'
                     || $scope.project.userRoleMap[sortedUsers[i].userName] == 'REVIEWER'
                     || $scope.project.userRoleMap[sortedUsers[i].userName] == 'REVIEWER2'
+                    || $scope.project.userRoleMap[sortedUsers[i].userName] == 'LEAD'
                     || $scope.project.userRoleMap[sortedUsers[i].userName] == 'ADMIN') {
                     $scope.assignedUsers.push(sortedUsers[i]);
                   }
@@ -1654,6 +1655,7 @@ tsApp
                 for (var i = 0; i < sortedUsers.length; i++) {
                   if ($scope.role == 'AUTHOR'
                     || $scope.project.userRoleMap[sortedUsers[i].userName].startsWith('REVIEWER')
+                    || $scope.project.userRoleMap[sortedUsers[i].userName].startsWith('LEAD')
                     || $scope.project.userRoleMap[sortedUsers[i].userName] == 'ADMIN') {
                     $scope.assignedUsers.push(sortedUsers[i]);
                   }
@@ -1979,6 +1981,9 @@ tsApp
                       var pfs = prepPfs();
                       pfs.startIndex = -1;
                       return pfs;
+                    },
+                    project : function() {
+                      return $scope.project;
                     }
                   }
                 });
@@ -1992,7 +1997,7 @@ tsApp
 
               // Import/Export controller
               var ImportExportModalCtrl = function($scope, $uibModalInstance, translation,
-                metadata, operation, type, ioHandlers, query, pfs) {
+                metadata, operation, type, ioHandlers, query, pfs, project) {
                 console.debug('Entered import export modal control');
 
                 $scope.translation = translation;
@@ -2001,6 +2006,11 @@ tsApp
                 $scope.pfs = pfs;
                 $scope.ioHandlers = ioHandlers;
                 $scope.selectedIoHandler = null;
+                $scope.project = project;
+                // TSV export only available for MANAGED-SERVICE projects
+                if ($scope.project.terminologyHandlerKey != 'MANAGED-SERVICE') {
+                  $scope.ioHandlers = ioHandlers.filter(function(value, index, arr) { return value.id != 'TSV'; });
+                }
                 for (var i = 0; i < ioHandlers.length; i++) {
                   // Choose first one if only one
                   if ($scope.selectedIoHandler == null) {
@@ -2028,15 +2038,31 @@ tsApp
                 $scope.export = function() {
                   if (type == 'Spelling Dictionary') {
                     translationService.exportSpellingDictionary($scope.translation);
+                    $uibModalInstance.close($scope.translation);
                   }
                   if (type == 'Phrase Memory') {
                     translationService.exportPhraseMemory($scope.translation);
+                    $uibModalInstance.close($scope.translation);
                   }
                   if (type == 'Translation') {
-                    translationService.exportConcepts($scope.translation, $scope.selectedIoHandler,
-                      $scope.query, $scope.pfs);
+                    // validate export first
+                    translationService.validateExportConcepts($scope.translation, $scope.selectedIoHandler,
+                      $scope.query, $scope.pfs).then(
+                        // Success
+                        function(data) {
+                          if (data.valid) {
+                            translationService.exportConcepts($scope.translation, $scope.selectedIoHandler,
+                              $scope.query, $scope.pfs)
+                              $uibModalInstance.close($scope.translation);
+                          } else {
+                            $scope.errors = data.errors;
+                          }
+                        },
+                        // Error
+                        function(data) {
+                          handleError($scope.errors, data);
+                        });
                   }
-                  $uibModalInstance.close($scope.translation);
                 };
 
                 // Handle import
@@ -2338,7 +2364,8 @@ tsApp
 
                 $scope.errors = [];
                 $scope.translation = translation;
-                $scope.ioHandlers = ioHandlers;
+                // filter out the TSV export handler option because it is not appropriate for releases
+                $scope.ioHandlers = ioHandlers.filter(function(value, index, arr) { return value.id != 'TSV'; });
                 $scope.selectedIoHandler = $scope.ioHandlers[0];
                 $scope.releaseInfo = [];
                 $scope.validationResult = null;

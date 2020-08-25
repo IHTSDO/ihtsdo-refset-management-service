@@ -9,6 +9,7 @@ import java.util.Map;
 import org.ihtsdo.otf.refset.Terminology;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.Configurable;
+import org.ihtsdo.otf.refset.helpers.KeyValuePairList;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.TranslationExtensionLanguage;
 import org.ihtsdo.otf.refset.rf2.Concept;
@@ -279,7 +280,7 @@ public interface TerminologyHandler extends Configurable {
    * @return the required language refsets
    * @throws Exception the exception
    */
-  public List<String> getRequiredLanguageRefsets(String terminology,
+  public KeyValuePairList getRequiredLanguageRefsets(String terminology,
     String version) throws Exception;
 
   /**
@@ -298,4 +299,16 @@ public interface TerminologyHandler extends Configurable {
    * @throws Exception the exception
    */
   public int getMaxBatchLookupSize() throws Exception;
+
+  /**
+   * Returns the inactive concepts.
+   *
+   * @param terminologyIds the terminology ids
+   * @param terminology the terminology
+   * @param version the version
+   * @return the inactive concepts
+   * @throws Exception the exception
+   */
+  public ConceptList getInactiveConcepts(List<String> terminologyIds,
+    String terminology, String version) throws Exception;
 }

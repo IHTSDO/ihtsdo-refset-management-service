@@ -668,4 +668,30 @@ public interface TranslationServiceRest {
    */
   public TranslationSuggestionList getTranslationSuggestionsForConcept(
     Long refsetId, Long conceptId, String authToken) throws Exception;
+
+  /**
+   * Returns the language refset dialect info.
+   *
+   * @param useCase the use case
+   * @param authToken the auth token
+   * @return the language refset dialect info
+   * @throws Exception the exception
+   */
+  public KeyValuePairList getLanguageRefsetDialectInfo(String useCase,
+    String authToken) throws Exception;
+
+  /**
+   * Validate export concepts.
+   *
+   * @param translationId the translation id
+   * @param ioHandlerInfoId the io handler info id
+   * @param query the query
+   * @param pfs the pfs
+   * @param authToken the auth token
+   * @return the validation result
+   * @throws Exception the exception
+   */
+  public ValidationResult validateExportConcepts(Long translationId,
+    String ioHandlerInfoId, String query, PfsParameterJpa pfs, String authToken)
+    throws Exception;
 }

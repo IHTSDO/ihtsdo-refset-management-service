@@ -175,6 +175,8 @@ public class ProjectJpaUnitTest extends ModelUnitSupport {
     tester.include("version");
     tester.include("nameSort");
     tester.include("descriptionSort");
+    tester.include("inactiveLastModified");
+    tester.include("refeshDescriptionsLastModified");
 
     assertTrue(tester.testNotAnalyzedIndexedFields());
 

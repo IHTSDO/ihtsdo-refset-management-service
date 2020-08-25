@@ -661,6 +661,7 @@ tsApp
             $scope.terminologies = [];
             $scope.translationBranches = [];
             $scope.getAvailableBranchesByTerminologyHandler();
+            $scope.testHandlerUrl();
           }
 
           // Test the handler URL, if successful, mark as such

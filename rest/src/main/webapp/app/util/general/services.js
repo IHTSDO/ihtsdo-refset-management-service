@@ -159,8 +159,16 @@ tsApp
         };
 
         // Dialog error handler
+        this.handleBulkDialogErrors = function(){
+          // Errors are handled by the bulk modals.
+          // Just clear out the top-level error,  so it doesn't get displayed on the main screen as well.
+            this.clearError();
+        }
+        
+        // Dialog error handler
         this.handleDialogError = function(errors, error) {
           console.debug('Handle dialog error: ', errors, error);
+
           // handle long error
           if (error && error.length > 100) {
             errors[0] = "Unexpected error, click the icon to view attached full error";
@@ -807,7 +815,7 @@ tsApp.service('securityService', [
       console.debug('removeUser');
       var deferred = $q.defer();
 
-      // Add user
+      // Remove user
       gpService.increment();
       $http['delete'](securityUrl + 'user/remove/' + user.id).then(
       // success

@@ -171,13 +171,16 @@ public interface RefsetServiceRest {
    * @param refsetId the refset id
    * @param ioHandlerInfoId the io handler info id
    * @param query the query
+   * @param language the language
+   * @param fsn the fsn
    * @param pfs the pfs
    * @param authToken the auth token
    * @return the input stream
    * @throws Exception the exception
    */
   public InputStream exportMembers(Long refsetId, String ioHandlerInfoId,
-    String query, PfsParameterJpa pfs, String authToken) throws Exception;
+    String query, String language, Boolean fsn, PfsParameterJpa pfs,
+    String authToken) throws Exception;
 
   /**
    * Adds the refset member.
@@ -227,6 +230,7 @@ public interface RefsetServiceRest {
    * @param refsetId the refset id
    * @param query the query
    * @param language the language
+   * @param fsn the fsn
    * @param translated the translated
    * @param pfs the pfs
    * @param authToken the auth token
@@ -234,8 +238,8 @@ public interface RefsetServiceRest {
    * @throws Exception the exception
    */
   public ConceptRefsetMemberList findRefsetMembersForQuery(Long refsetId,
-    String query, String language, Boolean translated, PfsParameterJpa pfs,
-    String authToken) throws Exception;
+    String query, String language, Boolean fsn, Boolean translated,
+    PfsParameterJpa pfs, String authToken) throws Exception;
 
   /**
    * Adds the refset inclusion.
@@ -675,8 +679,9 @@ public interface RefsetServiceRest {
    * @return the input stream
    * @throws Exception the exception
    */
-  public InputStream exportDiffReport(String reportToken, String migrationTerminology,
-    String migrationVersion, String action, String reportFileName, String authToken) throws Exception;
+  public InputStream exportDiffReport(String reportToken,
+    String migrationTerminology, String migrationVersion, String action,
+    String reportFileName, String authToken) throws Exception;
 
   /**
    * Export refset duplicates report.
@@ -722,8 +727,8 @@ public interface RefsetServiceRest {
    * @return the required language refsets
    * @throws Exception the exception
    */
-  public StringList getRequiredLanguageRefsets(Long refsetId, String authToken)
-    throws Exception;
+  public KeyValuePairList getRequiredLanguageRefsets(Long refsetId,
+    String authToken) throws Exception;
 
   /**
    * Start lookup member names.
@@ -745,7 +750,39 @@ public interface RefsetServiceRest {
    * @return the migration file names
    * @throws Exception the exception
    */
-  public String getMigrationFileNames(String projectId, String refsetId, String authToken)
+  public String getMigrationFileNames(String projectId, String refsetId,
+    String authToken) throws Exception;
+
+  /**
+   * Returns refsets with their inactive concept counts.
+   *
+   * @param projectId the project id
+   * @param authToken the auth token
+   * @return the inactive concepts
+   * @throws Exception the exception
+   */
+  public StringList getInactiveConceptRefsets(Long projectId, String authToken)
+    throws Exception;
+
+  /**
+   * Refresh descriptions.
+   *
+   * @param projectId the project id
+   * @param authToken the auth token
+   * @throws Exception the exception
+   */
+  public void refreshDescriptions(Long projectId, String authToken)
+    throws Exception;
+
+  /**
+   * Gets the bulk lookup progress.
+   *
+   * @param projectId the project id
+   * @param authToken the auth token
+   * @return the bulk lookup progress
+   * @throws Exception the exception
+   */
+  public String getBulkLookupProgressMessage(Long projectId, String authToken)
     throws Exception;
 
 }

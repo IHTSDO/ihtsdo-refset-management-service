@@ -507,11 +507,12 @@ public interface RefsetService extends ReleaseService {
    *
    * @param memberId the member id
    * @param language the language
+   * @param fsn the fsn
    * @return the display name for member
    * @throws Exception the exception
    */
-  public String getDisplayNameForMember(Long memberId, String language)
-    throws Exception;
+  public String getDisplayNameForMember(Long memberId, String language,
+    Boolean fsn) throws Exception;
 
   /**
    * Returns the migration file names.
@@ -533,5 +534,51 @@ public interface RefsetService extends ReleaseService {
    * @throws Exception the exception
    */
   public Map<String, Long> mapInactiveMembers(Long refsetId) throws Exception;
+
+  /**
+   * Returns the FSN name for term.
+   *
+   * @param terminologyId terminologyId
+   * @return the FSN name for term
+   * @throws Exception the exception
+   */
+  public String getFSNNameForConcept(String terminologyId) throws Exception;
+
+  /**
+   * Returns the inactive concepts for refset.
+   *
+   * @param refset the refset
+   * @return the inactive concepts for refset
+   * @throws Exception the exception
+   */
+  public List<String> getInactiveConceptsForRefset(Refset refset)
+    throws Exception;
+
+  /**
+   * Gets the bulk lookup progress.
+   *
+   * @param projectId the project id
+   * @return the bulk lookup progress
+   * @throws Exception the exception
+   */
+  public String getBulkLookupProgress(Long projectId) throws Exception;
+
+  /**
+   * Sets the bulk lookup progress.
+   *
+   * @param projectId the project id
+   * @param processMessage the process message
+   * @throws Exception the exception
+   */
+  public void setBulkLookupProgress(Long projectId, String processMessage)
+    throws Exception;
+
+  /**
+   * Clear bulk lookup progress.
+   *
+   * @param projectId the project id
+   * @throws Exception the exception
+   */
+  public void clearBulkLookupProgress(Long projectId) throws Exception;
 
 }
