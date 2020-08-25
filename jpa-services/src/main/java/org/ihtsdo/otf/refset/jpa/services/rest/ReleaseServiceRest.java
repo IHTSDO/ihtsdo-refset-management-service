@@ -157,12 +157,13 @@ public interface ReleaseServiceRest {
    *
    * @param projectId the project id
    * @param refsetIds the refset ids
+   * @param override the override
    * @param authToken the auth token
    * @return the validation result
    * @throws Exception the exception
    */
   public void finishRefsetReleases(Long projectId, String[] refsetIds,
-    String authToken) throws Exception;
+    Boolean override, String authToken) throws Exception;
 
   /**
    * Cancel refset release.

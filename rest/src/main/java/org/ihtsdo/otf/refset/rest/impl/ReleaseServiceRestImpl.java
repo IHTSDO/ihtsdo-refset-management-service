@@ -186,8 +186,8 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl
     algo.beginTransaction();
 
     // Add refsetId to the in-progress map
-    algo.startProcess(refsetId, "BEGIN");    
-    
+    algo.startProcess(refsetId, "BEGIN");
+
     final ValidationResult validationResults = new ValidationResultJpa();
 
     final Thread t = new Thread(new Runnable() {
@@ -254,7 +254,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl
     });
 
     t.start();
-    
+
     return;
   }
 
@@ -491,8 +491,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl
 
           // Add all refsetIds to the in-progress map
           for (String refsetIdStr : refsetIds) {
-            refsetService.startProcess(Long.parseLong(refsetIdStr),
-                "VALIDATE");
+            refsetService.startProcess(Long.parseLong(refsetIdStr), "VALIDATE");
           }
 
           for (String refsetIdStr : refsetIds) {
@@ -837,14 +836,15 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl
   public void finishRefsetReleases(
     @ApiParam(value = "Project id, e.g. 2", required = true) @PathParam("projectId") Long projectId,
     @ApiParam(value = "List of refset ids", required = true) String[] refsetIds,
+    @ApiParam(value = "Override, e.g. true/false/null", required = false) @QueryParam("override") Boolean override,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
     Logger.getLogger(getClass()).info(
-        "RESTful call GET (Release): /refsets/finish " + refsetIds.toString());
+        "RESTful call GET (Release): /refsets/finish " + refsetIds.toString() + ", " + override);
 
     final PerformRefsetPublishAlgorithm algo =
-        new PerformRefsetPublishAlgorithm();
+        new PerformRefsetPublishAlgorithm(override == null ? false : override);
     // Manage transaction
     algo.setTransactionPerOperation(false);
     algo.beginTransaction();
@@ -903,8 +903,16 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl
               if (refset == null) {
                 validationResults.addError(e.getMessage());
               } else {
-                validationResults.addError(
-                    refset.getTerminologyId() + ": " + e.getMessage());
+                // Treat "inactive concept" exceptions as warnings
+                if (e.getMessage().contains("inactive concepts")) {
+                  validationResults.addWarning(
+                      refset.getTerminologyId() + ": " + e.getMessage());
+                } 
+                // Otherwise, treat them as errors
+                else {
+                  validationResults.addError(
+                      refset.getTerminologyId() + ": " + e.getMessage());
+                }
               }
             }
             // Whether it succeeded or failed, remove it from the in-progress
