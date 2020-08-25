@@ -3835,6 +3835,9 @@ tsApp
                     refsetService.findRefsetsForQuery('projectId:' + $scope.project.id + query, pfs).then(
                       function(data) {
                         $scope.refsets = data.refsets;
+                        
+                        $scope.selectedWorkflowStatus = 'READY_FOR_PUBLICATION';
+                        $scope.setButtonDisableValues();
                       });
                   }
                 }                       
@@ -3887,6 +3890,9 @@ tsApp
                   }
                   else if(role == 'REVIEWER'){
                     $scope.selectedWorkflowStatus = 'EDITING_DONE';
+                  }
+                  else if ($scope.value == 'RELEASE'){
+                    $scope.selectedWorkflowStatus = 'READY_FOR_PUBLICATION';
                   }
                   // For admins and leads, all selected refsets must have the same workflowStatus in order to assign.
                   else{
