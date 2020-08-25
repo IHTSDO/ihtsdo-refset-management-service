@@ -385,7 +385,7 @@ tsApp
                   $scope.actionStatus = 'All';
                 }
 
-                if (!['LEAD','ADMIN'].includes(projects.role)) {
+                if (!['LEAD','ADMIN'].includes($scope.projects.role)) {
                   pfs.queryRestriction = $scope.paging['assigned'].filter;
                   workflowService.findAssignedConcepts($scope.projects.role, $scope.project.id,
                     translation.id, $scope.user.userName, $scope.actionStatus, pfs).then(
@@ -720,7 +720,7 @@ tsApp
                   queryRestriction : $scope.paging['assigned'].filter
                 };
                 
-                if (!['LEAD','ADMIN'].includes(projects.role)) {
+                if (!['LEAD','ADMIN'].includes($scope.projects.role)) {
                   workflowService.findAssignedConcepts($scope.projects.role, $scope.project.id,
                     $scope.selected.translation.id, userName, $scope.actionStatus, pfs).then(
                     // Success
