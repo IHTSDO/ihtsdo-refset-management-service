@@ -245,6 +245,9 @@ tsApp
           if (!$scope.project) {
             return false;
           }
+          if ($scope.projects.role != 'ADMIN' && $scope.projects.role != 'LEAD') {
+            return false;
+          }          
           $scope.refreshDescriptionsDate  = utilService.toDate($scope.project.refeshDescriptionsLastModified);
           return ($scope.project.terminologyHandlerKey == 'MANAGED-SERVICE' && !$scope.refreshDescriptionsInProgress);        
         }        

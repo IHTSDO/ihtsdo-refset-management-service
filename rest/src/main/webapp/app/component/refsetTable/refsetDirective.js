@@ -2645,6 +2645,7 @@ tsApp
                 
                 $scope.errors = [];
                 $scope.warnings = [];
+                $scope.releaseSuccessfullyStarted = true;
 
                 // Progress tracking
                 $scope.lookupInterval = null;               
@@ -2692,14 +2693,19 @@ tsApp
                       $scope.lookupInterval = null;
                       
                       // Now that the process is done, get any warnings or errors
-                      releaseService.getProcessResults($scope.refset.id, process).then(
+                      releaseService.getProcessResult($scope.refset.id, process).then(
                         // Success
                         function(data) {
+                          // Populate validation results, and handle accordingly
+                          $scope.validationResult = data;
                           handleBulkMultiMessages($scope.errors, data.errors);
                           handleBulkMultiMessages($scope.warnings, data.warnings);
                                                     
                           // On successful BEGIN, lookup the refset release info
                           if(process == 'BEGIN'){
+                            if($scope.errors.length !== 0){
+                              $scope.releaseSuccessfullyStarted = false;
+                            }
                             var pfs = {
                               startIndex : -1,
                               maxResults : 10,
@@ -3480,6 +3486,8 @@ tsApp
 
                 // Close the window - to return later
                 $scope.close = function() {
+                  // Fire update refset event, in case any refsets updated
+                  refsetService.fireRefsetChanged($scope.refsets[0]);
                   $uibModalInstance.close();
                 };
 
