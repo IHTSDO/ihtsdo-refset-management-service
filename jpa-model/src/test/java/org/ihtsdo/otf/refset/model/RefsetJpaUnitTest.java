@@ -141,6 +141,7 @@ public class RefsetJpaUnitTest extends ModelUnitSupport {
     tester.include("lookupInProgress");
     tester.include("revision");
     tester.include("localSet");
+    tester.include("inactiveConceptCount");
 
     // Set up objects
     tester.proxy(Project.class, 1, p1);

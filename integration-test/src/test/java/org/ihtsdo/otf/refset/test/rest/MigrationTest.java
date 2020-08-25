@@ -196,7 +196,7 @@ public class MigrationTest extends RestSupport {
     // Get members - should match original member size
     assertEquals(21,
         refsetService.findRefsetMembersForQuery(julyStagedRefset.getId(), "",null, 
-            false, new PfsParameterJpa(), adminAuthToken).getObjects().size());
+            false, false, new PfsParameterJpa(), adminAuthToken).getObjects().size());
 
     // Compare refsets
     String reportToken = refsetService.compareRefsets(janRefset.getId(),
@@ -216,7 +216,7 @@ public class MigrationTest extends RestSupport {
     // Finish migration
     refsetService.finishMigration(janRefset.getId(), adminAuthToken);
     assertEquals(21, refsetService.findRefsetMembersForQuery(janRefset.getId(),
-        "", null, false, new PfsParameterJpa(), adminAuthToken).getObjects().size());
+        "", null, false, false, new PfsParameterJpa(), adminAuthToken).getObjects().size());
 
     // verifyRefsetLookupCompleted(julyStagedRefset.getId());
     refsetService.removeRefset(janRefset.getId(), true, adminAuthToken);
@@ -243,7 +243,7 @@ public class MigrationTest extends RestSupport {
 
     // Verify 118 members
     assertEquals(118, refsetService.findRefsetMembersForQuery(janRefset.getId(),
-        "", null, false, new PfsParameterJpa(), adminAuthToken).getObjects().size());
+        "", null, false, false, new PfsParameterJpa(), adminAuthToken).getObjects().size());
 
     // Add some inclusions and exclusions
     // Inclusion: 88324004 - Antibody-dependent cell-mediated lympholysis
@@ -278,7 +278,7 @@ public class MigrationTest extends RestSupport {
 
     // Verify 120 members (+2 inclusions, and 2 regular member => exclusion)
     assertEquals(120, refsetService.findRefsetMembersForQuery(janRefset.getId(),
-        "", null, false, new PfsParameterJpa(), adminAuthToken).getObjects().size());
+        "", null, false, false, new PfsParameterJpa(), adminAuthToken).getObjects().size());
 
     // Begin migration to 20150731
     Refset julyStagedRefset = refsetService.beginMigration(janRefset.getId(),
@@ -288,7 +288,7 @@ public class MigrationTest extends RestSupport {
     // Verify expected number of members - 164
     assertEquals(164,
         refsetService.findRefsetMembersForQuery(julyStagedRefset.getId(), "",
-            null, false, new PfsParameterJpa(), adminAuthToken).getObjects().size());
+            null, false, false, new PfsParameterJpa(), adminAuthToken).getObjects().size());
 
     // Compare refsets
     String reportToken = refsetService.compareRefsets(janRefset.getId(),
@@ -327,7 +327,7 @@ public class MigrationTest extends RestSupport {
     // Verify total count
     refsetService.finishMigration(janRefset.getId(), adminAuthToken);
     assertEquals(164, refsetService.findRefsetMembersForQuery(janRefset.getId(),
-        "", null, false, new PfsParameterJpa(), adminAuthToken).getObjects().size());
+        "", null, false, false, new PfsParameterJpa(), adminAuthToken).getObjects().size());
 
     // cleanup
     refsetService.removeRefset(janRefset.getId(), true, adminAuthToken);

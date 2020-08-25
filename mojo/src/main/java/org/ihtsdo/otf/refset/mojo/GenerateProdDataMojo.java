@@ -434,7 +434,7 @@ public class GenerateProdDataMojo extends AbstractRttMojo {
     if (finishFlag) {
       getLog().info("  finish");
       releaseService = new ReleaseServiceRestImpl();
-      releaseService.finishRefsetRelease(refset.getId(), auth.getAuthToken());
+      releaseService.finishRefsetRelease(refset.getId(), null, auth.getAuthToken());
     }
 
     return (RefsetJpa) new RefsetServiceRestImpl().getRefset(refset.getId(),

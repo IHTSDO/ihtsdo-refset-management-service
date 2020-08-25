@@ -27,6 +27,7 @@ import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.Terminology;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
+import org.ihtsdo.otf.refset.helpers.KeyValuePairList;
 import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.TranslationExtensionLanguage;
@@ -1197,9 +1198,9 @@ public class BrowserTerminologyHandler extends AbstractTerminologyHandler {
 
   /* see superclass */
   @Override
-  public List<String> getRequiredLanguageRefsets(String terminology,
+  public KeyValuePairList getRequiredLanguageRefsets(String terminology,
     String version) throws Exception {
-    return new ArrayList<>();
+    return new KeyValuePairList();
   }
 
   /* see superclass */
@@ -1215,5 +1216,12 @@ public class BrowserTerminologyHandler extends AbstractTerminologyHandler {
   @Override
   public int getMaxBatchLookupSize() throws Exception {
     return maxBatchLookupSize;
+  }
+
+  @Override
+  public ConceptList getInactiveConcepts(List<String> terminologyIds,
+    String terminology, String version) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
   }
 }

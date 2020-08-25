@@ -161,6 +161,18 @@ public class ProjectJpa implements Project {
   @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, targetEntity = TranslationExtensionLanguageJpa.class, orphanRemoval = true)
   private List<TranslationExtensionLanguage> translationExtensionLanguages;
 
+  /** Inactive last modified. */
+  @Column(nullable = true)
+  @Temporal(TemporalType.TIMESTAMP)
+  private Date inactiveLastModified = new Date();
+
+
+  /** The refesh descriptions last modified. */
+  @Column(nullable = true)
+  @Temporal(TemporalType.TIMESTAMP)
+  private Date refeshDescriptionsLastModified = new Date();
+  
+
   /**
    * Instantiates an empty {@link ProjectJpa}.
    */
@@ -250,7 +262,37 @@ public class ProjectJpa implements Project {
   public void setLastModified(Date lastModified) {
     this.lastModified = lastModified;
   }
+  
+  /* see superclass */
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  @DateBridge(resolution = Resolution.SECOND)
+  @SortableField
+  @Override
+  public Date getInactiveLastModified() {
+    return inactiveLastModified;
+  }
 
+  /* see superclass */
+  @Override
+  public void setInactiveLastModified(Date inactiveLastModified) {
+    this.inactiveLastModified = inactiveLastModified;
+  }
+
+  /* see superclass */
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  @DateBridge(resolution = Resolution.SECOND)
+  @SortableField
+  @Override
+  public Date getRefeshDescriptionsLastModified() {
+    return refeshDescriptionsLastModified;
+  }
+
+  /* see superclass */
+  @Override
+  public void setRefeshDescriptionsLastModified(Date refeshDescriptionsLastModified) {
+    this.refeshDescriptionsLastModified = refeshDescriptionsLastModified;
+  } 
+  
   /* see superclass */
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   @Override
@@ -660,8 +702,8 @@ public class ProjectJpa implements Project {
   @Override
   public String toString() {
     return "ProjectJpa [id=" + id + ", lastModified=" + lastModified
-        + ", lastModifiedBy=" + lastModifiedBy + ", name=" + name
-        + ", namespace=" + namespace + ", moduleId=" + moduleId
+        + ", lastModifiedBy=" + lastModifiedBy + ", inactiveLastModified=" + inactiveLastModified 
+        + ", name=" + name + ", namespace=" + namespace + ", moduleId=" + moduleId
         + ", organization=" + organization + ", description=" + description
         + ", terminology=" + terminology + ", version=" + version
         + ", terminologyHandlerKey=" + terminologyHandlerKey + ", workflowPath="

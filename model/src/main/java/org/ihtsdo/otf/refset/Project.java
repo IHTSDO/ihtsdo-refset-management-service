@@ -3,6 +3,7 @@
  */
 package org.ihtsdo.otf.refset;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -243,4 +244,34 @@ public interface Project extends Searchable {
    */
   public void setStableUUIDs(boolean stableUUIDs);
 
+  /**
+   * Returns the inactive last modified.
+   *
+   * @return the inactive last modified
+   */
+  public Date getInactiveLastModified();
+
+  /**
+   * Sets the inactive last modified.
+   *
+   * @param inactiveLastModified the inactive last modified
+   */
+  public void setInactiveLastModified(Date inactiveLastModified);
+
+  /**
+   * Gets the refesh descriptions last modified.
+   *
+   * @return the refesh descriptions last modified
+   */
+  public Date getRefeshDescriptionsLastModified();
+
+  /**
+   * Sets the refesh descriptions last modified.
+   *
+   * @param inactiveLastModified the new refesh descriptions last modified
+   */
+  public void setRefeshDescriptionsLastModified(Date inactiveLastModified);
+  
+  
+  
 }

@@ -1,9 +1,10 @@
-/**
- * Copyright 2015 West Coast Informatics, LLC
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.jpa.services.rest;
 
 import org.ihtsdo.otf.refset.Refset;
+import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.RefsetList;
 import org.ihtsdo.otf.refset.helpers.StringList;
@@ -45,6 +46,22 @@ public interface WorkflowServiceRest {
     String userName, String projectRole, String action, String authToken)
     throws Exception;
 
+  /**
+   * Perform workflow actions.
+   *
+   * @param projectId the project id
+   * @param refsetIds the refset ids
+   * @param userName the user name
+   * @param projectRole the project role
+   * @param action the action
+   * @param authToken the auth token
+   * @return the validation result
+   * @throws Exception the exception
+   */
+  public ValidationResult performWorkflowActions(Long projectId, String[] refsetIds,
+    String userName, String projectRole, String action, String authToken)
+    throws Exception;  
+  
   /**
    * Perform workflow action.
    *

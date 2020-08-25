@@ -10,6 +10,10 @@
           title="Add local set" class="btn btn-xs btn-primary">Add
           Local Set</button>
       </span>
+      <span ng-show="!isDirectory() && value == 'AVAILABLE' && projects.role != 'REVIEWER'" style="float: right;">
+         <button ng-click="openAddRefsetModal(false);" title="Add refset"
+           class="btn btn-xs btn-primary">Add Refset</button>
+      </span>
       <span class="info-text" ng-show="refsets.totalCount > 10"
         style="float: right; margin-top: 4px">
         Page size: <select ng-model="paging['refset'].pageSize"
@@ -103,7 +107,7 @@
             </span> / <span ng-click="setSortField('refset','domain')">
               Domain
               <span ng-bind="getSortIndicator('refset','domain')"></span>
-            </span> <span ng-show="projects.role == 'ADMIN' || value == 'RELEASE'">
+            </span> <span ng-show="['LEAD','ADMIN'].includes(projects.role) || value == 'RELEASE'">
               /
               <span ng-click="setSortField('refset','workflowStatus')">
                 Status</span>
@@ -117,13 +121,34 @@
           <!-- Actions header -->
           <!-- PUBLISHED/BETA : no actions row -->
           <!-- not PUBLISHED/BETA -->
-          <th class="col-md-2 col-xs-2" ng-show="!isDirectory()"><span
+          <!-- <th class="col-md-2 col-xs-2" ng-show="!isDirectory()"><span
               ng-show="value == 'AVAILABLE' && projects.role != 'REVIEWER'" style="float: right;">
               <button ng-click="openAddRefsetModal(false);" title="Add refset"
                 class="btn btn-xs btn-primary">Add Refset</button>
             </span></th>
+             -->
+          <th>
+            <i ng-show="value == 'AVAILABLE' || (value == 'RELEASE' && projects.role != 'AUTHOR')"
+              ng-click="openBulkWorkflowModal('ASSIGN'); $event.stopPropagation()"
+              title="Bulk Assign" class="noul material-icons md-18">assignment_ind</i>
+            <i ng-show="value == 'ASSIGNED'"
+              ng-click="openBulkWorkflowModal('UNASSIGN'); $event.stopPropagation()"
+              title="Bulk Unassign" class="noul material-icons md-18">assignment_return</i>
+            <i ng-show="value == 'ASSIGNED' && (projects.role != 'ADMIN' && projects.role != 'LEAD')"
+              ng-click="openBulkWorkflowModal('FINISH'); $event.stopPropagation()"
+              title="Bulk Finish" class="noul material-icons md-18">done</i>
+            <i ng-show="value == 'ASSIGNED' && projects.role == 'REVIEWER'"
+              ng-click="openBulkWorkflowModal('PREPARE_FOR_PUBLICATION'); $event.stopPropagation()"
+              title="Bulk Mark Ready for Publication" class="noul material-icons md-18">open_in_new</i>              
+            <i ng-show="value == 'RELEASE'"
+              ng-click="openBulkExportModal(); $event.stopPropagation()"
+              title="Bulk Download Release Files" class="noul material-icons md-18">file_download</i>
+            <i ng-show="value == 'RELEASE' && projects.role == 'ADMIN'"
+              ng-click="openBulkReleaseProcessModal(refset); $event.stopPropagation()"
+              title="Bulk Release Process Start" class="noul material-icons md-18">open_in_new</i>              
+          </th>
         </tr>
-      </thead>
+      </thead>      
       <tbody class="table-select-row">
         <tr ng-repeat="refset in refsets" ng-click="selectRefset(refset);"
           ng-class="{selected: refset.id == selected.refset.id}">
@@ -135,7 +160,7 @@
             </span>
             <span ng-show="!refset.effectiveTime">
               <br />{{toDate(refset.lastModified)}}
-              <span ng-show="projects.role == 'ADMIN'">
+              <span ng-show="['LEAD','ADMIN'].includes(projects.role)">
                 <br />{{refset.lastModifiedBy}}
               </span>
             </span>
@@ -179,7 +204,7 @@
             <span ng-show="!refset.domain" class="md-grey">
               <small>no domain specified</small>
             </span>
-            <span ng-show="projects.role == 'ADMIN' || value == 'RELEASE'">
+            <span ng-show="['LEAD','ADMIN'].includes(projects.role) || value == 'RELEASE'">
               <br />{{refset.workflowStatus}}
             </span>
           </td>
@@ -191,7 +216,7 @@
             <i ng-click="openEditRefsetModal(refset); $event.stopPropagation()"
               title="Edit" class="noul material-icons md-18">edit</i> <i
               title="Remove"
-              ng-show="!refset.staged && projects.role == 'ADMIN'"
+              ng-show="!refset.staged && ['LEAD','ADMIN'].includes(projects.role)"
               confirm="Are you sure you want to remove the refset ({{refset.name}})?"
               ng-click="removeRefset(refset); $event.stopPropagation()"
               class="noul material-icons md-18">delete</i>
@@ -202,11 +227,22 @@
             <!-- As admin/reviewer, unassign completely and return back to pool-->
             <i
               confirm="Are you sure you want to unassign the refset ({{refset.name}})?"
-              ng-show="isAllowed('UNASSIGN', refset)"
+              ng-show="isAllowed('UNASSIGN', refset) && refset.stagingType != 'MIGRATION'"
               ng-click="unassign(refset,user.userName); $event.stopPropagation()"
               title="Unassign" class="noul material-icons md-18">assignment_return</i>
+            <i
+              ng-show="isAllowed('UNASSIGN', refset) && refset.stagingType == 'MIGRATION'"
+              title="Cannot unassign refset mid-migration" class="inactive material-icons md-18">assignment_return</i>              
 
-             <span
+            <!-- Refresh/start buttons if lookup in progress -->
+            <span
+              ng-show="!refset.lookupInProgress && refset.lookupRequired">
+              <br />
+              <button class="btn btn-xs btn-warning"
+                ng-click="startLookup(refset)" title="Click to restart lookup">Restart
+                Lookup</button>               
+            </span>
+            <span
               ng-show="isLookupInProgress(refset)">
               <br />
               <button class="btn btn-xs btn-warning"
@@ -215,28 +251,52 @@
                 Refresh
                 <span ng-show="refsetLookupProgress[refset.id]">
                   {{refsetLookupProgress[refset.id]}}%</span>
-              </button>     
+              </button>
+              <br /><br />
+              <button class="btn btn-xs btn-warning"
+                ng-click="cancelLookup(refset)"
+                title="Click to cancel the lookup process">
+                Cancel Lookup
+              </button>                
+            </span>
+              <br /><br />
+              <span class="alert alert-warning"
+              ng-show="refset.workflowStatus !== 'PUBLISHED' &&  refset.inactiveConceptCount > 0"
+              title="There are records in this refset that are inactive in the dependent package.  This suggests a migration is required.">
+                Migration Required     
             </span>
             <!-- ASSIGNED actions -->
           <td class="nobreak" ng-show="value == 'ASSIGNED'">
-            <i ng-show="projects.role != 'ADMIN'"
+            <i ng-show="!['LEAD','ADMIN'].includes(projects.role)"
               ng-click="openEditRefsetModal(refset); $event.stopPropagation()"
-              title="Edit" class="noul material-icons md-18">edit</i> <i
-              ng-show="!refset.staged"
+              title="Edit" class="noul material-icons md-18">edit</i> 
+            <i ng-show="!refset.staged"
               ng-click="removeRefset(refset); $event.stopPropagation()"
-              title="Remove" class="noul material-icons md-18">delete</i> <i
-              ng-click="unassign(refset, user.userName);" title="Unassign"
-              class="noul material-icons md-18">assignment_return</i> <i
-              ng-show="isAllowed('FEEDBACK', refset)"
+              title="Remove" class="noul material-icons md-18">delete</i> 
+            <i ng-show="refset.staged"
+              title="Cannot remove refset mid-migration" class="inactive material-icons md-18">delete</i>               
+            <i ng-show="!refset.staged" 
+              ng-click="unassign(refset, user.userName);"
+              title="Unassign" class="noul material-icons md-18">assignment_return</i> 
+            <i ng-show="refset.staged" title="Cannot unassign refset mid-migration" 
+              class="inactive material-icons md-18">assignment_return</i>                 
+            <i ng-show="isAllowed('FEEDBACK', refset) && !refset.staged"
               ng-click="openAssignRefsetModal(refset,'FEEDBACK'); $event.stopPropagation()"
               title="Feedback" class="noul material-icons md-18">assignment_returned</i>
-            <i ng-show="isAllowed('FINISH', refset)"
+            <i ng-show="isAllowed('FEEDBACK', refset) && refset.staged" title="Cannot feedback refset mid-migration" 
+              class="inactive material-icons md-18">assignment_returned</i>              
+            <i ng-show="isAllowed('FINISH', refset) && !refset.staged"
               ng-click="performWorkflowAction(refset, 'FINISH', user.userName)"
-              title="Finish" class="noul material-icons md-18">done</i> <i
-              ng-show="isAllowed('PREPARE_FOR_PUBLICATION', refset)"
+              title="Finish" class="noul material-icons md-18">done</i> 
+            <i ng-show="isAllowed('FINISH', refset) && refset.staged" title="Cannot finish refset mid-migration" 
+              class="inactive material-icons md-18">done</i> 
+
+            <i ng-show="isAllowed('PREPARE_FOR_PUBLICATION', refset)  && !refset.staged"
               ng-click="performWorkflowAction(refset, 'PREPARE_FOR_PUBLICATION', user.userName)"
-              title="Mark ready for publication"
-              class="noul material-icons md-18">open_in_new</i>
+              title="Mark ready for publication" class="noul material-icons md-18">open_in_new</i>
+            <i ng-show="isAllowed('PREPARE_FOR_PUBLICATION', refset)  && refset.staged" title="Cannot mark refset ready for publication mid-migration" 
+              class="inactive material-icons md-18">open_in_new</i>
+                            
             <!-- Cancel buttons if migration in progress -->
             <span ng-show="refset.stagingType == 'IMPORT'">
               <br />
@@ -275,32 +335,42 @@
                 Cancel Lookup
               </button>                
             </span>
+              <br /><br />
+              <span class="alert alert-warning"
+              ng-show="refset.workflowStatus !== 'PUBLISHED' &&  refset.inactiveConceptCount > 0"
+              title="There are records in this refset that are inactive in the dependent package.  This suggests a migration is required.">
+                Migration Required     
+            </span>
           </td>
           <!-- RELEASE actions -->
           <td class="nobreak" ng-show="value == 'RELEASE'">
-            <i
-              ng-show="refset.workflowStatus != 'PUBLISHED' && refset.workflowStatus != 'BETA'"
+            <i ng-show="refset.workflowStatus != 'PUBLISHED' && refset.workflowStatus != 'BETA'"
               ng-click="openEditRefsetModal(refset); $event.stopPropagation()"
-              title="Edit" class="noul material-icons md-18">edit</i> <i
-              confirm="Are you sure you want to remove the refset ({{refset.name}})?"
-              ng-show="projects.role == 'ADMIN' && !refset.staged && !refset.inPublicationProcess && (refset.workflowStatus == 'PUBLISHED' || refset.workflowStatus == 'READY_FOR_PUBLICATION')"
+              title="Edit" class="noul material-icons md-18">edit</i> 
+            <i confirm="Are you sure you want to remove the refset ({{refset.name}})?"
+              ng-show="['LEAD','ADMIN'].includes(projects.role) && !refset.staged && !refset.inPublicationProcess && (refset.workflowStatus == 'PUBLISHED' || refset.workflowStatus == 'READY_FOR_PUBLICATION')"
               ng-click="removeRefset(refset); $event.stopPropagation()"
               title="Remove" class="noul material-icons md-18">delete</i>
+            <i ng-show="['LEAD','ADMIN'].includes(projects.role) && (refset.staged || refset.inPublicationProcess) && (refset.workflowStatus == 'PUBLISHED' || refset.workflowStatus == 'READY_FOR_PUBLICATION')"
+              ng-click="removeRefset(refset); $event.stopPropagation()"
+              title="Cannot remove refset mid-release" class="inactive material-icons md-18">delete</i>              
             <!-- TODO -->
             <i ng-show="isAllowed('ASSIGN', refset) && !refset.inPublicationProcess"
               ng-click="openAssignRefsetModal(refset,'ASSIGN'); $event.stopPropagation()"
               title="Assign" class="noul material-icons md-18">assignment_ind</i>
+            <i ng-show="isAllowed('ASSIGN', refset) && refset.inPublicationProcess"
+              ng-click="openAssignRefsetModal(refset,'ASSIGN'); $event.stopPropagation()"
+              title="Cannot assign refset mid-release" class="inactive material-icons md-18">assignment_ind</i>              
             <i ng-show="isAllowed('FEEDBACK', refset)"
               ng-click="openAssignRefsetModal(refset,'FEEDBACK'); $event.stopPropagation()"
               title="Feedback" class="noul material-icons md-18">assignment_returned</i>
             <!-- only if READY_FOR_PUBLICATION -->
             <i
-              ng-show="refset.workflowStatus == 'READY_FOR_PUBLICATION' && !refset.inPublicationProcess"
+              ng-show="projects.role == 'ADMIN' && refset.workflowStatus == 'READY_FOR_PUBLICATION' && !refset.inPublicationProcess"
               ng-click="openReleaseProcessModal(refset); $event.stopPropagation()"
               title="Start release process" class="noul material-icons md-18">open_in_new</i>
             <i
-              ng-show="refset.workflowStatus == 'READY_FOR_PUBLICATION' && 
-                        refset.inPublicationProcess"
+              ng-show="projects.role == 'ADMIN' && refset.workflowStatus == 'READY_FOR_PUBLICATION' && refset.inPublicationProcess"
               ng-click="openReleaseProcessModal(refset); $event.stopPropagation()"
               title="Continue release processing"
               class="noul material-icons md-18">open_in_new</i> <i
@@ -311,17 +381,53 @@
               class="noul material-icons md-18">open_in_new</i>
             <span
               ng-show="refset.workflowStatus == 'READY_FOR_PUBLICATION' && 
-                        refset.inPublicationProcess">
+                        refset.inPublicationProcess && projects.role == 'ADMIN'">
               <br />
               <button class="btn btn-xs btn-warning" ng-disabled="cancelling"
                 ng-click="cancelAction(refset); $event.stopPropagation()"
                 title="Click to cancel release process">Cancel Release</button>
             </span>
-            <span ng-show="refset.workflowStatus == 'BETA'">
+            <span ng-show="refset.workflowStatus == 'BETA' && projects.role == 'ADMIN'">
               <br />
               <button class="btn btn-xs btn-warning" ng-disabled="cancelling"
                 ng-click="cancelActionForStaged(refset); $event.stopPropagation()"
                 title="Click to cancel release process">Cancel Release</button>
+            </span>
+            <span 
+              ng-show="((refset.workflowStatus == 'READY_FOR_PUBLICATION' && refset.inPublicationProcess) || refset.workflowStatus == 'BETA') && projects.role != 'ADMIN'"
+              title="Release in progress, and must be completed by an Admin">
+              <br /><br />
+              <span class="alert alert-warning">Release in progress</span>
+            </span>            
+            <!-- Refresh/start buttons if lookup in progress -->
+            <span
+              ng-show="!refset.lookupInProgress && refset.lookupRequired">
+              <br />
+              <button class="btn btn-xs btn-warning"
+                ng-click="startLookup(refset)" title="Click to restart lookup">Restart
+                Lookup</button>               
+            </span>
+            <span
+              ng-show="isLookupInProgress(refset)">
+              <br />
+              <button class="btn btn-xs btn-warning"
+                ng-click="refreshLookupProgress(refset)"
+                title="Click to refresh lookup progress">
+                Refresh
+                <span ng-show="refsetLookupProgress[refset.id]">
+                  {{refsetLookupProgress[refset.id]}}%</span>
+              </button>
+              <br /><br />
+              <button class="btn btn-xs btn-warning"
+                ng-click="cancelLookup(refset)"
+                title="Click to cancel the lookup process">
+                Cancel Lookup
+              </button>                
+            </span>
+            <span ng-show="refset.workflowStatus !== 'PUBLISHED' &&  refset.inactiveConceptCount > 0"
+              title="There are records in this refset that are inactive in the dependent package.  This suggests a migration is required.">            
+              <br /><br />
+              <span class="alert alert-warning">Migration Required</span>     
             </span>
           </td>
         </tr>
@@ -451,17 +557,17 @@
               {{selected.refset.version}} 
               <i
                 ng-click="openMigrationModal(selected.refset, 'Migration'); $event.stopPropagation()"
-                ng-show="selected.refset.stagingType == null && value == 'ASSIGNED' && projects.role != 'ADMIN' && !isLookupInProgress(selected.refset)"
+                ng-show="selected.refset.stagingType == null && value == 'ASSIGNED' && !['ADMIN','LEAD'].includes(projects.role) && !isLookupInProgress(selected.refset)"
                 title="Migration" class="noul material-icons md-18">find_replace</i>
               <i
-                ng-show="selected.refset.stagingType == null && value == 'ASSIGNED' && projects.role != 'ADMIN' && isLookupInProgress(selected.refset)"
+                ng-show="selected.refset.stagingType == null && value == 'ASSIGNED' && !['ADMIN','LEAD'].includes(projects.role) && isLookupInProgress(selected.refset)"
                 uib-tooltip="Cannot run migration while lookup is in progress" tooltip-placement="left-top"  class="md-grey material-icons md-18">find_replace</i>                
               <i
                 ng-click="openMigrationModal(selected.refset, 'Migration'); $event.stopPropagation()"
-                ng-show="selected.refset.stagingType == 'MIGRATION' && value == 'ASSIGNED' && projects.role != 'ADMIN' && !isLookupInProgress(selected.refset)"
+                ng-show="selected.refset.stagingType == 'MIGRATION' && value == 'ASSIGNED' && !['ADMIN','LEAD'].includes(projects.role) && !isLookupInProgress(selected.refset)"
                 title="Resume migration" class="noul material-icons md-18">play_arrow</i>
               <i
-                ng-show="selected.refset.stagingType == 'MIGRATION' && value == 'ASSIGNED' && projects.role != 'ADMIN' && isLookupInProgress(selected.refset)"
+                ng-show="selected.refset.stagingType == 'MIGRATION' && value == 'ASSIGNED' && !['ADMIN','LEAD'].includes(projects.role) && isLookupInProgress(selected.refset)"
                 uib-tooltip="Cannot resume migration while lookup is in progress" tooltip-placement="left-top"  class="md-grey material-icons md-18">play_arrow</i>
             </td>
           </tr>
@@ -473,18 +579,26 @@
               <a href="{{link}}" target="_blank">{{link}}</a>
             </td>
           </tr>
+          <tr ng-show="value == 'BETA'">
+            <td>
+              <b>Url</b>
+            </td>
+            <td>
+              <a href="{{link + '&beta=true'}}" target="_blank">{{link + '&beta=true'}}</a>
+            </td>
+          </tr>
           <tr ng-show="selected.refset.type == 'INTENSIONAL'">
             <td>
               <b>Definition</b>
             </td>
             <td>
-              <!-- For ADMIN -->
-              <i ng-show="projects.role == 'ADMIN'"
+              <!-- For LEAD/ADMIN -->
+              <i ng-show="['ADMIN','LEAD'].includes(projects.role)"
                 uib-tooltip="Switch to AUTHOR or REVIWER for more actions"
                 tooltip-placement="left-top"
                 class="md-grey material-icons md-18">info</i>
               <!-- For Lookup in progress -->
-              <i ng-show="projects.role != 'ADMIN' && isLookupInProgress(selected.refset)"
+              <i ng-show="!['ADMIN','LEAD'].includes(projects.role) && isLookupInProgress(selected.refset)"
                 uib-tooltip="Cannot modify definition while lookup is in progress"
                 tooltip-placement="left-top"
                 class="md-grey material-icons md-18">info</i>                
@@ -496,10 +610,10 @@
                 ng-show="value == 'AVAILABLE'"
                 title="Assign refset to edit definition"
                 class="md-grey material-icons md-18">edit</i> <i
-                ng-show="value == 'ASSIGNED' && projects.role != 'ADMIN' && !isLookupInProgress(selected.refset)"
+                ng-show="value == 'ASSIGNED' && !['ADMIN','LEAD'].includes(projects.role) && !isLookupInProgress(selected.refset)"
                 ng-click="openDefinitionClausesModal(selected.refset, value);$event.stopPropagation()"
                 title="Edit definition" class="noul material-icons md-18">edit</i>
-              <i ng-show="value == 'ASSIGNED' && projects.role != 'ADMIN' && !isLookupInProgress(selected.refset)"
+              <i ng-show="value == 'ASSIGNED' && !['ADMIN','LEAD'].includes(projects.role) && !isLookupInProgress(selected.refset)"
                 confirm="Remove redundant definition clauses, and invalid inclusions/exclusions."
                 ng-click="optimizeDefinition(selected.refset);$event.stopPropagation()"
                 title="Optimize and recompute definition"
@@ -509,12 +623,12 @@
                 ng-click="openImportExportModal(selected.refset, 'Export', 'Definition');$event.stopPropagation()"
                 title="Export definition" class="noul material-icons md-18">file_download</i>
               <!-- Import -->
-              <i ng-show="value == 'ASSIGNED' && projects.role != 'ADMIN' && !isLookupInProgress(selected.refset)"
+              <i ng-show="value == 'ASSIGNED' && !['ADMIN','LEAD'].includes(projects.role) && !isLookupInProgress(selected.refset)"
                 confirm="The refset already has a definition, importing will override it. Do you want to continue?"
                 confirm-if="selected.refset.definitionClauses.length>0"
                 ng-click="openImportExportModal(selected.refset, 'Import', 'Definition');$event.stopPropagation()"
                 title="Import definition" class="noul material-icons md-18">file_upload</i>
-              <i ng-show="value == 'AVAILABLE' && projects.role != 'ADMIN'"
+              <i ng-show="value == 'AVAILABLE' && !['ADMIN','LEAD'].includes(projects.role)"
                 title="To import a definition, assign the refset"
                 class="md-grey material-icons md-18">file_upload</i>
               <div style="max-height: 200px; overflow-y: scroll;">
@@ -621,7 +735,7 @@
         <span ng-show="selected.refset.members.totalCount>0">
           ({{selected.refset.members.totalCount}})</span>
         <span style="float: right;">
-          <i ng-show="projects.role == 'ADMIN'"
+          <i ng-show="['ADMIN','LEAD'].includes(projects.role)"
             uib-tooltip="Switch to AUTHOR or REVIWER for more actions"
             tooltip-placement="left-top" class="md-grey material-icons md-18">info</i>
           <!-- Export -->
@@ -630,16 +744,16 @@
             title="Export refset members" class="noul material-icons md-18">file_download</i>
           <!-- Import -->
           <i
-            ng-show="value == 'ASSIGNED' && projects.role != 'ADMIN' && selected.refset.type == 'EXTENSIONAL' && !isLookupInProgress(selected.refset)"
+            ng-show="value == 'ASSIGNED' && !['ADMIN','LEAD'].includes(projects.role) && selected.refset.type == 'EXTENSIONAL' && !isLookupInProgress(selected.refset)"
             ng-click="openImportExportModal(selected.refset, 'Import', 'Refset Members'); "
             title="Import refset members" class="noul material-icons md-18">file_upload</i>
           <i
-            ng-show="value == 'ASSIGNED' && projects.role != 'ADMIN' && selected.refset.type != 'EXTENSIONAL'"
+            ng-show="value == 'ASSIGNED' && !['ADMIN','LEAD'].includes(projects.role) && selected.refset.type != 'EXTENSIONAL'"
             title="Import only suppored for extensional refset"
             class="md-grey material-icons md-18">file_upload</i>
           <!-- Add member list -->
           <i
-            ng-show="value == 'ASSIGNED' && projects.role != 'ADMIN' && selected.refset.type == 'EXTENSIONAL' && !isLookupInProgress(selected.refset)"
+            ng-show="value == 'ASSIGNED' && !['ADMIN','LEAD'].includes(projects.role) && selected.refset.type == 'EXTENSIONAL' && !isLookupInProgress(selected.refset)"
             ng-click="openAddRefsetMemberListModal();"
             title="Add/remove refset member list"
             class="noul material-icons md-18">playlist_add</i>
@@ -647,26 +761,26 @@
           <i ng-show="value == 'AVAILABLE' && !isLookupInProgress(selected.refset)"
             title="Add members - only when refset is assigned"
             class="md-grey material-icons md-18">add</i> <i
-            ng-show="value == 'ASSIGNED' && projects.role != 'ADMIN' && selected.refset.type == 'EXTENSIONAL' && showImportFromExistingProject && !isLookupInProgress(selected.refset)"
+            ng-show="value == 'ASSIGNED' && !['ADMIN','LEAD'].includes(projects.role) && selected.refset.type == 'EXTENSIONAL' && showImportFromExistingProject && !isLookupInProgress(selected.refset)"
             ng-click="openImportFromExistingProjectsModal()"
             title="Import from Existing Projects"
             class="noul material-icons md-18">file_copy</i> <i
-            ng-show="value == 'ASSIGNED' && projects.role != 'ADMIN' && selected.refset.type == 'EXTENSIONAL' && !isLookupInProgress(selected.refset)"
+            ng-show="value == 'ASSIGNED' && !['ADMIN','LEAD'].includes(projects.role) && selected.refset.type == 'EXTENSIONAL' && !isLookupInProgress(selected.refset)"
             ng-click="openAddMemberModal(selected.refset);"
             title="Add member(s)" class="noul material-icons md-18">add</i> <i
-            ng-show="value == 'ASSIGNED' && projects.role != 'ADMIN' && selected.refset.type == 'INTENSIONAL' && !isLookupInProgress(selected.refset)"
+            ng-show="value == 'ASSIGNED' && !['ADMIN','LEAD'].includes(projects.role) && selected.refset.type == 'INTENSIONAL' && !isLookupInProgress(selected.refset)"
             ng-click="openAddMemberModal(selected.refset);"
             title="Add inclusion(s)" class="noul material-icons md-18">add</i><i
-            ng-show="value == 'ASSIGNED' && projects.role != 'ADMIN' && selected.refset.type == 'INTENSIONAL' && isLookupInProgress(selected.refset)"
+            ng-show="value == 'ASSIGNED' && !['ADMIN','LEAD'].includes(projects.role) && selected.refset.type == 'INTENSIONAL' && isLookupInProgress(selected.refset)"
             uib-tooltip="Cannot add inclusion(s) while lookup is in progress" tooltip-placement="left-top"  class="md-grey material-icons md-18">add</i>            
           <!-- Remove all members -->
           <i
-            ng-show="value == 'ASSIGNED' && projects.role != 'ADMIN' && selected.refset.type == 'EXTENSIONAL' && selected.refset.members.length > 0 && !isLookupInProgress(selected.refset)"
+            ng-show="value == 'ASSIGNED' && !['ADMIN','LEAD'].includes(projects.role) && selected.refset.type == 'EXTENSIONAL' && selected.refset.members.length > 0 && !isLookupInProgress(selected.refset)"
             confirm="Are you sure you want to remove all the members of the refset ({{selected.refset.name}})?"
             ng-click="removeAllRefsetMembers(selected.refset); "
             title="Remove all members" class="noul material-icons md-18">delete</i>
           <i
-            ng-show="value == 'ASSIGNED' && projects.role != 'ADMIN' && selected.refset.type == 'EXTENSIONAL' && isLookupInProgress(selected.refset)"
+            ng-show="value == 'ASSIGNED' && !['ADMIN','LEAD'].includes(projects.role) && selected.refset.type == 'EXTENSIONAL' && isLookupInProgress(selected.refset)"
             uib-tooltip="Cannot add or remove refset members while lookup is in progress" tooltip-placement="left-top" class="md-grey material-icons md-18">info</i>          
           <!-- Lookup names -->
           <i
@@ -677,6 +791,22 @@
           
         </span>
       </h4>
+      <!-- <div>
+        <span class="info-text"            
+            style="float: right; margin-top: 4px">
+            <span ng-show="selected.refset.members.totalCount > 10">Page size: </span><select ng-model="paging['member'].pageSize" 
+              ng-show="selected.refset.members.totalCount > 10"
+              title="Page Size"
+              ng-change="paging['member'].page = 1; getMembers(selected.refset)"
+              ng-options="item.value as item.name for item in pageSizes">
+            </select>
+            <select ng-model="selected.refset.preferredLanguage" ng-show="selected.refset.members.totalCount >= 1"
+            title="Select preferred language" style="font-size: 12;"
+            ng-options="item.value for item in requiredLanguages"
+            ng-change="submitRefset(selected.refset);getMembers(selected.refset);"></select>
+        </span>
+      </div> -->
+      <!-- <br><br> -->
       <div>
         <div>
           <span class="info-text"            
@@ -687,12 +817,12 @@
               ng-change="paging['member'].page = 1; getMembers(selected.refset)"
               ng-options="item.value as item.name for item in pageSizes">
             </select>
-            <select ng-model="preferredLanguage" ng-show="selected.refset.members.totalCount >= 1"
+            <select ng-model="selected.refset.preferredLanguage" ng-show="selected.refset.members.totalCount >= 1"
             title="Select preferred language" style="font-size: 12;"
-            ng-options="item as item for item in requiredLanguages"
+            ng-options="item.value for item in requiredLanguages"
             ng-change="submitRefset(selected.refset);getMembers(selected.refset);"></select>
           </span>
-          
+          <span ng-show="selected.refset.members.totalCount > paging['member'].pageSize"><br><br></span>
           <uib-pagination items-per-page="paging['member'].pageSize"
             max-size="5" boundary-links="true" class="pagination-sm"
             previous-text="&lsaquo;" next-text="&rsaquo;" first-text="&laquo;"
@@ -778,23 +908,23 @@
               <td class="nobreak" ng-show="value == 'ASSIGNED'">
                 <i
                   confirm="Are you sure you want to remove the inclusion ({{member.conceptName}})?"
-                  ng-show="selected.refset.type == 'INTENSIONAL' && projects.role != 'ADMIN' && member.memberType =='INCLUSION'"
+                  ng-show="selected.refset.type == 'INTENSIONAL' && !['ADMIN','LEAD'].includes(projects.role) && member.memberType =='INCLUSION'"
                   ng-click="removeRefsetInclusion(selected.refset,member); $event.stopPropagation()"
                   title="Remove inclusion" class="noul material-icons md-18">delete</i>
                 <i
                   confirm="Are you sure you want to remove the member ({{member.conceptName}})?"
-                  ng-show="selected.refset.type == 'EXTENSIONAL' && projects.role != 'ADMIN' && !isLookupInProgress(selected.refset)"
+                  ng-show="selected.refset.type == 'EXTENSIONAL' && !['ADMIN','LEAD'].includes(projects.role) && !isLookupInProgress(selected.refset)"
                   ng-click="removeRefsetMember(selected.refset,member); $event.stopPropagation()"
                   title="Remove" class="noul material-icons md-18">delete</i>
                 <i
-                  ng-show="selected.refset.type == 'EXTENSIONAL' && projects.role != 'ADMIN' && isLookupInProgress(selected.refset)"
+                  ng-show="selected.refset.type == 'EXTENSIONAL' && !['ADMIN','LEAD'].includes(projects.role) && isLookupInProgress(selected.refset)"
                   title="Cannot remove member while lookup is in progress" class="md-grey material-icons md-18">delete</i>                  
                 <i
-                  ng-show="selected.refset.type == 'INTENSIONAL' && projects.role != 'ADMIN' && member.memberType == 'EXCLUSION'"
+                  ng-show="selected.refset.type == 'INTENSIONAL' && !['ADMIN','LEAD'].includes(projects.role) && member.memberType == 'EXCLUSION'"
                   ng-click="removeRefsetExclusion(selected.refset,member);  $event.stopPropagation()"
                   title="Remove exclusion" class="noul material-icons md-18">delete</i>
                 <i
-                  ng-show="selected.refset.type == 'INTENSIONAL' && projects.role != 'ADMIN' && member.memberType == 'MEMBER'"
+                  ng-show="selected.refset.type == 'INTENSIONAL' && !['ADMIN','LEAD'].includes(projects.role) && member.memberType == 'MEMBER'"
                   ng-click="addRefsetExclusion(selected.refset, member); $event.stopPropagation()"
                   title="Add exclusion" class="noul material-icons md-18">remove_circle_outline</i>
                 <i

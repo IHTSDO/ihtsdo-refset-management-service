@@ -1,5 +1,5 @@
-/**
- * Copyright 2015 West Coast Informatics, LLC
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.rest.impl;
 
@@ -34,6 +34,7 @@ import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
+import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.ReleaseArtifactJpa;
 import org.ihtsdo.otf.refset.jpa.ReleaseInfoJpa;
@@ -171,7 +172,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl
   @Override
   @Path("/refset/begin")
   @ApiOperation(value = "Begin refset release", notes = "Begins the release process by creating the refset release info", response = ReleaseInfoJpa.class)
-  public ReleaseInfo beginRefsetRelease(
+  public void beginRefsetRelease(
     @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
     @ApiParam(value = "Effective time, e.g. 20150131", required = true) @QueryParam("effectiveTime") String effectiveTime,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
@@ -183,50 +184,199 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl
     final BeginRefsetReleaseAlgorthm algo = new BeginRefsetReleaseAlgorthm();
     algo.setTransactionPerOperation(false);
     algo.beginTransaction();
-    try {
-      // Load refset
-      final Refset refset = algo.getRefset(refsetId);
-      if (refset == null) {
-        throw new Exception("Invalid refset id " + refsetId);
+
+    // Add refsetId to the in-progress map
+    algo.startProcess(refsetId, "BEGIN");
+
+    final ValidationResult validationResults = new ValidationResultJpa();
+
+    final Thread t = new Thread(new Runnable() {
+
+      /* see superclass */
+      @Override
+      public void run() {
+
+        Refset refset = null;
+
+        try {
+          // Load refset
+          refset = algo.getRefset(refsetId);
+          if (refset == null) {
+            throw new Exception("Invalid refset id " + refsetId);
+          }
+
+          // Authorize the call
+          final String userName = authorizeProject(algo,
+              refset.getProject().getId(), securityService, authToken,
+              "begin refset release", UserRole.AUTHOR);
+
+          // Verify date format
+          if (!effectiveTime.matches("([0-9]{8})"))
+            throw new LocalException(
+                "date provided is not in 'YYYYMMDD' format:" + effectiveTime);
+
+          algo.setRefset(refset);
+          algo.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse(effectiveTime));
+          algo.setUserName(userName);
+          algo.checkPreconditions();
+          algo.compute();
+
+          addLogEntry(algo, userName, "BEGIN RELEASE refset ",
+              refset.getProject().getId(), refset.getId(),
+              refset.getTerminologyId() + ": " + refset.getName());
+
+          // Finish transaction
+          algo.commit();
+
+        } catch (Exception e) {
+          if (refset == null) {
+            validationResults.addError(e.getMessage());
+          } else {
+            validationResults
+                .addError(refset.getTerminologyId() + ": " + e.getMessage());
+          }
+        }
+        // Whether it succeeded or failed, remove it from the in-progress
+        // map
+        finally {
+          try {
+            algo.setProcessValidationResult(refsetId, "BEGIN",
+                validationResults);
+            algo.finishProcess(refsetId, "BEGIN");
+            algo.close();
+            securityService.close();
+          } catch (Exception e) {
+            // Do nothing
+          }
+        }
+        return;
       }
+    });
 
+    t.start();
 
-      // Authorize the call
-      final String userName =
-          authorizeProject(algo, refset.getProject().getId(), securityService,
-              authToken, "begin refset release", UserRole.AUTHOR);
+    return;
+  }
 
-      // Verify date format
-      if (!effectiveTime.matches("([0-9]{8})"))
-        throw new LocalException(
-            "date provided is not in 'YYYYMMDD' format:" + effectiveTime);
+  /* see superclass */
+  @POST
+  @Override
+  @Path("/refsets/begin/{projectId}")
+  @ApiOperation(value = "Begin refset releases", notes = "Begins the release process for a group of refsets by creating the refset release infos")
+  public void beginRefsetReleases(
+    @ApiParam(value = "Project id, e.g. 2", required = true) @PathParam("projectId") Long projectId,
+    @ApiParam(value = "List of refset ids", required = true) String[] refsetIds,
+    @ApiParam(value = "Effective time, e.g. 20150131", required = true) @QueryParam("effectiveTime") String effectiveTime,
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass())
+        .info("RESTful call GET (Release): /refsets/begin/" + projectId + " "
+            + refsetIds.toString() + ", " + effectiveTime);
 
-      algo.setRefset(refset);
-      algo.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse(effectiveTime));
-      algo.setUserName(userName);
-      algo.checkPreconditions();
-      algo.compute();
+    final BeginRefsetReleaseAlgorthm algo = new BeginRefsetReleaseAlgorthm();
+    // Manage transaction
+    algo.setTransactionPerOperation(false);
+    algo.beginTransaction();
 
-      addLogEntry(algo, userName, "BEGIN RELEASE refset ",
-          refset.getProject().getId(), refset.getId(),
-          refset.getTerminologyId() + ": " + refset.getName());
+    final ValidationResult validationResults = new ValidationResultJpa();
 
-      // Finish transaction
-      algo.commit();
+    final Thread t = new Thread(new Runnable() {
 
-      final ReleaseInfo info =
-          algo.getReleaseInfo(algo.getReleaseInfo().getId());
-      algo.handleLazyInit(info);
-      algo.handleLazyInit(info.getRefset());
+      /* see superclass */
+      @Override
+      public void run() {
 
-      return info;
-    } catch (Exception e) {
-      handleException(e, "trying to begin release of refset");
-    } finally {
-      securityService.close();
-      algo.close();
-    }
-    return null;
+        try {
+
+          if (refsetIds == null || refsetIds.length == 0) {
+            throw new LocalException("Must include at least one refset");
+          }
+
+          // Authorize the call
+          final String userName =
+              authorizeProject(algo, projectId, securityService, authToken,
+                  "begin refsets release", UserRole.ADMIN);
+
+          // Verify date format
+          if (!effectiveTime.matches("([0-9]{8})"))
+            throw new LocalException(
+                "date provided is not in 'YYYYMMDD' format:" + effectiveTime);
+
+          // Add all refsetIds to the in-progress map
+          for (String refsetIdStr : refsetIds) {
+            algo.startProcess(Long.parseLong(refsetIdStr), "BEGIN");
+          }
+
+          for (String refsetIdStr : refsetIds) {
+
+            final Long refsetId = Long.parseLong(refsetIdStr);
+
+            // Load refset
+            final Refset refset = algo.getRefset(refsetId);
+
+            // We don't want one failure to stop the entire batch, so
+            // if any attempt throws an exception, add it to the validation
+            // result
+            // errors and keep going.
+            try {
+
+              if (refset == null) {
+                throw new Exception("Invalid refset id " + refsetId);
+              }
+
+              algo.setRefset(refset);
+              algo.setEffectiveTime(
+                  ConfigUtility.DATE_FORMAT.parse(effectiveTime));
+              algo.setUserName(userName);
+              algo.checkPreconditions();
+              algo.compute();
+
+              addLogEntry(algo, userName, "BEGIN RELEASE refset ",
+                  refset.getProject().getId(), refset.getId(),
+                  refset.getTerminologyId() + ": " + refset.getName());
+
+            } catch (Exception e) {
+              if (refset == null) {
+                validationResults.addError(e.getMessage());
+              } else {
+                validationResults.addError(
+                    refset.getTerminologyId() + ": " + e.getMessage());
+              }
+            }
+            // Whether it succeeded or failed, remove it from the in-progress
+            // map
+            finally {
+              algo.setProcessValidationResult(projectId, "BEGIN",
+                  validationResults);
+              algo.finishProcess(refsetId, "BEGIN");
+            }
+
+            // Commit after each refset finishes
+            algo.commitClearBegin();
+          }
+
+          // Finish transaction
+          algo.commit();
+
+          return;
+        } catch (Exception e) {
+          handleException(e, "trying to begin releases of refsets");
+        } finally {
+          try {
+            algo.close();
+            securityService.close();
+          } catch (Exception e) {
+            // Do nothing
+          }
+        }
+        return;
+      }
+    });
+
+    t.start();
+
+    return;
+
   }
 
   /* see superclass */
@@ -304,6 +454,153 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl
   }
 
   /* see superclass */
+  @POST
+  @Override
+  @Path("/refsets/validate/{projectId}")
+  @ApiOperation(value = "Validate refset releases", notes = "Validates the refset releases by validating the refset and members for release")
+  public void validateRefsetReleases(
+    @ApiParam(value = "Project id, e.g. 2", required = true) @PathParam("projectId") Long projectId,
+    @ApiParam(value = "List of refset ids", required = true) String[] refsetIds,
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(getClass())
+        .info("RESTful call GET (Release): /refsets/validate/" + projectId + " "
+            + refsetIds.toString());
+
+    final RefsetService refsetService = new RefsetServiceJpa();
+    final ValidationServiceJpa validationService = new ValidationServiceJpa();
+
+    final ValidationResult validationResults = new ValidationResultJpa();
+
+    final Thread t = new Thread(new Runnable() {
+
+      /* see superclass */
+      @Override
+      public void run() {
+
+        try {
+
+          if (refsetIds == null || refsetIds.length == 0) {
+            throw new LocalException("Must include at least one refset");
+          }
+
+          // Authorize the call
+          authorizeProject(refsetService, projectId, securityService, authToken,
+              "validate refset release", UserRole.ADMIN);
+
+          // Add all refsetIds to the in-progress map
+          for (String refsetIdStr : refsetIds) {
+            refsetService.startProcess(Long.parseLong(refsetIdStr), "VALIDATE");
+          }
+
+          for (String refsetIdStr : refsetIds) {
+
+            final Long refsetId = Long.parseLong(refsetIdStr);
+
+            // Load refset
+            final Refset refset = refsetService.getRefset(refsetId);
+
+            // We don't want one failure to stop the entire batch, so
+            // if any attempt throws an exception, add it to the validation
+            // result
+            // errors and keep going.
+            try {
+
+              if (refset == null) {
+                throw new Exception("Invalid refset id " + refsetId);
+              }
+
+              // Lazy initialize members
+              if (refset.getMembers() != null)
+                refset.getMembers().size();
+
+              // Get the release info
+              final ReleaseInfoList releaseInfoList = refsetService
+                  .findRefsetReleasesForQuery(refsetId, null, null);
+              if (releaseInfoList.getCount() != 1) {
+                throw new Exception(
+                    "Cannot find release info for refset " + refsetId);
+              }
+              final ReleaseInfo releaseInfo =
+                  releaseInfoList.getObjects().get(0);
+
+              // Verify that begin has completed
+              if (releaseInfo == null || !releaseInfo.isPlanned()
+                  || releaseInfo.isPublished())
+                throw new LocalException(
+                    "Refset release is not ready to validate " + refsetId);
+
+              // Verify the workflow status
+              if (!WorkflowStatus.READY_FOR_PUBLICATION
+                  .equals(refset.getWorkflowStatus()))
+                throw new LocalException("Refset workflowstatus is not "
+                    + WorkflowStatus.READY_FOR_PUBLICATION + " for "
+                    + refsetId);
+
+              // Perform validation
+              final ValidationResult result = validationService
+                  .validateRefset(refset, refset.getProject(), refsetService);
+              if (result.isValid()) {
+                for (ConceptRefsetMember member : refset.getMembers()) {
+                  result.merge(validationService.validateMember(member,
+                      refset.getProject(), refsetService));
+                }
+              }
+
+              // Add errors and warnings to bulk validationResult, labeling them
+              // with the refset terminologyId
+              for (String error : result.getErrors()) {
+                validationResults
+                    .addError(refset.getTerminologyId() + ": " + error);
+              }
+              for (String warning : result.getWarnings()) {
+                validationResults
+                    .addWarning(refset.getTerminologyId() + ": " + warning);
+              }
+
+            } catch (Exception e) {
+              if (refset == null) {
+                validationResults.addError(e.getMessage());
+              } else {
+                validationResults.addError(
+                    refset.getTerminologyId() + ": " + e.getMessage());
+              }
+            }
+            // Whether it succeeded or failed, remove it from the in-progress
+            // map
+            finally {
+              refsetService.setProcessValidationResult(projectId, "VALIDATE",
+                  validationResults);
+              refsetService.finishProcess(refsetId, "VALIDATE");
+            }
+
+          }
+
+          return;
+
+        } catch (Exception e) {
+          handleException(e, "trying to validate release of refset");
+        } finally {
+          try {
+            validationService.close();
+            refsetService.close();
+            securityService.close();
+          } catch (Exception e) {
+            // Do nothing
+          }
+        }
+        return;
+      }
+    });
+
+    t.start();
+
+    return;
+
+  }
+
+  /* see superclass */
   @GET
   @Override
   @Path("/refset/beta")
@@ -360,25 +657,143 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl
   }
 
   /* see superclass */
+  @POST
+  @Override
+  @Path("/refsets/beta/{projectId}")
+  @ApiOperation(value = "Beta refset releases", notes = "Starts the beta release process by creating the staging release for refsets")
+  public void betaRefsetReleases(
+    @ApiParam(value = "Project id, e.g. 2", required = true) @PathParam("projectId") Long projectId,
+    @ApiParam(value = "List of refset ids", required = true) String[] refsetIds,
+    @ApiParam(value = "IoHandler Id, e.g. DEFAULT", required = true) @QueryParam("ioHandlerId") String ioHandlerId,
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass())
+        .info("RESTful call GET (Release): /refset/beta/" + projectId + " "
+            + refsetIds.toString());
+
+    final PerformRefsetBetaAlgorithm algo = new PerformRefsetBetaAlgorithm();
+    // Manage transaction
+    algo.setTransactionPerOperation(false);
+    algo.beginTransaction();
+
+    final ValidationResult validationResults = new ValidationResultJpa();
+
+    final Thread t = new Thread(new Runnable() {
+
+      /* see superclass */
+      @Override
+      public void run() {
+
+        try {
+
+          if (refsetIds == null || refsetIds.length == 0) {
+            throw new LocalException("Must include at least one refset");
+          }
+
+          // Authorize the call
+          final String userName =
+              authorizeProject(algo, projectId, securityService, authToken,
+                  "beta refsets release", UserRole.ADMIN);
+
+          // Add all refsetIds to the in-progress map
+          for (String refsetIdStr : refsetIds) {
+            algo.startProcess(Long.parseLong(refsetIdStr), "BETA");
+          }
+
+          for (String refsetIdStr : refsetIds) {
+
+            final Long refsetId = Long.parseLong(refsetIdStr);
+
+            // Load refset
+            final Refset refset = algo.getRefset(refsetId);
+
+            // We don't want one failure to stop the entire batch, so
+            // if any attempt throws an exception, add it to the validation
+            // result
+            // errors and keep going.
+            try {
+
+              if (refset == null) {
+                throw new Exception("Invalid refset id " + refsetId);
+              }
+
+              algo.setRefset(refset);
+              algo.setIoHandlerId(ioHandlerId);
+              algo.setUserName(userName);
+              algo.checkPreconditions();
+              algo.compute();
+
+              addLogEntry(algo, userName, "BETA RELEASE refset ",
+                  refset.getProject().getId(), refset.getId(),
+                  refset.getTerminologyId() + ": " + refset.getName());
+
+            } catch (Exception e) {
+              if (refset == null) {
+                validationResults.addError(e.getMessage());
+              } else {
+                validationResults.addError(
+                    refset.getTerminologyId() + ": " + e.getMessage());
+              }
+            }
+            // Whether it succeeded or failed, remove it from the in-progress
+            // map
+            finally {
+              algo.setProcessValidationResult(projectId, "BETA",
+                  validationResults);
+              algo.finishProcess(refsetId, "BETA");
+            }
+
+            // Commit after each refset finishes
+            algo.commitClearBegin();
+          }
+
+          // Finish transaction
+          algo.commit();
+
+          return;
+        } catch (Exception e) {
+          handleException(e, "trying to beta release of refsets");
+        } finally {
+          try {
+            algo.close();
+            securityService.close();
+          } catch (Exception e) {
+            // Do nothing
+          }
+        }
+        return;
+      }
+    });
+
+    t.start();
+
+    return;
+
+  }
+
+  /* see superclass */
   @GET
   @Override
   @Path("/refset/finish")
   @ApiOperation(value = "Finish refset release", notes = "Finishes the release process by marking the staging release for refset as PUBLISHED", response = RefsetJpa.class)
   public Refset finishRefsetRelease(
     @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
+    @ApiParam(value = "Override, e.g. true/false/null", required = false) @QueryParam("override") Boolean override,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
     Logger.getLogger(getClass())
-        .info("RESTful call GET (Release): /refset/finish " + refsetId);
+        .info("RESTful call GET (Release): /refset/finish " + refsetId + ", "
+            + override);
 
     final PerformRefsetPublishAlgorithm algo =
-        new PerformRefsetPublishAlgorithm();
+        new PerformRefsetPublishAlgorithm(override == null ? false : override);
     algo.setTransactionPerOperation(false);
     algo.beginTransaction();
     try {
       // Load refset
       final Refset refset = algo.getRefset(refsetId);
+
       if (refset == null) {
         throw new Exception("Invalid refset id " + refsetId);
       }
@@ -411,6 +826,129 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl
       securityService.close();
     }
     return null;
+  }
+
+  /* see superclass */
+  @POST
+  @Override
+  @Path("/refsets/finish/{projectId}")
+  @ApiOperation(value = "Finish refset releases", notes = "Finishes the release process by marking the staging release for refsets as PUBLISHED")
+  public void finishRefsetReleases(
+    @ApiParam(value = "Project id, e.g. 2", required = true) @PathParam("projectId") Long projectId,
+    @ApiParam(value = "List of refset ids", required = true) String[] refsetIds,
+    @ApiParam(value = "Override, e.g. true/false/null", required = false) @QueryParam("override") Boolean override,
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(getClass()).info(
+        "RESTful call GET (Release): /refsets/finish " + refsetIds.toString() + ", " + override);
+
+    final PerformRefsetPublishAlgorithm algo =
+        new PerformRefsetPublishAlgorithm(override == null ? false : override);
+    // Manage transaction
+    algo.setTransactionPerOperation(false);
+    algo.beginTransaction();
+
+    final ValidationResult validationResults = new ValidationResultJpa();
+
+    final Thread t = new Thread(new Runnable() {
+
+      /* see superclass */
+      @Override
+      public void run() {
+
+        try {
+
+          if (refsetIds == null || refsetIds.length == 0) {
+            throw new LocalException("Must include at least one refset");
+          }
+
+          // Authorize the call
+          final String userName =
+              authorizeProject(algo, projectId, securityService, authToken,
+                  "finish refset release", UserRole.ADMIN);
+
+          // Add all refsetIds to the in-progress map
+          for (String refsetIdStr : refsetIds) {
+            algo.startProcess(Long.parseLong(refsetIdStr), "FINISH");
+          }
+
+          for (String refsetIdStr : refsetIds) {
+
+            final Long refsetId = Long.parseLong(refsetIdStr);
+
+            // Load refset
+            final Refset refset = algo.getRefset(refsetId);
+
+            // We don't want one failure to stop the entire batch, so
+            // if any attempt throws an exception, add it to the validation
+            // result
+            // errors and keep going.
+            try {
+
+              if (refset == null) {
+                throw new Exception("Invalid refset id " + refsetId);
+              }
+
+              algo.setUserName(userName);
+              algo.setRefset(refset);
+              algo.checkPreconditions();
+              algo.compute();
+
+              addLogEntry(algo, userName, "PUBLISH RELEASE refset ",
+                  refset.getProject().getId(), refset.getId(),
+                  refset.getTerminologyId() + ": " + refset.getName());
+
+            } catch (Exception e) {
+              if (refset == null) {
+                validationResults.addError(e.getMessage());
+              } else {
+                // Treat "inactive concept" exceptions as warnings
+                if (e.getMessage().contains("inactive concepts")) {
+                  validationResults.addWarning(
+                      refset.getTerminologyId() + ": " + e.getMessage());
+                } 
+                // Otherwise, treat them as errors
+                else {
+                  validationResults.addError(
+                      refset.getTerminologyId() + ": " + e.getMessage());
+                }
+              }
+            }
+            // Whether it succeeded or failed, remove it from the in-progress
+            // map
+            finally {
+              algo.setProcessValidationResult(projectId, "FINISH",
+                  validationResults);
+              algo.finishProcess(refsetId, "FINISH");
+            }
+
+            // Commit after each refset finishes
+            algo.commitClearBegin();
+          }
+
+          // Finish transaction
+          algo.commit();
+
+          return;
+        } catch (Exception e) {
+          handleException(e, "trying to finish release of refsets");
+        } finally {
+          try {
+            algo.close();
+            securityService.close();
+          } catch (Exception e) {
+            // Do nothing
+          }
+        }
+        return;
+      }
+    });
+
+    t.start();
+
+    return;
+
   }
 
   /* see superclass */
@@ -459,6 +997,119 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl
       algo.close();
       securityService.close();
     }
+  }
+
+  /* see superclass */
+  @POST
+  @Override
+  @Path("/refsets/cancel/{projectId}")
+  @ApiOperation(value = "Cancel refset releases", notes = "Cancels the release process by removing the staging release info refsets")
+  public void cancelRefsetReleases(
+    @ApiParam(value = "Project id, e.g. 2", required = true) @PathParam("projectId") Long projectId,
+    @ApiParam(value = "List of refset ids", required = true) String[] refsetIds,
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass())
+        .info("RESTful call GET (Release): /refsets/cancel" + projectId + " "
+            + refsetIds.toString());
+
+    final CancelRefsetReleaseAlgorithm algo =
+        new CancelRefsetReleaseAlgorithm();
+    // Manage transaction
+    algo.setTransactionPerOperation(false);
+    algo.beginTransaction();
+
+    final ValidationResult validationResults = new ValidationResultJpa();
+
+    final Thread t = new Thread(new Runnable() {
+
+      /* see superclass */
+      @Override
+      public void run() {
+
+        try {
+
+          if (refsetIds == null || refsetIds.length == 0) {
+            throw new LocalException("Must include at least one refset");
+          }
+
+          // Authorize the call
+          final String userName =
+              authorizeProject(algo, projectId, securityService, authToken,
+                  "cancel refset release", UserRole.ADMIN);
+
+          // Add all refsetIds to the in-progress map
+          for (String refsetIdStr : refsetIds) {
+            algo.startProcess(Long.parseLong(refsetIdStr), "CANCEL");
+          }
+
+          for (String refsetIdStr : refsetIds) {
+
+            final Long refsetId = Long.parseLong(refsetIdStr);
+
+            // Load refset
+            final Refset refset = algo.getRefset(refsetId);
+
+            // We don't want one failure to stop the entire batch, so
+            // if any attempt throws an exception, add it to the validation
+            // result
+            // errors and keep going.
+            try {
+
+              if (refset == null) {
+                throw new Exception("Invalid refset id " + refsetId);
+              }
+
+              algo.setUserName(userName);
+              algo.setRefset(refset);
+              algo.checkPreconditions();
+              algo.compute();
+
+              addLogEntry(algo, userName, "CANCEL RELEASE refset ",
+                  refset.getProject().getId(), refset.getId(),
+                  refset.getTerminologyId() + ": " + refset.getName());
+
+            } catch (Exception e) {
+              if (refset == null) {
+                validationResults.addError(e.getMessage());
+              } else {
+                validationResults.addError(
+                    refset.getTerminologyId() + ": " + e.getMessage());
+              }
+            }
+            // Whether it succeeded or failed, remove it from the in-progress
+            // map
+            finally {
+              algo.setProcessValidationResult(projectId, "CANCEL",
+                  validationResults);
+              algo.finishProcess(refsetId, "CANCEL");
+            }
+
+            // Commit after each refset finishes
+            algo.commitClearBegin();
+          }
+
+          // Finish transaction
+          algo.commit();
+
+          return;
+        } catch (Exception e) {
+          handleException(e, "trying to cancel release of refset");
+        } finally {
+          try {
+            algo.close();
+            securityService.close();
+          } catch (Exception e) {
+            // Do nothing
+          }
+        }
+        return;
+      }
+    });
+
+    t.start();
+
+    return;
   }
 
   /* see superclass */
@@ -1071,6 +1722,155 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl
       releaseService.close();
       securityService.close();
     }
+  }
+
+  /* see superclass */
+  @Override
+  @POST
+  @Path("/lookup/progress")
+  @ApiOperation(value = "Lookup progress through process", notes = "Returns whether the refsetId is still in progress for specified process", response = Boolean.class)
+  public Boolean getProcessProgress(
+    @ApiParam(value = "Refset id", required = true) Long refsetId,
+    @ApiParam(value = "Process, e.g. BETA", required = true) @QueryParam("process") String process,
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass())
+        .info("RESTful call GET (Refset): /lookup/process " + refsetId + ", "
+            + process);
+
+    final ReleaseService releaseService = new ReleaseServiceJpa();
+
+    Boolean refsetStillInProgress = false;
+
+    try {
+      if (releaseService.getProcessProgressStatus(refsetId, process)) {
+        refsetStillInProgress = true;
+      }
+
+      return refsetStillInProgress;
+    } catch (Exception e) {
+      handleException(e, "trying to find the process status for refsets");
+    } finally {
+      releaseService.close();
+      securityService.close();
+    }
+    return null;
+  }
+
+  /* see superclass */
+  @Override
+  @GET
+  @Path("/process/results/{refsetId}")
+  @ApiOperation(value = "Get process results", notes = "Returns the validation result of a completed process", response = ValidationResultJpa.class)
+  public ValidationResult getProcessResults(
+    @ApiParam(value = "Refset id, e.g. 2", required = true) @PathParam("refsetId") Long refsetId,
+    @ApiParam(value = "Bulk Process, e.g. BETA", required = true) @QueryParam("process") String process,
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass())
+        .info("RESTful call GET (Refset): /process/results/" + refsetId + ", "
+            + process);
+
+    final ReleaseService releaseService = new ReleaseServiceJpa();
+
+    try {
+      ValidationResult validationResult =
+          releaseService.getProcessValidationResult(refsetId, process);
+
+      if (validationResult == null) {
+        throw new LocalException("No validation result found for refset="
+            + refsetId + ", process=" + process);
+      }
+
+      // Now that we've gotten the result, clear it out so a future process run
+      // can use the same key
+      releaseService.removeProcessValidationResult(refsetId, process);
+
+      return validationResult;
+    } catch (Exception e) {
+      handleException(e,
+          "trying to find the validation results for a completed process");
+    } finally {
+      releaseService.close();
+      securityService.close();
+    }
+    return null;
+  }
+
+  /* see superclass */
+  @Override
+  @POST
+  @Path("/lookup/progress/bulk")
+  @ApiOperation(value = "Lookup progress through bulk process", notes = "Returns the refsetIds that are still in progress for specified bulk process", response = StringList.class)
+  public StringList getBulkProcessProgress(
+    @ApiParam(value = "List of refset ids", required = true) String[] refsetIds,
+    @ApiParam(value = "Bulk Process, e.g. BETA", required = true) @QueryParam("process") String process,
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass())
+        .info("RESTful call GET (Refset): /lookup/process/bulk "
+            + refsetIds.toString() + ", " + process);
+
+    final ReleaseService releaseService = new ReleaseServiceJpa();
+
+    StringList refsetsStillInProgress = new StringList();
+
+    try {
+      for (String refsetId : refsetIds) {
+        if (releaseService.getProcessProgressStatus(Long.parseLong(refsetId),
+            process)) {
+          refsetsStillInProgress.addObject(refsetId);
+        }
+      }
+
+      return refsetsStillInProgress;
+    } catch (Exception e) {
+      handleException(e, "trying to find the bulk process status for refsets");
+    } finally {
+      releaseService.close();
+      securityService.close();
+    }
+    return null;
+  }
+
+  /* see superclass */
+  @Override
+  @GET
+  @Path("/process/results/bulk/{projectId}")
+  @ApiOperation(value = "Get bulk process results", notes = "Returns the validation results of a completed bulk process", response = ValidationResultJpa.class)
+  public ValidationResult getBulkProcessResults(
+    @ApiParam(value = "Project id, e.g. 2", required = true) @PathParam("projectId") Long projectId,
+    @ApiParam(value = "Bulk Process, e.g. BETA", required = true) @QueryParam("process") String process,
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass())
+        .info("RESTful call GET (Refset): /process/results/bulk/" + projectId
+            + ", " + process);
+
+    final ReleaseService releaseService = new ReleaseServiceJpa();
+
+    try {
+      ValidationResult validationResult =
+          releaseService.getProcessValidationResult(projectId, process);
+
+      if (validationResult == null) {
+        throw new LocalException("No validation result found for project="
+            + projectId + ", process=" + process);
+      }
+
+      // Now that we've gotten the result, clear it out so a future process run
+      // can use the same key
+      releaseService.removeProcessValidationResult(projectId, process);
+
+      return validationResult;
+    } catch (Exception e) {
+      handleException(e,
+          "trying to find the validation results for a completed bulk process");
+    } finally {
+      releaseService.close();
+      securityService.close();
+    }
+    return null;
   }
 
 }

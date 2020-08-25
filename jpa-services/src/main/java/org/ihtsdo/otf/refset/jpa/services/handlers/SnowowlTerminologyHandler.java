@@ -32,6 +32,7 @@ import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.Terminology;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
+import org.ihtsdo.otf.refset.helpers.KeyValuePairList;
 import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.TranslationExtensionLanguage;
@@ -474,7 +475,7 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
 
   /* see superclass */
   @Override
-  public List<String> getRequiredLanguageRefsets(String terminology,
+  public KeyValuePairList getRequiredLanguageRefsets(String terminology,
     String version) throws Exception {
     Logger.getLogger(getClass()).info(
         "  get required language refsets  - " + terminology + ", " + version);
@@ -504,7 +505,7 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
 
       // Here's the messy part about trying to parse the return error message
       if (resultString.contains("loop did not match anything")) {
-        return new ArrayList<>();
+        return new KeyValuePairList();
       }
 
       throw new LocalException(
@@ -516,7 +517,7 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
 
     // If this branch doesn't have the metadata tag
     if (doc.get("metadata") == null) {
-      return new ArrayList<>();
+      return new KeyValuePairList();
     }
     // If metadata is present but empty, try one level higher (if possible)
     // until one is found.
@@ -526,7 +527,7 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
             version.substring(0, version.lastIndexOf("/"));
         return (getRequiredLanguageRefsets(terminology, higherVersion));
       } else {
-        return new ArrayList<>();
+        return new KeyValuePairList();
       }
     }
     List<String> requiredLanguageList = new ArrayList<>();
@@ -588,9 +589,9 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     }
 
     if (requiredLanguageRefsets == null) {
-      return requiredLanguageList;
+      return new KeyValuePairList();
     }
-    return requiredLanguageList;
+    return new KeyValuePairList();
   }
 
   /* see superclass */
@@ -1912,6 +1913,13 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
   @Override
   public int getMaxBatchLookupSize() throws Exception {
     return maxBatchLookupSize;
+  }
+
+  @Override
+  public ConceptList getInactiveConcepts(List<String> terminologyIds,
+    String terminology, String version) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
   }
 
 }
