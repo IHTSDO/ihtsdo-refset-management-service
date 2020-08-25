@@ -2762,7 +2762,7 @@ tsApp
                       if (warning.includes('inactive concepts')){
                         var splitted = warning.split(" ");
                         var inactiveConceptCount = splitted[3];
-                        $window.alert('This refset has ' + inactiveConceptCount + ' inactive concepts.  \nIf you would like to continue the release:\n1. Press OK button here.\n2. Press Beta on the Release dialog.\n\nIf you would like to resolve these concepts:\n1. Press OK button here. \n2. Press Cancel button on the Release dialog. \n3. Assign the refset to yourself. \n4. Run migration on the refset. \n5. Restart the release');
+                        $window.alert('This refset has ' + inactiveConceptCount + ' inactive concepts.  \nIf you would like to continue the release:\n1. Press OK button here.\n2. Press Beta on the Release dialog.\n\nIf you would like to resolve these concepts:\n1. Press OK button here. \n2. Press Cancel button on the Release dialog. \n3. Assign the refset to yourself. \n4. Run migration on the refset. \n5. Restart the release.');
                         break;
                       }
                     }                    
@@ -2908,6 +2908,8 @@ tsApp
                 // Error tracking
                 $scope.validatedRefsetIds = [];
                 $scope.failedRefsetIds = [];
+                $scope.warningRefsetIds = [];
+                $scope.overrideWarnings = false;
                 
                 // Button disabled values
                 $scope.startReleaseDisabled = true;
@@ -3032,7 +3034,17 @@ tsApp
                   else{
                     return 'READY_FOR_PUBLICATION';
                   }
-                }                
+                }
+                
+                // Handled warnings separately than status, so the underlying status still applies
+                $scope.refsetHasWarning = function(refset){
+                  if($scope.warningRefsetIds.includes(refset.id)){
+                    return true;
+                  }
+                  else{
+                    return false;
+                  }
+                }
                 
                 $scope.getLastReleaseDate = function(refset){
                   return $scope.mostRecentReleaseDate[refset.terminologyId];
@@ -3195,12 +3207,24 @@ tsApp
                               }             
                               
                               var refsetHasError = false;
+                              var refsetHasWarning = false;
+                              
                               for(error of data.errors){
                                 if(error.includes(refset.terminologyId)){
-                                refsetHasError = true;
-                                break;
+                                  refsetHasError = true;
+                                }
                               }
+                              for(warning of data.warnings){
+                                if(warning.includes(refset.terminologyId)){
+                                  refsetHasWarning = true;
+                                }
+                              }
+
+                            // If the refset has a 'warning' validation result
+                            if(refsetHasWarning){
+                              $scope.warningRefsetIds.push(refset.id);
                             }
+                              
                             // If the refset has an 'error' validation result
                             if(refsetHasError){
                               $scope.failedRefsetIds.push(refset.id);
@@ -3214,8 +3238,8 @@ tsApp
                               if(process === 'VALIDATE' && $scope.selectedRefsetTerminologyIds.includes(refset.terminologyId)){
                                 $scope.validatedRefsetIds.push(refset.id);
                               }
-                              // Finished refsets need to be added to the published refsets list
-                              if(process === 'FINISH' && $scope.selectedRefsetTerminologyIds.includes(refset.terminologyId)){
+                              // Finished refsets need to be added to the published refsets list, unless there are warnings
+                              if(process === 'FINISH' && $scope.selectedRefsetTerminologyIds.includes(refset.terminologyId) && !$scope.warningRefsetIds.includes(refset.id)){
                                 $scope.publishedRefsetTerminologyIds.push(refset.terminologyId);
                               }
                               // Successfully canceled refsets should no longer be considered failures or validated
@@ -3223,6 +3247,23 @@ tsApp
                                 $scope.failedRefsetIds = $scope.failedRefsetIds.filter(r => r !== refset.id);
                                 $scope.validatedRefsetIds = $scope.validatedRefsetIds.filter(r => r !== refset.id);
                               }
+                            }
+                          }
+                            
+                          // If any 'inactive concept' warnings, display message
+                          var inactiveConceptWarningDetected = false;
+                          for(warning of data.warnings){
+                            if(warning.includes('inactive concepts')){
+                              inactiveConceptWarningDetected =  true;
+                            }
+                          }
+                          // Message is different depending on step in release process
+                          if(inactiveConceptWarningDetected && process === 'VALIDATE'){
+                            $window.alert('Refsets with inactive concepts detected.  \nIf you would like to continue releasing these refsets:\n1. Press OK button here.\n2. Press Beta button.\n\nIf you would like to resolve these concepts:\n1. Press OK button here.\n2. Select all "VALIDATED Warning" refsets you want to resolve.\n3. Press the Cancel button.\n4. Assign the refsets to yourself.\n5. Run migrations on the refsets.\n6. Restart the releases.');
+                          }
+                          if(inactiveConceptWarningDetected && process === 'FINISH'){
+                            if($window.confirm('Refsets with inactive concepts detected.  \nIf you would like to continue releasing these refsets:\n1. Press OK button here.\n2. Select all "BETA Warning" refsets you want to continue releasing.\n3. Press Finish button again.\n\nIf you would like to resolve these concepts:\n1. Press Cancel button here.\n2. Select all "BETA Warning" refsets you want to resolve.\n3. Press the Cancel button in the Release dialog.\n4. Assign the refsets to yourself.\n5. Run migrations on the refsets.\n6. Restart the releases.')){
+                              $scope.overrideWarnings = true;
                             }
                           }
                             
@@ -3263,6 +3304,7 @@ tsApp
                   //Clear out errors and warnings from previous runs
                   $scope.errors = [];
                   $scope.warnings = [];
+                  $scope.warningRefsetIds = [];
                   
                   if (!$scope.effectiveTime) {
                     window.alert('Release Date cannot be empty');
@@ -3296,6 +3338,7 @@ tsApp
                   //Clear out errors and warnings from previous runs
                   $scope.errors = [];
                   $scope.warnings = [];
+                  $scope.warningRefsetIds = [];
                   
                   for(refsetId of $scope.getSelectedRefsetIds()){
                     $scope.refsetIdsInProcessProgress.push(refsetId);
@@ -3323,7 +3366,8 @@ tsApp
 
                   //Clear out errors and warnings from previous runs
                   $scope.errors = [];
-                  $scope.warnings = [];                  
+                  $scope.warnings = []; 
+                  $scope.warningRefsetIds = [];                 
                   
                   for(refsetId of $scope.getSelectedRefsetIds()){
                     $scope.refsetIdsInProcessProgress.push(refsetId);
@@ -3352,21 +3396,26 @@ tsApp
                   //Clear out errors and warnings from previous runs
                   $scope.errors = [];
                   $scope.warnings = [];
+                  $scope.warningRefsetIds = [];
                   
                   for(refsetId of $scope.getSelectedRefsetIds()){
                     $scope.refsetIdsInProcessProgress.push(refsetId);
                   }                  
                   
-                  releaseService.finishRefsetReleases($scope.project.id, $scope.getSelectedRefsetIds()).then(
+                  releaseService.finishRefsetReleases($scope.project.id, $scope.getSelectedRefsetIds(), $scope.overrideWarnings).then(
                   // Success
                   function(data) {
                     // Start the progress lookup loop
-                    $scope.startProcessProgressLookup('FINISH');                                    
+                    $scope.startProcessProgressLookup('FINISH');  
+                    // Reset the override warnings flag
+                    $scope.overrideWarnings = false;
 
                   },
                   // Error
                   function(data) {
                     handleBulkSingleError($scope.errors,  data);
+                    // Reset the override warnings flag
+                    $scope.overrideWarnings = false;
                   });
                 };
 
@@ -3378,6 +3427,7 @@ tsApp
                   //Clear out errors and warnings from previous runs
                   $scope.errors = [];
                   $scope.warnings = [];
+                  $scope.warningRefsetIds = [];
                                           
                   var selectedRefsetIds = [];
                   

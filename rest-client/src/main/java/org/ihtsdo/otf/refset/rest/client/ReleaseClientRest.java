@@ -161,7 +161,7 @@ public class ReleaseClientRest extends RootClientRest
     Client client = ClientBuilder.newClient();
 
     WebTarget target = client.target(config.getProperty("base.url")
-        + "/release/refset/finish" + "?refsetId=" + refsetId);
+        + "/release/refset/finish" + "?refsetId=" + refsetId + (override != null ? "&override=" + override : ""));
 
     Response response = target.request(MediaType.APPLICATION_XML)
         .header("Authorization", authToken).get();
@@ -178,7 +178,7 @@ public class ReleaseClientRest extends RootClientRest
   }
 
   @Override
-  public void finishRefsetReleases(Long projectId, String[] refsetIds,
+  public void finishRefsetReleases(Long projectId, String[] refsetIds, Boolean override,
     String authToken) throws Exception {
     Logger.getLogger(getClass())
         .debug("Release Client - finish refset releases");
@@ -186,7 +186,7 @@ public class ReleaseClientRest extends RootClientRest
     Client client = ClientBuilder.newClient();
 
     WebTarget target = client.target(config.getProperty("base.url")
-        + "/release/refsets/finish/" + projectId);
+        + "/release/refsets/finish/" + projectId + (override != null ? "?override=" + override : ""));
 
     Response response = target.request(MediaType.APPLICATION_XML)
         .header("Authorization", authToken).post(Entity.xml(refsetIds));

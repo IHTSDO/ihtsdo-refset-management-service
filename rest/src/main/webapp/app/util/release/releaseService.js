@@ -459,8 +459,8 @@ tsApp.service('releaseService', [
       },
       // error
       function(response) {
-        // 'Inactive concepts!' errors gets handled specially
-        if(!response.data.includes('Inactive concepts!')){
+        // 'inactive concepts' errors gets handled specially
+        if(!response.data.includes('inactive concepts')){
           utilService.handleError(response);
         }
         gpService.decrement();
@@ -469,13 +469,13 @@ tsApp.service('releaseService', [
       return deferred.promise;
     };
 
-    this.finishRefsetReleases = function(projectId, refsetIds) {
+    this.finishRefsetReleases = function(projectId, refsetIds, override) {
       console.debug('finishRefsetReleases');
       var deferred = $q.defer();
 
       // get refset revision
       gpService.increment();
-      $http.post(releaseUrl + 'refsets/finish/' + projectId, refsetIds).then(
+      $http.post(releaseUrl + 'refsets/finish/' + projectId + (override != null ? '?override=' + override : ''), refsetIds).then(
       // success
       function(response) {
         console.debug('  finish releases finished ');
