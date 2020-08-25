@@ -492,7 +492,6 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
                   RootService.commitCt);
             }
 
-            refset.setLookupRequired(true);
             refsetService.updateRefset(refset);
 
             refsetService.commitClearBegin();

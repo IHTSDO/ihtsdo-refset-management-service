@@ -418,7 +418,7 @@ public class GenerateProdDataMojo extends AbstractRttMojo {
     getLog().info("  refset = " + refset.getName());
     // Begin release
     getLog().info("    begin");
-    releaseService.beginRefsetRelease(refset.getId(), effectiveTime,
+    releaseService.beginRefsetRelease(refset.getId(), effectiveTime, false,
         auth.getAuthToken());
     // Validate release
     getLog().info("    validate");

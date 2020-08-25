@@ -76,11 +76,12 @@ public interface ReleaseServiceRest {
    *
    * @param refsetId the refset id
    * @param effectiveTime the effective time of the release
+   * @param background the background
    * @param authToken the auth token
    * @throws Exception the exception
    */
   public void beginRefsetRelease(Long refsetId, String effectiveTime,
-    String authToken) throws Exception;
+    Boolean background, String authToken) throws Exception;
 
   /**
    * Begin refset releases.
