@@ -2646,6 +2646,7 @@ tsApp
                 $scope.errors = [];
                 $scope.warnings = [];
                 $scope.releaseSuccessfullyStarted = true;
+                $scope.releaseValidated = false;
 
                 // Progress tracking
                 $scope.lookupInterval = null;               
@@ -2654,6 +2655,7 @@ tsApp
                   releaseService.resumeRelease(refset.id).then(
                   // Success
                   function(data) {
+                    $scope.releaseValidated = true;
                     $scope.stagedRefset = data;
                   },
                   // Error
@@ -2771,7 +2773,10 @@ tsApp
                         $window.alert('This refset has ' + inactiveConceptCount + ' inactive concepts.  \nIf you would like to continue the release:\n1. Press OK button here.\n2. Press Beta on the Release dialog.\n\nIf you would like to resolve these concepts:\n1. Press OK button here. \n2. Press Cancel button on the Release dialog. \n3. Assign the refset to yourself. \n4. Run migration on the refset. \n5. Restart the release.');
                         break;
                       }
-                    }                    
+                    }
+                    if(data.errors.length == 0){
+                      $scope.releaseValidated = true;
+                    }
                     refsetService.fireRefsetChanged(refset);
                   },
                   // Error
