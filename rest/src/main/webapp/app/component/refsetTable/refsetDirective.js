@@ -2645,7 +2645,7 @@ tsApp
                 
                 $scope.errors = [];
                 $scope.warnings = [];
-                $scope.releaseSuccessfullyStarted = true;
+                $scope.releaseSuccessfullyStarted = false;
                 $scope.releaseValidated = false;
 
                 // Progress tracking
@@ -2655,6 +2655,7 @@ tsApp
                   releaseService.resumeRelease(refset.id).then(
                   // Success
                   function(data) {
+                    $scope.releaseSuccessfullyStarted = true;
                     $scope.releaseValidated = true;
                     $scope.stagedRefset = data;
                   },
@@ -2705,8 +2706,8 @@ tsApp
                                                     
                           // On successful BEGIN, lookup the refset release info
                           if(process == 'BEGIN'){
-                            if($scope.errors.length !== 0){
-                              $scope.releaseSuccessfullyStarted = false;
+                            if($scope.errors.length == 0){
+                              $scope.releaseSuccessfullyStarted = true;
                             }
                             var pfs = {
                               startIndex : -1,
