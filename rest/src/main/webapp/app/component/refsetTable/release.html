@@ -7,12 +7,17 @@
 
 <div class="modal-body">
   <div
-    ng-show="refset.inPublicationProcess && !validationResult && refset.stagingType != 'BETA' && stagedRefset.workflowStatus != 'BETA'"
+    ng-show="refset.inPublicationProcess && releaseSuccessfullyStarted == false && releaseValidated == false && refset.stagingType != 'BETA' && stagedRefset.workflowStatus != 'BETA'"
+    class="alert alert-success">Starting release...</div>
+
+  <div
+    ng-show="refset.inPublicationProcess && releaseSuccessfullyStarted == true && releaseValidated == false && refset.stagingType != 'BETA' && stagedRefset.workflowStatus != 'BETA'"
     class="alert alert-success">Release of {{releaseInfo.name}} has been
     started.</div>
 
   <div
     ng-show="validationResult && refset.stagingType != 'BETA' &&
+    releaseValidated == true &&
     validationResult.warnings.length == 0 &&
     validationResult.errors.length == 0"
     class="alert alert-success">Validation passed with no errors or
