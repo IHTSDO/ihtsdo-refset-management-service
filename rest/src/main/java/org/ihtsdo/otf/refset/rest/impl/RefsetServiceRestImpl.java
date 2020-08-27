@@ -383,7 +383,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
 
         Refset refset = refsets.get(k);
         refset = refsetService.getRefset(refset.getId());
-        if (refset.getWorkflowStatus() == WorkflowStatus.PUBLISHED) {
+        if (refset.getWorkflowStatus() == WorkflowStatus.PUBLISHED || refset.isProvisional()) {
           continue;
         }
 
