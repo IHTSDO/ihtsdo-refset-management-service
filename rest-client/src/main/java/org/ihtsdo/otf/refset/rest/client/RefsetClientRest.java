@@ -578,7 +578,60 @@ public class RefsetClientRest extends RootClientRest
     return (RefsetJpa) ConfigUtility.getGraphForString(resultString,
         RefsetJpa.class);
   }
+  
+  /* see superclass */
+  @Override
+  public void beginMigrations(Long projectId, String[] refsetIds, String newTerminology,
+    String newVersion, String authToken) throws Exception {
+    Logger.getLogger(getClass())
+        .debug("Refset Client - begin refset migration");
+    validateNotEmpty(projectId, "projectId");
+    validateNotEmpty(newTerminology, "newTerminology");
+    validateNotEmpty(newVersion, "newVersion");
 
+    Client client = ClientBuilder.newClient();
+    String encodedTerminology =
+        URLEncoder.encode(newTerminology, "UTF-8").replaceAll("\\+", "%20");
+    String encodedVersion =
+        URLEncoder.encode(newVersion, "UTF-8").replaceAll("\\+", "%20");
+
+    WebTarget target =
+        client.target(config.getProperty("base.url") + "/refset/migrations/begin/" + projectId
+            + "?newTerminology=" + encodedTerminology
+            + "&newVersion=" + encodedVersion);
+
+    Response response = target.request(MediaType.APPLICATION_XML)
+        .header("Authorization", authToken).post(Entity.xml(refsetIds));
+
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+  }
+  
+  /* see superclass */
+  @Override
+  public void checkMigrations(Long projectId, String[] refsetIds, String authToken) throws Exception {
+    Logger.getLogger(getClass())
+        .debug("Refset Client - check migrations for inactive concepts");
+    validateNotEmpty(projectId, "projectId");
+
+    Client client = ClientBuilder.newClient();
+
+    WebTarget target =
+        client.target(config.getProperty("base.url") + "/refset/migrations/check/" + projectId);
+
+    Response response = target.request(MediaType.APPLICATION_XML)
+        .header("Authorization", authToken).post(Entity.xml(refsetIds));
+
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+  }    
+  
   /* see superclass */
   @Override
   public Refset finishMigration(Long refsetId, String authToken)
@@ -605,6 +658,29 @@ public class RefsetClientRest extends RootClientRest
         RefsetJpa.class);
 
   }
+  
+  /* see superclass */
+  @Override
+  public void finishMigrations(Long projectId, String[] refsetIds, String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).debug("Refset Client - finish migrations");
+    validateNotEmpty(projectId, "projectId");
+
+    Client client = ClientBuilder.newClient();
+
+    WebTarget target = client.target(config.getProperty("base.url")
+        + "/refset/migrations/finish/" + projectId);
+
+    Response response = target.request(MediaType.APPLICATION_XML)
+        .header("Authorization", authToken).post(Entity.xml(refsetIds));
+
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+
+  }  
 
   /* see superclass */
   @Override
@@ -629,6 +705,30 @@ public class RefsetClientRest extends RootClientRest
     }
 
   }
+  
+  /* see superclass */
+  @Override
+  public void cancelMigrations(Long projectId, String[] refsetIds, String authToken)
+    throws Exception {
+    Logger.getLogger(getClass())
+        .debug("Refset Client - cancel reset migrations");
+    validateNotEmpty(projectId, "projectId");
+
+    Client client = ClientBuilder.newClient();
+
+    WebTarget target = client.target(config.getProperty("base.url")
+        + "/refset/migrations/cancel/" + projectId);
+
+    Response response = target.request(MediaType.APPLICATION_XML)
+        .header("Authorization", authToken).post(Entity.xml(refsetIds));
+
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+
+  }  
 
   /* see superclass */
   @Override
