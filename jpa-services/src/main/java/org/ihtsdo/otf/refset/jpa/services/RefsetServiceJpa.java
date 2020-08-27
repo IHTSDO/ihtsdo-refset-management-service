@@ -3,7 +3,12 @@
  */
 package org.ihtsdo.otf.refset.jpa.services;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -13,18 +18,21 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.persistence.NoResultException;
 
 import org.apache.log4j.Logger;
 import org.apache.lucene.queryparser.classic.ParseException;
+import org.apache.poi.util.IOUtils;
 import org.hibernate.envers.AuditReader;
 import org.hibernate.envers.AuditReaderFactory;
 import org.hibernate.envers.query.AuditEntity;
 import org.hibernate.envers.query.AuditQuery;
 import org.ihtsdo.otf.refset.ConceptRefsetMemberSynonym;
 import org.ihtsdo.otf.refset.DefinitionClause;
+import org.ihtsdo.otf.refset.MemberDiffReport;
 import org.ihtsdo.otf.refset.Note;
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
@@ -43,6 +51,7 @@ import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
 import org.ihtsdo.otf.refset.jpa.ConceptRefsetMemberNoteJpa;
 import org.ihtsdo.otf.refset.jpa.ConceptRefsetMemberSynonymJpa;
 import org.ihtsdo.otf.refset.jpa.IoHandlerInfoJpa;
+import org.ihtsdo.otf.refset.jpa.MemberDiffReportJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetNoteJpa;
 import org.ihtsdo.otf.refset.jpa.ReleaseInfoJpa;
@@ -52,6 +61,7 @@ import org.ihtsdo.otf.refset.jpa.helpers.ConceptRefsetMemberListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.IoHandlerInfoListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.RefsetListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ReleaseInfoListJpa;
+import org.ihtsdo.otf.refset.jpa.services.handlers.ExportReportHandler;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.rf2.Description;
@@ -81,6 +91,14 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
 
   /** The export refset handlers. */
   private static Map<String, ExportRefsetHandler> exportRefsetHandlers =
+      new HashMap<>();
+
+  /** The members in common map. */
+  private static Map<String, List<ConceptRefsetMember>> membersInCommonMap =
+      new HashMap<>();
+
+  /** The member diff report map. */
+  private static Map<String, MemberDiffReport> memberDiffReportMap =
       new HashMap<>();
 
   /**
@@ -985,6 +1003,52 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
 
   /* see superclass */
   @Override
+  public List<ConceptRefsetMember> getMembersInCommon(String reportToken)
+    throws Exception {
+    if (membersInCommonMap.containsKey(reportToken)) {
+      return membersInCommonMap.get(reportToken);
+    }
+    return null;
+  }
+
+  /* see superclass */
+  @Override
+  public void putMembersInCommon(String reportToken,
+    List<ConceptRefsetMember> membersInCommon) throws Exception {
+    membersInCommonMap.put(reportToken, membersInCommon);
+  }
+
+  /* see superclass */
+  @Override
+  public void removeMembersInCommon(String reportToken) throws Exception {
+    membersInCommonMap.remove(reportToken);
+  }
+
+  /* see superclass */
+  @Override
+  public MemberDiffReport getMemberDiffReport(String reportToken)
+    throws Exception {
+    if (memberDiffReportMap.containsKey(reportToken)) {
+      return memberDiffReportMap.get(reportToken);
+    }
+    return null;
+  }
+
+  /* see superclass */
+  @Override
+  public void putMemberDiffReport(String reportToken,
+    MemberDiffReport membersDiffReport) throws Exception {
+    memberDiffReportMap.put(reportToken, membersDiffReport);
+  }
+
+  /* see superclass */
+  @Override
+  public void removeMemberDiffReport(String reportToken) throws Exception {
+    memberDiffReportMap.remove(reportToken);
+  }
+
+  /* see superclass */
+  @Override
   public Refset stageRefset(Refset refset, Refset.StagingType stagingType,
     Date effectiveTime) throws Exception {
     Logger.getLogger(getClass())
@@ -1208,9 +1272,552 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
 
   /* see superclass */
   @Override
+  public Refset beginMigration(Long refsetId, String newTerminology,
+    String newVersion, String userName, Boolean lookupNamesInBackground)
+    throws Exception {
+    Logger.getLogger(getClass()).info("Refset Service - begin migration - "
+        + refsetId + ", " + newTerminology + ", " + newVersion);
+
+    // Manage transaction
+    boolean origTpo = getTransactionPerOperation();
+    if (origTpo) {
+      setTransactionPerOperation(false);
+      beginTransaction();
+    }
+
+    // Load refset
+    Refset refset = getRefset(refsetId);
+    if (refset == null) {
+      throw new Exception("Invalid refset id " + refsetId);
+    }
+
+    // CHECK PRECONDITIONS
+
+    // Check staging flag
+    if (refset.isStaged()) {
+      throw new LocalException(
+          "Begin migration is not allowed while the refset is already staged.");
+    }
+
+    // Check refset type
+    if (refset.getType() == Refset.Type.EXTERNAL) {
+      throw new LocalException(
+          "Migration is only allowed for intensional and extensional type refsets.");
+    }
+
+    // STAGE REFSET
+    Refset refsetCopy = stageRefset(refset, Refset.StagingType.MIGRATION, null);
+    refsetCopy.setTerminology(newTerminology);
+    refsetCopy.setVersion(newVersion);
+
+    // Reread refset in case of commit
+    refset = getRefset(refset.getId());
+
+    // RECOMPUTE INTENSIONAL REFSET
+    if (refsetCopy.getType() == Refset.Type.INTENSIONAL) {
+      // clear initial members
+      refsetCopy.setMembers(null);
+
+      // Compute the expression
+      // add members from expression results
+      // No need to "resolvExpression" because definition computation includes
+      // project exclude logic
+      TerminologyHandler handler =
+          getTerminologyHandler(refset.getProject(), headers);
+      ConceptList conceptList = handler.resolveExpression(
+          refsetCopy.computeDefinition(null, null), refsetCopy.getTerminology(),
+          refsetCopy.getVersion(), null, false);
+
+      // do this to re-use the terminology id
+      final Map<String, ConceptRefsetMember> conceptIdMap = new HashMap<>();
+      for (final ConceptRefsetMember member : refset.getMembers()) {
+        handleLazyInit(member);
+        conceptIdMap.put(member.getConceptId(), member);
+      }
+      // create members to add
+      for (final Concept concept : conceptList.getObjects()) {
+        // Reuse the origin member
+        final ConceptRefsetMember originMember =
+            conceptIdMap.get(concept.getTerminologyId());
+        ConceptRefsetMember member = null;
+        if (originMember != null) {
+          member = new ConceptRefsetMemberJpa(originMember);
+        }
+        // Otherwise create a new one
+        else {
+          member = new ConceptRefsetMemberJpa();
+          member.setModuleId(concept.getModuleId());
+          member.setActive(true);
+          member.setConceptActive(concept.isActive());
+          member.setPublished(concept.isPublished());
+          member.setConceptId(concept.getTerminologyId());
+          member.setConceptName(concept.getName());
+          // Don't look up synonyms at this time - that will be done once the
+          // migration is finished.
+          // refsetService.populateMemberSynonyms(member, concept, refset,
+          // refsetService,
+          // handler);
+        }
+
+        // If origin refset has this as in exclusion, keep it that way.
+        member.setMemberType(Refset.MemberType.MEMBER);
+        member.setPublishable(true);
+        member.setRefset(refsetCopy);
+        member.setId(null);
+        member.setLastModifiedBy(userName);
+        addMember(member, null);
+
+        // Add to in-memory data structure for later use
+        refsetCopy.addMember(member);
+      }
+
+    } else if (refsetCopy.getType() == Refset.Type.EXTENSIONAL) {
+
+      // n/a member lookup is going to happen in lookupNames
+
+    } else {
+      throw new LocalException(
+          "Refset type must be extensional or intensional.");
+    }
+
+    // If we're going to call lookupNames, set lookupInProgress first
+    if (ConfigUtility.isAssignNames()) {
+      refsetCopy.setLookupInProgress(true);
+    }
+    refsetCopy.setLastModifiedBy(userName);
+    updateRefset(refsetCopy);
+    handleLazyInit(refsetCopy);
+    commitClearBegin();
+    // lookup names after commit
+
+    // Look up names/concept active for members of EXTENSIONAL
+    if (refsetCopy.getType() == Refset.Type.EXTENSIONAL) {
+
+      // flag all members for name re-lookup
+      int count = 0;
+      for (ConceptRefsetMember member : refsetCopy.getMembers()) {
+        member.setConceptName(TerminologyHandler.REQUIRES_NAME_LOOKUP);
+        updateMember(member);
+        count++;
+        if (count % RootService.commitCt == 0) {
+          commitClearBegin();
+        }
+      }
+      updateRefset(refsetCopy);
+      commitClearBegin();
+
+      // Look up members for this refset, but NOT synonyms (they'll be looked
+      // up later)
+      lookupMemberNames(refsetCopy.getId(), "begin migration",
+          lookupNamesInBackground, false);
+    }
+
+    // Look up oldNotNew
+    else if (refsetCopy.getType() == Refset.Type.INTENSIONAL) {
+
+      List<ConceptRefsetMember> oldNotNew =
+          getOldNotNewForMigration(refset, refsetCopy);
+
+      // Flag all oldNotNew members for name lookup
+      for (ConceptRefsetMember member : oldNotNew) {
+        member.setConceptName(TerminologyHandler.REQUIRES_NAME_LOOKUP);
+      }
+
+      // Look up old members for the new refest id (e.g. new
+      // terminology/version)
+      // On cancel, we need to undo this.
+      // Only lookup up names, not synonyms
+      lookupMemberNames(refsetCopy.getId(), oldNotNew, "begin migration", true,
+          false, lookupNamesInBackground);
+    }
+
+    // Manage transaction
+    if (origTpo) {
+      commit();
+      setTransactionPerOperation(origTpo);
+    }
+
+    return refsetCopy;
+
+  }
+
+  /* see superclass */
+  @Override
+  public Refset finishMigration(Long refsetId, String userName,
+    Boolean lookupNamesInBackground) throws Exception {
+    Logger.getLogger(getClass())
+        .info("Refset Service - finish migration - " + refsetId);
+
+    // Manage transaction
+    boolean origTpo = getTransactionPerOperation();
+    if (origTpo) {
+      setTransactionPerOperation(false);
+      beginTransaction();
+    }
+
+    // Load refset
+    Refset refset = getRefset(refsetId);
+    handleLazyInit(refset);
+
+    if (refset == null) {
+      throw new Exception("Invalid refset id " + refsetId);
+    }
+
+    // verify that staged
+    if (refset.getStagingType() != Refset.StagingType.MIGRATION) {
+      throw new Exception("Refset is not staged for migration, cannot finish.");
+    }
+
+    // get the staged change tracking object
+    final StagedRefsetChange change =
+        getStagedRefsetChangeFromOrigin(refset.getId());
+
+    // Get origin and staged members
+    final Refset stagedRefset = change.getStagedRefset();
+    final Refset originRefset = change.getOriginRefset();
+    final Map<String, ConceptRefsetMember> originMembers = new HashMap<>();
+    for (ConceptRefsetMember member : originRefset.getMembers()) {
+      originMembers.put(member.getConceptId(), member);
+    }
+    final Map<String, ConceptRefsetMember> stagedMembers = new HashMap<>();
+    for (ConceptRefsetMember member : stagedRefset.getMembers()) {
+      stagedMembers.put(member.getConceptId(), member);
+    }
+
+    // Remove origin-not-staged members
+    for (final String key : originMembers.keySet()) {
+      final ConceptRefsetMember originMember = originMembers.get(key);
+      final ConceptRefsetMember stagedMember = stagedMembers.get(key);
+      // concept not in staged refset, remove
+      if (stagedMember == null) {
+        refset.removeMember(originMember);
+        removeMember(originMember.getId());
+      }
+      // member type or concept active status changed, rewire
+      if (stagedMember != null) {
+        if (stagedMember.getMemberType().getUnstagedType() != originMember
+            .getMemberType()
+            || stagedMember.isConceptActive() != originMember
+                .isConceptActive()) {
+          // No need to change id, this is
+          originMember
+              .setMemberType(stagedMember.getMemberType().getUnstagedType());
+          originMember.setConceptActive(stagedMember.isConceptActive());
+
+          originMember.setSynonyms(stagedMember.getSynonyms());
+          originMember.setRefset(originRefset);
+          originMember.setLastModifiedBy(userName);
+          updateMember(originMember);
+        }
+
+        // Update if changes in descriptions affected concept name (i.e.
+        // inactivated-old/created-new FSN)
+        if (!stagedMember.getConceptName()
+            .equals(originMember.getConceptName())) {
+          originMember.setConceptName(stagedMember.getConceptName());
+        }
+      }
+    }
+
+    // rewire staged-not-origin members
+    for (final String key : stagedMembers.keySet()) {
+      // New member, rewire to origin - this moves the content back to the
+      // origin refset
+      final ConceptRefsetMember originMember = originMembers.get(key);
+      final ConceptRefsetMember stagedMember = stagedMembers.get(key);
+      if (originMember == null) {
+        stagedMember
+            .setMemberType(stagedMember.getMemberType().getUnstagedType());
+        stagedMember.setRefset(originRefset);
+        stagedMember.setLastModifiedBy(userName);
+        updateMember(stagedMember);
+
+        // Also explicitly add the new member to the refset, so it can be
+        // handled correctly by the name lookup
+        refset.addMember(stagedMember);
+      } else if (originMember != null && stagedMember.getMemberType()
+          .getUnstagedType() != originMember.getMemberType()) {
+        // This was already handled in the prior section, do nothing
+      }
+      // Member exactly matches one in origin - remove it, leave origin alone
+      else {
+        removeMember(stagedMember.getId(), true);
+      }
+    }
+    stagedRefset.setMembers(new ArrayList<ConceptRefsetMember>());
+
+    // copy definition from staged to origin refset
+    // should be identical unless we implement definition changes
+    List<DefinitionClause> originDefinitionClauses =
+        refset.getDefinitionClauses();
+    refset.setDefinitionClauses(stagedRefset.getDefinitionClauses());
+
+    // also set staged definition to the origin definition
+    // This seems weird, but if we don't we end up with 'orphaned' clauses
+    // in the database
+    stagedRefset.setDefinitionClauses(originDefinitionClauses);
+
+    // Remove the staged refset change and set staging type back to null
+    // and update version
+    refset.setStagingType(null);
+    refset.setTerminology(stagedRefset.getTerminology());
+    refset.setVersion(stagedRefset.getVersion());
+    refset.setLastModifiedBy(userName);
+
+    updateRefset(refset);
+
+    commitClearBegin();
+
+    // Update terminology/version also for any translations
+    if (refset.getTranslations() != null) {
+
+      TranslationService translationService = new TranslationServiceJpa();
+      translationService.setTransactionPerOperation(false);
+      translationService.beginTransaction();
+
+      // Re-read refset in new service
+      refset = translationService.getRefset(refsetId);
+
+      for (Translation translation : refset.getTranslations()) {
+        translation.setTerminology(refset.getTerminology());
+        translation.setVersion(refset.getVersion());
+        translation.setLastModifiedBy(userName);
+        translationService.updateTranslation(translation);
+      }
+
+      translationService.commit();
+      translationService.close();
+    }
+
+    // Re-read refset in orginal service
+    refset = getRefset(refsetId);
+    handleLazyInit(refset);
+
+    // Remove the staged refset change
+    removeStagedRefsetChange(change.getId());
+
+    // remove the refset
+    removeRefset(stagedRefset.getId(), false);
+
+    commitClearBegin();
+
+    // Re-read updated refset and flag all members for name/synonym lookup
+    // refset = refsetService.getRefset(refsetId);
+    // refsetService.handleLazyInit(refset);
+
+    int count = 0;
+    for (ConceptRefsetMember member : refset.getMembers()) {
+      member.setSynonyms(new HashSet<>());
+      member.setConceptName(TerminologyHandler.REQUIRES_NAME_LOOKUP);
+      updateMember(member);
+      count++;
+      if (count % RootService.commitCt == 0) {
+        commitClearBegin();
+      }
+    }
+    commitClearBegin();
+
+    // Look up members and synonyms for this refset
+    lookupMemberNames(refset.getId(), "finish migration",
+        lookupNamesInBackground, true);
+
+    // reset inactive count to 0 to remove warning banner
+    refset.setInactiveConceptCount(0);
+    updateRefset(refset);
+
+    // Manage transaction
+    if (origTpo) {
+      commit();
+      setTransactionPerOperation(origTpo);
+    }
+
+    return refset;
+
+  }
+
+  /* see superclass */  
+  @Override
+  public void cancelMigration(Long refsetId, String userName,
+    Boolean lookupNamesInBackground) throws Exception {
+    
+    // Manage transaction
+    boolean origTpo = getTransactionPerOperation();
+    if (origTpo) {
+      setTransactionPerOperation(false);
+      beginTransaction();
+    }    
+    
+    // Load refset
+    Refset refset = getRefset(refsetId);
+    handleLazyInit(refset);
+    
+    if (refset == null) {
+      throw new Exception("Invalid refset id " + refsetId);
+    }
+
+    // Refset must be staged as MIGRATION
+    if (refset.getStagingType() != Refset.StagingType.MIGRATION) {
+      throw new LocalException("Refset is not staged for migration.");
+    }
+
+    // Remove the staged refset change and set staging type back to null
+    final StagedRefsetChange change =
+        getStagedRefsetChangeFromOrigin(refset.getId());
+    if (change == null) {
+      // weird condition because staging type still says migration
+      throw new LocalException(
+          "Unexpected problem with refset staged for migration, "
+              + "but no staged refset. Contact the administrator.");
+    }
+    removeStagedRefsetChange(change.getId());
+
+    // Start lookup
+    List<ConceptRefsetMember> oldNotNew = 
+        getOldNotNewForMigration(refset, change.getStagedRefset());
+    // Flag all oldNowNew members for name lookup
+    for (ConceptRefsetMember member : oldNotNew) {
+      member.setConceptName(TerminologyHandler.REQUIRES_NAME_LOOKUP);
+    }
+    refset.setLookupInProgress(true);
+
+    removeRefset(change.getStagedRefset().getId(), true);
+    refset.setStagingType(null);
+    refset.setStaged(false);
+    refset.setProvisional(false);
+    refset.setLastModifiedBy(userName);
+    updateRefset(refset);
+    
+    commitClearBegin();
+
+    // Lookup member names should always happen after commit
+    if (ConfigUtility.isAssignNames()) {
+      lookupMemberNames(refset.getId(), oldNotNew,
+          "cancel migration", true, true, lookupNamesInBackground);
+    }
+
+    // Manage transaction
+    if (origTpo) {
+      commit();
+      setTransactionPerOperation(origTpo);
+    }    
+    
+  }
+  
+  
+  /* see superclass */
+  @Override
+  public String compareRefsets(Refset refset1, Refset refset2)
+    throws Exception {
+
+    final String reportToken = UUID.randomUUID().toString();
+
+    // Reread refsets in case of previous commit
+    refset1 = getRefset(refset1.getId());
+    refset2 = getRefset(refset2.getId());
+    
+    // Create conceptId => member maps for refset 1 and refset 2
+    final Map<String, ConceptRefsetMember> refset1Map = new HashMap<>();
+    for (final ConceptRefsetMember member : refset1.getMembers()) {
+      refset1Map.put(member.getConceptId(), member);
+    }
+
+    final Map<String, ConceptRefsetMember> refset2Map = new HashMap<>();
+    for (final ConceptRefsetMember member : refset2.getMembers()) {
+      refset2Map.put(member.getConceptId(), member);
+    }
+
+    // creates a "members in common" list (where reportToken is the key)
+    final List<ConceptRefsetMember> membersInCommon = new ArrayList<>();
+    // Iterate through the refset2 members
+    for (final ConceptRefsetMember member2 : refset2.getMembers()) {
+      // Members in common are things where refset2 has type Member
+      // and refset1 has a matching concept_id/type
+      if (member2.getMemberType() == Refset.MemberType.MEMBER
+          && refset1Map.containsKey(member2.getConceptId())
+          && refset1Map.get(member2.getConceptId())
+              .getMemberType() == Refset.MemberType.MEMBER) {
+        // lazy initialize for tostring method (needed by applyPfsToList in
+        // findMembersInCommon
+        member2.toString();
+        membersInCommon.add(member2);
+      }
+    }
+    putMembersInCommon(reportToken, membersInCommon);
+
+    // creates a "diff report"
+    final MemberDiffReport diffReport = new MemberDiffReportJpa();
+    diffReport.setOldRefset(refset1);
+    diffReport.setNewRefset(refset2);
+    final List<ConceptRefsetMember> oldNotNew = new ArrayList<>();
+    final List<ConceptRefsetMember> newNotOld = new ArrayList<>();
+
+    // Old not new are things from refset1 that do not exist
+    // in refset2 or do exist in refset2 with a different type
+    for (final ConceptRefsetMember member1 : refset1.getMembers()) {
+      if (!refset2Map.containsKey(member1.getConceptId())) {
+        oldNotNew.add(member1);
+        // Always keep exclusions
+      } else if (refset2Map.containsKey(member1.getConceptId())
+          && refset2Map.get(member1.getConceptId()).getMemberType() != member1
+              .getMemberType()) {
+        oldNotNew.add(member1);
+      }
+    }
+    // New not old are things from refset2 that do not exist
+    // in refset1 or do exist in refset1 but with a different type
+    for (final ConceptRefsetMember member2 : refset2.getMembers()) {
+      handleLazyInit(member2);
+      if (!refset1Map.containsKey(member2.getConceptId())) {
+        newNotOld.add(member2);
+      } else if (refset1Map.containsKey(member2.getConceptId())
+          && refset1Map.get(member2.getConceptId()).getMemberType() != member2
+              .getMemberType()) {
+        newNotOld.add(member2);
+      }
+    }
+    diffReport.setOldNotNew(oldNotNew);
+    diffReport.setNewNotOld(newNotOld);
+
+    putMemberDiffReport(reportToken, diffReport);
+
+    return reportToken;
+  }
+
+  /* see superclass */
+  @Override
+  public List<ConceptRefsetMember> getOldNotNewForMigration(Refset refset,
+    Refset refsetCopy) {
+    // NOTE: this logic is borrowed from compareRefset
+    // Create conceptId => member maps for refset 1 and refset 2
+    final Map<String, ConceptRefsetMember> refset1Map = new HashMap<>();
+    for (final ConceptRefsetMember member : refset.getMembers()) {
+      refset1Map.put(member.getConceptId(), member);
+    }
+    final Map<String, ConceptRefsetMember> refset2Map = new HashMap<>();
+    for (final ConceptRefsetMember member : refsetCopy.getMembers()) {
+      refset2Map.put(member.getConceptId(), member);
+    }
+    final List<ConceptRefsetMember> oldNotNew = new ArrayList<>();
+    // Old not new are things from refset1 that do not exist
+    // in refset2 or do exist in refset2 with a different type
+    for (final ConceptRefsetMember member1 : refset.getMembers()) {
+      if (!refset2Map.containsKey(member1.getConceptId())) {
+        oldNotNew.add(member1);
+        // Always keep exclusions
+      } else if (refset2Map.containsKey(member1.getConceptId())
+          && refset2Map.get(member1.getConceptId()).getMemberType() != member1
+              .getMemberType()) {
+        oldNotNew.add(member1);
+      }
+    }
+    return oldNotNew;
+  }
+
+  /* see superclass */
+  @Override
   public void lookupMemberNames(Long refsetId, String label, boolean background,
     boolean lookupSynonyms) throws Exception {
-    Logger.getLogger(getClass()).info("Release Service - lookup member names - "
+    Logger.getLogger(getClass()).info("Refset Service - lookup member names - "
         + refsetId + ", " + background);
 
     // If the refset's branch is invalid (e.g. a very old version, etc.), do
@@ -1394,15 +2001,15 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
         .info("Refset Service - getBulkLookupProgress - " + projectId + ": "
             + returnMessage);
 
-    if(returnMessage == null || returnMessage.isEmpty()) {
+    if (returnMessage == null || returnMessage.isEmpty()) {
       return returnMessage;
     }
-    
-    //Check if all lookups are completed
-    //Return message format is "x of y completed"
-    //If x and y are the same, it's done, so we can clear out the progress
+
+    // Check if all lookups are completed
+    // Return message format is "x of y completed"
+    // If x and y are the same, it's done, so we can clear out the progress
     String[] splitMessage = returnMessage.split("\\s+");
-    if(splitMessage[0].equals(splitMessage[2])) {
+    if (splitMessage[0].equals(splitMessage[2])) {
       clearBulkLookupProgress(projectId);
     }
 
@@ -2439,6 +3046,71 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
         }
       }
     }
+  }
+
+  /* see superclass */
+  @Override
+  public InputStream createDiffReport(String reportToken,
+    String migrationTerminology, String migrationVersion, String action,
+    String reportFileName) throws Exception {
+
+    // Load report
+    final MemberDiffReport report = getMemberDiffReport(reportToken);
+
+    if (report == null) {
+      throw new Exception("Member diff report is null " + reportToken);
+    }
+    List<ConceptRefsetMember> membersInCommon = getMembersInCommon(reportToken);
+
+    // Compile report
+    ExportReportHandler reportHandler = new ExportReportHandler();
+    InputStream reportStream = reportHandler.exportReport(report, this,
+        migrationTerminology, migrationVersion, headers, membersInCommon);
+
+    // Create dir structure to write report to disk
+    String outputDirString =
+        ConfigUtility.getConfigProperties().getProperty("report.base.dir");
+
+    File outputDir = new File(outputDirString);
+    File rttDir = new File(outputDir, "RTT");
+    String projectId = report.getNewRefset().getProject().getTerminologyId();
+    File projectDir = new File(rttDir, "Project-" + projectId);
+    File migrationDir = new File(projectDir, "Migration");
+    File refsetDir =
+        new File(migrationDir, report.getNewRefset().getTerminologyId());
+    if (!refsetDir.isDirectory()) {
+      refsetDir.mkdirs();
+    }
+
+    // copy the reportStream so that it can be processed twice
+    // once for saving to the file on the server
+    // once for returning to the client for immediate download
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+    byte[] buffer = new byte[8 * 1024];
+    int bytesRead;
+    while ((bytesRead = reportStream.read(buffer)) > -1) {
+      baos.write(buffer, 0, bytesRead);
+    }
+    baos.flush();
+
+    InputStream is1 = new ByteArrayInputStream(baos.toByteArray());
+    InputStream is2 = new ByteArrayInputStream(baos.toByteArray());
+
+    // Write report file to disk
+    File exportFile = new File(refsetDir, reportFileName);
+    OutputStream outStream = new FileOutputStream(exportFile);
+
+    bytesRead = 0;
+    while ((bytesRead = is1.read(buffer)) != -1) {
+      outStream.write(buffer, 0, bytesRead);
+    }
+    IOUtils.closeQuietly(reportStream);
+    IOUtils.closeQuietly(outStream);
+
+    // Return report stream to user for download
+    return is2;
+
   }
 
   /* see superclass */

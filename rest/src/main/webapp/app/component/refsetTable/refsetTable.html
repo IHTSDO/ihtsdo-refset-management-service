@@ -135,6 +135,9 @@
               ng-click="openBulkWorkflowModal('UNASSIGN'); $event.stopPropagation()"
               title="Bulk Unassign" class="noul material-icons md-18">assignment_return</i>
             <i ng-show="value == 'ASSIGNED' && (projects.role != 'ADMIN' && projects.role != 'LEAD')"
+              ng-click="openBulkMigrationModal(); $event.stopPropagation()"
+              title="Bulk Migration" class="noul material-icons md-18">find_replace</i>              
+            <i ng-show="value == 'ASSIGNED' && (projects.role != 'ADMIN' && projects.role != 'LEAD')"
               ng-click="openBulkWorkflowModal('FINISH'); $event.stopPropagation()"
               title="Bulk Finish" class="noul material-icons md-18">done</i>
             <i ng-show="value == 'ASSIGNED' && projects.role == 'REVIEWER'"
