@@ -430,7 +430,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     // JsonNode entry = null;
     JsonNode associationTargets = doc.findValue("associationTargets");
 
-    if (associationTargets == null || associationTargets.fields() == null) {
+    if (associationTargets == null || associationTargets.size() == 0 || associationTargets.fields() == null) {
       return new ConceptListJpa();
     }
     Entry<String, JsonNode> entry = associationTargets.fields().next();
