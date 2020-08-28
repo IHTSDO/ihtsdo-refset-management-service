@@ -2947,8 +2947,17 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
           UserRole.VIEWER);
 
       final Refset refset1 = refsetService.getRefset(refsetId1);
+      refsetService.handleLazyInit(refset1);
+      for(ConceptRefsetMember member : refset1.getMembers()) {
+        refsetService.handleLazyInit(member);
+      }
+      
       final Refset refset2 = refsetService.getRefset(refsetId2);
-
+      refsetService.handleLazyInit(refset2);
+      for(ConceptRefsetMember member : refset2.getMembers()) {
+        refsetService.handleLazyInit(member);
+      }      
+      
       // Authorize the call
       if (!refset1.isPublic()) {
         authorizeProject(refsetService, refset1.getProject().getId(),
