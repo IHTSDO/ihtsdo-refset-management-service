@@ -1201,6 +1201,53 @@ tsApp.service('refsetService', [
       });
       return deferred.promise;
     };
+    
+    this.beginMigrations = function(projectId, refsetIds, terminology, version) {
+      console.debug('beginMigrations');
+      var deferred = $q.defer();
+
+      // get refset revision
+      gpService.increment();
+      $http.post(
+        refsetUrl + 'migrations/begin/' + projectId + '?newTerminology=' + terminology
+          + '&newVersion=' + version, refsetIds).then(
+      // success
+      function(response) {
+        console.debug(' begin migrations finished ');
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    };
+    
+    this.checkForInactiveConcepts = function(projectId, refsetIds) {
+      console.debug('checkForInactiveConcepts');
+      var deferred = $q.defer();
+
+      // get refset revision
+      gpService.increment();
+      $http.post(
+        refsetUrl + 'migrations/check/' + projectId, refsetIds).then(
+      // success
+      function(response) {
+        console.debug(' check refsets for inactive concepts finished ');
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    };    
 
     this.finishMigration = function(refsetId) {
       console.debug('finishMigration');
@@ -1223,6 +1270,28 @@ tsApp.service('refsetService', [
       });
       return deferred.promise;
     };
+    
+    this.finishMigrations = function(projectId, refsetIds) {
+      console.debug('finishMigrations');
+      var deferred = $q.defer();
+
+      // get refset revision
+      gpService.increment();
+      $http.post(refsetUrl + 'migrations/finish/' + projectId, refsetIds).then(
+      // success
+      function(response) {
+        console.debug('  finish migrations finished ');
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    };    
 
     this.cancelMigration = function(refsetId) {
       console.debug('cancelMigration');
@@ -1246,6 +1315,28 @@ tsApp.service('refsetService', [
       return deferred.promise;
     };
 
+    this.cancelMigrations = function(projectId, refsetIds) {
+      console.debug('cancelMigrations');
+      var deferred = $q.defer();
+
+      // get refset revision
+      gpService.increment();
+      $http.post(refsetUrl + 'migrations/cancel/' + projectId, refsetIds).then(
+      // success
+      function(response) {
+        console.debug('  cancel migrations finished ');
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    };
+    
     this.resumeMigration = function(refsetId) {
       console.debug('resumeMigration');
       var deferred = $q.defer();
