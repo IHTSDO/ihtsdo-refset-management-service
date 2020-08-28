@@ -1085,19 +1085,23 @@ tsApp
                       window.alert("No release for " + refset.name);
                       return;
                     }
-                    // get the release refset
-                    refsetService.compareRefsets(refset.id, data.refsetId).then(
-                      function(data) {
-                        var reportToken = data;
-                        refsetService.exportDiffReport('diff', reportToken, refset).then(
+                    refsetService.releaseReportToken($scope.reportToken).then(
+                      // Success
+                      function() {
+                        // get the release refset
+                        refsetService.compareRefsets(refset.id, data.refsetId).then(
                           function(data) {
-                            // consider delaying next statement if it doesn't
-                            // work
-                            refsetService.releaseReportToken(reportToken);
-                          });
-                      });
-                  });
-              }
+                            var reportToken = data;
+                            refsetService.exportDiffReport('diff', reportToken, refset).then(
+                              function(data) {
+                                // consider delaying next statement if it doesn't
+                                // work
+                                refsetService.releaseReportToken(reportToken);
+                                });
+                            });
+                        });
+                    });
+                }
 
               $scope.submitRefset = function(refset) {
 
@@ -5181,22 +5185,30 @@ tsApp
                     $scope.stagedRefset = data;
                     $scope.newTerminology = $scope.stagedRefset.terminology;
                     $scope.newVersion = $scope.stagedRefset.version;
-                    refsetService.compareRefsets($scope.refset.id, $scope.stagedRefset.id).then(
-                    // Success
-                    function(data) {
-                      $scope.reportToken = data;
-                      $scope.getDiffReport();
+                    refsetService.releaseReportToken($scope.reportToken).then(
+                      // Success
+                      function() {
+                        refsetService.compareRefsets($scope.refset.id, $scope.stagedRefset.id).then(
+                          // Success
+                          function(data) {
+                            $scope.reportToken = data;
+                            $scope.getDiffReport();
+                            },
+                            // Error
+                            function(data) {
+                              handleError($scope.errors, data);
+                              });
+                        },
+                        // Error
+                        function(data) {
+                          handleError($scope.errors, data);
+                          });
                     },
                     // Error
                     function(data) {
                       handleError($scope.errors, data);
-                    });
-                  },
-                  // Error
-                  function(data) {
-                    handleError($scope.errors, data);
-                  });
-                }
+                      });
+                  }
 
                 // Return the name for a terminology
                 $scope.getTerminologyName = function(terminology) {
@@ -5464,8 +5476,17 @@ tsApp
                 
                 // Close migration dialog
                 $scope.close = function(refset) {
-                  $uibModalInstance.close(refset);
-                };
+                  // On close, clear out any information stored in memory
+                  refsetService.releaseReportToken($scope.reportToken).then(
+                    // Success
+                    function() {
+                      $uibModalInstance.close(refset);
+                    },
+                    // Error
+                    function(data) {
+                      $uibModalInstance.close(refset);
+                    });
+                  };
 
                 // Cancel migration and close dialog
                 $scope.cancel = function(refset) {
@@ -5480,7 +5501,16 @@ tsApp
                     if (refset.type == 'INTENSIONAL') {
                       startLookup(refset);
                     }
-                    $uibModalInstance.close(refset);
+                    // On close, clear out any information stored in memory
+                    refsetService.releaseReportToken($scope.reportToken).then(
+                      // Success
+                      function() {
+                        $uibModalInstance.close(refset);
+                      },
+                      // Error
+                      function(data) {
+                        $uibModalInstance.close(refset);
+                      });
                   },
                   // Error - cancel migration
                   function(data) {
@@ -5507,17 +5537,25 @@ tsApp
 
                       // Compare refsets original and staged, regardless of the
                       // parameter
-                      refsetService.compareRefsets($scope.refset.id, $scope.stagedRefset.id).then(
-                      // Success
-                      function(data) {
-                        $scope.reportToken = data;
-                        $scope.getDiffReport();
-                        $scope.exportDiffReport('Migrate');
-                      },
-                      // Error
-                      function(data) {
-                        handleError($scope.errors, data);
-                      });
+                      refsetService.releaseReportToken($scope.reportToken).then(
+                        // Success
+                        function() {
+                          refsetService.compareRefsets($scope.refset.id, $scope.stagedRefset.id).then(
+                          // Success
+                          function(data) {
+                            $scope.reportToken = data;
+                            $scope.getDiffReport();
+                            $scope.exportDiffReport('Migrate');
+                          },
+                          // Error
+                          function(data) {
+                            handleError($scope.errors, data);
+                          });
+                        },
+                        // Error
+                        function(data) {
+                          handleError($scope.errors, data);
+                        });
                     }
                   },
                   // Error
@@ -5578,7 +5616,16 @@ tsApp
                   // Success
                   function(data) {
                     startLookup(refset);
-                    $uibModalInstance.close(refset);
+                    // On close, clear out any information stored in memory
+                    refsetService.releaseReportToken($scope.reportToken).then(
+                      // Success
+                      function() {
+                        $uibModalInstance.close(refset);
+                      },
+                      // Error
+                      function(data) {
+                        $uibModalInstance.close(refset);
+                      });
                   },
                   // Error
                   function(data) {
@@ -5590,32 +5637,47 @@ tsApp
                 $scope.removeMember = function(member) {
 
                   refsetService.removeRefsetMember(member.id).then(
-                  // Success
-                  function(data) {
-                    refsetService.compareRefsets($scope.refset.id, $scope.stagedRefset.id).then(
                     // Success
-                    function(data) {
-                      $scope.reportToken = data;
-                      $scope.getDiffReport();
-                    },
-                    // Error
-                    function(data) {
-                      handleError($scope.errors, data);
-                    });
-                  },
-                  // Error
-                  function(data) {
-                    handleError($scope.errors, data);
-                  });
-
-                };
+                    function() {
+                      refsetService.releaseReportToken($scope.reportToken).then(
+                        // Success
+                        function(data) {
+                          refsetService.compareRefsets($scope.refset.id, $scope.stagedRefset.id).then(
+                            // Success
+                            function(data) {
+                              $scope.reportToken = data;
+                              $scope.getDiffReport();
+                              },
+                              // Error
+                              function(data) {
+                                handleError($scope.errors, data);
+                                });
+                          },
+                          // Error
+                          function(data) {
+                            handleError($scope.errors, data);
+                            });                    
+                      },
+                      // Error
+                      function(data) {
+                        handleError($scope.errors, data);
+                        });
+                  };
 
                 // Save for later, allow state to be resumed
                 $scope.saveForLater = function(refset) {
                   // added solely for delay to migration files update
                   startLookup(refset);
-                  // updates refset on close
-                  $uibModalInstance.close(refset);
+                  // updates refset on close, and clear out any information stored in memory
+                  refsetService.releaseReportToken($scope.reportToken).then(
+                    // Success
+                    function() {
+                      $uibModalInstance.close(refset);
+                    },
+                    // Error
+                    function(data) {
+                      $uibModalInstance.close(refset);
+                    });
                 };
 
                 // add exclusion
@@ -5809,6 +5871,7 @@ tsApp
                   }
                   return member.memberType.replace('_STAGED', '');
                 };
+                
                 // Close modal
                 $scope.close = function() {
                   $uibModalInstance.close();
@@ -6026,12 +6089,19 @@ tsApp
 
                   // Dismiss modal
                   $scope.cancel = function() {
-                    $uibModalInstance.dismiss('cancel');
+                    // On close, clear out any information stored in memory
+                    refsetService.releaseReportToken($scope.reportToken).then(
+                      // Success
+                      function() {
+                        $uibModalInstance.dismiss('cancel');
+                      },
+                      // Error
+                      function(data) {
+                        $uibModalInstance.dismiss('cancel');
+                        });
+                    };
                   };
-
-                };
-
-              };
+               };
 
               // Bulk Migration modal
               $scope.openBulkMigrationModal = function() {
