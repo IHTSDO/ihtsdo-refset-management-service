@@ -1085,19 +1085,23 @@ tsApp
                       window.alert("No release for " + refset.name);
                       return;
                     }
-                    // get the release refset
-                    refsetService.compareRefsets(refset.id, data.refsetId).then(
-                      function(data) {
-                        var reportToken = data;
-                        refsetService.exportDiffReport('diff', reportToken, refset).then(
+                    refsetService.releaseReportToken($scope.reportToken).then(
+                      // Success
+                      function() {
+                        // get the release refset
+                        refsetService.compareRefsets(refset.id, data.refsetId).then(
                           function(data) {
-                            // consider delaying next statement if it doesn't
-                            // work
-                            refsetService.releaseReportToken(reportToken);
-                          });
-                      });
-                  });
-              }
+                            var reportToken = data;
+                            refsetService.exportDiffReport('diff', reportToken, refset).then(
+                              function(data) {
+                                // consider delaying next statement if it doesn't
+                                // work
+                                refsetService.releaseReportToken(reportToken);
+                                });
+                            });
+                        });
+                    });
+                }
 
               $scope.submitRefset = function(refset) {
 
@@ -5181,22 +5185,30 @@ tsApp
                     $scope.stagedRefset = data;
                     $scope.newTerminology = $scope.stagedRefset.terminology;
                     $scope.newVersion = $scope.stagedRefset.version;
-                    refsetService.compareRefsets($scope.refset.id, $scope.stagedRefset.id).then(
-                    // Success
-                    function(data) {
-                      $scope.reportToken = data;
-                      $scope.getDiffReport();
+                    refsetService.releaseReportToken($scope.reportToken).then(
+                      // Success
+                      function() {
+                        refsetService.compareRefsets($scope.refset.id, $scope.stagedRefset.id).then(
+                          // Success
+                          function(data) {
+                            $scope.reportToken = data;
+                            $scope.getDiffReport();
+                            },
+                            // Error
+                            function(data) {
+                              handleError($scope.errors, data);
+                              });
+                        },
+                        // Error
+                        function(data) {
+                          handleError($scope.errors, data);
+                          });
                     },
                     // Error
                     function(data) {
                       handleError($scope.errors, data);
-                    });
-                  },
-                  // Error
-                  function(data) {
-                    handleError($scope.errors, data);
-                  });
-                }
+                      });
+                  }
 
                 // Return the name for a terminology
                 $scope.getTerminologyName = function(terminology) {
@@ -5464,8 +5476,17 @@ tsApp
                 
                 // Close migration dialog
                 $scope.close = function(refset) {
-                  $uibModalInstance.close(refset);
-                };
+                  // On close, clear out any information stored in memory
+                  refsetService.releaseReportToken($scope.reportToken).then(
+                    // Success
+                    function() {
+                      $uibModalInstance.close(refset);
+                    },
+                    // Error
+                    function(data) {
+                      $uibModalInstance.close(refset);
+                    });
+                  };
 
                 // Cancel migration and close dialog
                 $scope.cancel = function(refset) {
@@ -5480,7 +5501,16 @@ tsApp
                     if (refset.type == 'INTENSIONAL') {
                       startLookup(refset);
                     }
-                    $uibModalInstance.close(refset);
+                    // On close, clear out any information stored in memory
+                    refsetService.releaseReportToken($scope.reportToken).then(
+                      // Success
+                      function() {
+                        $uibModalInstance.close(refset);
+                      },
+                      // Error
+                      function(data) {
+                        $uibModalInstance.close(refset);
+                      });
                   },
                   // Error - cancel migration
                   function(data) {
@@ -5507,17 +5537,25 @@ tsApp
 
                       // Compare refsets original and staged, regardless of the
                       // parameter
-                      refsetService.compareRefsets($scope.refset.id, $scope.stagedRefset.id).then(
-                      // Success
-                      function(data) {
-                        $scope.reportToken = data;
-                        $scope.getDiffReport();
-                        $scope.exportDiffReport('Migrate');
-                      },
-                      // Error
-                      function(data) {
-                        handleError($scope.errors, data);
-                      });
+                      refsetService.releaseReportToken($scope.reportToken).then(
+                        // Success
+                        function() {
+                          refsetService.compareRefsets($scope.refset.id, $scope.stagedRefset.id).then(
+                          // Success
+                          function(data) {
+                            $scope.reportToken = data;
+                            $scope.getDiffReport();
+                            $scope.exportDiffReport('Migrate');
+                          },
+                          // Error
+                          function(data) {
+                            handleError($scope.errors, data);
+                          });
+                        },
+                        // Error
+                        function(data) {
+                          handleError($scope.errors, data);
+                        });
                     }
                   },
                   // Error
@@ -5530,9 +5568,8 @@ tsApp
                 $scope.beginMigration = function(newTerminology, newVersion) {
                   $scope.errors = [];
                  
-                  // Full version comparison no longer works for MANAGED-SERVICE projects, since it can include the edition's working project
-                  // e.g. MAIN/2019-07-31/SNOMEDCT-BE/BEMAR20
-                  if ($scope.project.terminologyHandlerKey === 'PUBLIC-BROWSER' && newTerminology == $scope.refset.terminology
+                  // Full version comparison no longer works for MANAGED-SERVICE projects, since the version will 
+                  if ($scope.project.terminologyHandlerKey !== 'MANAGED-SERVICE' && newTerminology == $scope.refset.terminology
                     && newVersion < $scope.refset.version) {
                     $scope.errors[0] = 'New version must be greater than existing version';
                     return;
@@ -5579,7 +5616,16 @@ tsApp
                   // Success
                   function(data) {
                     startLookup(refset);
-                    $uibModalInstance.close(refset);
+                    // On close, clear out any information stored in memory
+                    refsetService.releaseReportToken($scope.reportToken).then(
+                      // Success
+                      function() {
+                        $uibModalInstance.close(refset);
+                      },
+                      // Error
+                      function(data) {
+                        $uibModalInstance.close(refset);
+                      });
                   },
                   // Error
                   function(data) {
@@ -5591,32 +5637,47 @@ tsApp
                 $scope.removeMember = function(member) {
 
                   refsetService.removeRefsetMember(member.id).then(
-                  // Success
-                  function(data) {
-                    refsetService.compareRefsets($scope.refset.id, $scope.stagedRefset.id).then(
                     // Success
-                    function(data) {
-                      $scope.reportToken = data;
-                      $scope.getDiffReport();
-                    },
-                    // Error
-                    function(data) {
-                      handleError($scope.errors, data);
-                    });
-                  },
-                  // Error
-                  function(data) {
-                    handleError($scope.errors, data);
-                  });
-
-                };
+                    function() {
+                      refsetService.releaseReportToken($scope.reportToken).then(
+                        // Success
+                        function(data) {
+                          refsetService.compareRefsets($scope.refset.id, $scope.stagedRefset.id).then(
+                            // Success
+                            function(data) {
+                              $scope.reportToken = data;
+                              $scope.getDiffReport();
+                              },
+                              // Error
+                              function(data) {
+                                handleError($scope.errors, data);
+                                });
+                          },
+                          // Error
+                          function(data) {
+                            handleError($scope.errors, data);
+                            });                    
+                      },
+                      // Error
+                      function(data) {
+                        handleError($scope.errors, data);
+                        });
+                  };
 
                 // Save for later, allow state to be resumed
                 $scope.saveForLater = function(refset) {
                   // added solely for delay to migration files update
                   startLookup(refset);
-                  // updates refset on close
-                  $uibModalInstance.close(refset);
+                  // updates refset on close, and clear out any information stored in memory
+                  refsetService.releaseReportToken($scope.reportToken).then(
+                    // Success
+                    function() {
+                      $uibModalInstance.close(refset);
+                    },
+                    // Error
+                    function(data) {
+                      $uibModalInstance.close(refset);
+                    });
                 };
 
                 // add exclusion
@@ -5810,6 +5871,7 @@ tsApp
                   }
                   return member.memberType.replace('_STAGED', '');
                 };
+                
                 // Close modal
                 $scope.close = function() {
                   $uibModalInstance.close();
@@ -6027,13 +6089,625 @@ tsApp
 
                   // Dismiss modal
                   $scope.cancel = function() {
-                    $uibModalInstance.dismiss('cancel');
+                    // On close, clear out any information stored in memory
+                    refsetService.releaseReportToken($scope.reportToken).then(
+                      // Success
+                      function() {
+                        $uibModalInstance.dismiss('cancel');
+                      },
+                      // Error
+                      function(data) {
+                        $uibModalInstance.dismiss('cancel');
+                        });
+                    };
                   };
+               };
 
-                };
+              // Bulk Migration modal
+              $scope.openBulkMigrationModal = function() {
+                console.debug('openMigrationModal ');
 
+                var modalInstance = $uibModal.open({
+                  templateUrl : 'app/component/refsetTable/bulkMigration.html',
+                  controller : BulkMigrationModalCtrl,
+                  backdrop : 'static',
+                  windowClass: 'xxl-modal-window',
+                  resolve : {
+
+                    project : function() {
+                      return $scope.project;
+                    },
+                    user : function() {
+                      return $scope.user;
+                    },                    
+                    role : function() {
+                      return $scope.projects.role;
+                    },                    
+                    metadata : function() {
+                      return $scope.metadata;
+                    }
+                  }
+                });
+
+                modalInstance.result.then(
+                // Success
+                function(data) {
+                  // Do nothing
+                });
               };
 
+              // Migration modal controller
+              var BulkMigrationModalCtrl = function($scope, $uibModalInstance, $interval, gpService,
+                utilService, project, user, role, metadata) {
+                console.debug('Entered bulk migration modal control');
+
+                // set up variables
+                $scope.project = project;
+                $scope.user = user;
+                $scope.role = role;                
+                $scope.newTerminology = null;
+                $scope.newVersion = null;
+                $scope.metadata = metadata;
+                $scope.validVersion = null;
+
+                $scope.errors = [];
+                $scope.warnings = [];
+                
+                $scope.refsets = [];
+                $scope.selectedRefsetIds = [];   
+                $scope.allSelected = false;
+                $scope.selectedStatus = '';
+                
+                // Progress tracking
+                $scope.lookupInterval = null;
+                $scope.refsetIdsInProcessProgress = [];
+                $scope.refsetIdsProcessCompleted = [];
+               
+                // Error tracking
+                $scope.failedRefsetIds = [];
+                $scope.warningRefsetIds = [];
+                $scope.startedMigrationRefsetIds = [];
+                $scope.noChangesRefsetIds = [];
+                $scope.inactiveConceptsRefsetIds = [];
+                $scope.finishedMigrationRefsetIds = [];
+                
+                // Button disabled values
+                $scope.migrateDisabled = true;
+                $scope.checkMigrationsDisabled = true;
+                $scope.finishDisabled = true;
+                $scope.cancelDisabled = true;                
+                   
+                // Status list
+                $scope.statusList = [];
+                $scope.statusList.push('Ready to migrate');
+                $scope.statusList.push('Migration in progress');
+                $scope.statusList.push('Inactive concepts detected');
+                $scope.statusList.push('No changes required');
+                $scope.statusList.push('Migration finished');                
+                
+                // Convert an array of tracking records to an array of refsets.
+                $scope.getRefsetsFromRecords = function(records) {
+                  var refsets = new Array();
+                  for (var i = 0; i < records.length; i++) {
+                    refsets.push(records[i].refset);
+                  }
+                  return refsets;
+                };                
+                
+                function lookupRefsets(){
+                  
+                  // Get refsets based on action and value
+                  var pfs = {
+                    startIndex : -1,
+                    maxResults : -1,
+                    queryRestriction : null,
+                    latestOnly : true
+                  };
+                  
+                    workflowService
+                      .findAssignedRefsets(role, $scope.project.id, $scope.user.userName, pfs)
+                      .then(
+                        // Success
+                        function(data) {
+                          
+                          //Clear out the existing refset lists, and quickly repopulate
+                          $scope.refsets = [];                 
+                          $scope.refsetIdsProcessCompleted = [];
+                          $scope.startedMigrationRefsetIds = [];                          
+                          
+                          for(refset of $scope.getRefsetsFromRecords(data.records)){
+                            $scope.refsets.push(refset);
+                            if(refset.stagingType === 'MIGRATION' && !$scope.finishedMigrationRefsetIds.includes(refset.id)){
+                              $scope.startedMigrationRefsetIds.push(refset.id);
+                            }                            
+                          }
+                       });
+                }                       
+                
+                // Run the lookup
+                lookupRefsets();                
+                
+                // Handle workflowStatus picklist change
+                $scope.selectRefsets = function(){
+                                  
+                  //Clear out previous selections
+                  $scope.selectedRefsetIds = [];
+                  for(refset of $scope.refsets){
+                    if($scope.refsetStatus(refset) === $scope.selectedStatus){
+                      $scope.selectedRefsetIds.push(refset.id);
+                    }
+                  }                    
+                  
+                  // Now that selections have changed, enable/disable buttons accordingly
+                  $scope.setButtonDisableValues();
+                }                              
+                
+                // Get the refset's status
+                $scope.refsetStatus = function(refset){
+                  
+                  if(refset.type !== 'EXTENSIONAL'){
+                    return 'NON-EXTENSIONAL'
+                  }
+                  
+                  // Check for in-progress first
+                  if($scope.refsetIdsInProcessProgress.includes(refset.id)){
+                    return 'Processing...';
+                  }
+                  
+                  if ($scope.refsetIdsProcessCompleted.includes(refset.id)){
+                    return 'Completed';
+                  }               
+                  
+                  if($scope.failedRefsetIds.includes(refset.id)){
+                    return 'FAILED';
+                  }
+                  
+                  if($scope.finishedMigrationRefsetIds.includes(refset.id)) {
+                    return 'Migration finished';
+                  }  
+                  
+                  if($scope.inactiveConceptsRefsetIds.includes(refset.id)){
+                    return 'Inactive concepts detected';
+                  }
+                  
+                  if($scope.noChangesRefsetIds.includes(refset.id)){
+                    return 'No changes required';
+                  }                  
+                  
+                  if($scope.startedMigrationRefsetIds.includes(refset.id)) {
+                    return 'Migration in progress';
+                  }
+
+                  else {
+                    return 'Ready to migrate';
+                  }
+                }                
+                
+                // On modal start-up, identify already started migrations
+                for(refset of $scope.refsets){
+                  if(refset.stagingType === 'MIGRATION'){
+                    $scope.startedMigrationRefsetIds.push(refset.id);
+                  }
+                }
+                
+                $scope.alertStatus = function(refset){
+                  if($scope.inactiveConceptsRefsetIds.includes(refset.id) ||
+                    $scope.failedRefsetIds.includes(refset.id) ||
+                    $scope.noChangesRefsetIds.includes(refset.id) ||
+                    refset.type !== 'EXTENSIONAL'){
+                    return true;
+                  }
+                  else{
+                    return false;
+                  }
+                }
+                
+                // Determine if specific action is enabled based on refset selection
+                $scope.setButtonDisableValues = function(){
+                  
+                  // Start with all buttons disabled, and enable individual buttons as appropriate
+                  $scope.migrateDisabled = true;
+                  $scope.checkMigrationsDisabled = true;
+                  $scope.finishDisabled = true;
+                  $scope.cancelDisabled = true;                
+                  
+                  var selectedRefsetsMigrationStatus = '';
+                  var multipleTypesSelected = false;
+                  
+                  // All selected refsets must have the same status in order to do any bulk processing.
+                  for (refset of $scope.refsets) {
+                    if($scope.selectedRefsetIds.includes(refset.id)){
+                      
+                      //If this is first selected refset, set the Status to compare against
+                      if(selectedRefsetsMigrationStatus === ''){
+                        selectedRefsetsMigrationStatus = $scope.refsetStatus(refset);
+                      }
+                      else if(selectedRefsetsMigrationStatus !== $scope.refsetStatus(refset)){
+                        multipleTypesSelected = true;
+                      }
+                    }
+                  }
+                  
+                  // If multiple types are selected, nothing is allowed
+                  if (multipleTypesSelected){
+                    return;
+                  }
+                  
+                  // Where there is only one type of status selected, enable buttons accordingly
+                  if(!multipleTypesSelected){
+                    if(selectedRefsetsMigrationStatus === 'Ready to migrate' && $scope.validVersion){
+                      $scope.migrateDisabled = false;
+                    }
+                    if(selectedRefsetsMigrationStatus === 'Migration in progress'){
+                      $scope.checkMigrationsDisabled = false;
+                      $scope.cancelDisabled = false;   
+                    }                    
+                    if(selectedRefsetsMigrationStatus === 'No changes required'){
+                      $scope.finishDisabled = false;
+                      $scope.cancelDisabled = false;   
+                    }
+                  }
+                }                
+                  
+                // Checkbox controls   
+                $scope.toggleSelectAll = function(){
+                  if($scope.allSelected){
+                    for(refset of $scope.refsets){
+                      $scope.selectedRefsetIds = [];
+                    }
+                    $scope.allSelected = false;
+                  }
+                  else{
+                    $scope.selectedRefsetIds = [];
+                    for(refset of $scope.refsets){
+                      // Can only select extensional refsets
+                      if(refset.type === 'EXTENSIONAL'){
+                        $scope.selectedRefsetIds.push(refset.id);
+                      }
+                    }
+                    $scope.allSelected = true;
+                  }
+                }
+                
+                $scope.toggleSelection = function(refset) {
+                  // is currently selected
+                  if ($scope.selectedRefsetIds.includes(refset.id)) {
+                    $scope.selectedRefsetIds = $scope.selectedRefsetIds.filter(r => r !== refset.id);
+                  }
+                  // is newly selected
+                  else {
+                    $scope.selectedRefsetIds.push(refset.id);
+                  }
+                  // Update all selected
+                  if($scope.refsets.length == $scope.selectedRefsetIds.length){
+                    $scope.allSelected = true;
+                  }
+                  else{
+                    $scope.allSelected = false;
+                  }
+                };
+                
+                // indicates if a particular row is selected
+                $scope.isRowSelected = function(refset) {
+                  return $scope.selectedRefsetIds.includes(refset.id);
+                }
+                
+                $scope.isAllSelected = function() {
+                  return $scope.allSelected;
+                }                   
+                
+                // Return the name for a terminology
+                $scope.getTerminologyName = function(terminology) {
+                  if ($scope.metadata && $scope.metadata.terminologyNames) {
+                    return $scope.metadata.terminologyNames[terminology];
+                  } else {
+                    return terminology;
+                  }
+                };
+
+                // Handle terminology selected
+                $scope.terminologySelected = function(terminology) {
+                  $scope.versions = refsetService.filterTerminologyVersions(
+                    $scope.project.terminologyHandlerKey, terminology, $scope.metadata.versions);
+                  if (terminology === 'SNOMEDCT') {
+                    $scope.newVersion = "MAIN";
+                  } else {
+                    $scope.newVersion = "MAIN/" + terminology;
+                  }
+                };                
+
+                $scope.testTerminologyVersion = function() {
+                  refsetService.isTerminologyVersionValid($scope.project.id, $scope.newTerminology,
+                    $scope.newVersion).then(function(data) {
+                    $scope.validVersion = data;
+                    $scope.setButtonDisableValues();
+                  });
+                }
+
+                $scope.resetValidVersion = function() {
+                  $scope.validVersion = null;
+                }
+
+                $scope.versionNotInPicklist = function() {
+                  for (var i = 0; i < $scope.versions.length; i++) {
+                    if ($scope.versions[i] == $scope.newVersion) {
+                      $scope.validVersion = 'true';
+                      return false;
+                    }
+                  }
+                  return true;
+                }
+
+                
+                // Start lookup for process progress
+                $scope.startProcessProgressLookup = function(process) {
+                  
+                    gpService.increment();
+                    // Start if not already running
+                    if (!$scope.lookupInterval) {
+                      $scope.lookupInterval = $interval(function() {
+                        $scope.refreshProcessProgress(process);
+                      }, 2000);
+                    }
+                }                    
+                
+                // Refresh Process progress
+                $scope.refreshProcessProgress = function(process) {
+                                   
+                  releaseService.getBulkProcessProgress(process, $scope.selectedRefsetIds).then(
+                  // Success
+                  function(data) {
+                    var refsetIdsStillInProgress = [];
+                    for(refsetId of data.strings){
+                      refsetIdsStillInProgress.push(parseInt(refsetId));
+                    }
+                    
+                    // Any time a refset finishes processing, update in-progress and completed lists
+                    if($scope.refsetIdsInProcessProgress.length !== refsetIdsStillInProgress.length){
+                      for(refsetId of $scope.refsetIdsInProcessProgress){
+                        if(!refsetIdsStillInProgress.includes(refsetId)){
+                          $scope.refsetIdsProcessCompleted.push(refsetId);
+                        }
+                      }
+                      
+                      $scope.refsetIdsInProcessProgress = refsetIdsStillInProgress;
+                    }
+                    
+                    // Once all refsets are finished processing (i.e. the in-progress list comes back empty), 
+                    // stop the lookup and get the validation results
+                    if(data.strings.length === 0){
+                      gpService.decrement();
+                      $interval.cancel($scope.lookupInterval);
+                      $scope.lookupInterval = null;
+                      
+                      // Now that the process is done, get any warnings or errors
+                      releaseService.getBulkProcessResults($scope.project.id, process).then(
+                        // Success
+                        function(data) {
+                          handleBulkMultiMessages($scope.errors, data.errors);
+                          handleBulkMultiMessages($scope.warnings, data.warnings);
+                          
+                            for(refset of $scope.refsets){
+                              
+                              if(!$scope.selectedRefsetIds.includes(refset.id)){
+                                continue;
+                              }             
+                              
+                              var refsetHasError = false;
+                              var refsetHasWarning = false;
+                              
+                              for(error of data.errors){
+                                if(error.includes(refset.terminologyId)){
+                                  refsetHasError = true;
+                                }
+                              }
+                              for(warning of data.warnings){
+                                if(warning.includes(refset.terminologyId)){
+                                  refsetHasWarning = true;
+                                  if(warning.includes('inactive concept')){
+                                    $scope.inactiveConceptsRefsetIds.push(refset.id);
+                                  }
+                                }
+                              }
+
+                            // If the refset has a 'warning' validation result
+                            if(refsetHasWarning){
+                              $scope.warningRefsetIds.push(refset.id);
+                            }
+                              
+                            // If the refset has an 'error' validation result
+                            if(refsetHasError){
+                              $scope.failedRefsetIds.push(refset.id);
+                            }
+                            // If the refset has no 'error' validation results
+                            else{
+                              // Track successful begin migrations
+                              if(process === 'BEGIN MIGRATIONS'){
+                                $scope.startedMigrationRefsetIds.push(refset.id);
+                              }
+                              // Migrations with no inactive concepts
+                              if(process === 'CHECK MIGRATIONS'){
+                                $scope.noChangesRefsetIds.push(refset.id);
+                              }
+                              // Track successful finish migrations
+                              if(process === 'FINISH MIGRATIONS'){
+                                $scope.finishedMigrationRefsetIds.push(refset.id);
+                              }   
+                              // Track successful cancel migrations
+                              if(process === 'CANCEL MIGRATIONS'){
+                                $scope.startedMigrationRefsetIds = $scope.startedMigrationRefsetIds.filter(r => r !== refset.id);
+                                $scope.noChangesRefsetIds = $scope.noChangesRefsetIds.filter(r => r !== refset.id);
+                                $scope.inactiveConceptsRefsetIds = $scope.inactiveConceptsRefsetIds.filter(r => r !== refset.id);
+                              }                                
+                            }
+                          }
+                            
+                          // Clear out process progress lists
+                          $scope.refsetIdsInProcessProgress = [];
+                          $scope.refsetIdsProcessCompleted = [];
+                          
+                          // Relookup refsets to catch any status changes
+                          lookupRefsets();                           
+                          $scope.setButtonDisableValues();
+                        },
+                      // Error
+                      function(data) {                                   
+                        handleBulkSingleError($scope.errors,  data);
+
+                        // Relookup refsets to catch any status changes
+                        lookupRefsets();                         
+                        $scope.setButtonDisableValues();                          
+                      });
+                      
+                    }
+                  },
+                  // Error
+                  function(data) {
+                    gpService.decrement();                    
+                    // Cancel automated lookup on error
+                    $interval.cancel($scope.lookupInterval);
+                    $scope.lookupInterval = null;
+
+                    // Clear out process progress lists
+                    $scope.refsetIdsInProcessProgress = [];
+                    $scope.refsetIdsProcessCompleted = [];
+                    
+                    // Relookup refsets to catch any status changes
+                    lookupRefsets();                         
+                    $scope.setButtonDisableValues(); 
+                  });
+                };
+
+                // Check mid-migration refsets for inactive concepts
+                $scope.checkMigrations = function(){
+                  //Clear out errors and warnings from previous runs
+                  $scope.errors = [];
+                  $scope.warnings = [];
+                  $scope.warningRefsetIds = [];
+                  
+                  for(refsetId of $scope.selectedRefsetIds){
+                    $scope.refsetIdsInProcessProgress.push(refsetId);
+                  }                   
+                  
+                  refsetService.checkForInactiveConcepts($scope.project.id, $scope.selectedRefsetIds).then(
+                    // Success
+                    function(data) {
+                      
+                      // Start the progress lookup loop
+                      $scope.startProcessProgressLookup('CHECK MIGRATIONS');     
+                      
+                    },
+                    // Error
+                    function(data) {
+                      handleBulkSingleError($scope.errors, data);
+                    });
+                  };
+                
+                // Begin migrations, compare refsets, and identify refsets that require manual intervention
+                $scope.beginMigrations = function(newTerminology, newVersion) {
+                  //Clear out errors and warnings from previous runs
+                  $scope.errors = [];
+                  $scope.warnings = [];
+                  $scope.warningRefsetIds = [];
+                 
+                  if (!newVersion) {
+                    $scope.errors[0] = 'New version must not be blank';
+                    return;
+                  }
+                  
+                  // For non-MANAGED-SERVICE  projects, check each selected refset's version to ensure they aren't migrating backwards 
+                  // Full version comparison no longer works for MANAGED-SERVICE projects, since it can include the edition's working project
+                  // e.g. MAIN/2019-07-31/SNOMEDCT-BE/BEMAR20
+                  for(refset of $scope.refsets){
+                    if ($scope.selectedRefsetIds.includes(refset.id) && $scope.project.terminologyHandlerKey !== 'MANAGED-SERVICE' && newTerminology == refset.terminology
+                      && newVersion < refset.version) {
+                      $scope.errors.push(refset.terminologyId + ': new version must be greater than existing version');
+                    }                    
+                  }
+                  if($scope.errors.length !== 0){
+                    return;
+                  }
+                    
+                  for(refsetId of $scope.selectedRefsetIds){
+                    $scope.refsetIdsInProcessProgress.push(refsetId);
+                  } 
+                  
+                  refsetService.beginMigrations($scope.project.id, $scope.selectedRefsetIds, newTerminology, newVersion).then(
+                  // Success
+                  function(data) {
+                    
+                    // Start the progress lookup loop
+                    $scope.startProcessProgressLookup('BEGIN MIGRATIONS');     
+                    
+                  },
+                  // Error
+                  function(data) {
+                    handleBulkSingleError($scope.errors, data);
+                  });
+                };
+
+                // Finish migration
+                $scope.finish = function() {
+                  //Clear out errors and warnings from previous runs
+                  $scope.errors = [];
+                  $scope.warnings = [];
+                  $scope.warningRefsetIds = [];
+                  
+                  for(refsetId of $scope.selectedRefsetIds){
+                    $scope.refsetIdsInProcessProgress.push(refsetId);
+                    $scope.noChangesRefsetIds = $scope.noChangesRefsetIds.filter(r => r !== refsetId);
+                  } 
+                  
+                  refsetService.finishMigrations($scope.project.id, $scope.selectedRefsetIds).then(
+                  // Success
+                  function(data) {
+                    
+                    // Start the progress lookup loop
+                    $scope.startProcessProgressLookup('FINISH MIGRATIONS');   
+                    
+                  },
+                  // Error
+                  function(data) {
+                    handleBulkSingleError($scope.errors, data);
+                  });
+
+                };               
+                
+                // Cancel migration and close dialog
+                $scope.cancel = function() {
+                  //Clear out errors and warnings from previous runs
+                  $scope.errors = [];
+                  $scope.warnings = [];
+                  $scope.warningRefsetIds = [];
+                  
+                  for(refsetId of $scope.selectedRefsetIds){
+                    $scope.refsetIdsInProcessProgress.push(refsetId);
+                    $scope.noChangesRefsetIds = $scope.noChangesRefsetIds.filter(r => r !== refsetId);
+                  }           
+                  
+                  refsetService.cancelMigrations($scope.project.id, $scope.selectedRefsetIds).then(
+                  // Success
+                  function(data) {
+                    
+                    // Start the progress lookup loop
+                    $scope.startProcessProgressLookup('CANCEL MIGRATIONS');                     
+                    
+                  },
+                  // Error - cancel migration
+                  function(data) {
+                    handleBulkSingleError($scope.errors, data);
+                  });
+                };
+                
+                // Close migration dialog
+                $scope.close = function() {                  
+                  // Fire update refset event, in case any refsets updated
+                  refsetService.fireRefsetChanged($scope.refsets[0]);
+                  $uibModalInstance.close();
+                };                
+                
+              };              
+              
               // Feedback modal
               $scope.openFeedbackModal = function(lrefset) {
                 console.debug('Open feedbackModal ', lrefset);
