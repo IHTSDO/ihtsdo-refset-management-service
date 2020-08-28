@@ -3222,8 +3222,10 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       authorizeApp(securityService, authToken, "releases a report",
           UserRole.VIEWER);
 
-      refsetService.removeMembersInCommon(reportToken);
-      refsetService.removeMemberDiffReport(reportToken);
+      if(reportToken != null) {
+        refsetService.removeMembersInCommon(reportToken);
+        refsetService.removeMemberDiffReport(reportToken);
+      }
     } catch (Exception e) {
       handleException(e, "trying to release a report");
     } finally {
