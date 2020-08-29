@@ -6312,11 +6312,17 @@ tsApp
                   $scope.cancelDisabled = true;                
                   
                   var selectedRefsetsMigrationStatus = '';
+                  var readyToMigrateOrMigrationFinishedSelected = false;
                   var multipleTypesSelected = false;
                   
                   // All selected refsets must have the same status in order to do any bulk processing.
                   for (refset of $scope.refsets) {
                     if($scope.selectedRefsetIds.includes(refset.id)){
+                      
+                      //Check for 'Ready to migrate' or 'Migration finished' refset selection
+                      if($scope.refsetStatus(refset) === 'Ready to migrate' || $scope.refsetStatus(refset) === 'Migration finished'){
+                        readyToMigrateOrMigrationFinishedSelected = true;
+                      }
                       
                       //If this is first selected refset, set the Status to compare against
                       if(selectedRefsetsMigrationStatus === ''){
@@ -6328,8 +6334,10 @@ tsApp
                     }
                   }
                   
-                  // If multiple types are selected, nothing is allowed
-                  if (multipleTypesSelected){
+                  // If multiple types are selected, only Cancel is allowed
+                  // As long as none of selected refsets are 'Ready to migrate' or 'Migration finished'
+                  if (multipleTypesSelected && !readyToMigrateOrMigrationFinishedSelected){
+                    $scope.cancelDisabled = false;
                     return;
                   }
                   
@@ -6344,6 +6352,9 @@ tsApp
                     }                    
                     if(selectedRefsetsMigrationStatus === 'No changes required'){
                       $scope.finishDisabled = false;
+                      $scope.cancelDisabled = false;   
+                    }
+                    if(selectedRefsetsMigrationStatus === 'Inactive concepts detected'){
                       $scope.cancelDisabled = false;   
                     }
                   }
