@@ -208,7 +208,7 @@ tsApp
           return new Date(y, m, d).getTime();
         }
 
-        // Convert date to a string
+        // Convert date to a string in UTC
         var workDate = new Date();
         this.toDate = function(lastModified) {
           var date = new Date(lastModified + ((60 + workDate.getTimezoneOffset()) * 60000));
@@ -235,8 +235,35 @@ tsApp
           }
           return year + '-' + month + '-' + day + ' ' + hour + ':' + minute + ':' + second;
         };
+        
+        // Convert date to a string in local timezone
+        this.toLocalDate = function(lastModified) {
+          var date = new Date(lastModified);
+          var year = '' + date.getFullYear();
+          var month = '' + (date.getMonth() + 1);
+          if (month.length == 1) {
+            month = '0' + month;
+          }
+          var day = '' + date.getDate();
+          if (day.length == 1) {
+            day = '0' + day;
+          }
+          var hour = '' + date.getHours();
+          if (hour.length == 1) {
+            hour = '0' + hour;
+          }
+          var minute = '' + date.getMinutes();
+          if (minute.length == 1) {
+            minute = '0' + minute;
+          }
+          var second = '' + date.getSeconds();
+          if (second.length == 1) {
+            second = '0' + second;
+          }
+          return year + '-' + month + '-' + day + ' ' + hour + ':' + minute + ':' + second;
+        };        
 
-        // Convert date to a short string
+        // Convert date to a short string in UTC
         this.toShortDate = function(lastModified) {
           var date = new Date(lastModified + ((60 + workDate.getTimezoneOffset()) * 60000));
           var year = '' + date.getFullYear();
@@ -251,7 +278,7 @@ tsApp
           return year + '-' + month + '-' + day;
         };
 
-        // Convert date to a simple string
+        // Convert date to a simple string in UTC
         this.toSimpleDate = function(lastModified) {
           if (lastModified == null) {
           	return '';
