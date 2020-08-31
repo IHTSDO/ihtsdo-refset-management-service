@@ -124,6 +124,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
       list.setTotalCount(3);
       list.getObjects().add(UserRole.AUTHOR.toString());
       list.getObjects().add(UserRole.REVIEWER.toString());
+      list.getObjects().add(UserRole.LEAD.toString());
       list.getObjects().add(UserRole.ADMIN.toString());
       return list;
     } catch (Exception e) {
