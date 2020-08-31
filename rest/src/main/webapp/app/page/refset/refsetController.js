@@ -222,7 +222,7 @@ tsApp
           if ($scope.projects.role != 'ADMIN' && $scope.projects.role != 'LEAD') {
             return false;
           }
-          $scope.inactiveDate  = utilService.toDate($scope.project.inactiveLastModified);
+          $scope.inactiveDate  = utilService.toLocalDate($scope.project.inactiveLastModified);
           return ($scope.project.terminologyHandlerKey == 'MANAGED-SERVICE');           
         }
 
@@ -248,7 +248,7 @@ tsApp
           if ($scope.projects.role != 'ADMIN' && $scope.projects.role != 'LEAD') {
             return false;
           }          
-          $scope.refreshDescriptionsDate  = utilService.toDate($scope.project.refeshDescriptionsLastModified);
+          $scope.refreshDescriptionsDate  = utilService.toLocalDate($scope.project.refeshDescriptionsLastModified);
           return ($scope.project.terminologyHandlerKey == 'MANAGED-SERVICE' && !$scope.refreshDescriptionsInProgress);        
         }        
         
