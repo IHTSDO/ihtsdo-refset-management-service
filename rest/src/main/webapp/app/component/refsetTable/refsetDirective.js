@@ -5615,12 +5615,20 @@ tsApp
                   refsetService.finishMigration(refset.id).then(
                   // Success
                   function(data) {
-                    startLookup(refset);
-                    // On close, clear out any information stored in memory
-                    refsetService.releaseReportToken($scope.reportToken).then(
-                      // Success
-                      function() {
-                        $uibModalInstance.close(refset);
+                    refsetService.exportDiffReport('Finish', $scope.reportToken, $scope.refset, $scope.newTerminology, $scope.newVersion).then(                    
+                      //Success
+                      function(data){
+                        startLookup(refset);
+                        // On close, clear out any information stored in memory
+                        refsetService.releaseReportToken($scope.reportToken).then(
+                          // Success
+                          function() {
+                            $uibModalInstance.close(refset);
+                          },
+                          // Error
+                          function(data) {
+                            $uibModalInstance.close(refset);
+                          });
                       },
                       // Error
                       function(data) {
@@ -5666,13 +5674,21 @@ tsApp
 
                 // Save for later, allow state to be resumed
                 $scope.saveForLater = function(refset) {
-                  // added solely for delay to migration files update
-                  startLookup(refset);
-                  // updates refset on close, and clear out any information stored in memory
-                  refsetService.releaseReportToken($scope.reportToken).then(
-                    // Success
-                    function() {
-                      $uibModalInstance.close(refset);
+                  refsetService.exportDiffReport('SaveForLater', $scope.reportToken, $scope.refset, $scope.newTerminology, $scope.newVersion).then(
+                    //Success
+                    function(data){
+                      // added solely for delay to migration files update
+                      startLookup(refset);
+                      // updates refset on close, and clear out any information stored in memory
+                      refsetService.releaseReportToken($scope.reportToken).then(
+                        // Success
+                        function() {
+                          $uibModalInstance.close(refset);
+                        },
+                        // Error
+                        function(data) {
+                          $uibModalInstance.close(refset);
+                        });
                     },
                     // Error
                     function(data) {
