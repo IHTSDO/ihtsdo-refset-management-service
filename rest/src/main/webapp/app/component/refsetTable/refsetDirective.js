@@ -5615,12 +5615,20 @@ tsApp
                   refsetService.finishMigration(refset.id).then(
                   // Success
                   function(data) {
-                    startLookup(refset);
-                    // On close, clear out any information stored in memory
-                    refsetService.releaseReportToken($scope.reportToken).then(
-                      // Success
-                      function() {
-                        $uibModalInstance.close(refset);
+                    refsetService.exportDiffReport('Finish', $scope.reportToken, $scope.refset, $scope.newTerminology, $scope.newVersion).then(                    
+                      //Success
+                      function(data){
+                        startLookup(refset);
+                        // On close, clear out any information stored in memory
+                        refsetService.releaseReportToken($scope.reportToken).then(
+                          // Success
+                          function() {
+                            $uibModalInstance.close(refset);
+                          },
+                          // Error
+                          function(data) {
+                            $uibModalInstance.close(refset);
+                          });
                       },
                       // Error
                       function(data) {
@@ -5666,13 +5674,21 @@ tsApp
 
                 // Save for later, allow state to be resumed
                 $scope.saveForLater = function(refset) {
-                  // added solely for delay to migration files update
-                  startLookup(refset);
-                  // updates refset on close, and clear out any information stored in memory
-                  refsetService.releaseReportToken($scope.reportToken).then(
-                    // Success
-                    function() {
-                      $uibModalInstance.close(refset);
+                  refsetService.exportDiffReport('SaveForLater', $scope.reportToken, $scope.refset, $scope.newTerminology, $scope.newVersion).then(
+                    //Success
+                    function(data){
+                      // added solely for delay to migration files update
+                      startLookup(refset);
+                      // updates refset on close, and clear out any information stored in memory
+                      refsetService.releaseReportToken($scope.reportToken).then(
+                        // Success
+                        function() {
+                          $uibModalInstance.close(refset);
+                        },
+                        // Error
+                        function(data) {
+                          $uibModalInstance.close(refset);
+                        });
                     },
                     // Error
                     function(data) {
@@ -6312,11 +6328,17 @@ tsApp
                   $scope.cancelDisabled = true;                
                   
                   var selectedRefsetsMigrationStatus = '';
+                  var readyToMigrateOrMigrationFinishedSelected = false;
                   var multipleTypesSelected = false;
                   
                   // All selected refsets must have the same status in order to do any bulk processing.
                   for (refset of $scope.refsets) {
                     if($scope.selectedRefsetIds.includes(refset.id)){
+                      
+                      //Check for 'Ready to migrate' or 'Migration finished' refset selection
+                      if($scope.refsetStatus(refset) === 'Ready to migrate' || $scope.refsetStatus(refset) === 'Migration finished'){
+                        readyToMigrateOrMigrationFinishedSelected = true;
+                      }
                       
                       //If this is first selected refset, set the Status to compare against
                       if(selectedRefsetsMigrationStatus === ''){
@@ -6328,8 +6350,10 @@ tsApp
                     }
                   }
                   
-                  // If multiple types are selected, nothing is allowed
-                  if (multipleTypesSelected){
+                  // If multiple types are selected, only Cancel is allowed
+                  // As long as none of selected refsets are 'Ready to migrate' or 'Migration finished'
+                  if (multipleTypesSelected && !readyToMigrateOrMigrationFinishedSelected){
+                    $scope.cancelDisabled = false;
                     return;
                   }
                   
@@ -6344,6 +6368,9 @@ tsApp
                     }                    
                     if(selectedRefsetsMigrationStatus === 'No changes required'){
                       $scope.finishDisabled = false;
+                      $scope.cancelDisabled = false;   
+                    }
+                    if(selectedRefsetsMigrationStatus === 'Inactive concepts detected'){
                       $scope.cancelDisabled = false;   
                     }
                   }

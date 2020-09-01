@@ -593,6 +593,8 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
       } else {
         concept.setName(UNABLE_TO_DETERMINE_NAME);
 
+        Logger.getLogger(getClass()).error("[ALERT-ALL]: message=pt node is null or missing term subnode, concept=" + concept.getTerminologyId() + ", terminology=" + terminology + ", version=" + version);
+        
         lookupErrors.append("  URI: ").append(targetUri).append("\r\n");
         lookupErrors.append("  CONCEPT ID: ").append(concept.getTerminologyId())
             .append("\r\n");
@@ -668,6 +670,8 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
           concept.setName(conceptNode.get("pt").get("term").asText());
         } else {
           concept.setName(UNABLE_TO_DETERMINE_NAME);
+
+          Logger.getLogger(getClass()).error("[ALERT=ALL]: message=pt node is null or missing term subnode, concept=" + concept.getTerminologyId() + ", terminology=" + terminology + ", version=" + version);
 
           lookupErrors.append("  URI: ").append(targetUri).append("\r\n");
           lookupErrors.append("  CONCEPT ID: ")
@@ -851,6 +855,8 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     } else {
       concept.setName(UNABLE_TO_DETERMINE_NAME);
 
+      Logger.getLogger(getClass()).error("[ALERT-ALL]: message=fsn node is null or missing term subnode, concept="   + concept.getTerminologyId() + ", terminology=" + terminology + ", version=" + version);
+      
       lookupErrors.append("  URI: ").append(targetUri).append("\r\n");
       lookupErrors.append("  CONCEPT ID: ").append(concept.getTerminologyId())
           .append("\r\n");
@@ -912,6 +918,9 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
               }
               description.getLanguageRefsetMembers().add(member);
             } else {
+              
+              Logger.getLogger(getClass()).error("[ALERT-ALL]: message=acceptabilityMap node is null or empty, concept=" + concept.getTerminologyId() + ", terminology=" + terminology + ", version=" + version);             
+              
               lookupErrors.append("  URI: ").append(targetUri).append("\r\n");
               lookupErrors.append("  CONCEPT ID: ")
                   .append(concept.getTerminologyId()).append("\r\n");
@@ -1120,6 +1129,8 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
       } else {
         concept.setName(UNABLE_TO_DETERMINE_NAME);
 
+        Logger.getLogger(getClass()).error("[ALERT-ALL]: message=pt node is null or missing term subnode, concept=" + concept.getTerminologyId() + ", terminology=" + terminology + ", version=" + version);        
+        
         lookupErrors.append("  URI: ").append(targetUri).append("\r\n");
         lookupErrors.append("  CONCEPT ID: ")
             .append(concept.getTerminologyId()).append("\r\n");
@@ -1375,6 +1386,8 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
         } else {
           concept.setName(UNABLE_TO_DETERMINE_NAME);
 
+          Logger.getLogger(getClass()).error("[ALERT-ALL]: message=pt node is null or missing term subnode, concept=" + concept.getTerminologyId() + ", terminology=" + terminology + ", version=" + version);          
+          
           lookupErrors.append("  URI: ").append(targetUri).append("\r\n");
           lookupErrors.append("  CONCEPT ID: ")
               .append(concept.getTerminologyId()).append("\r\n");
@@ -1435,6 +1448,9 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
                   }
                   description.getLanguageRefsetMembers().add(member);
                 } else {
+                  
+                  Logger.getLogger(getClass()).error("[ALERT-ALL]: message=acceptabilityMap node is null or empty, concept=" + concept.getTerminologyId() + ", terminology=" + terminology + ", version=" + version);
+                  
                   lookupErrors.append("  URI: ").append(targetUri)
                       .append("\r\n");
                   lookupErrors.append("  CONCEPT ID: ")
@@ -1580,6 +1596,8 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
           } else {
             concept.setName(UNABLE_TO_DETERMINE_NAME);
 
+            Logger.getLogger(getClass()).error("[ALERT-ALL]: message=pt node is null or missing term subnode, concept=" + concept.getTerminologyId() + ", terminology=" + terminology + ", version=" + version);
+            
             lookupErrors.append("  URI: ").append(targetUri).append("\r\n");
             lookupErrors.append("  CONCEPT ID: ")
                 .append(concept.getTerminologyId()).append("\r\n");
@@ -1642,6 +1660,9 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
                     }
                     description.getLanguageRefsetMembers().add(member);
                   } else {
+                    
+                    Logger.getLogger(getClass()).error("[ALERT-ALL]: message=acceptabilityMap node is null or empty, concept=" + concept.getTerminologyId() + ", terminology=" + terminology + ", version=" + version);
+                    
                     lookupErrors.append("  URI: ").append(targetUri)
                         .append("\r\n");
                     lookupErrors.append("  CONCEPT ID: ")
@@ -1814,6 +1835,8 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
         } else {
           concept.setName(UNABLE_TO_DETERMINE_NAME);
 
+          Logger.getLogger(getClass()).error("[ALERT-ALL]: message=pt node is null or missing term subnode, concept=" + concept.getTerminologyId() + ", terminology=" + terminology + ", version=" + version);
+          
           lookupErrors.append("  URI: ").append(targetUri).append("\r\n");
           lookupErrors.append("  CONCEPT ID: ")
               .append(concept.getTerminologyId()).append("\r\n");
@@ -1936,6 +1959,8 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
         } else {
           desc.setTerm(UNABLE_TO_DETERMINE_NAME);
 
+          Logger.getLogger(getClass()).error("[ALERT-ALL]: message=pt node is null or missing term subnode, concept=" + conceptId + ", terminology=" + terminology + ", version=" + version);
+          
           lookupErrors.append("  URI: ").append(targetUri).append("\r\n");
           lookupErrors.append("  CONCEPT ID: ").append(conceptId)
               .append("\r\n");
@@ -1971,6 +1996,8 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
             } else {
               concept.setName(UNABLE_TO_DETERMINE_NAME);
 
+              Logger.getLogger(getClass()).error("[ALERT-ALL]: message=fsn node is null or missing term subnode, concept=" + concept.getTerminologyId() + ", terminology=" + terminology + ", version=" + version);
+              
               lookupErrors.append("  URI: ").append(targetUri).append("\r\n");
               lookupErrors.append("  CONCEPT ID: ")
                   .append(concept.getTerminologyId()).append("\r\n");
@@ -2019,6 +2046,8 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
       } else {
         concept.setName(UNABLE_TO_DETERMINE_NAME);
 
+        Logger.getLogger(getClass()).error("[ALERT-ALL]: message=pt node is null or missing term subnode, concept=" + concept.getTerminologyId() + ", terminology=" + terminology + ", version=" + version);
+        
         lookupErrors.append("  URI: ").append(targetUri).append("\r\n");
         lookupErrors.append("  CONCEPT ID: ").append(concept.getTerminologyId())
             .append("\r\n");
