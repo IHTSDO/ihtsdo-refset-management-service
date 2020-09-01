@@ -393,7 +393,7 @@ tsApp.directive('conceptInfo', [
             }
 
             // Lead & Admins can't edit
-            if (!['LEAD','ADMIN'].includes($scope.role)) {
+            if (['LEAD','ADMIN'].includes($scope.role)) {
               $scope.disableMemberTypes = true;
               return;
             }
