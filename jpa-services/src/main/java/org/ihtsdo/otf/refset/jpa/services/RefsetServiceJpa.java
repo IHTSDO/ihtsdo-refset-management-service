@@ -2957,15 +2957,17 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
       for (Description d : fullCon.getDescriptions()) {
         if (!d.getTypeId().equals("900000000000550004") // DEFINITION_DESC_SCTID
         ) {
-          ConceptRefsetMemberSynonym synonym =
-              new ConceptRefsetMemberSynonymJpa();
-          synonym.setActive(d.isActive());
-          synonym.setSynonym(d.getTerm());
-          synonym.setLanguage(d.getLanguageCode());
+
           if (d.getLanguageRefsetMembers() == null
               || d.getLanguageRefsetMembers().size() == 0) {
+            ConceptRefsetMemberSynonym synonym =
+                new ConceptRefsetMemberSynonymJpa();
+            synonym.setActive(d.isActive());
+            synonym.setSynonym(d.getTerm());
+            synonym.setLanguage(d.getLanguageCode());            
             synonym.setTermType("UNKNOWN");
-            synonym.setMember(member);
+            synonym.setMember(member);          
+            
             // Make sure to only add unique synonyms. Block duplicates
             if (!member.getSynonyms().contains(synonym)) {
               refsetService.addConceptRefsetMemberSynonym(synonym);
@@ -2974,6 +2976,12 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
             continue;
           }
           for (LanguageRefsetMember lrm : d.getLanguageRefsetMembers()) {
+
+            ConceptRefsetMemberSynonym synonym =
+                new ConceptRefsetMemberSynonymJpa();
+            synonym.setActive(d.isActive());
+            synonym.setSynonym(d.getTerm());
+            synonym.setLanguage(d.getLanguageCode());            
             if ("900000000000003001".equals(d.getTypeId())) {
               synonym.setTermType("FSN");
             } else {
@@ -2985,6 +2993,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
             }
             synonym.setLanguageRefsetId(lrm.getRefsetId());
             synonym.setMember(member);
+
             // Make sure to only add unique synonyms. Block duplicates
             if (!member.getSynonyms().contains(synonym)) {
               refsetService.addConceptRefsetMemberSynonym(synonym);
@@ -2994,6 +3003,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
         }
       }
     }
+
     refsetService.updateMember(member);
   }
 
@@ -3010,13 +3020,13 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
     for (Description d : concept.getDescriptions()) {
       if (!d.getTypeId().equals("900000000000550004") // DEFINITION_DESC_SCTID
       ) {
-        ConceptRefsetMemberSynonym synonym =
-            new ConceptRefsetMemberSynonymJpa();
-        synonym.setActive(d.isActive());
-        synonym.setSynonym(d.getTerm());
-        synonym.setLanguage(d.getLanguageCode());
         if (d.getLanguageRefsetMembers() == null
             || d.getLanguageRefsetMembers().size() == 0) {
+          ConceptRefsetMemberSynonym synonym =
+              new ConceptRefsetMemberSynonymJpa();
+          synonym.setActive(d.isActive());
+          synonym.setSynonym(d.getTerm());
+          synonym.setLanguage(d.getLanguageCode());          
           synonym.setTermType("UNKNOWN");
           synonym.setMember(member);
           // Make sure to only add unique synonyms. Block duplicates
@@ -3027,6 +3037,11 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
           continue;
         }
         for (LanguageRefsetMember lrm : d.getLanguageRefsetMembers()) {
+          ConceptRefsetMemberSynonym synonym =
+              new ConceptRefsetMemberSynonymJpa();
+          synonym.setActive(d.isActive());
+          synonym.setSynonym(d.getTerm());
+          synonym.setLanguage(d.getLanguageCode());
           if ("900000000000003001".equals(d.getTypeId())) {
             synonym.setTermType("FSN");
           } else {
