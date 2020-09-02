@@ -912,10 +912,10 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
         // description.setTypeId("900000000000013009");
         // }
         if (description.isActive()) {
-          final JsonNode languages =
-              desc.findValues("acceptabilityMap").get(0);
+          final JsonNode languages = desc.findValues("acceptabilityMap").get(0);
 
-          if (!(languages.toString().isEmpty() || languages.toString().equals("{}"))) {
+          if (!(languages.toString().isEmpty()
+              || languages.toString().equals("{}"))) {
 
             ObjectNode language = (ObjectNode) languages;
             Iterator<Map.Entry<String, JsonNode>> iter = language.fields();
@@ -925,8 +925,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
               final String languageRefsetId = entry.getKey();
               final String acceptibilityString = entry.getValue().asText();
 
-              final LanguageRefsetMember member =
-                  new LanguageRefsetMemberJpa();
+              final LanguageRefsetMember member = new LanguageRefsetMemberJpa();
               member.setActive(true);
               member.setDescriptionId(concept.getTerminologyId());
 
@@ -942,7 +941,8 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
 
             Logger.getLogger(getClass()).error(
                 "[ALERT-ALL]: message=acceptabilityMap node is null or empty, concept="
-                    + concept.getTerminologyId() + ", terminology="
+                    + concept.getTerminologyId() + ", description="
+                    + description.getTerminologyId() + ", terminology="
                     + terminology + ", version=" + version);
 
             lookupErrors.append("  URI: ").append(targetUri).append("\r\n");
@@ -1461,7 +1461,8 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
               final JsonNode languages =
                   desc.findValues("acceptabilityMap").get(0);
 
-              if (!(languages.toString().isEmpty() || languages.toString().equals("{}"))) {
+              if (!(languages.toString().isEmpty()
+                  || languages.toString().equals("{}"))) {
 
                 ObjectNode language = (ObjectNode) languages;
                 Iterator<Map.Entry<String, JsonNode>> iter = language.fields();
@@ -1488,7 +1489,8 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
 
                 Logger.getLogger(getClass()).error(
                     "[ALERT-ALL]: message=acceptabilityMap node is null or empty, concept="
-                        + concept.getTerminologyId() + ", terminology="
+                        + concept.getTerminologyId() + ", description="
+                        + description.getTerminologyId() + ", terminology="
                         + terminology + ", version=" + version);
 
                 lookupErrors.append("  URI: ").append(targetUri).append("\r\n");
@@ -1503,7 +1505,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
             }
 
             concept.getDescriptions().add(description);
-          
+
           }
         }
 
@@ -1685,15 +1687,18 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
                 final JsonNode languages =
                     desc.findValues("acceptabilityMap").get(0);
 
-                if (!(languages.toString().isEmpty() || languages.toString().equals("{}"))) {
+                if (!(languages.toString().isEmpty()
+                    || languages.toString().equals("{}"))) {
 
                   ObjectNode language = (ObjectNode) languages;
-                  Iterator<Map.Entry<String, JsonNode>> iter = language.fields();
+                  Iterator<Map.Entry<String, JsonNode>> iter =
+                      language.fields();
 
                   while (iter.hasNext()) {
                     Map.Entry<String, JsonNode> entry = iter.next();
                     final String languageRefsetId = entry.getKey();
-                    final String acceptibilityString = entry.getValue().asText();
+                    final String acceptibilityString =
+                        entry.getValue().asText();
 
                     final LanguageRefsetMember member =
                         new LanguageRefsetMemberJpa();
@@ -1712,10 +1717,12 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
 
                   Logger.getLogger(getClass()).error(
                       "[ALERT-ALL]: message=acceptabilityMap node is null or empty, concept="
-                          + concept.getTerminologyId() + ", terminology="
+                          + concept.getTerminologyId() + ", description="
+                          + description.getTerminologyId() + ", terminology="
                           + terminology + ", version=" + version);
 
-                  lookupErrors.append("  URI: ").append(targetUri).append("\r\n");
+                  lookupErrors.append("  URI: ").append(targetUri)
+                      .append("\r\n");
                   lookupErrors.append("  CONCEPT ID: ")
                       .append(concept.getTerminologyId()).append("\r\n");
                   lookupErrors.append("  DESCRIPTION ID: ")
