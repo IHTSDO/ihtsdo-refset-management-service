@@ -2956,7 +2956,7 @@ tsApp
                     latestOnly : true
                   };
                   
-                  var query = ' AND (workflowStatus:READY_FOR_PUBLICATION OR workflowStatus:PUBLISHED)';
+                  var query = ' AND ((revision:false AND workflowStatus:READY_FOR_PUBLICATION) OR workflowStatus:PUBLISHED)';
 
                   refsetService.findRefsetsForQuery('projectId:' + $scope.project.id + query, pfs)
                     .then(
