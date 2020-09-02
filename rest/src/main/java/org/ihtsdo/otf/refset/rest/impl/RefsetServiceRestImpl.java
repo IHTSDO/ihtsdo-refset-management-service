@@ -1903,6 +1903,13 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
             if (displayName != null) {
               member.setConceptName(displayName);
             }
+            //If display name not available for specified language, default to English PT
+            else {
+              displayName = refsetService.getDisplayNameForMember(member.getId(), "900000000000509007", false);
+              if(displayName != null) {
+                member.setConceptName(displayName);
+              }
+            }
           }
           refsetService.handleLazyInit(member);
         }
