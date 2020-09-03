@@ -596,7 +596,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
         concept.setName(UNABLE_TO_DETERMINE_NAME);
 
         Logger.getLogger(getClass()).error(
-            "[ALERT-ALL]: message=pt node is null or missing term subnode, concept="
+            "[ALERT=ALL]: message=pt node is null or missing term subnode, concept="
                 + concept.getTerminologyId() + ", terminology=" + terminology
                 + ", version=" + version);
 
@@ -864,7 +864,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
       concept.setName(UNABLE_TO_DETERMINE_NAME);
 
       Logger.getLogger(getClass()).error(
-          "[ALERT-ALL]: message=fsn node is null or missing term subnode, concept="
+          "[ALERT=ALL]: message=fsn node is null or missing term subnode, concept="
               + concept.getTerminologyId() + ", terminology=" + terminology
               + ", version=" + version);
 
@@ -940,7 +940,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
           } else {
 
             Logger.getLogger(getClass()).error(
-                "[ALERT-ALL]: message=acceptabilityMap node is null or empty, concept="
+                "[ALERT=ALL]: message=acceptabilityMap node is null or empty, concept="
                     + concept.getTerminologyId() + ", description="
                     + description.getTerminologyId() + ", terminology="
                     + terminology + ", version=" + version);
@@ -1154,7 +1154,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
         concept.setName(UNABLE_TO_DETERMINE_NAME);
 
         Logger.getLogger(getClass()).error(
-            "[ALERT-ALL]: message=pt node is null or missing term subnode, concept="
+            "[ALERT=ALL]: message=pt node is null or missing term subnode, concept="
                 + concept.getTerminologyId() + ", terminology=" + terminology
                 + ", version=" + version);
 
@@ -1413,7 +1413,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
           concept.setName(UNABLE_TO_DETERMINE_NAME);
 
           Logger.getLogger(getClass()).error(
-              "[ALERT-ALL]: message=pt node is null or missing term subnode, concept="
+              "[ALERT=ALL]: message=pt node is null or missing term subnode, concept="
                   + concept.getTerminologyId() + ", terminology=" + terminology
                   + ", version=" + version);
 
@@ -1488,7 +1488,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
               } else {
 
                 Logger.getLogger(getClass()).error(
-                    "[ALERT-ALL]: message=acceptabilityMap node is null or empty, concept="
+                    "[ALERT=ALL]: message=acceptabilityMap node is null or empty, concept="
                         + concept.getTerminologyId() + ", description="
                         + description.getTerminologyId() + ", terminology="
                         + terminology + ", version=" + version);
@@ -1638,7 +1638,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
             concept.setName(UNABLE_TO_DETERMINE_NAME);
 
             Logger.getLogger(getClass()).error(
-                "[ALERT-ALL]: message=pt node is null or missing term subnode, concept="
+                "[ALERT=ALL]: message=pt node is null or missing term subnode, concept="
                     + concept.getTerminologyId() + ", terminology="
                     + terminology + ", version=" + version);
 
@@ -1716,7 +1716,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
                 } else {
 
                   Logger.getLogger(getClass()).error(
-                      "[ALERT-ALL]: message=acceptabilityMap node is null or empty, concept="
+                      "[ALERT=ALL]: message=acceptabilityMap node is null or empty, concept="
                           + concept.getTerminologyId() + ", description="
                           + description.getTerminologyId() + ", terminology="
                           + terminology + ", version=" + version);
@@ -1893,7 +1893,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
           concept.setName(UNABLE_TO_DETERMINE_NAME);
 
           Logger.getLogger(getClass()).error(
-              "[ALERT-ALL]: message=pt node is null or missing term subnode, concept="
+              "[ALERT=ALL]: message=pt node is null or missing term subnode, concept="
                   + concept.getTerminologyId() + ", terminology=" + terminology
                   + ", version=" + version);
 
@@ -2020,7 +2020,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
           desc.setTerm(UNABLE_TO_DETERMINE_NAME);
 
           Logger.getLogger(getClass()).error(
-              "[ALERT-ALL]: message=pt node is null or missing term subnode, concept="
+              "[ALERT=ALL]: message=pt node is null or missing term subnode, concept="
                   + conceptId + ", terminology=" + terminology + ", version="
                   + version);
 
@@ -2060,7 +2060,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
               concept.setName(UNABLE_TO_DETERMINE_NAME);
 
               Logger.getLogger(getClass()).error(
-                  "[ALERT-ALL]: message=fsn node is null or missing term subnode, concept="
+                  "[ALERT=ALL]: message=fsn node is null or missing term subnode, concept="
                       + concept.getTerminologyId() + ", terminology="
                       + terminology + ", version=" + version);
 
@@ -2113,7 +2113,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
         concept.setName(UNABLE_TO_DETERMINE_NAME);
 
         Logger.getLogger(getClass()).error(
-            "[ALERT-ALL]: message=pt node is null or missing term subnode, concept="
+            "[ALERT=ALL]: message=pt node is null or missing term subnode, concept="
                 + concept.getTerminologyId() + ", terminology=" + terminology
                 + ", version=" + version);
 
