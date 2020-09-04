@@ -201,13 +201,13 @@ tsApp
             function(data) {  
                var msg = '';
                for (var i = 0; i < data.totalCount; i++) {
-                 msg += data.strings[i];
+                 msg += '\u2022 ' + data.strings[i];
                  msg += '\n';
                }
                projectService.fireProjectChanged($scope.project);
                $scope.getProjects();
                if (data.totalCount > 0) {
-                 $window.alert('The following refsets have inactive concepts:\n' + msg);
+                 $window.alert('The following refsets have inactive concepts:\n\n'+ msg);
                } else {
                  $window.alert('None of the refsets have inactive concepts.  No further action is required.');
                }
@@ -222,7 +222,7 @@ tsApp
           if ($scope.projects.role != 'ADMIN' && $scope.projects.role != 'LEAD') {
             return false;
           }
-          $scope.inactiveDate  = utilService.toDate($scope.project.inactiveLastModified);
+          $scope.inactiveDate  = utilService.toLocalDate($scope.project.inactiveLastModified);
           return ($scope.project.terminologyHandlerKey == 'MANAGED-SERVICE');           
         }
 
@@ -245,7 +245,10 @@ tsApp
           if (!$scope.project) {
             return false;
           }
-          $scope.refreshDescriptionsDate  = utilService.toDate($scope.project.refeshDescriptionsLastModified);
+          if ($scope.projects.role != 'ADMIN' && $scope.projects.role != 'LEAD') {
+            return false;
+          }          
+          $scope.refreshDescriptionsDate  = utilService.toLocalDate($scope.project.refeshDescriptionsLastModified);
           return ($scope.project.terminologyHandlerKey == 'MANAGED-SERVICE' && !$scope.refreshDescriptionsInProgress);        
         }        
         

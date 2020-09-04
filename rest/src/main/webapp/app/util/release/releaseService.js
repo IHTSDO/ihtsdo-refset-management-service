@@ -272,7 +272,7 @@ tsApp.service('releaseService', [
 
       gpService.increment();
       $http.get(
-        releaseUrl + 'refset/begin?refsetId=' + refsetId + '&effectiveTime=' + effectiveTime).then(
+        releaseUrl + 'refset/begin?refsetId=' + refsetId + '&effectiveTime=' + effectiveTime + '&background=true').then(
       // success
       function(response) {
         console.debug('  release info = ', response.data);

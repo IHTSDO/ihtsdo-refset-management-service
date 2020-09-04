@@ -1,0 +1,133 @@
+<div class="modal-header">
+  <h4 style="display: inline">Bulk Migration</h4>
+</div>
+<div class="modal-body">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-2 col-xs-2">New Terminology:</div>
+      <div class="col-md-8 col-xs-8">
+        <select ng-model="newTerminology"
+          ng-change="terminologySelected(newTerminology)"
+          ng-options="item.terminology as item.name for item in metadata.terminologies"></select>
+      </div>
+    </div>
+    <div class="row">&nbsp;</div>    
+    <div class="row">
+      <span ng-show="project.terminologyHandlerKey === 'PUBLIC-BROWSER' || project.terminologyHandlerKey === 'AUTHORING-INTL'">
+      <div class="col-md-2 col-xs-2">New Version:</div>
+      <div class="col-md-8 col-xs-8">
+          <select ng-model="newVersion"
+            ng-options="item.path as item.key for item in versions | orderBy:'-key'"></select>
+        <span ng-show="ioHandlers.length == 1">{{ioHandlers[0].name}}</span>
+      </div>
+      </span>
+    </div>
+    <div class="row">&nbsp;</div>
+    <div class="row">
+      <div class="col-md-2 col-xs-2">Terminology Path:</div>
+      <div class="col-md-8 col-xs-8">
+        <span>
+            <input style="width: 252px" ng-model="newVersion" list="versions"
+              placeholder="e.g. MAIN" ng-change="resetValidVersion();" />
+            <button class="btn btn-xs btn-warning" ng-show="newVersion"
+              ng-click="newVersion=''">Clear</button>
+            <button class="btn btn-xs btn-primary"
+              ng-show="newVersion && versionNotInPicklist()"
+              ng-click="testTerminologyVersion();">Test</button>
+            &nbsp;&nbsp;
+            <span flag-icon obj="refset"></span>
+        </span>
+      </div>
+    </div>
+    <div class="row">&nbsp;</div>
+    <div class="row">
+      <div class="col-md-2 col-xs-2">Select by:</div>
+      <div class="col-md-8 col-xs-8">
+        <span>
+          <select ng-model="selectedStatus" ng-change="selectRefsets()"
+            ng-options="status as status for status in statusList">
+          </select>
+        </span>
+      </div>      
+    </div>    
+    <div class="row">&nbsp;</div>
+    <div class="row">
+      <table class="table">
+        <thead class="table-select-row">
+          <tr>
+            <th class="text-right"><input type="checkbox"
+              ng-click="toggleSelectAll(); setButtonDisableValues()" title="Select/Deselect All Refsets"
+              ng-checked="isAllSelected()" value="{{allSelected}}"></th>
+            <th>Refset Id</th>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Current Terminology / Version</th>
+            <th>Migration Status</th>
+          </tr>
+        </thead>
+        <tbody class="table-select-row">
+          <tr ng-repeat="refset in refsets">
+            <td class="text-right">
+              <input type="checkbox"
+                ng-click="toggleSelection(refset); setButtonDisableValues()"
+                ng-disabled="refset.type !== 'EXTENSIONAL'"
+                title="Select/Deselect Refset"
+                ng-checked="isRowSelected(refset)"
+                value="{{selectedRefsets[refset.id]}}">
+            </td>
+            <td>
+              {{refset.terminologyId}}
+            </td>
+            <td>{{refset.name}}</td>
+            <td>
+              <span refset-type-icon refset="refset"></span>
+            </td>            
+            <td>{{refset.terminology}} {{refset.version}}</td>            
+            <td>
+              <span class="alert alert-danger" ng-show="refsetStatus(refset) === 'NON-EXTENSIONAL'">Can only bulk-migrate Extensional refsets</span>
+              <span class="alert alert-danger" ng-show="refsetStatus(refset) == 'FAILED'">{{refsetStatus(refset)}}</span>
+              <span class="alert alert-warning" ng-show="refsetStatus(refset) == 'Inactive concepts detected'">{{refsetStatus(refset)}}</span>
+              <span class="alert alert-success" ng-show="refsetStatus(refset) == 'No changes required'">{{refsetStatus(refset)}} - eligible for bulk-finish</span>
+              <span ng-show="alertStatus(refset) == false">{{refsetStatus(refset)}}</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <!-- Errors and warnings-->
+  <span ng-show="warnings.length > 0">
+    <td>&nbsp;</td>
+    <td>
+      <div class="alert alert-warning" ng-repeat="warning in warnings">
+        {{warning}}</div>
+    </td>
+  </span>
+  <span ng-show="errors.length > 0">
+    <td>&nbsp;</td>
+    <td>
+      <div class="alert alert-danger alert-error" ng-repeat="error in errors">
+        {{error}}</div>
+    </td>
+  </span>
+  <span ng-show="validVersion == 'false'">
+    <td>&nbsp;</td>
+    <td>
+      <div class="alert alert-danger alert-error">
+        Invalid version entered.</div>
+    </td>
+  </span>  
+</div>
+<div class="modal-footer">
+  <button class="btn btn-xs btn-primary" ng-disabled="migrateDisabled"
+    ng-click="beginMigrations(newTerminology, newVersion)">Migrate</button>
+  <button class="btn btn-xs btn-primary" ng-disabled="checkMigrationsDisabled"
+    ng-click="checkMigrations()"
+    title="Check if migration can be bulk finished">Check Migration</button>    
+  <button class="btn btn-xs btn-primary" ng-disabled="finishDisabled"
+    ng-click="finish()">Finish</button>
+  <button
+    confirm="Are you sure you want to cancel the migrations for all selected refsets?"
+    class="btn btn-xs btn-warning" ng-disabled="cancelDisabled" ng-click="cancel()">Cancel</button>
+  <button class="btn" ng-click="close()">Close</button>
+</div>

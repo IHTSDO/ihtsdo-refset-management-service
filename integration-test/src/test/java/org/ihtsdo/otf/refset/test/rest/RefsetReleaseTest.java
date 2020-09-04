@@ -274,7 +274,7 @@ public class RefsetReleaseTest extends RestSupport {
         project2, UUID.randomUUID().toString(), true, admin);
     // Begin release
     releaseService.beginRefsetRelease(refset1.getId(),
-        ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()),
+        ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()), false,
         adminAuthToken);
     refset1 = (RefsetJpa) refsetService.getRefset(refset1.getId(),
         admin.getAuthToken());
@@ -305,7 +305,7 @@ public class RefsetReleaseTest extends RestSupport {
         project2, UUID.randomUUID().toString(), true, admin);
     // Begin release
     releaseService.beginRefsetRelease(refset1.getId(),
-        ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()),
+        ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()), false,
         adminAuthToken);
     // Validate release
     releaseService.validateRefsetRelease(refset1.getId(), adminAuthToken);
@@ -331,7 +331,7 @@ public class RefsetReleaseTest extends RestSupport {
         project2, UUID.randomUUID().toString(), true, admin);
     // Begin release
     releaseService.beginRefsetRelease(refset1.getId(),
-        ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()),
+        ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()), false,
         adminAuthToken);
     // Validate release
     releaseService.validateRefsetRelease(refset1.getId(), adminAuthToken);
@@ -360,7 +360,7 @@ public class RefsetReleaseTest extends RestSupport {
         project2, UUID.randomUUID().toString(), true, admin);
     // Begin release
     releaseService.beginRefsetRelease(refset1.getId(),
-        ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()),
+        ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()), false,
         adminAuthToken);
     // Validate release
     releaseService.validateRefsetRelease(refset1.getId(), adminAuthToken);
@@ -389,7 +389,7 @@ public class RefsetReleaseTest extends RestSupport {
         project2, UUID.randomUUID().toString(), true, admin);
     // Begin release
     releaseService.beginRefsetRelease(refset1.getId(),
-        ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()),
+        ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()), false,
         adminAuthToken);
     // Validate release
     releaseService.validateRefsetRelease(refset1.getId(), adminAuthToken);
@@ -418,7 +418,7 @@ public class RefsetReleaseTest extends RestSupport {
     calendar.add(Calendar.MONDAY, 1);
     // Begin release
     releaseService.beginRefsetRelease(refset1.getId(),
-        ConfigUtility.DATE_FORMAT.format(calendar), adminAuthToken);
+        ConfigUtility.DATE_FORMAT.format(calendar), false, adminAuthToken);
     // Validate release
     releaseService.validateRefsetRelease(refset1.getId(), adminAuthToken);
     // Beta release
@@ -447,9 +447,13 @@ public class RefsetReleaseTest extends RestSupport {
         project, UUID.randomUUID().toString(), true, admin);
 
     // Create release
-    ReleaseInfo releaseInfo = releaseService.beginRefsetRelease(refset.getId(),
-        ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()),
+    releaseService.beginRefsetRelease(refset.getId(),
+        ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()), false,
         adminAuthToken);
+
+    // Get release info
+    ReleaseInfo releaseInfo = releaseService
+        .getCurrentRefsetReleaseInfo(refset.getId(), adminAuthToken);
 
     // Create and import initial release
     InputStream simpleRelArtRefset = new FileInputStream(new File(
@@ -527,15 +531,20 @@ public class RefsetReleaseTest extends RestSupport {
         project, UUID.randomUUID().toString(), true, admin);
 
     // Create two releases
-    ReleaseInfo releaseInfo1 =
-        releaseService.beginRefsetRelease(refset1.getId(),
-            ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()),
-            adminAuthToken);
+    releaseService.beginRefsetRelease(refset1.getId(),
+        ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()), false,
+        adminAuthToken);
 
-    ReleaseInfo releaseInfo2 =
-        releaseService.beginRefsetRelease(refset2.getId(),
-            ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()),
-            adminAuthToken);
+    releaseService.beginRefsetRelease(refset2.getId(),
+        ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()), false,
+        adminAuthToken);
+
+    // Get release infos
+    ReleaseInfo releaseInfo1 = releaseService
+        .getCurrentRefsetReleaseInfo(refset1.getId(), adminAuthToken);
+
+    ReleaseInfo releaseInfo2 = releaseService
+        .getCurrentRefsetReleaseInfo(refset2.getId(), adminAuthToken);
 
     // Create single artifact
     InputStream is = new FileInputStream(new File(
@@ -625,7 +634,7 @@ public class RefsetReleaseTest extends RestSupport {
 
     // Begin release
     releaseService.beginRefsetRelease(refset.getId(),
-        ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()),
+        ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()), false,
         adminAuthToken);
     releaseService.validateRefsetRelease(refset.getId(), adminAuthToken);
     // Beta release
@@ -760,7 +769,7 @@ public class RefsetReleaseTest extends RestSupport {
 
     // Begin release
     releaseService.beginRefsetRelease(refset.getId(),
-        ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()),
+        ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()), false,
         adminAuthToken);
 
     // Validate and run beta
@@ -821,7 +830,7 @@ public class RefsetReleaseTest extends RestSupport {
     ConceptRefsetMemberJpa member1 = (ConceptRefsetMemberJpa) refsetService
         .addRefsetMember(member, admin.getAuthToken());
     // Begin release
-    releaseService.beginRefsetRelease(refset1.getId(), "20160101",
+    releaseService.beginRefsetRelease(refset1.getId(), "20160101", false,
         adminAuthToken);
     // Validate release
     releaseService.validateRefsetRelease(refset1.getId(), adminAuthToken);
@@ -850,7 +859,7 @@ public class RefsetReleaseTest extends RestSupport {
     ConceptRefsetMemberJpa member2 = (ConceptRefsetMemberJpa) refsetService
         .addRefsetMember(member, admin.getAuthToken());
     // Begin release
-    releaseService.beginRefsetRelease(refset1.getId(), "20160102",
+    releaseService.beginRefsetRelease(refset1.getId(), "20160102", false,
         adminAuthToken);
     // Validate release
     releaseService.validateRefsetRelease(refset1.getId(), adminAuthToken);
@@ -891,7 +900,7 @@ public class RefsetReleaseTest extends RestSupport {
         admin.getAuthToken());
 
     // Begin release
-    releaseService.beginRefsetRelease(refset1.getId(), "20160103",
+    releaseService.beginRefsetRelease(refset1.getId(), "20160103", false,
         adminAuthToken);
     // Validate release
     releaseService.validateRefsetRelease(refset1.getId(), adminAuthToken);
@@ -933,7 +942,7 @@ public class RefsetReleaseTest extends RestSupport {
     refsetService.addRefsetMember(member, admin.getAuthToken());
 
     // Begin release
-    releaseService.beginRefsetRelease(refset1.getId(), "20160104",
+    releaseService.beginRefsetRelease(refset1.getId(), "20160104", false,
         adminAuthToken);
     // Validate release
     releaseService.validateRefsetRelease(refset1.getId(), adminAuthToken);
@@ -990,7 +999,7 @@ public class RefsetReleaseTest extends RestSupport {
     // 233711002 true
     //
     // Begin release
-    releaseService.beginRefsetRelease(refset1.getId(), "20160101",
+    releaseService.beginRefsetRelease(refset1.getId(), "20160101", false,
         adminAuthToken);
     // Validate release
     releaseService.validateRefsetRelease(refset1.getId(), adminAuthToken);
@@ -1019,7 +1028,7 @@ public class RefsetReleaseTest extends RestSupport {
     ConceptRefsetMemberJpa excl1 = (ConceptRefsetMemberJpa) refsetService
         .addRefsetExclusion(refset1.getId(), "10519008", false, adminAuthToken);
     // Begin release
-    releaseService.beginRefsetRelease(refset1.getId(), "20160102",
+    releaseService.beginRefsetRelease(refset1.getId(), "20160102", false,
         adminAuthToken);
     // Validate release
     releaseService.validateRefsetRelease(refset1.getId(), adminAuthToken);
@@ -1063,7 +1072,7 @@ public class RefsetReleaseTest extends RestSupport {
     ConceptRefsetMemberJpa incl1 = (ConceptRefsetMemberJpa) refsetService
         .addRefsetInclusion(member, false, adminAuthToken);
     // Begin release
-    releaseService.beginRefsetRelease(refset1.getId(), "20160103",
+    releaseService.beginRefsetRelease(refset1.getId(), "20160103", false,
         adminAuthToken);
     // Validate release
     releaseService.validateRefsetRelease(refset1.getId(), adminAuthToken);
@@ -1099,7 +1108,7 @@ public class RefsetReleaseTest extends RestSupport {
         (RefsetJpa) refsetService.getRefset(refset1.getId(), adminAuthToken);
     refsetService.removeRefsetMember(incl1.getId(), adminAuthToken);
     // Begin release
-    releaseService.beginRefsetRelease(refset1.getId(), "20160104",
+    releaseService.beginRefsetRelease(refset1.getId(), "20160104", false,
         adminAuthToken);
     // Validate release
     releaseService.validateRefsetRelease(refset1.getId(), adminAuthToken);
@@ -1140,7 +1149,7 @@ public class RefsetReleaseTest extends RestSupport {
     refset1.getDefinitionClauses().add(clause);
     refsetService.updateRefset(refset1, adminAuthToken);
     // Begin release
-    releaseService.beginRefsetRelease(refset1.getId(), "20160105",
+    releaseService.beginRefsetRelease(refset1.getId(), "20160105", false,
         adminAuthToken);
     // Validate release
     releaseService.validateRefsetRelease(refset1.getId(), adminAuthToken);

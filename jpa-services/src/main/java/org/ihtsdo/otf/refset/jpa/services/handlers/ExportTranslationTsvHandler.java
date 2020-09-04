@@ -96,6 +96,11 @@ public class ExportTranslationTsvHandler implements ExportTranslationHandler {
     descSb.append("Type").append("\t");
     descSb.append("Language reference set").append("\t");
     descSb.append("Acceptability").append("\t");
+    // these last columns will not be used, but are required on the template
+    descSb.append("Language reference set").append("\t");
+    descSb.append("Acceptability").append("\t");
+    descSb.append("Language reference set").append("\t");
+    descSb.append("Acceptability").append("\t");
     descSb.append("\r\n");
 
     for (final Concept concept : concepts) {

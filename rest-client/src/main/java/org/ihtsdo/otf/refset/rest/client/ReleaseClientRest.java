@@ -551,7 +551,7 @@ public class ReleaseClientRest extends RootClientRest
   }
 
   @Override
-  public void beginRefsetRelease(Long refsetId, String effectiveTime,
+  public void beginRefsetRelease(Long refsetId, String effectiveTime, Boolean background,
     String authToken) throws Exception {
     Logger.getLogger(getClass()).debug("Release Client - begin refset release");
     validateNotEmpty(refsetId, "refsetId");
@@ -563,7 +563,7 @@ public class ReleaseClientRest extends RootClientRest
 
     WebTarget target = client.target(
         config.getProperty("base.url") + "/release/refset/begin" + "?refsetId="
-            + refsetId + "&effectiveTime=" + encodedEffectiveTime);
+            + refsetId + "&effectiveTime=" + encodedEffectiveTime  + (background != null ? "&background=" + background : ""));
 
     Response response = target.request(MediaType.APPLICATION_XML)
         .header("Authorization", authToken).get();

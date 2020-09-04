@@ -2009,6 +2009,10 @@ public class PatchDataMojo extends AbstractRttMojo {
         .getObjects()) {
       Translation translation =
           translationService.getTranslation(trans.getId());
+      
+      if (translation.getWorkflowStatus() == WorkflowStatus.PUBLISHED) {
+        continue;
+      }
 
       getLog().info("translation " + translation.getName() + " " + translation.getLanguage());
       translationService.setTransactionPerOperation(false);
