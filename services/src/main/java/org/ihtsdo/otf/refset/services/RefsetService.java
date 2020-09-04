@@ -3,11 +3,13 @@
  */
 package org.ihtsdo.otf.refset.services;
 
+import java.io.InputStream;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
 import org.ihtsdo.otf.refset.ConceptRefsetMemberSynonym;
+import org.ihtsdo.otf.refset.MemberDiffReport;
 import org.ihtsdo.otf.refset.Note;
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
@@ -201,6 +203,62 @@ public interface RefsetService extends ReleaseService {
   public IoHandlerInfoList getExportRefsetHandlerInfo() throws Exception;
 
   /**
+   * Gets the members in common.
+   *
+   * @param reportToken the report token
+   * @return the members in common
+   * @throws Exception the exception
+   */
+  public List<ConceptRefsetMember> getMembersInCommon(String reportToken)
+    throws Exception;
+
+  /**
+   * Put members in common.
+   *
+   * @param reportToken the report token
+   * @param membersInCommon the members in common
+   * @throws Exception the exception
+   */
+  public void putMembersInCommon(String reportToken,
+    List<ConceptRefsetMember> membersInCommon) throws Exception;
+
+  /**
+   * Removes the members in common.
+   *
+   * @param reportToken the report token
+   * @throws Exception the exception
+   */
+  public void removeMembersInCommon(String reportToken) throws Exception;
+
+  /**
+   * Gets the member diff report.
+   *
+   * @param reportToken the report token
+   * @return the members diff report
+   * @throws Exception the exception
+   */
+  public MemberDiffReport getMemberDiffReport(String reportToken)
+    throws Exception;
+
+  /**
+   * Put member diff report.
+   *
+   * @param reportToken the report token
+   * @param membersDiffReport the members diff report
+   * @throws Exception the exception
+   */
+  public void putMemberDiffReport(String reportToken,
+    MemberDiffReport membersDiffReport) throws Exception;
+
+  /**
+   * Removes the member diff report.
+   *
+   * @param reportToken the report token
+   * @throws Exception the exception
+   */
+  public void removeMemberDiffReport(String reportToken) throws Exception;
+
+  /**
    * Adds the staged change.
    *
    * @param change the change
@@ -329,6 +387,64 @@ public interface RefsetService extends ReleaseService {
    * @param member the member
    */
   public void handleLazyInit(ConceptRefsetMember member);
+
+  /**
+   * Begin migration.
+   *
+   * @param refsetId the refset id
+   * @param newTerminology the new terminology
+   * @param newVersion the new version
+   * @param userName the user name
+   * @param lookupNamesInBackground the lookup names in background
+   * @return the refset
+   * @throws Exception the exception
+   */
+  public Refset beginMigration(Long refsetId, String newTerminology,
+    String newVersion, String userName, Boolean lookupNamesInBackground)
+    throws Exception;
+
+  /**
+   * Finish migration.
+   *
+   * @param refsetId the refset id
+   * @param userName the user name
+   * @param lookupNamesInBackground the lookup names in background
+   * @return the refset
+   * @throws Exception the exception
+   */
+  public Refset finishMigration(Long refsetId, String userName,
+    Boolean lookupNamesInBackground) throws Exception;
+
+  /**
+   * Cancel migration.
+   *
+   * @param refsetId the refset id
+   * @param userName the user name
+   * @param lookupNamesInBackground the lookup names in background
+   * @throws Exception the exception
+   */
+  public void cancelMigration(Long refsetId, String userName,
+    Boolean lookupNamesInBackground) throws Exception;
+
+  /**
+   * Compare refsets.
+   *
+   * @param refset1 the refset 1
+   * @param refset2 the refset 2
+   * @return the string
+   * @throws Exception the exception
+   */
+  public String compareRefsets(Refset refset1, Refset refset2) throws Exception;
+
+  /**
+   * Gets the old not new for migration.
+   *
+   * @param refset the refset
+   * @param refsetCopy the refset copy
+   * @return the old not new for migration
+   */
+  public List<ConceptRefsetMember> getOldNotNewForMigration(Refset refset,
+    Refset refsetCopy);
 
   /**
    * Launches thread to populate DB with name and active-status of refset
@@ -513,6 +629,21 @@ public interface RefsetService extends ReleaseService {
    */
   public String getDisplayNameForMember(Long memberId, String language,
     Boolean fsn) throws Exception;
+
+  /**
+   * Creates the diff report.
+   *
+   * @param reportToken the report token
+   * @param migrationTerminology the migration terminology
+   * @param migrationVersion the migration version
+   * @param action the action
+   * @param reportFileName the report file name
+   * @return the input stream
+   * @throws Exception the exception
+   */
+  public InputStream createDiffReport(String reportToken,
+    String migrationTerminology, String migrationVersion, String action,
+    String reportFileName) throws Exception;
 
   /**
    * Returns the migration file names.

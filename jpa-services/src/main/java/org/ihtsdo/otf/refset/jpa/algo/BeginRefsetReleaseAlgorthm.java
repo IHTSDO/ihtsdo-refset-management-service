@@ -150,7 +150,6 @@ public class BeginRefsetReleaseAlgorthm extends RefsetServiceJpa
         logAndCommit(++count, RootService.logCt, RootService.commitCt);
       }
 
-      refset.setLookupRequired(true);
       updateRefset(refset);
 
       commitClearBegin();

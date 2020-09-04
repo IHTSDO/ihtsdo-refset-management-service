@@ -385,7 +385,7 @@ tsApp
                   $scope.actionStatus = 'All';
                 }
 
-                if (!['LEAD','ADMIN'].includes(projects.role)) {
+                if (!['LEAD','ADMIN'].includes($scope.projects.role)) {
                   pfs.queryRestriction = $scope.paging['assigned'].filter;
                   workflowService.findAssignedConcepts($scope.projects.role, $scope.project.id,
                     translation.id, $scope.user.userName, $scope.actionStatus, pfs).then(
@@ -720,7 +720,7 @@ tsApp
                   queryRestriction : $scope.paging['assigned'].filter
                 };
                 
-                if (!['LEAD','ADMIN'].includes(projects.role)) {
+                if (!['LEAD','ADMIN'].includes($scope.projects.role)) {
                   workflowService.findAssignedConcepts($scope.projects.role, $scope.project.id,
                     $scope.selected.translation.id, userName, $scope.actionStatus, pfs).then(
                     // Success
@@ -2007,20 +2007,31 @@ tsApp
                 $scope.ioHandlers = ioHandlers;
                 $scope.selectedIoHandler = null;
                 $scope.project = project;
-                // TSV export only available for MANAGED-SERVICE projects
-                if ($scope.project.terminologyHandlerKey != 'MANAGED-SERVICE') {
-                  $scope.ioHandlers = ioHandlers.filter(function(value, index, arr) { return value.id != 'TSV'; });
-                }
-                for (var i = 0; i < ioHandlers.length; i++) {
-                  // Choose first one if only one
-                  if ($scope.selectedIoHandler == null) {
-                    $scope.selectedIoHandler = ioHandlers[i];
-                  }
-                  // choose "rf2" as default otherwise
-                  if (ioHandlers[i].name.endsWith("RF2")) {
-                    $scope.selectedIoHandler = ioHandlers[i];
-                  }
-                }
+                
+                
+                projectService.getProject($scope.translation.projectId).then(
+                    // Success
+                    function(data) {
+                      // TSV export only available for MANAGED-SERVICE projects
+                      if (data.terminologyHandlerKey != 'MANAGED-SERVICE') {
+                        $scope.ioHandlers = ioHandlers.filter(function(value, index, arr) { return value.id != 'TSV'; });
+                      }
+                      for (var i = 0; i < ioHandlers.length; i++) {
+                        // Choose first one if only one
+                        if ($scope.selectedIoHandler == null) {
+                          $scope.selectedIoHandler = ioHandlers[i];
+                        }
+                        // choose "rf2" as default otherwise
+                        if (ioHandlers[i].name.endsWith("RF2")) {
+                          $scope.selectedIoHandler = ioHandlers[i];
+                        }
+                      }
+                    },
+                    // Error
+                    function(data) {
+                      handleError($scope.errors, data);
+                    });
+                             
                 $scope.type = type;
                 $scope.operation = operation;
                 $scope.errors = [];

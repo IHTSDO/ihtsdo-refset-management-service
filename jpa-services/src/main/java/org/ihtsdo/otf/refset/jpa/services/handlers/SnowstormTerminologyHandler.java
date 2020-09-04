@@ -55,6 +55,7 @@ import org.ihtsdo.otf.refset.services.handlers.TerminologyHandler;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.net.InternetDomainName;
 
 /**
@@ -430,7 +431,8 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     // JsonNode entry = null;
     JsonNode associationTargets = doc.findValue("associationTargets");
 
-    if (associationTargets == null || associationTargets.fields() == null) {
+    if (associationTargets == null || associationTargets.size() == 0
+        || associationTargets.fields() == null) {
       return new ConceptListJpa();
     }
     Entry<String, JsonNode> entry = associationTargets.fields().next();
@@ -593,6 +595,11 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
       } else {
         concept.setName(UNABLE_TO_DETERMINE_NAME);
 
+        Logger.getLogger(getClass()).error(
+            "[ALERT=ALL]: message=pt node is null or missing term subnode, concept="
+                + concept.getTerminologyId() + ", terminology=" + terminology
+                + ", version=" + version);
+
         lookupErrors.append("  URI: ").append(targetUri).append("\r\n");
         lookupErrors.append("  CONCEPT ID: ").append(concept.getTerminologyId())
             .append("\r\n");
@@ -668,6 +675,11 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
           concept.setName(conceptNode.get("pt").get("term").asText());
         } else {
           concept.setName(UNABLE_TO_DETERMINE_NAME);
+
+          Logger.getLogger(getClass()).error(
+              "[ALERT=ALL]: message=pt node is null or missing term subnode, concept="
+                  + concept.getTerminologyId() + ", terminology=" + terminology
+                  + ", version=" + version);
 
           lookupErrors.append("  URI: ").append(targetUri).append("\r\n");
           lookupErrors.append("  CONCEPT ID: ")
@@ -851,6 +863,11 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     } else {
       concept.setName(UNABLE_TO_DETERMINE_NAME);
 
+      Logger.getLogger(getClass()).error(
+          "[ALERT=ALL]: message=fsn node is null or missing term subnode, concept="
+              + concept.getTerminologyId() + ", terminology=" + terminology
+              + ", version=" + version);
+
       lookupErrors.append("  URI: ").append(targetUri).append("\r\n");
       lookupErrors.append("  CONCEPT ID: ").append(concept.getTerminologyId())
           .append("\r\n");
@@ -895,32 +912,47 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
         // description.setTypeId("900000000000013009");
         // }
         if (description.isActive()) {
-          for (final JsonNode language : desc.findValues("acceptabilityMap")) {
+          final JsonNode languages = desc.findValues("acceptabilityMap").get(0);
 
-            final LanguageRefsetMember member = new LanguageRefsetMemberJpa();
-            member.setActive(true);
-            member.setDescriptionId(terminologyId);
+          if (!(languages.toString().isEmpty()
+              || languages.toString().equals("{}"))) {
 
-            if (language != null && language.fieldNames().hasNext()) {
-              String key = language.fieldNames().next();
-              member.setRefsetId(key);
-              member.setAcceptabilityId(language.get(key).asText());
-              if (member.getAcceptabilityId().equals("PREFERRED")) {
+            ObjectNode language = (ObjectNode) languages;
+            Iterator<Map.Entry<String, JsonNode>> iter = language.fields();
+
+            while (iter.hasNext()) {
+              Map.Entry<String, JsonNode> entry = iter.next();
+              final String languageRefsetId = entry.getKey();
+              final String acceptibilityString = entry.getValue().asText();
+
+              final LanguageRefsetMember member = new LanguageRefsetMemberJpa();
+              member.setActive(true);
+              member.setDescriptionId(concept.getTerminologyId());
+
+              member.setRefsetId(languageRefsetId);
+              if (acceptibilityString.equals("PREFERRED")) {
                 member.setAcceptabilityId("900000000000548007");
-              } else if (member.getAcceptabilityId().equals("ACCEPTABLE")) {
+              } else if (acceptibilityString.equals("ACCEPTABLE")) {
                 member.setAcceptabilityId("900000000000549004");
               }
               description.getLanguageRefsetMembers().add(member);
-            } else {
-              lookupErrors.append("  URI: ").append(targetUri).append("\r\n");
-              lookupErrors.append("  CONCEPT ID: ")
-                  .append(concept.getTerminologyId()).append("\r\n");
-              lookupErrors.append("  DESCRIPTION ID: ")
-                  .append(description.getTerminologyId()).append("\r\n");
-              lookupErrors.append("  ERROR: ")
-                  .append("\"acceptabilityMap\" node is null or empty")
-                  .append("\r\n\r\n");
             }
+          } else {
+
+            Logger.getLogger(getClass()).error(
+                "[ALERT=ALL]: message=acceptabilityMap node is null or empty, concept="
+                    + concept.getTerminologyId() + ", description="
+                    + description.getTerminologyId() + ", terminology="
+                    + terminology + ", version=" + version);
+
+            lookupErrors.append("  URI: ").append(targetUri).append("\r\n");
+            lookupErrors.append("  CONCEPT ID: ")
+                .append(concept.getTerminologyId()).append("\r\n");
+            lookupErrors.append("  DESCRIPTION ID: ")
+                .append(description.getTerminologyId()).append("\r\n");
+            lookupErrors.append("  ERROR: ")
+                .append("\"acceptabilityMap\" node is null or empty")
+                .append("\r\n\r\n");
           }
         }
 
@@ -1053,7 +1085,8 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     String expr = query.toString();
 
     String targetUri = url + "/" + version + "/concepts?conceptIds="
-        + URLEncoder.encode(expr, "UTF-8").replaceAll(" ", "%20") + "&activeFilter=false&limit="
+        + URLEncoder.encode(expr, "UTF-8").replaceAll(" ", "%20")
+        + "&activeFilter=false&limit="
         + Math.min(initialMaxLimit, localPfs.getMaxResults());
 
     WebTarget target = client.target(targetUri);
@@ -1110,8 +1143,8 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
       }
       concept.setLastModifiedBy(terminology);
       concept.setModuleId(conceptNode.get("moduleId").asText());
-      concept.setDefinitionStatusId(
-          conceptNode.get("definitionStatus").asText());
+      concept
+          .setDefinitionStatusId(conceptNode.get("definitionStatus").asText());
 
       // pt.term is the name
       if (conceptNode.get("pt") != null
@@ -1120,9 +1153,14 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
       } else {
         concept.setName(UNABLE_TO_DETERMINE_NAME);
 
+        Logger.getLogger(getClass()).error(
+            "[ALERT=ALL]: message=pt node is null or missing term subnode, concept="
+                + concept.getTerminologyId() + ", terminology=" + terminology
+                + ", version=" + version);
+
         lookupErrors.append("  URI: ").append(targetUri).append("\r\n");
-        lookupErrors.append("  CONCEPT ID: ")
-            .append(concept.getTerminologyId()).append("\r\n");
+        lookupErrors.append("  CONCEPT ID: ").append(concept.getTerminologyId())
+            .append("\r\n");
         lookupErrors.append("  ERROR: ")
             .append("\"pt\" node is null or missing \"term\" subnode")
             .append("\r\n\r\n");
@@ -1139,8 +1177,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     conceptList.setTotalCount(total);
     return conceptList;
   }
-  
-  
+
   /* see superclass */
   @Override
   public ConceptList getConcepts(List<String> terminologyIds,
@@ -1375,6 +1412,11 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
         } else {
           concept.setName(UNABLE_TO_DETERMINE_NAME);
 
+          Logger.getLogger(getClass()).error(
+              "[ALERT=ALL]: message=pt node is null or missing term subnode, concept="
+                  + concept.getTerminologyId() + ", terminology=" + terminology
+                  + ", version=" + version);
+
           lookupErrors.append("  URI: ").append(targetUri).append("\r\n");
           lookupErrors.append("  CONCEPT ID: ")
               .append(concept.getTerminologyId()).append("\r\n");
@@ -1416,39 +1458,54 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
             description.setTypeId(desc.get("typeId").asText());
 
             if (description.isActive()) {
-              for (final JsonNode language : desc
-                  .findValues("acceptabilityMap")) {
+              final JsonNode languages =
+                  desc.findValues("acceptabilityMap").get(0);
 
-                final LanguageRefsetMember member =
-                    new LanguageRefsetMemberJpa();
-                member.setActive(true);
-                member.setDescriptionId(concept.getTerminologyId());
+              if (!(languages.toString().isEmpty()
+                  || languages.toString().equals("{}"))) {
 
-                if (language != null && language.fieldNames().hasNext()) {
-                  String key = language.fieldNames().next();
-                  member.setRefsetId(key);
-                  member.setAcceptabilityId(language.get(key).asText());
-                  if (member.getAcceptabilityId().equals("PREFERRED")) {
+                ObjectNode language = (ObjectNode) languages;
+                Iterator<Map.Entry<String, JsonNode>> iter = language.fields();
+
+                while (iter.hasNext()) {
+                  Map.Entry<String, JsonNode> entry = iter.next();
+                  final String languageRefsetId = entry.getKey();
+                  final String acceptibilityString = entry.getValue().asText();
+
+                  final LanguageRefsetMember member =
+                      new LanguageRefsetMemberJpa();
+                  member.setActive(true);
+                  member.setDescriptionId(concept.getTerminologyId());
+
+                  member.setRefsetId(languageRefsetId);
+                  if (acceptibilityString.equals("PREFERRED")) {
                     member.setAcceptabilityId("900000000000548007");
-                  } else if (member.getAcceptabilityId().equals("ACCEPTABLE")) {
+                  } else if (acceptibilityString.equals("ACCEPTABLE")) {
                     member.setAcceptabilityId("900000000000549004");
                   }
                   description.getLanguageRefsetMembers().add(member);
-                } else {
-                  lookupErrors.append("  URI: ").append(targetUri)
-                      .append("\r\n");
-                  lookupErrors.append("  CONCEPT ID: ")
-                      .append(concept.getTerminologyId()).append("\r\n");
-                  lookupErrors.append("  DESCRIPTION ID: ")
-                      .append(description.getTerminologyId()).append("\r\n");
-                  lookupErrors.append("  ERROR: ")
-                      .append("\"acceptabilityMap\" node is null or empty")
-                      .append("\r\n\r\n");
                 }
+              } else {
+
+                Logger.getLogger(getClass()).error(
+                    "[ALERT=ALL]: message=acceptabilityMap node is null or empty, concept="
+                        + concept.getTerminologyId() + ", description="
+                        + description.getTerminologyId() + ", terminology="
+                        + terminology + ", version=" + version);
+
+                lookupErrors.append("  URI: ").append(targetUri).append("\r\n");
+                lookupErrors.append("  CONCEPT ID: ")
+                    .append(concept.getTerminologyId()).append("\r\n");
+                lookupErrors.append("  DESCRIPTION ID: ")
+                    .append(description.getTerminologyId()).append("\r\n");
+                lookupErrors.append("  ERROR: ")
+                    .append("\"acceptabilityMap\" node is null or empty")
+                    .append("\r\n\r\n");
               }
             }
 
             concept.getDescriptions().add(description);
+
           }
         }
 
@@ -1580,6 +1637,11 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
           } else {
             concept.setName(UNABLE_TO_DETERMINE_NAME);
 
+            Logger.getLogger(getClass()).error(
+                "[ALERT=ALL]: message=pt node is null or missing term subnode, concept="
+                    + concept.getTerminologyId() + ", terminology="
+                    + terminology + ", version=" + version);
+
             lookupErrors.append("  URI: ").append(targetUri).append("\r\n");
             lookupErrors.append("  CONCEPT ID: ")
                 .append(concept.getTerminologyId()).append("\r\n");
@@ -1622,36 +1684,52 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
               description.setTypeId(desc.get("typeId").asText());
 
               if (description.isActive()) {
-                for (final JsonNode language : desc
-                    .findValues("acceptabilityMap")) {
+                final JsonNode languages =
+                    desc.findValues("acceptabilityMap").get(0);
 
-                  final LanguageRefsetMember member =
-                      new LanguageRefsetMemberJpa();
-                  member.setActive(true);
-                  member.setDescriptionId(concept.getTerminologyId());
+                if (!(languages.toString().isEmpty()
+                    || languages.toString().equals("{}"))) {
 
-                  if (language != null && language.fieldNames().hasNext()) {
-                    String key = language.fieldNames().next();
-                    member.setRefsetId(key);
-                    member.setAcceptabilityId(language.get(key).asText());
-                    if (member.getAcceptabilityId().equals("PREFERRED")) {
+                  ObjectNode language = (ObjectNode) languages;
+                  Iterator<Map.Entry<String, JsonNode>> iter =
+                      language.fields();
+
+                  while (iter.hasNext()) {
+                    Map.Entry<String, JsonNode> entry = iter.next();
+                    final String languageRefsetId = entry.getKey();
+                    final String acceptibilityString =
+                        entry.getValue().asText();
+
+                    final LanguageRefsetMember member =
+                        new LanguageRefsetMemberJpa();
+                    member.setActive(true);
+                    member.setDescriptionId(concept.getTerminologyId());
+
+                    member.setRefsetId(languageRefsetId);
+                    if (acceptibilityString.equals("PREFERRED")) {
                       member.setAcceptabilityId("900000000000548007");
-                    } else if (member.getAcceptabilityId()
-                        .equals("ACCEPTABLE")) {
+                    } else if (acceptibilityString.equals("ACCEPTABLE")) {
                       member.setAcceptabilityId("900000000000549004");
                     }
                     description.getLanguageRefsetMembers().add(member);
-                  } else {
-                    lookupErrors.append("  URI: ").append(targetUri)
-                        .append("\r\n");
-                    lookupErrors.append("  CONCEPT ID: ")
-                        .append(concept.getTerminologyId()).append("\r\n");
-                    lookupErrors.append("  DESCRIPTION ID: ")
-                        .append(description.getTerminologyId()).append("\r\n");
-                    lookupErrors.append("  ERROR: ")
-                        .append("\"acceptabilityMap\" node is null or empty")
-                        .append("\r\n\r\n");
                   }
+                } else {
+
+                  Logger.getLogger(getClass()).error(
+                      "[ALERT=ALL]: message=acceptabilityMap node is null or empty, concept="
+                          + concept.getTerminologyId() + ", description="
+                          + description.getTerminologyId() + ", terminology="
+                          + terminology + ", version=" + version);
+
+                  lookupErrors.append("  URI: ").append(targetUri)
+                      .append("\r\n");
+                  lookupErrors.append("  CONCEPT ID: ")
+                      .append(concept.getTerminologyId()).append("\r\n");
+                  lookupErrors.append("  DESCRIPTION ID: ")
+                      .append(description.getTerminologyId()).append("\r\n");
+                  lookupErrors.append("  ERROR: ")
+                      .append("\"acceptabilityMap\" node is null or empty")
+                      .append("\r\n\r\n");
                 }
               }
 
@@ -1814,6 +1892,11 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
         } else {
           concept.setName(UNABLE_TO_DETERMINE_NAME);
 
+          Logger.getLogger(getClass()).error(
+              "[ALERT=ALL]: message=pt node is null or missing term subnode, concept="
+                  + concept.getTerminologyId() + ", terminology=" + terminology
+                  + ", version=" + version);
+
           lookupErrors.append("  URI: ").append(targetUri).append("\r\n");
           lookupErrors.append("  CONCEPT ID: ")
               .append(concept.getTerminologyId()).append("\r\n");
@@ -1936,6 +2019,11 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
         } else {
           desc.setTerm(UNABLE_TO_DETERMINE_NAME);
 
+          Logger.getLogger(getClass()).error(
+              "[ALERT=ALL]: message=pt node is null or missing term subnode, concept="
+                  + conceptId + ", terminology=" + terminology + ", version="
+                  + version);
+
           lookupErrors.append("  URI: ").append(targetUri).append("\r\n");
           lookupErrors.append("  CONCEPT ID: ").append(conceptId)
               .append("\r\n");
@@ -1970,6 +2058,11 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
               concept.setName(fsn.get("term").asText());
             } else {
               concept.setName(UNABLE_TO_DETERMINE_NAME);
+
+              Logger.getLogger(getClass()).error(
+                  "[ALERT=ALL]: message=fsn node is null or missing term subnode, concept="
+                      + concept.getTerminologyId() + ", terminology="
+                      + terminology + ", version=" + version);
 
               lookupErrors.append("  URI: ").append(targetUri).append("\r\n");
               lookupErrors.append("  CONCEPT ID: ")
@@ -2018,6 +2111,11 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
         concept.setName(doc.get("pt").get("term").asText());
       } else {
         concept.setName(UNABLE_TO_DETERMINE_NAME);
+
+        Logger.getLogger(getClass()).error(
+            "[ALERT=ALL]: message=pt node is null or missing term subnode, concept="
+                + concept.getTerminologyId() + ", terminology=" + terminology
+                + ", version=" + version);
 
         lookupErrors.append("  URI: ").append(targetUri).append("\r\n");
         lookupErrors.append("  CONCEPT ID: ").append(concept.getTerminologyId())
@@ -2517,7 +2615,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     }
 
     KeyValuePairList requiredLanguageRefsetIdMap = new KeyValuePairList();
-    
+
     final ObjectMapper mapper = new ObjectMapper();
     final JsonNode doc = mapper.readTree(resultString);
 
@@ -2528,16 +2626,16 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
       allRefsetIds = allRefsetIds.replaceAll("\"", "");
       allRefsetIds = allRefsetIds.replace("[", "");
       allRefsetIds = allRefsetIds.replace("]", "");
-      refsetIds = allRefsetIds.split(","); 
+      refsetIds = allRefsetIds.split(",");
     } else {
       refsetIds = new String[] {};
     }
-     
-    KeyValuePair pair = new KeyValuePair();     
+
+    KeyValuePair pair = new KeyValuePair();
     pair.setKey("900000000000509007");
     pair.setValue("United States of America English");
     requiredLanguageRefsetIdMap.addKeyValuePair(pair);
-    
+
     // add each of the non US-PT languageRefsetIds to the return list
     for (String refsetId : refsetIds) {
       if (refsetId.contentEquals("900000000000509007")) {
@@ -2545,35 +2643,38 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
       }
       pair = new KeyValuePair();
       pair.setKey(refsetId);
-      // look up refset concept to get the official refset description 
-      Concept languageRefsetConcept = getFullConcept(refsetId, terminology, version);
+      // look up refset concept to get the official refset description
+      Concept languageRefsetConcept =
+          getFullConcept(refsetId, terminology, version);
       for (Description desc : languageRefsetConcept.getDescriptions()) {
         // get language refset description but strip out the repetitive part
         if (desc.getTerm().endsWith("language reference set")) {
-          pair.setValue(desc.getTerm().substring(0, desc.getTerm().indexOf(" language reference set")));
+          pair.setValue(desc.getTerm().substring(0,
+              desc.getTerm().indexOf(" language reference set")));
         }
         if (desc.getTerm().endsWith("(metadato fundacional)")) {
-          pair.setValue(desc.getTerm().substring(0, desc.getTerm().indexOf(" (metadato fundacional)")));
+          pair.setValue(desc.getTerm().substring(0,
+              desc.getTerm().indexOf(" (metadato fundacional)")));
         }
-      }     
+      }
       requiredLanguageRefsetIdMap.addKeyValuePair(pair);
     }
-    
-    
-    // if languageRefsetMembers aren't returned (such as on SNOMEDCT non-extension branch),
+
+    // if languageRefsetMembers aren't returned (such as on SNOMEDCT
+    // non-extension branch),
     // add US and GB English as defaults
-    if (requiredLanguageRefsetIdMap.getKeyValuePairs().size() == 1) {     
+    if (requiredLanguageRefsetIdMap.getKeyValuePairs().size() == 1) {
       pair = new KeyValuePair();
       pair.setKey("900000000000508004");
       pair.setValue("Great Britain English");
-      requiredLanguageRefsetIdMap.addKeyValuePair(pair);  
+      requiredLanguageRefsetIdMap.addKeyValuePair(pair);
     }
-    
+
     pair = new KeyValuePair();
     pair.setKey("900000000000509007");
     pair.setValue("United States of America English (FSN)");
     requiredLanguageRefsetIdMap.addKeyValuePair(pair);
-    
+
     return requiredLanguageRefsetIdMap;
   }
 

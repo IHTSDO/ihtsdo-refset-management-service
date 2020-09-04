@@ -365,6 +365,32 @@ public interface RefsetServiceRest {
     String newVersion, String authToken) throws Exception;
 
   /**
+   * Begin migration.
+   *
+   * @param projectId the project id
+   * @param refsetIds the refset ids
+   * @param newTerminology the new terminology
+   * @param newVersion the new version
+   * @param authToken the auth token
+   * @return the refset
+   * @throws Exception the exception
+   */
+  public void beginMigrations(Long projectId, String[] refsetIds,
+    String newTerminology, String newVersion, String authToken)
+    throws Exception;
+
+  /**
+   * Check migrations.
+   *
+   * @param projectId the project id
+   * @param refsetIds the refset ids
+   * @param authToken the auth token
+   * @throws Exception the exception
+   */
+  public void checkMigrations(Long projectId, String[] refsetIds,
+    String authToken) throws Exception;
+
+  /**
    * Finish migration.
    *
    * @param refsetId the refset id
@@ -376,6 +402,18 @@ public interface RefsetServiceRest {
     throws Exception;
 
   /**
+   * Finish migrations.
+   *
+   * @param projectId the project id
+   * @param refsetIds the refset ids
+   * @param authToken the auth token
+   * @return the refset
+   * @throws Exception the exception
+   */
+  public void finishMigrations(Long projectId, String[] refsetIds,
+    String authToken) throws Exception;
+
+  /**
    * Cancel migration.
    *
    * @param refsetId the refset id
@@ -383,6 +421,17 @@ public interface RefsetServiceRest {
    * @throws Exception the exception
    */
   public void cancelMigration(Long refsetId, String authToken) throws Exception;
+
+  /**
+   * Cancel migrations.
+   *
+   * @param projectId the project id
+   * @param refsetIds the refset ids
+   * @param authToken the auth token
+   * @throws Exception the exception
+   */
+  public void cancelMigrations(Long projectId, String[] refsetIds,
+    String authToken) throws Exception;
 
   /**
    * Compare refsets.
@@ -671,8 +720,8 @@ public interface RefsetServiceRest {
    * Export diff report.
    *
    * @param reportToken the report token
-   * @param terminology the terminology
-   * @param version the version
+   * @param migrationTerminology the migration terminology
+   * @param migrationVersion the migration version
    * @param action the action
    * @param reportFileName the report file name
    * @param authToken the auth token
@@ -686,6 +735,9 @@ public interface RefsetServiceRest {
   /**
    * Export refset duplicates report.
    *
+   * @param refsetId the refset id
+   * @param ioHandlerInfoId the io handler info id
+   * @param conceptIts the concept its
    * @param authToken the auth token
    * @return the input stream
    * @throws Exception the exception

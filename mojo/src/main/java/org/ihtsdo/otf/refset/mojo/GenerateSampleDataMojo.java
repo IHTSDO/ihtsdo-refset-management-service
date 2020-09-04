@@ -718,7 +718,7 @@ public class GenerateSampleDataMojo extends AbstractRttMojo {
           reviewer1.getAuthToken());
 
       new ReleaseServiceRestImpl().beginRefsetRelease(test9.getId(),
-          ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()),
+          ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()), false,
           reviewer1.getAuthToken());
       new ReleaseServiceRestImpl().validateRefsetRelease(test9.getId(),
           reviewer1.getAuthToken());
@@ -731,7 +731,7 @@ public class GenerateSampleDataMojo extends AbstractRttMojo {
       Calendar c = Calendar.getInstance();
       c.add(Calendar.DATE, 1);
       new ReleaseServiceRestImpl().beginRefsetRelease(test9.getId(),
-          ConfigUtility.DATE_FORMAT.format(c.getTime()),
+          ConfigUtility.DATE_FORMAT.format(c.getTime()), false,
           reviewer1.getAuthToken());
       new ReleaseServiceRestImpl().validateRefsetRelease(test9.getId(),
           reviewer1.getAuthToken());

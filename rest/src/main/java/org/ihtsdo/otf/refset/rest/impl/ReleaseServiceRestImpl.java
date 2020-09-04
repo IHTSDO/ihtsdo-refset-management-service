@@ -171,10 +171,11 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl
   @GET
   @Override
   @Path("/refset/begin")
-  @ApiOperation(value = "Begin refset release", notes = "Begins the release process by creating the refset release info", response = ReleaseInfoJpa.class)
+  @ApiOperation(value = "Begin refset release", notes = "Begins the release process by creating the refset release info")
   public void beginRefsetRelease(
     @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
     @ApiParam(value = "Effective time, e.g. 20150131", required = true) @QueryParam("effectiveTime") String effectiveTime,
+    @ApiParam(value = "Background, e.g. true/false/null", required = false) @QueryParam("background") Boolean background,    
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass())
@@ -254,6 +255,10 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl
     });
 
     t.start();
+    // Handle non-background
+    if (!background) {
+      t.join();
+    }
 
     return;
   }
