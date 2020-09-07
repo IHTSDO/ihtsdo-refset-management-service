@@ -4676,6 +4676,7 @@ tsApp
 
                 $scope.modules = [];
                 $scope.errors = [];
+                $scope.warnings = [];
 
                 // Get $scope.modules
                 $scope.getModules = function() {
