@@ -1846,7 +1846,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
           final Client client = ClientBuilder.newClient();
 
           String targetUri = url + "/" + version + "/concepts?" + query + "&limit="
-              + terminologyIds.size();
+              + maxBatchLookupSize;
 
           WebTarget target = client.target(targetUri);
           Logger.getLogger(getClass()).info(targetUri);
