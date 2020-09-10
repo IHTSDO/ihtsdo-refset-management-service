@@ -1937,7 +1937,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
           JsonNode doc = mapper.readTree(resultString);
 
           total = total + doc.get("total").asInt();
-          // Get concepts returned in this call (up to 10000)
+          // Get concepts returned in this call (limited by batch size)
           if (doc.get("items") == null) {
             return conceptList;
           }
