@@ -6106,17 +6106,12 @@ tsApp
 
                   // Dismiss modal
                   $scope.cancel = function() {
-                    // On close, clear out any information stored in memory
-                    refsetService.releaseReportToken($scope.reportToken).then(
-                      // Success
-                      function() {
                         $uibModalInstance.dismiss('cancel');
                       },
                       // Error
                       function(data) {
                         $uibModalInstance.dismiss('cancel');
-                        });
-                    };
+                        };
                   };
                };
 
