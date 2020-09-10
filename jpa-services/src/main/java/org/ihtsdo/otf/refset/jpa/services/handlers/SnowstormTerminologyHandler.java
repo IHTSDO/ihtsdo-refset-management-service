@@ -1814,7 +1814,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
 
     }
 
-    // If no descriptions needed, use the /concepts/search API endpoint
+    // If no descriptions needed, use the regular /concepts API endpoint
     else {
 
       int numberOfMembersToLookup = terminologyIds.size();
@@ -1827,34 +1827,36 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
 
         while (i < numberOfMembersToLookup) {
 
-          final List<String> conceptIds = new ArrayList<>();
-
-          // The concepts/search call can handle up to 10,000 concepts at a time
-          final int searchLookupSize = 10000;
-
           // Create list of conceptIds for all members, up to the lookup size
           // limit
-          for (int j = 0; (j < searchLookupSize
+          final StringBuilder query = new StringBuilder();
+          for (int j = 0; (j < maxBatchLookupSize
               && i < numberOfMembersToLookup); j++, i++) {
-            conceptIds.add(terminologyIds.get(i));
+            // Only lookup stuff with actual digits
+            if (terminologyIds.get(i).matches("[0-9]*")) {
+              if (query.length() == 0) {
+                query.append("conceptIds=");
+              } else {
+                query.append(",");
+              }
+              query.append(terminologyIds.get(i));
+            }
           }
 
           final Client client = ClientBuilder.newClient();
 
-          String targetUri = url + "/" + version + "/concepts/search";
-          String searchRequest = "{\"conceptIds\": " + conceptIds
-              + ", \"limit\":" + searchLookupSize + "}";
-
-          Logger.getLogger(getClass()).info(targetUri + ": " + searchRequest);
+          String targetUri = url + "/" + version + "/concepts?" + query + "&limit="
+              + terminologyIds.size();
 
           WebTarget target = client.target(targetUri);
-          Builder builder = target.request(MediaType.APPLICATION_JSON);
-          Response response = builder.header("Authorization", authHeader)
-              .header("Accept-Language",
-                  getAcceptLanguage(terminology, version))
+          Logger.getLogger(getClass()).info(targetUri);
+
+          Response response = target.request(accept)
+              .header("Authorization", authHeader)
+              .header("Accept-Language", getAcceptLanguage(terminology, version))
               .header("Cookie", getGenericUserCookie() != null
                   ? getGenericUserCookie() : getCookieHeader())
-              .post(Entity.json(searchRequest));
+              .get();
 
           String resultString = response.readEntity(String.class);
           if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
