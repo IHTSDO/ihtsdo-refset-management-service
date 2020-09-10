@@ -3151,10 +3151,10 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
 
     String releaseFileNames = "";
 
-    // Get all .xls files
+    // Get all .xlsx files
     // And add to return releaseFileNames (full path)
     for (final File report : reportDir.listFiles()) {
-      if (!report.getName().endsWith(".xls")) {
+      if (!report.getName().endsWith(".xlsx") || !report.getName().endsWith(".xls")) {
         continue;
       }
       releaseFileNames += report.getName() + "|";
