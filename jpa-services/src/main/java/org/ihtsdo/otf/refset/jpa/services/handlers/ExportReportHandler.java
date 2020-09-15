@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.CreationHelper;
@@ -71,7 +71,7 @@ public class ExportReportHandler {
     List<ConceptRefsetMember> membersInCommon) throws Exception {
 
     // Create workbook
-    Workbook wb = new HSSFWorkbook();
+    Workbook wb = new XSSFWorkbook();
 
     this.headers = headers;
     this.migrationTerminology = migrationTerminology;
@@ -99,10 +99,8 @@ public class ExportReportHandler {
   @SuppressWarnings("static-method")
   private void handleExportReport(MemberDiffReport report, Workbook wb)
     throws Exception {
-    Logger.getLogger(getClass()).info("Exporting report " + "..."); // TODO:
-                                                                    // provide
-                                                                    // report
-                                                                    // name
+    // TODO: provide report name
+    Logger.getLogger(getClass()).info("Exporting report " + "..."); 
 
     try {
 
