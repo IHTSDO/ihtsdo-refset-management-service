@@ -1018,7 +1018,7 @@ tsApp.service('refsetService', [
     
     var getReportFileName = function(refset, action) {
       var date = new Date().toISOString().slice(0, 19).replace(/-/g, '').replace(/:/g, '').replace(/T/, '_');
-      return utilService.toCamelCase(refset.name) + '_' + refset.id + '_' + date + '_' + action + '.xls';
+      return utilService.toCamelCase(refset.name) + '_' + refset.id + '_' + date + '_' + action + '.xlsx';
     };
 
     // Begin import members - if validation is result, OK to proceed.
