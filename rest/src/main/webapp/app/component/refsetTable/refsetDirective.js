@@ -2530,7 +2530,7 @@ tsApp
                 $scope.toggleSelection = function(refset) {
                   // is currently selected
                   if ($scope.selectedRefsetIds.includes(refset.id)) {
-                    $scope.selectedRefsetIds = $scope.selectedRefsetIds.filter(r => r.id !== refset.id);
+                    $scope.selectedRefsetIds = $scope.selectedRefsetIds.filter(r => r !== refset.id);
                   }
                   // is newly selected
                   else {
