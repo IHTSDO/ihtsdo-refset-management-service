@@ -9,19 +9,25 @@
       <tbody>
         <tr>
           <td>
-            <b>Current Terminology:</b>
-          </td>
-          <td>{{getTerminologyName(refset.terminology)}}</td>
-          <td>
-            <b>New Terminology:</b>
+            <b>Terminology:</b>
           </td>
           <td>
-            <select ng-model="newTerminology"
-              ng-change="terminologySelected(newTerminology)"
-              ng-options="item.terminology as item.name for item in metadata.terminologies"></select>
-          </td>         
+            {{getTerminologyName(refset.terminology)}}
+          </td>
+          <td>
+            <div ng-show="project.terminologyHandlerKey !== 'MANAGED-SERVICE'"> 
+              <b>New Terminology:</b>
+            </div>
+          </td>
+          <td>
+            <div ng-show="project.terminologyHandlerKey !== 'MANAGED-SERVICE'"> 
+              <select ng-model="newTerminology"
+                ng-change="terminologySelected(newTerminology)"
+                ng-options="item.terminology as item.name for item in metadata.terminologies"></select>
+            </div>
+          </td>        
         </tr>
-        <tr ng-show="project.terminologyHandlerKey === 'PUBLIC-BROWSER' || project.terminologyHandlerKey === 'AUTHORING-INTL'">
+        <tr ng-show="['PUBLIC-BROWSER', 'AUTHORING-INTL'].contains(project.terminologyHandlerKey)">
           <td>
             <b>Current Version:</b>
           </td>
@@ -34,7 +40,7 @@
               ng-options="item.path as item.key for item in versions | orderBy:'-key'"></select>
           </td>
         </tr>
-        <tr>
+        <tr ng-show="project.terminologyHandlerKey !== 'MANAGED-SERVICE'">
           <td></td>
           <td></td>
           <td>
@@ -54,6 +60,9 @@
         </tr>
       </tbody>
     </table>
+    <div ng-if="project.terminologyHandlerKey === 'MANAGED-SERVICE'">
+        <div ng-init="testTerminologyVersion();"></div>
+    </div>
   </div>
 </div>
 
