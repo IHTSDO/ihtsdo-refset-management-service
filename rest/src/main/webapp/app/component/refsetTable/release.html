@@ -147,7 +147,7 @@
   <button class="btn btn-xs btn-primary" ng-show="!refset.inPublicationProcess"
     ng-click="beginRefsetRelease(refset)">Release</button>
   <button class="btn btn-xs btn-primary"
-    ng-show="refset.inPublicationProcess && releaseValidated == false && refset.stagingType != 'BETA' && stagedRefset.workflowStatus != 'BETA'"
+    ng-show="refset.inPublicationProcess && releaseValidated == false && errors.length==0 && refset.stagingType != 'BETA' && stagedRefset.workflowStatus != 'BETA'"
     ng-click="validateRefsetRelease(refset)">Validate</button>
   <button class="btn btn-xs btn-primary"
     ng-show="validationResult && releaseValidated == true && validationResult.errors.length==0 && refset.stagingType != 'BETA'"
