@@ -662,8 +662,12 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
 
         concept.setActive(conceptNode.get("active").asText().equals("true"));
         concept.setTerminologyId(conceptNode.get("id").asText());
-        concept.setLastModified(ConfigUtility.DATE_FORMAT
-            .parse(conceptNode.get("effectiveTime").asText()));
+        if (conceptNode.has("effectiveTime")) {
+          concept.setLastModified(ConfigUtility.DATE_FORMAT
+              .parse(conceptNode.get("effectiveTime").asText()));
+        } else {
+          concept.setLastModified(new Date());
+        }
         concept.setLastModifiedBy(terminology);
         concept.setModuleId(conceptNode.get("moduleId").asText());
         concept.setDefinitionStatusId(
@@ -1189,13 +1193,13 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
       return conceptList;
     }
 
+    final StringBuilder lookupErrors = new StringBuilder();
+
     // If descriptions are needed, use the browser /concepts API endpoint
     if (descriptions) {
 
       // Make a webservice call to SnowOwl to get concept
       final Client client = ClientBuilder.newClient();
-
-      final StringBuilder lookupErrors = new StringBuilder();
 
       PfsParameter localPfs = new PfsParameterJpa();
 
@@ -1812,104 +1816,177 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
 
     // If no descriptions needed, use the regular /concepts API endpoint
     else {
-      final StringBuilder query = new StringBuilder();
-      for (final String terminologyId : terminologyIds) {
-        // Only lookup stuff with actual digits
-        if (terminologyId.matches("[0-9]*")) {
-          if (query.length() == 0) {
-            query.append("conceptIds=");
-          } else {
-            query.append(",");
+
+      int numberOfMembersToLookup = terminologyIds.size();
+
+      // track total amounts
+      int total = 0;
+
+      if (numberOfMembersToLookup > 0) {
+        int i = 0;
+
+        while (i < numberOfMembersToLookup) {
+
+          // Create list of conceptIds for all members, up to the lookup size
+          // limit
+          final StringBuilder query = new StringBuilder();
+          for (int j = 0; (j < maxBatchLookupSize
+              && i < numberOfMembersToLookup); j++, i++) {
+            // Only lookup stuff with actual digits
+            if (terminologyIds.get(i).matches("[0-9]*")) {
+              if (query.length() == 0) {
+                query.append("conceptIds=");
+              } else {
+                query.append(",");
+              }
+              query.append(terminologyIds.get(i));
+            }
           }
-          query.append(terminologyId);
+
+          final Client client = ClientBuilder.newClient();
+
+          String targetUri = url + "/" + version + "/concepts?" + query + "&limit="
+              + maxBatchLookupSize;
+
+          WebTarget target = client.target(targetUri);
+          Logger.getLogger(getClass()).info(targetUri);
+
+          Response response = target.request(accept)
+              .header("Authorization", authHeader)
+              .header("Accept-Language", getAcceptLanguage(terminology, version))
+              .header("Cookie", getGenericUserCookie() != null
+                  ? getGenericUserCookie() : getCookieHeader())
+              .get();
+
+          String resultString = response.readEntity(String.class);
+          if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+            // n/a
+          }
+          // If the generic user is logged out, it returns a 403 Forbidden
+          // error. In
+          // this case, clear out the generic use cookie so the next call can
+          // re-login
+          else if (response.getStatusInfo().getReasonPhrase()
+              .equals("Forbidden")) {
+            genericUserCookie = null;
+            throw new LocalException(
+                "Connection with the terminology server has expired. Please reload the page to reconnect.");
+          } else {
+
+            // Here's the messy part about trying to parse the return error
+            // message
+            if (resultString.contains("loop did not match anything")) {
+              return new ConceptListJpa();
+            }
+
+            throw new LocalException(
+                "Unexpected terminology server failure. Message = "
+                    + resultString);
+          }
+
+          /**
+           * <pre>
+           *  
+           * {
+           *   "items": [
+           *     {
+           *       "conceptId": "10025002",
+           *       "active": true,
+           *       "definitionStatus": "PRIMITIVE",
+           *       "moduleId": "900000000000207008",
+           *       "effectiveTime": "20020131",
+           *       "fsn": {
+           *         "term": "Structure of base of phalanx of index finger (body structure)",
+           *         "lang": "en"
+           *       },
+           *       "pt": {
+           *         "term": "Structure of base of phalanx of index finger",
+           *         "lang": "en"
+           *       },
+           *       "id": "10025002"
+           *     },
+           *     {
+           *       "conceptId": "10024003",
+           *       "active": true,
+           *       "definitionStatus": "PRIMITIVE",
+           *       "moduleId": "900000000000207008",
+           *       "effectiveTime": "20020131",
+           *       "fsn": {
+           *         "term": "Structure of base of lung (body structure)",
+           *         "lang": "en"
+           *       },
+           *       "pt": {
+           *         "term": "Structure of base of lung",
+           *         "lang": "en"
+           *       },
+           *       "id": "10024003"
+           *     }
+           *   ],
+           *   "total": 2,
+           *   "limit": 50,
+           *   "offset": 0,
+           *   "searchAfter": "WyIxMDAyNDAwMyJd",
+           *   "searchAfterArray": [
+           *     "10024003"
+           *   ]
+           * }
+           * </pre>
+           */
+
+          ObjectMapper mapper = new ObjectMapper();
+          JsonNode doc = mapper.readTree(resultString);
+
+          total = total + doc.get("total").asInt();
+          // Get concepts returned in this call (limited by batch size)
+          if (doc.get("items") == null) {
+            return conceptList;
+          }
+          for (final JsonNode conceptNode : doc.get("items")) {
+            final Concept concept = new ConceptJpa();
+
+            concept
+                .setActive(conceptNode.get("active").asText().equals("true"));
+            concept.setTerminologyId(conceptNode.get("id").asText());
+            if (conceptNode.has("effectiveTime")) {
+              concept.setLastModified(ConfigUtility.DATE_FORMAT
+                  .parse(conceptNode.get("effectiveTime").asText()));
+            } else {
+              concept.setLastModified(new Date());
+            }
+            concept.setLastModifiedBy(terminology);
+            concept.setModuleId(conceptNode.get("moduleId").asText());
+            concept.setDefinitionStatusId(
+                conceptNode.get("definitionStatus").asText());
+
+            // pt.term is the name
+            if (conceptNode.get("pt") != null
+                && conceptNode.get("pt").get("term") != null) {
+              concept.setName(conceptNode.get("pt").get("term").asText());
+            } else {
+              concept.setName(UNABLE_TO_DETERMINE_NAME);
+
+              Logger.getLogger(getClass()).error(
+                  "[ALERT=ALL]: message=pt node is null or missing term subnode, concept="
+                      + concept.getTerminologyId() + ", terminology="
+                      + terminology + ", version=" + version);
+
+              lookupErrors.append("  URI: ").append(targetUri).append("\r\n");
+              lookupErrors.append("  CONCEPT ID: ")
+                  .append(concept.getTerminologyId()).append("\r\n");
+              lookupErrors.append("  ERROR: ")
+                  .append("\"pt\" node is null or missing \"term\" subnode")
+                  .append("\r\n\r\n");
+
+            }
+
+            concept.setPublishable(true);
+            concept.setPublished(true);
+
+            conceptList.addObject(concept);
+          }
+
         }
-      }
 
-      final Client client = ClientBuilder.newClient();
-
-      final StringBuilder lookupErrors = new StringBuilder();
-
-      String targetUri = url + "/" + version + "/concepts?" + query + "&limit="
-          + terminologyIds.size();
-
-      WebTarget target = client.target(targetUri);
-      Logger.getLogger(getClass()).info(targetUri);
-
-      Response response = target.request(accept)
-          .header("Authorization", authHeader)
-          .header("Accept-Language", getAcceptLanguage(terminology, version))
-          .header("Cookie", getGenericUserCookie() != null
-              ? getGenericUserCookie() : getCookieHeader())
-          .get();
-      String resultString = response.readEntity(String.class);
-      if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-        // n/a
-      }
-      // If the generic user is logged out, it returns a 403 Forbidden error. In
-      // this case, clear out the generic use cookie so the next call can
-      // re-login
-      else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
-        genericUserCookie = null;
-        throw new LocalException(
-            "Connection with the terminology server has expired. Please reload the page to reconnect.");
-      } else {
-
-        // Here's the messy part about trying to parse the return error message
-        if (resultString.contains("loop did not match anything")) {
-          return new ConceptListJpa();
-        }
-
-        throw new LocalException(
-            "Unexpected terminology server failure. Message = " + resultString);
-      }
-
-      conceptList = new ConceptListJpa();
-      ObjectMapper mapper = new ObjectMapper();
-      JsonNode doc = mapper.readTree(resultString);
-
-      // get total amount
-      final int total = doc.get("total").asInt();
-      // Get concepts returned in this call (up to 100)
-      if (doc.get("items") == null) {
-        return conceptList;
-      }
-      for (final JsonNode conceptNode : doc.get("items")) {
-        final Concept concept = new ConceptJpa();
-
-        concept.setActive(conceptNode.get("active").asText().equals("true"));
-        concept.setTerminologyId(conceptNode.get("id").asText());
-        concept.setLastModified(ConfigUtility.DATE_FORMAT
-            .parse(conceptNode.get("effectiveTime").asText()));
-        concept.setLastModifiedBy(terminology);
-        concept.setModuleId(conceptNode.get("moduleId").asText());
-        concept.setDefinitionStatusId(
-            conceptNode.get("definitionStatus").asText());
-
-        // pt.term is the name
-        if (conceptNode.get("pt") != null
-            && conceptNode.get("pt").get("term") != null) {
-          concept.setName(conceptNode.get("pt").get("term").asText());
-        } else {
-          concept.setName(UNABLE_TO_DETERMINE_NAME);
-
-          Logger.getLogger(getClass()).error(
-              "[ALERT=ALL]: message=pt node is null or missing term subnode, concept="
-                  + concept.getTerminologyId() + ", terminology=" + terminology
-                  + ", version=" + version);
-
-          lookupErrors.append("  URI: ").append(targetUri).append("\r\n");
-          lookupErrors.append("  CONCEPT ID: ")
-              .append(concept.getTerminologyId()).append("\r\n");
-          lookupErrors.append("  ERROR: ")
-              .append("\"pt\" node is null or missing \"term\" subnode")
-              .append("\r\n\r\n");
-
-        }
-
-        concept.setPublishable(true);
-        concept.setPublished(true);
-
-        conceptList.addObject(concept);
       }
 
       if (lookupErrors.length() != 0) {
