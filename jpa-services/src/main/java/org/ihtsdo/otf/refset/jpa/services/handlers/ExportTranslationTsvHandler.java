@@ -5,6 +5,7 @@ package org.ihtsdo.otf.refset.jpa.services.handlers;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -104,9 +105,14 @@ public class ExportTranslationTsvHandler implements ExportTranslationHandler {
     descSb.append("\r\n");
 
     for (final Concept concept : concepts) {
+      
       if (concept.isRevision()) {
         continue;
       }
+      
+      // will save the synonyms to append at the end, to ensure PTs get printed first
+      List<String> cachedSynMembers = new ArrayList<>();   
+      
       for (final Description description : concept.getDescriptions()) {
         Logger.getLogger(getClass())
             .debug("  description = " + description.getTerminologyId() + ", "
@@ -114,30 +120,47 @@ public class ExportTranslationTsvHandler implements ExportTranslationHandler {
 
         if (!description.isActive()) {
           continue;
-        }
+        }     
+       
         for (final LanguageRefsetMember member : description
             .getLanguageRefsetMembers()) {
-          Logger.getLogger(getClass()).debug("    member = " + member);
-          descSb.append(concept.getTerminologyId()).append("\t");
 
-          descSb.append(concept.getName()).append("\t");
-          descSb.append(description.getTerm()).append("\t");
+          StringBuffer thisMember = new StringBuffer();
+          Logger.getLogger(getClass()).debug("    member = " + member);
+          thisMember.append(concept.getTerminologyId()).append("\t");
+
+          thisMember.append(concept.getName()).append("\t");
+          thisMember.append(description.getTerm()).append("\t");
           if (languageRefsetToLanguageCodeMap.containsKey(description.getLanguageCode())) {
-            descSb.append(languageRefsetToLanguageCodeMap.get(description.getLanguageCode())).append("\t");
+            thisMember.append(languageRefsetToLanguageCodeMap.get(description.getLanguageCode())).append("\t");
           }  else {
             throw new LocalException("The TSV export handler does not currently support language " + description.getLanguageCode() + ".");
           }
-          descSb.append(caseSignificanceMap.get(description.getCaseSignificanceId())).append("\t");
-          descSb.append(description.getTypeId().contentEquals("900000000000003001") ? "FSN" : "SYNONYM").append("\t");
+          thisMember.append(caseSignificanceMap.get(description.getCaseSignificanceId())).append("\t");
+          thisMember.append(description.getTypeId().contentEquals("900000000000003001") ? "FSN" : "SYNONYM").append("\t");
           if (allowedLanguageRefsets.containsKey(description.getLanguageCode())) {
-            descSb.append(allowedLanguageRefsets.get(description.getLanguageCode())).append("\t");
+            thisMember.append(allowedLanguageRefsets.get(description.getLanguageCode())).append("\t");
           } else {
             throw new LocalException("The TSV export handler does not currently support language " + description.getLanguageCode() + ".");
           }
-          descSb.append(member.getAcceptabilityId().contentEquals("900000000000548007") ? "PREFERRED" : "ACCEPTABLE");
-          descSb.append("\r\n");
+          thisMember.append(member.getAcceptabilityId().contentEquals("900000000000548007") ? "PREFERRED" : "ACCEPTABLE");
+          thisMember.append("\r\n");
+          
+          // if preferred, write out to descSb first
+          if (member.getAcceptabilityId().contentEquals("900000000000548007")) {
+            descSb.append(thisMember);
+          // otherwise synonyms will get cached till after PTs are written
+          } else {
+            cachedSynMembers.add(thisMember.toString());
+          }
           
         }
+        
+       
+      }
+      // PTs are already added to return buffer, so add the synonyms now
+      for (String synMember : cachedSynMembers) {
+        descSb.append(synMember);
       }
       
       // The TSV export handler does not currently support language xx / xx-YY
