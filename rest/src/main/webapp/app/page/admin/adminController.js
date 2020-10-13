@@ -43,6 +43,7 @@ tsApp
 
         $scope.selectedProject = null;
         $scope.projectRoles = [];
+		$scope.rolesForSelectedProject = [];
 
         // Model variables
         $scope.projects = null;
@@ -118,7 +119,7 @@ tsApp
             sortField : $scope.paging['project'].sortField,
             ascending : $scope.paging['project'].ascending == null ? true
               : $scope.paging['project'].ascending,
-            queryRestriction : 'userRoleMap:' + $scope.user.userName + 'ADMIN'
+            queryRestriction : '(userRoleMap:' + $scope.user.userName + 'ADMIN OR userRoleMap:' + $scope.user.userName + 'LEAD)'
           };
           // clear queryRestriction for application admins
           if ($scope.user.applicationRole == 'ADMIN') {
@@ -144,7 +145,7 @@ tsApp
             sortField : $scope.paging['candidateProject'].sortField,
             ascending : $scope.paging['candidateProject'].ascending == null ? true
               : $scope.paging['candidateProject'].ascending,
-            queryRestriction : 'userRoleMap:' + $scope.user.userName + 'ADMIN'
+            queryRestriction : '(userRoleMap:' + $scope.user.userName + 'ADMIN OR userRoleMap:' + $scope.user.userName + 'LEAD)' 
           };
           // clear queryRestriction for application admins
           if ($scope.user.applicationRole == 'ADMIN') {
@@ -258,6 +259,19 @@ tsApp
           $scope.selectedProject = project;
           $scope.getUnassignedUsers();
           $scope.getAssignedUsers();
+
+		  $scope.rolesForSelectedProject = [];
+		  Object.keys(project.userRoleMap).forEach(function(user) {
+		    if(user === $scope.user.userName){
+			  if(project.userRoleMap[user] === 'ADMIN'){
+				$scope.rolesForSelectedProject = $scope.projectRoles;
+			  }
+			  else if (project.userRoleMap[user] === 'LEAD'){
+                $scope.rolesForSelectedProject = $scope.projectRoles.filter(r => r !== 'ADMIN');
+			  }
+			}  
+		  });
+
 
           resetPaging();
         };
