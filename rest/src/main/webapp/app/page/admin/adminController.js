@@ -261,16 +261,23 @@ tsApp
           $scope.getAssignedUsers();
 
 		  $scope.rolesForSelectedProject = [];
-		  Object.keys(project.userRoleMap).forEach(function(user) {
-		    if(user === $scope.user.userName){
-			  if(project.userRoleMap[user] === 'ADMIN' || $scope.user.applicationRole == 'ADMIN'){
+		  //Application level admins should always be able to assign any available role
+		  if($scope.user.applicationRole == 'ADMIN'){
 				$scope.rolesForSelectedProject = $scope.projectRoles;
-			  }
-			  else if (project.userRoleMap[user] === 'LEAD'){
-                $scope.rolesForSelectedProject = $scope.projectRoles.filter(r => r !== 'ADMIN');
-			  }
-			}  
-		  });
+		  }
+		  //LEADs should only be able to assign LEADs and below
+		  else{
+		    Object.keys(project.userRoleMap).forEach(function(user) {
+		      if(user === $scope.user.userName){
+			    if(project.userRoleMap[user] === 'ADMIN'){
+		  		  $scope.rolesForSelectedProject = $scope.projectRoles;
+			    }
+			    else if (project.userRoleMap[user] === 'LEAD'){
+                  $scope.rolesForSelectedProject = $scope.projectRoles.filter(r => r !== 'ADMIN');
+			    }
+			  }  
+		    });
+		  }
 
 
           resetPaging();
