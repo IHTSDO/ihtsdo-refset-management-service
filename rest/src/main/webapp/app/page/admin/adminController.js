@@ -766,8 +766,9 @@ tsApp
             projectService.addProject(project).then(
               // Success
               function(data) {
-                var projectId = data.id;z
-                projectService.assignUserToProject(data.id, $scope.user.userName, 'ADMIN').then(
+                var projectId = data.id;
+				var assignRole = data.terminologyHandlerKey === 'MANAGED-SERVICE' && user.applicationRole !== 'ADMIN' ? 'LEAD' : 'ADMIN';
+                projectService.assignUserToProject(data.id, $scope.user.userName, assignRole).then(
                   function(data) {
                     // Update 'anyrole'
                     projectService.getUserHasAnyRole();
