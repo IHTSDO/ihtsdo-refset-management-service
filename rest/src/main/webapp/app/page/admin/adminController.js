@@ -263,7 +263,7 @@ tsApp
 		  $scope.rolesForSelectedProject = [];
 		  Object.keys(project.userRoleMap).forEach(function(user) {
 		    if(user === $scope.user.userName){
-			  if(project.userRoleMap[user] === 'ADMIN'){
+			  if(project.userRoleMap[user] === 'ADMIN' || $scope.user.applicationRole == 'ADMIN'){
 				$scope.rolesForSelectedProject = $scope.projectRoles;
 			  }
 			  else if (project.userRoleMap[user] === 'LEAD'){
@@ -766,7 +766,7 @@ tsApp
             projectService.addProject(project).then(
               // Success
               function(data) {
-                var projectId = data.id;
+                var projectId = data.id;z
                 projectService.assignUserToProject(data.id, $scope.user.userName, 'ADMIN').then(
                   function(data) {
                     // Update 'anyrole'
