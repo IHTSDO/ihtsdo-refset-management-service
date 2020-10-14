@@ -33,6 +33,7 @@ import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.Terminology;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
+import org.ihtsdo.otf.refset.helpers.FieldedStringTokenizer;
 import org.ihtsdo.otf.refset.helpers.KeyValuePair;
 import org.ihtsdo.otf.refset.helpers.KeyValuePairList;
 import org.ihtsdo.otf.refset.helpers.LocalException;
@@ -2747,11 +2748,51 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
       requiredLanguageRefsetIdMap.addKeyValuePair(pair);
     }
 
+    
+
+    // Remove languages based on overrides specified in the config.properties
+    final String removeValues = ConfigUtility.getConfigProperties()
+        .getProperty("language.refset.dialect.override.remove");
+    
+    for (final String info : removeValues.split(";")) {
+      String[] values = FieldedStringTokenizer.split(info, "|");
+      final String extensionName = values[0];
+      final String languageReferenceSetId = values[1];
+      if(terminology.equals(extensionName)){
+        List<KeyValuePair> languageRefsetPairs = new ArrayList<>(requiredLanguageRefsetIdMap.getKeyValuePairs());
+        for(KeyValuePair languageRefsetPair : requiredLanguageRefsetIdMap.getKeyValuePairs()) {
+          if(languageRefsetPair.getKey().equals(languageReferenceSetId)) {
+            languageRefsetPairs.remove(languageRefsetPair);
+          }
+        }
+        requiredLanguageRefsetIdMap.setKeyValuePairs(languageRefsetPairs);
+      }
+    }
+    
+    // Add languages based on overrides specified in the config.properties
+    final String addValues = ConfigUtility.getConfigProperties()
+        .getProperty("language.refset.dialect.override.add");
+    
+    for (final String info : addValues.split(";")) {
+      String[] values = FieldedStringTokenizer.split(info, "|");
+      final String extensionName = values[0];
+      final String languageReferenceSetId = values[1];
+      final String languageName = values[2];
+      if(terminology.equals(extensionName)){
+        pair = new KeyValuePair();
+        pair.setKey(languageReferenceSetId);
+        pair.setValue(languageName);
+        requiredLanguageRefsetIdMap.addKeyValuePair(pair);
+      }
+    }
+    
+    // Finally, add the US English FSN at the end
     pair = new KeyValuePair();
     pair.setKey("900000000000509007");
     pair.setValue("United States of America English (FSN)");
     requiredLanguageRefsetIdMap.addKeyValuePair(pair);
 
+    
     return requiredLanguageRefsetIdMap;
   }
 

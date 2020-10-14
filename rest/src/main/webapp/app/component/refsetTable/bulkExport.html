@@ -61,6 +61,6 @@
   </div>
 </div>
 <div class="modal-footer">
-  <button class="btn btn-xs btn-primary" ng-click="export()">Export</button>
+  <button class="btn btn-xs btn-primary" ng-disabled="selectedRefsetIds.length == 0" ng-click="export()">Export</button>
   <button class="btn btn-xs btn-warning" ng-click="close()">Close</button>
 </div>

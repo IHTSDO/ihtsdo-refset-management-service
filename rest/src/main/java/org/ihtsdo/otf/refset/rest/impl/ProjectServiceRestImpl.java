@@ -610,6 +610,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
       final StringBuilder sb = new StringBuilder();
       sb.append("(");
       sb.append("userRoleMap:" + user + UserRole.ADMIN).append(" OR ");
+      sb.append("userRoleMap:" + user + UserRole.LEAD).append(" OR ");
       sb.append("userRoleMap:" + user + UserRole.REVIEWER).append(" OR ");
       sb.append("userRoleMap:" + user + UserRole.AUTHOR).append(")");
       final ProjectList list = projectService
