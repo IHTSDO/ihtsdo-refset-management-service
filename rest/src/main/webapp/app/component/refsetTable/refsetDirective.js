@@ -2746,7 +2746,7 @@ tsApp
                 $scope.beginRefsetRelease = function(refset) {
 
                   if (!refset.effectiveTime) {
-                     window.alert('Release Date cannot be empty');
+                     window.alert('Invalid Release Date');
                      return;
                   }
                                   
@@ -3323,7 +3323,7 @@ tsApp
                   $scope.warningRefsetIds = [];
                   
                   if (!$scope.effectiveTime) {
-                    window.alert('Release Date cannot be empty');
+                    window.alert('Invalid Release Date');
                     return;
                  }
                   
