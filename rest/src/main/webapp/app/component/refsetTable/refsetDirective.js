@@ -4780,6 +4780,22 @@ tsApp
                       } else {
                         $scope.warnings = [];
                       }
+                      
+                      if (!refset.localSet && !refset.moduleId) {
+                        $scope.errors.push('ModuleId must not be empty.');
+                      }
+
+                      if (!refset.name || !refset.description) {
+                        $scope.errors.push('Refset name and description must not be empty.');
+                      }
+                      
+                      if(!refset.version) {
+                        $scope.errors.push('Refset version must not be empty.');
+                      }
+                      
+                      if($scope.errors.length > 0){
+                        return;
+                      }
 
                       // Success - validate refset
                       refsetService.updateRefset(refset).then(
