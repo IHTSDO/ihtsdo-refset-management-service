@@ -81,7 +81,7 @@
             ng-options="item.path as item.key for item in versions | orderBy:'-key'"></select>
           
           <button class="btn btn-xs btn-warning" ng-show="refset.version && project.terminologyHandlerKey === 'PUBLIC-BROWSER'"
-            ng-click="refset.version=''">Clear</button>
+            ng-click="refset.version=null">Clear</button>
           <button class="btn btn-xs btn-primary"
             ng-show="refset.version && versionNotInPicklist() && project.terminologyHandlerKey === 'PUBLIC-BROWSER'"
             ng-click="testTerminologyVersion();">Test</button>
@@ -100,7 +100,7 @@
           <br/>
           <br/>
           <button class="btn btn-xs btn-warning" ng-show="refset.version"
-            ng-click="refset.version=''">Clear</button>
+            ng-click="refset.version=null">Clear</button>
           <button class="btn btn-xs btn-primary"
             ng-show="refset.version && versionNotInPicklist()"
             ng-click="testTerminologyVersion();">Test</button>
