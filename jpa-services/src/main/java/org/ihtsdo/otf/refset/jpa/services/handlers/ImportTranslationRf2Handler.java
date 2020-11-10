@@ -1,5 +1,5 @@
 /**
- * Copyright 2015 West Coast Informatics, LLC
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.jpa.services.handlers;
 
@@ -16,9 +16,7 @@ import java.util.UUID;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-
 import org.apache.log4j.Logger;
-import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
@@ -26,7 +24,6 @@ import org.ihtsdo.otf.refset.helpers.FieldedStringTokenizer;
 import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.jpa.ValidationResultJpa;
 import org.ihtsdo.otf.refset.jpa.services.RefsetServiceJpa;
-import org.ihtsdo.otf.refset.rf2.Component;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.Description;
 import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
@@ -35,12 +32,16 @@ import org.ihtsdo.otf.refset.rf2.jpa.DescriptionJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.LanguageRefsetMemberJpa;
 import org.ihtsdo.otf.refset.services.RefsetService;
 import org.ihtsdo.otf.refset.services.handlers.IdentifierAssignmentHandler;
+import org.ihtsdo.otf.refset.services.handlers.ImportExportAbstract;
 import org.ihtsdo.otf.refset.services.handlers.ImportTranslationHandler;
+
+import com.google.common.base.CharMatcher;
 
 /**
  * Implementation of an algorithm to import a refset definition.
  */
-public class ImportTranslationRf2Handler implements ImportTranslationHandler {
+public class ImportTranslationRf2Handler extends ImportExportAbstract
+    implements ImportTranslationHandler {
 
   /** The request cancel flag. */
   boolean requestCancel = false;
@@ -61,8 +62,26 @@ public class ImportTranslationRf2Handler implements ImportTranslationHandler {
 
   /* see superclass */
   @Override
+  public void setId(String id) {
+    // not used
+  }
+
+  /* see superclass */
+  @Override
+  public String getId() {
+    return this.id;
+  }
+
+  /* see superclass */
+  @Override
   public boolean isDeltaHandler() {
     return false;
+  }
+
+  /* see superclass */
+  @Override
+  public void setFileTypeFilter(String fileTypeFilter) {
+    // not used
   }
 
   /* see superclass */
@@ -79,8 +98,32 @@ public class ImportTranslationRf2Handler implements ImportTranslationHandler {
 
   /* see superclass */
   @Override
+  public void setMimeType(String mimeType) {
+    // not used
+  }
+
+  /* see superclass */
+  @Override
+  public void setName(String name) {
+    // not used
+  }
+
+  /* see superclass */
+  @Override
   public String getName() {
     return "Import RF2";
+  }
+
+  /* see superclass */
+  @Override
+  public void setIoType(IoType ioType) {
+    // not used
+  }
+
+  /* see superclass */
+  @Override
+  public IoType getIoType() {
+    return IoType.FILE;
   }
 
   /**
@@ -113,7 +156,8 @@ public class ImportTranslationRf2Handler implements ImportTranslationHandler {
     /** The lang seen. */
     boolean langSeen = false;
     // Handle the input stream as a zip input stream
-    final ZipInputStream zin = new ZipInputStream(content, Charset.forName("UTF-8"));
+    final ZipInputStream zin =
+        new ZipInputStream(content, Charset.forName("UTF-8"));
     final Map<String, Concept> conceptCache = new HashMap<>();
 
     int inactiveDescriptionCt = 0;
@@ -243,12 +287,11 @@ public class ImportTranslationRf2Handler implements ImportTranslationHandler {
               } else {
                 member.setTerminologyId(fields[0]);
               }
-              
+
               if (!fields[1].equals("")) {
                 member.setEffectiveTime(
                     ConfigUtility.DATE_FORMAT.parse(fields[1]));
               }
-              
 
               // Set from the translation refset
               member.setRefsetId(translation.getRefset().getTerminologyId());
@@ -350,25 +393,17 @@ public class ImportTranslationRf2Handler implements ImportTranslationHandler {
 
   }
 
-  /**
-   * Sets the common fields.
-   *
-   * @param c the c
-   * @param refset the refset
-   */
-  @SuppressWarnings("static-method")
-  private void setCommonFields(Component c, Refset refset) {
-    c.setActive(true);
-    c.setEffectiveTime(null);
-    c.setId(null);
-    c.setPublishable(true);
-    c.setPublished(false);
-    c.setModuleId(refset.getModuleId());
-  }
-
+  /* see superclass */
   @Override
   public ValidationResult getValidationResults() throws Exception {
     return validationResult;
+  }
+
+  /* see superclass */
+  @Override
+  public List<Concept> importConcepts(Translation translation,
+    Map<String, String> headers) throws Exception {
+    throw new Exception("Not implemented for this handler.");
   }
 
 }

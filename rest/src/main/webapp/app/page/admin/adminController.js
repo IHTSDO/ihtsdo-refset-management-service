@@ -43,6 +43,7 @@ tsApp
 
         $scope.selectedProject = null;
         $scope.projectRoles = [];
+		$scope.rolesForSelectedProject = [];
 
         // Model variables
         $scope.projects = null;
@@ -118,7 +119,7 @@ tsApp
             sortField : $scope.paging['project'].sortField,
             ascending : $scope.paging['project'].ascending == null ? true
               : $scope.paging['project'].ascending,
-            queryRestriction : 'userRoleMap:' + $scope.user.userName + 'ADMIN'
+            queryRestriction : '(userRoleMap:' + $scope.user.userName + 'ADMIN OR userRoleMap:' + $scope.user.userName + 'LEAD)'
           };
           // clear queryRestriction for application admins
           if ($scope.user.applicationRole == 'ADMIN') {
@@ -144,7 +145,7 @@ tsApp
             sortField : $scope.paging['candidateProject'].sortField,
             ascending : $scope.paging['candidateProject'].ascending == null ? true
               : $scope.paging['candidateProject'].ascending,
-            queryRestriction : 'userRoleMap:' + $scope.user.userName + 'ADMIN'
+            queryRestriction : '(userRoleMap:' + $scope.user.userName + 'ADMIN OR userRoleMap:' + $scope.user.userName + 'LEAD)' 
           };
           // clear queryRestriction for application admins
           if ($scope.user.applicationRole == 'ADMIN') {
@@ -258,6 +259,26 @@ tsApp
           $scope.selectedProject = project;
           $scope.getUnassignedUsers();
           $scope.getAssignedUsers();
+
+		  $scope.rolesForSelectedProject = [];
+		  //Application level admins should always be able to assign any available role
+		  if($scope.user.applicationRole == 'ADMIN'){
+				$scope.rolesForSelectedProject = $scope.projectRoles;
+		  }
+		  //LEADs should only be able to assign LEADs and below
+		  else{
+		    Object.keys(project.userRoleMap).forEach(function(user) {
+		      if(user === $scope.user.userName){
+			    if(project.userRoleMap[user] === 'ADMIN'){
+		  		  $scope.rolesForSelectedProject = $scope.projectRoles;
+			    }
+			    else if (project.userRoleMap[user] === 'LEAD'){
+                  $scope.rolesForSelectedProject = $scope.projectRoles.filter(r => r !== 'ADMIN');
+			    }
+			  }  
+		    });
+		  }
+
 
           resetPaging();
         };
@@ -593,6 +614,7 @@ tsApp
           $scope.availableChecks = [];
           $scope.selectedChecks = [];
           $scope.errors = [];
+          $scope.translationBranches = [];
 
           // Wire default validation check 'on' by default
           for (var i = 0; i < $scope.validationChecks.length; i++) {
@@ -624,12 +646,43 @@ tsApp
 
               });
           };
+          
+          $scope.getAvailableBranchesByTerminologyHandler = function() {
+            projectService.getAvailableBranchesByTerminologyHandler().then(
+              function(data) {
+                $scope.translationBranches = data;
+               }
+            );
+          };
+          
+          $scope.getAvailableBranchesByTerminologyHandler();
+
+          $scope.addTranslationExtension = function(selectedOption) {
+            if (!$scope.project.translationExtensionLanguages){
+              $scope.project.translationExtensionLanguages = [];
+              $scope.project.translationExtensionLanguages.push(selectedOption);
+            } else if (!$scope.project.translationExtensionLanguages.includes(selectedOption)) {
+              if (!$scope.project.translationExtensionLanguages.some(
+                  tel => tel.branch === selectedOption.branch  
+                  && tel.languageCode === selectedOption.languageCode)) {
+                    $scope.project.translationExtensionLanguages.push(selectedOption);
+              }
+            }
+          };
+
+          $scope.removeTranslationExtension = function(selectedOption) {
+            $scope.project.translationExtensionLanguages = 
+              $scope.project.translationExtensionLanguages.filter(so => so !== selectedOption);
+          };
 
           // Terminology handler selection
           $scope.selectHandler = function(handler) {
             $scope.project.terminologyHandlerKey = handler.key;
             $scope.project.terminologyHandlerUrl = handler.value;
             $scope.terminologies = [];
+            $scope.translationBranches = [];
+            $scope.getAvailableBranchesByTerminologyHandler();
+            $scope.testHandlerUrl();
           }
 
           // Test the handler URL, if successful, mark as such
@@ -721,13 +774,15 @@ tsApp
               // Success
               function(data) {
                 var projectId = data.id;
-                projectService.assignUserToProject(data.id, $scope.user.userName, 'ADMIN').then(
+				var assignRole = data.terminologyHandlerKey === 'MANAGED-SERVICE' && user.applicationRole !== 'ADMIN' ? 'LEAD' : 'ADMIN';
+                projectService.assignUserToProject(data.id, $scope.user.userName, assignRole).then(
                   function(data) {
                     // Update 'anyrole'
                     projectService.getUserHasAnyRole();
 
                     // Set the "last project" setting to this project
                     $scope.user.userPreferences.lastProjectId = projectId;
+                    $scope.user.userPreferences.lastProjectRole = 'AUTHOR';
                     securityService.updateUserPreferences($scope.user.userPreferences);
                     $uibModalInstance.close(data);
                   },
@@ -810,6 +865,7 @@ tsApp
           $scope.availableChecks = [];
           $scope.selectedChecks = [];
           $scope.errors = [];
+          $scope.translationBranches = [];
 
           // The others should only be selected if they were already saved as valid on the project
           for (var i = 0; i < $scope.validationChecks.length; i++) {
@@ -849,6 +905,33 @@ tsApp
             });
           };
           $scope.getTerminologyEditions();
+                    
+          $scope.getAvailableBranchesByTerminologyHandler = function() {
+            projectService.getAvailableBranchesByTerminologyHandler().then(
+              function(data) {
+                $scope.translationBranches = data;
+              }
+            );
+          };
+          $scope.getAvailableBranchesByTerminologyHandler();
+                    
+          $scope.addTranslationExtension = function(selectedOption) {
+            if (!$scope.project.translationExtensionLanguages){
+              $scope.project.translationExtensionLanguages = [];
+              $scope.project.translationExtensionLanguages.push(selectedOption);
+            } else if (!$scope.project.translationExtensionLanguages.includes(selectedOption)) {
+              if (!$scope.project.translationExtensionLanguages.some(
+                  tel => tel.branch === selectedOption.branch  
+                  && tel.languageCode === selectedOption.languageCode)) {
+                    $scope.project.translationExtensionLanguages.push(selectedOption);
+              }
+            }
+          };
+          
+          $scope.removeTranslationExtension = function(selectedOption) {
+            $scope.project.translationExtensionLanguages = 
+              $scope.project.translationExtensionLanguages.filter(so => so !== selectedOption);
+          };
 
           // Get $scope.modules
           $scope.getModules = function() {
@@ -925,7 +1008,7 @@ tsApp
               window.alert('The workflow path cannot be blank');
               return;
             }
-
+            
             project.validationChecks = [];
             for (var i = 0; i < $scope.validationChecks.length; i++) {
               if ($scope.selectedChecks.indexOf($scope.validationChecks[i].value) != -1) {
@@ -940,6 +1023,10 @@ tsApp
             // copy clause - don't allow negation - it's implicitly negated
             project.exclusionClause = $scope.clause == null ? null : $scope.clause.value;
             // Update project - this will validate the expression
+            for(var i=0; i < project.translationExtensionLanguages.length; i++) {
+              project.translationExtensionLanguages[i].projectId = project.id;
+            }
+            
             projectService.updateProject(project).then(
             // Success
             function(data) {

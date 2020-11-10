@@ -205,6 +205,7 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl
     throws Exception {
     Logger.getLogger(getClass())
         .info("RESTful call GET (Security): /user/users");
+
     final SecurityService securityService = new SecurityServiceJpa();
     try {
       authorizeApp(securityService, authToken, "retrieve all users",
@@ -212,6 +213,7 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl
       final UserList list = securityService.getUsers();
       for (User user : list.getObjects()) {
         user.setUserPreferences(null);
+        securityService.handleLazyInit(user);
       }
       return list;
     } catch (Exception e) {
@@ -275,6 +277,12 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl
     try {
       authorizeApp(securityService, authToken, "remove user", UserRole.USER);
 
+      // Remove user preferences, if any
+      UserPreferences userPreferences = securityService.getUser(id).getUserPreferences();
+      if(userPreferences != null) {
+        securityService.removeUserPreferences(userPreferences.getId());
+      }
+      
       // Remove user
       securityService.removeUser(id);
     } catch (Exception e) {

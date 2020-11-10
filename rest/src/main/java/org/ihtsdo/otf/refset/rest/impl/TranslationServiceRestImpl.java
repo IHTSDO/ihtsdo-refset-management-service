@@ -1,15 +1,18 @@
 /**
- * Copyright 2015 West Coast Informatics, LLC
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.rest.impl;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.UUID;
 
@@ -34,16 +37,19 @@ import org.ihtsdo.otf.refset.ConceptDiffReport;
 import org.ihtsdo.otf.refset.MemoryEntry;
 import org.ihtsdo.otf.refset.Note;
 import org.ihtsdo.otf.refset.PhraseMemory;
+import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.ReleaseInfo;
 import org.ihtsdo.otf.refset.SpellingDictionary;
 import org.ihtsdo.otf.refset.StagedTranslationChange;
 import org.ihtsdo.otf.refset.Translation;
+import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.FieldedStringTokenizer;
+import org.ihtsdo.otf.refset.helpers.IoHandlerInfo.IoType;
 import org.ihtsdo.otf.refset.helpers.IoHandlerInfoList;
 import org.ihtsdo.otf.refset.helpers.KeyValuePair;
 import org.ihtsdo.otf.refset.helpers.KeyValuePairList;
@@ -51,7 +57,11 @@ import org.ihtsdo.otf.refset.helpers.KeyValuesMap;
 import org.ihtsdo.otf.refset.helpers.LanguageDescriptionTypeList;
 import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.StringList;
+import org.ihtsdo.otf.refset.helpers.TranslationExtensionLanguage;
 import org.ihtsdo.otf.refset.helpers.TranslationList;
+import org.ihtsdo.otf.refset.helpers.TranslationSuggestion;
+import org.ihtsdo.otf.refset.helpers.TranslationSuggestionImpl;
+import org.ihtsdo.otf.refset.helpers.TranslationSuggestionList;
 import org.ihtsdo.otf.refset.jpa.ConceptDiffReportJpa;
 import org.ihtsdo.otf.refset.jpa.ConceptNoteJpa;
 import org.ihtsdo.otf.refset.jpa.MemoryEntryJpa;
@@ -66,10 +76,14 @@ import org.ihtsdo.otf.refset.jpa.helpers.IoHandlerInfoListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.LanguageDescriptionTypeListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.TranslationListJpa;
+import org.ihtsdo.otf.refset.jpa.services.RefsetServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.ReleaseServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.TranslationServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.WorkflowServiceJpa;
+import org.ihtsdo.otf.refset.jpa.services.handlers.ImportTranslationExcelHandler;
+import org.ihtsdo.otf.refset.jpa.services.handlers.ImportTranslationTermServerHandler;
+import org.ihtsdo.otf.refset.jpa.services.handlers.SnowstormTerminologyHandler;
 import org.ihtsdo.otf.refset.jpa.services.rest.TranslationServiceRest;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.Description;
@@ -79,6 +93,7 @@ import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.DescriptionJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.LanguageDescriptionTypeJpa;
+import org.ihtsdo.otf.refset.services.RefsetService;
 import org.ihtsdo.otf.refset.services.ReleaseService;
 import org.ihtsdo.otf.refset.services.SecurityService;
 import org.ihtsdo.otf.refset.services.TranslationService;
@@ -88,7 +103,9 @@ import org.ihtsdo.otf.refset.services.handlers.ImportTranslationHandler;
 import org.ihtsdo.otf.refset.services.handlers.PhraseMemoryHandler;
 import org.ihtsdo.otf.refset.services.handlers.SpellingCorrectionHandler;
 import org.ihtsdo.otf.refset.services.handlers.TerminologyHandler;
+import org.ihtsdo.otf.refset.services.handlers.WorkflowActionHandler;
 import org.ihtsdo.otf.refset.workflow.TrackingRecord;
+import org.ihtsdo.otf.refset.workflow.WorkflowAction;
 import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 
 import com.wordnik.swagger.annotations.Api;
@@ -298,20 +315,34 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
     throws Exception {
     Logger.getLogger(getClass())
         .info("RESTful call PUT (Translation): /add " + translation);
-
-    if (translation.getProject() == null
-        || translation.getProject().getId() == null) {
-      throw new LocalException("A translation must have an associated project");
-    }
-    if (translation.getRefset() == null
-        || translation.getRefset().getId() == null) {
-      throw new LocalException("A translation must have an associated refset");
-    }
+    
     final TranslationService translationService =
         new TranslationServiceJpa(getHeaders(headers));
     translationService.setTransactionPerOperation(false);
     translationService.beginTransaction();
+
     try {
+      if (translation.getProject() == null
+          || translation.getProject().getId() == null) {
+        throw new LocalException(
+            "A translation must have an associated project");
+      }
+      if (translation.getRefset() == null
+          || translation.getRefset().getId() == null) {
+        throw new LocalException(
+            "A translation must have an associated refset");
+      }
+      if (ConfigUtility.getConfigProperties()
+          .containsKey("language.refset.dialect.invalid")) {
+        List<String> invalidLanguageCodes =
+            Arrays.asList(ConfigUtility.getConfigProperties()
+                .getProperty("language.refset.dialect.invalid").split(";"));
+        if (invalidLanguageCodes.contains(translation.getLanguage())) {
+          throw new LocalException(
+              translation.getLanguage() + " is an invalid language code");
+        }
+      }
+
       final String userName =
           authorizeProject(translationService, translation.getProjectId(),
               securityService, authToken, "add translation", UserRole.AUTHOR);
@@ -391,6 +422,16 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
       final String userName = authorizeProject(translationService,
           translation.getProjectId(), securityService, authToken,
           "update translation", UserRole.AUTHOR);
+      
+      if (ConfigUtility.getConfigProperties()
+          .containsKey("language.refset.dialect.invalid")) {
+        List<String> invalidLanguageCodes = Arrays.asList(ConfigUtility.getConfigProperties()
+            .getProperty("language.refset.dialect.invalid").split(";"));
+        if (invalidLanguageCodes.contains(translation.getLanguage())) {
+          throw new LocalException(translation.getLanguage() + " is an invalid language code");
+        }
+      }
+      
       Translation oldTranslation =
           this.getTranslation(translation.getId(), authToken);
       // Check preconditions
@@ -575,10 +616,14 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
         throw new Exception("invalid handler id " + ioHandlerInfoId);
       }
 
-      return handler.exportConcepts(translation,
-          translationService
+      
+      List<Concept> conceptList = translationService
               .findConceptsForTranslation(translation.getId(), query, pfs)
-              .getObjects());
+              .getObjects();
+      
+      
+      
+      return handler.exportConcepts(translation, conceptList);
 
     } catch (Exception e) {
       handleException(e, "trying to export translation concepts");
@@ -586,9 +631,69 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
       translationService.close();
       securityService.close();
     }
-    return null;
+    return new ByteArrayInputStream("".getBytes("UTF-8"));
   }
 
+  /* see superclass */
+  @POST
+  @Override
+  @Path("/validate/export")
+  @ApiOperation(value = "Validate export translation concepts", notes = "Validates export of the concepts for the specified translation", response = ValidationResult.class)
+  public ValidationResult validateExportConcepts(
+    @ApiParam(value = "Translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
+    @ApiParam(value = "Import handler id, e.g. \"DEFAULT\"", required = true) @QueryParam("handlerId") String ioHandlerInfoId,
+    @ApiParam(value = "Query, e.g. \"aspirin\"", required = true) @QueryParam("query") String query,
+    @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(getClass()).info("RESTful call GET (Translation): /export "
+        + translationId + ", " + ioHandlerInfoId);
+
+    final TranslationService translationService =
+        new TranslationServiceJpa(getHeaders(headers));
+    try {
+      // Load translation
+      final Translation translation =
+          translationService.getTranslation(translationId);
+      if (translation == null) {
+        throw new Exception("Invalid translation id " + translationId);
+      }
+
+      // Authorize the call
+      authorizeApp(securityService, authToken,
+          "find export translation concepts", UserRole.VIEWER);
+
+      // Obtain the export handler
+      final ExportTranslationHandler handler =
+          translationService.getExportTranslationHandler(ioHandlerInfoId);
+      if (handler == null) {
+        throw new Exception("invalid handler id " + ioHandlerInfoId);
+      }
+
+      
+      List<Concept> conceptList = translationService
+              .findConceptsForTranslation(translation.getId(), query, pfs)
+              .getObjects();     
+      
+      handler.exportConcepts(translation, conceptList);
+      
+      ValidationResult result = new ValidationResultJpa();
+      return result;
+
+    } catch (Exception e) {
+      ValidationResult result = new ValidationResultJpa();
+      Set<String> errors = new HashSet<>();
+      errors.add(e.getMessage());
+      result.setErrors(errors);
+      return result;
+    } finally {
+      translationService.close();
+      securityService.close();
+    }
+  }
+
+  
   /* see superclass */
   @Override
   @DELETE
@@ -887,347 +992,85 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
     @ApiParam(value = "Content of concepts file", required = true) @FormDataParam("file") InputStream in,
     @ApiParam(value = "Translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
     @ApiParam(value = "Import handler id, e.g. \"DEFAULT\"", required = true) @QueryParam("handlerId") String ioHandlerInfoId,
+    @ApiParam(value = "Target workflow action, e.g. REVIEW, FINISH", required = false) @QueryParam("wfStatus") String wfStatus,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
     Logger.getLogger(getClass())
         .info("RESTful call POST (Translation): /import/finish " + translationId
-            + ", " + ioHandlerInfoId);
+            + ", " + ioHandlerInfoId + ", " + wfStatus);
+    try (final TranslationService translationService =
+        new TranslationServiceJpa(getHeaders(headers))) {
 
-    final TranslationService translationService =
-        new TranslationServiceJpa(getHeaders(headers));
-    translationService.setTransactionPerOperation(false);
-    translationService.beginTransaction();
-    try {
-      // Load translation
-      final Translation translation =
+      Translation translation =
           translationService.getTranslation(translationId);
-      if (translation == null) {
-        throw new Exception("Invalid translation id " + translationId);
-      }
 
       // Authorize the call
       final String userName = authorizeProject(translationService,
           translation.getProject().getId(), securityService, authToken,
           "import translation concepts", UserRole.AUTHOR);
 
-      // verify that staged
-      if (translation.getStagingType() != Translation.StagingType.IMPORT) {
-        throw new Exception(
-            "Translation is not staged for import, cannot finish.");
-      }
+      final WorkflowStatus workflowStatus =
+          ("REVIEW_NEW".equalsIgnoreCase(wfStatus)) ? WorkflowStatus.REVIEW_NEW
+              : WorkflowStatus.READY_FOR_PUBLICATION;
 
-      // get the staged change tracking object
-      final StagedTranslationChange change = translationService
-          .getStagedTranslationChangeFromOrigin(translation.getId());
+      final User user = securityService.getUser(userName);
 
-      // Obtain the import handler
-      ImportTranslationHandler handler =
-          translationService.getImportTranslationHandler(ioHandlerInfoId);
-      if (handler == null) {
-        throw new Exception("invalid handler id " + ioHandlerInfoId);
-      }
+      return importTranslationDescriptions(translationService, translationId,
+          ioHandlerInfoId, user, in, workflowStatus, true);
 
-      // Get copies of concepts for the current translation
-      final Map<String, Concept> conceptMap = new HashMap<>();
-      for (final Concept concept : translation.getConcepts()) {
-        conceptMap.put(concept.getTerminologyId(),
-            new ConceptJpa(concept, false));
-      }
-      Logger.getLogger(getClass())
-          .info("  translation count = " + conceptMap.size());
-
-      // Only allow delta import if there is at least one concept
-      if (conceptMap.size() == 0 && handler.isDeltaHandler()) {
-        throw new LocalException(
-            "A delta import handler should only be used if a translation already has concepts/descriptions.");
-      }
-
-      // Load concepts into memory and add to translation
-      final List<Concept> concepts = handler.importConcepts(translation, in);
-      final ValidationResult validationResult = handler.getValidationResults();
-
-      int objectCt = 0;
-
-      // Process concepts from import
-      for (final Concept concept : concepts) {
-        Logger.getLogger(getClass()).debug(
-            "  concept = " + concept.getTerminologyId() + ", " + concept);
-
-        // See if the concept already exists
-        Concept origConcept = conceptMap.get(concept.getTerminologyId());
-
-        // De-duplicate (because added concepts are put into the map)
-        if (!handler.isDeltaHandler() && origConcept != null) {
-          Logger.getLogger(getClass()).debug("    SKIP CONCEPT");
-          continue;
-        }
-
-        ++objectCt;
-
-        // Get orig descriptions - for a "new" concept there won't be any
-        final Map<String, Description> origDescMap = new HashMap<>();
-
-        // If orig concept exists, read its descriptions
-        if (origConcept != null) {
-          Logger.getLogger(getClass()).debug("    orig concept = "
-              + origConcept.getTerminologyId() + ", " + origConcept);
-          for (final Description desc : translationService
-              .getConcept(origConcept.getId()).getDescriptions()) {
-            final Description copy = new DescriptionJpa(desc, false);
-            origConcept.getDescriptions().add(copy);
-            origDescMap.put(desc.getTerminologyId(), copy);
-          }
-          Logger.getLogger(getClass())
-              .debug("  orig desc map = " + origDescMap);
-        }
-
-        // Otherwise add concept
-        else {
-          Logger.getLogger(getClass()).debug("    ADD CONCEPT");
-          concept.setId(null);
-          concept.setPublishable(true);
-          concept.setPublished(false);
-          concept.setName(TerminologyHandler.NAME_LOOKUP_IN_PROGRESS);
-          concept.setActive(true);
-          concept.setTranslation(translation);
-          // Mark as ready for publication as they are imported and can be
-          // further worked on from there
-          concept.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
-          concept.setLastModifiedBy(userName);
-          // Make a copy to detach it, otherwise they share the same description
-          // lists
-          origConcept =
-              new ConceptJpa(translationService.addConcept(concept), false);
-          conceptMap.put(concept.getTerminologyId(), origConcept);
-          Logger.getLogger(getClass())
-              .debug("      id = " + origConcept.getId());
-        }
-
-        // Process descriptions from import
-        for (final Description description : concept.getDescriptions()) {
-
-          Logger.getLogger(getClass()).debug("  desc = "
-              + description.getTerminologyId() + ", " + description);
-
-          // Get original description
-          Description origDesc =
-              origDescMap.get(description.getTerminologyId());
-
-          // Skip descriptions already present for a non-delta handler
-          // (e.g. de-duplicate)
-          if (!handler.isDeltaHandler() && origDesc != null) {
-            Logger.getLogger(getClass()).debug("    SKIP DESC");
-            continue;
-          }
-
-          // Get all members for current description
-          final List<LanguageRefsetMember> members =
-              description.getLanguageRefsetMembers();
-
-          // Get orig language members
-          final Map<String, LanguageRefsetMember> origMemberMap =
-              new HashMap<>();
-
-          // If orig description exists, read its members
-          if (origDesc != null) {
-            Logger.getLogger(getClass()).debug("    orig desc = "
-                + origDesc.getTerminologyId() + ", " + origDesc);
-            for (final LanguageRefsetMember member : translationService
-                .getDescription(origDesc.getId()).getLanguageRefsetMembers()) {
-              origDesc.getLanguageRefsetMembers().add(member);
-              origMemberMap.put(member.getTerminologyId(), member);
-            }
-            Logger.getLogger(getClass())
-                .debug("    orig member map = " + origMemberMap);
-          }
-
-          // Otherwise, add the description
-          else {
-            // Otherwise, add it
-            Logger.getLogger(getClass()).debug("    ADD DESC");
-            description.setId(null);
-            description.setPublishable(true);
-            description.setPublished(false);
-            description.setConcept(origConcept);
-            description.setLastModifiedBy(userName);
-            origConcept.getDescriptions().add(description);
-            // Copy the result to detach it - otherwise they share the same
-            // member list
-            origDesc = new DescriptionJpa(
-                translationService.addDescription(description), false);
-            Logger.getLogger(getClass())
-                .debug("      id = " + origDesc.getId());
-          }
-
-          // Wire concept
-          origDesc.setConcept(origConcept);
-
-          // determine whether members list changed (e.g. due to remove or add)
-          boolean membersChanged = false;
-
-          // Process language refset members from import
-          for (final LanguageRefsetMember member : members) {
-            Logger.getLogger(getClass()).debug(
-                "    member = " + member.getTerminologyId() + ", " + member);
-
-            // Get original language member
-            LanguageRefsetMember origMember =
-                origMemberMap.get(member.getTerminologyId());
-
-            // If orig member exists, log it
-            if (origMember != null) {
-              Logger.getLogger(getClass()).debug("      orig member = "
-                  + origMember.getTerminologyId() + ", " + origMember);
-            }
-
-            // Otherwise, add language member
-            else {
-              // Otherwise, add it
-              Logger.getLogger(getClass()).debug("      ADD MEMBER");
-              member.setId(null);
-              member.setPublishable(true);
-              member.setPublished(false);
-              member.setDescriptionId(origDesc.getTerminologyId());
-              member.setLastModifiedBy(userName);
-              origMember = translationService.addLanguageRefsetMember(member,
-                  translation.getTerminology());
-              origDesc.getLanguageRefsetMembers().add(origMember);
-              membersChanged = true;
-            }
-
-            // If delta handler and the description is to be removed
-            // Remove the corresponding language entry as well
-            if (handler.isDeltaHandler() && origDesc != null
-                && !description.isActive()) {
-              Logger.getLogger(getClass()).debug("      REMOVE MEMBER 1");
-              translationService.removeLanguageRefsetMember(origMember.getId());
-              origDesc.getLanguageRefsetMembers().remove(origMember);
-              membersChanged = true;
-            }
-
-            // Retire
-            else if (handler.isDeltaHandler() && origMember != null
-                && !member.isActive()) {
-              Logger.getLogger(getClass()).debug("      REMOVE MEMBER 2");
-              // If retired, remove from the refset
-              translationService.removeLanguageRefsetMember(origMember.getId());
-              origDesc.getLanguageRefsetMembers().remove(origMember);
-              membersChanged = true;
-            }
-
-            // Update if changed
-            else if (handler.isDeltaHandler() && origMember != null
-                && member.isActive()) {
-              Logger.getLogger(getClass()).debug("      UPDATE MEMBER");
-              // Update the terminologyId, effectiveTime, moduleId
-              origMember.setAcceptabilityId(member.getAcceptabilityId());
-              origMember.setEffectiveTime(member.getEffectiveTime());
-              origMember.setModuleId(member.getTerminologyId());
-              origMember.setLastModifiedBy(userName);
-              translationService.updateLanguageRefsetMember(origMember,
-                  translation.getTerminology());
-            }
-
-          }
-
-          // Retire descriptions for delta handler
-          if (handler.isDeltaHandler() && origDesc != null
-              && !description.isActive()) {
-            Logger.getLogger(getClass()).debug("    REMOVE DESC");
-            // If retired, remove from the concept
-            translationService.removeDescription(origDesc.getId());
-            origConcept.getDescriptions().remove(origDesc);
-          }
-
-          // if members changed or description already existed, update
-          else if (membersChanged || (handler.isDeltaHandler()
-              && origDesc != null && description.isActive())) {
-            Logger.getLogger(getClass()).debug("    UPDATE DESC");
-            // Update fields
-            origDesc.setCaseSignificanceId(description.getCaseSignificanceId());
-            origDesc.setLanguageCode(description.getLanguageCode());
-            origDesc.setLastModifiedBy(userName);
-            origDesc.setModuleId(description.getModuleId());
-            origDesc.setTypeId(description.getTypeId());
-            origDesc.setEffectiveTime(description.getEffectiveTime());
-
-            // Technically, these fields should yield new identity
-            if (!origDesc.getTerm().equals(description.getTerm())) {
-              throw new Exception(
-                  "Description term is not allowed to change without changing identity");
-            }
-            if (!origDesc.getTypeId().equals(description.getTypeId())) {
-              throw new Exception(
-                  "Description typeId is not allowed to change without changing identity");
-            }
-
-            // This will also pick up any cases of languages added or removed
-            translationService.updateDescription(origDesc);
-            // NOTE: this also just keeps any attached language entries
-          }
-
-        }
-
-        // If origConcept has no descriptions, remove it
-        if (origConcept.getDescriptions().size() == 0) {
-          Logger.getLogger(getClass()).debug("  REMOVE CONCEPT");
-          translationService.removeConcept(origConcept.getId(), false);
-          conceptMap.remove(concept.getTerminologyId());
-
-        }
-
-        // otherwise update the orig concept (which for a new concept will be
-        // the new one)
-        else {
-          Logger.getLogger(getClass()).debug("  UPDATE CONCEPT");
-          origConcept.setLastModifiedBy(userName);
-          translationService.updateConcept(origConcept);
-        }
-
-        // Commit every so often
-        if (objectCt % commitCt == 0) {
-          translationService.commitClearBegin();
-        }
-
-      }
-      translationService.commitClearBegin();
-
-      Logger.getLogger(getClass())
-          .info("  translation import count = " + objectCt);
-      Logger.getLogger(getClass()).info("  total = " + conceptMap.size());
-
-      // Remove the staged translation change and set staging type back to null
-      translationService.removeStagedTranslationChange(change.getId());
-      translation.setStagingType(null);
-      if (ConfigUtility.isAssignNames()) {
-        translation.setLookupInProgress(true);
-      }
-      translation.setLastModifiedBy(userName);
-      translationService.updateTranslation(translation);
-
-      // close transaction
-      translationService.commit();
-
-      // Lookup names and active status of concepts
-      if (ConfigUtility.isAssignNames()) {
-        translationService.lookupConceptNames(translationId,
-            "finish import concepts", ConfigUtility.isBackgroundLookup());
-      }
-
-      addLogEntry(translationService, userName, "FINISH IMPORT translation",
-          translation.getProject().getId(), translation.getId(),
-          translation + "\n  count = " + objectCt);
-
-      return validationResult;
     } catch (Exception e) {
-      handleException(e, "trying to import translation concepts");
-      return null;
+      handleException(e, "trying to import translations");
     } finally {
-      translationService.close();
       securityService.close();
     }
 
+    return null;
+  }
+
+  /* see superclass */
+  @POST
+  @Override
+  @Path("/import/finish/{handlerName}")
+  @ApiOperation(value = "Finish translation concept import", notes = "Finishes the import of translation concepts into the specified translation", response = ValidationResultJpa.class)
+  public ValidationResult finishImportConcepts(
+    @ApiParam(value = "Translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
+    @ApiParam(value = "Import handler id, e.g. \"DEFAULT\"", required = true) @PathParam("handlerName") String handlerName,
+    @ApiParam(value = "Workflow action, e.g. REVIEW, FINISH", required = true) @QueryParam("wfStatus") String wfStatus,
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(getClass())
+        .info("RESTful call POST (Translation): /import/finish/" + handlerName
+            + "/" + translationId);
+
+    try (final TranslationService translationService =
+        new TranslationServiceJpa(getHeaders(headers))) {
+
+      Translation translation =
+          translationService.getTranslation(translationId);
+
+      // Authorize the call
+      final String userName = authorizeProject(translationService,
+          translation.getProject().getId(), securityService, authToken,
+          "import translation concepts", UserRole.AUTHOR);
+
+      final WorkflowStatus workflowStatus =
+          ("REVIEW_NEW".equalsIgnoreCase(wfStatus)) ? WorkflowStatus.REVIEW_NEW
+              : WorkflowStatus.READY_FOR_PUBLICATION;
+
+      final User user = securityService.getUser(userName);
+
+      return importTranslationDescriptions(translationService, translationId,
+          handlerName, user, getHeaders(headers), workflowStatus, false);
+
+    } catch (Exception e) {
+      handleException(e, "trying to import translations");
+    } finally {
+      securityService.close();
+    }
+
+    return null;
   }
 
   /* see superclass */
@@ -2197,7 +2040,6 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
 
   }
 
-  /* see superclass */
   /* see superclass */
   @GET
   @Override
@@ -3204,7 +3046,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
       securityService.close();
     }
   }
-  
+
   /* see superclass */
   @GET
   @Override
@@ -3216,7 +3058,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass())
-        .info("RESTful call GET (Translation): /lookup/name " + translationId + ", " + conceptId);
+        .info("RESTful call GET (Translation): /lookup/name " + translationId
+            + ", " + conceptId);
 
     final TranslationService translationService =
         new TranslationServiceJpa(getHeaders(headers));
@@ -3224,25 +3067,23 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
       final Translation translation =
           translationService.getTranslation(translationId);
       // Authorize the call
-      final String userName = authorizeProject(translationService,
-          translation.getProject().getId(), securityService, authToken,
-          "lookup of concept name", UserRole.AUTHOR);
+      authorizeProject(translationService, translation.getProject().getId(),
+          securityService, authToken, "lookup of concept name",
+          UserRole.AUTHOR);
 
       // Lookup with terminology server and update concept name
-      Concept concept = translationService.updateConceptName(translation,
-          conceptId);
-      
+      Concept concept =
+          translationService.updateConceptName(translation, conceptId);
+
       return concept;
     } catch (Exception e) {
-      handleException(e,
-          "trying to do lookup of concept name");
+      handleException(e, "trying to do lookup of concept name");
     } finally {
       translationService.close();
       securityService.close();
     }
-	return null;
+    return null;
   }
-
 
   /* see superclass */
   @GET
@@ -3347,6 +3188,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
     }
     return spellingCorrectionHandlerMap.get(translation.getId());
   }
+  
+  
 
   /**
    * Returns the phrase memory handler.
@@ -3538,6 +3381,588 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
       return list;
     } catch (Exception e) {
       handleException(e, "trying to get filters");
+      return null;
+    } finally {
+      translationService.close();
+      securityService.close();
+    }
+  }
+
+  /* see superclass */
+  @Override
+  @GET
+  @Path("/refset/{refsetId}/concept/{conceptId}")
+  @ApiOperation(value = "Translation suggestion list", notes = "Gets translation suggestions for a concept based on project configuration.", response = TranslationSuggestionList.class)
+  public TranslationSuggestionList getTranslationSuggestionsForConcept(
+    @ApiParam(value = "Refset id, e.g. 2", required = true) @PathParam("refsetId") Long refsetId,
+    @ApiParam(value = "Concept id, e.g. 2", required = true) @PathParam("conceptId") Long conceptId,
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(getClass()).info("RESTful GET call (Translation): ");
+    TranslationSuggestionList translationSuggestionsList =
+        new TranslationSuggestionList();
+
+    try (final RefsetService refsetService =
+        new RefsetServiceJpa(getHeaders(headers))) {
+
+      authorizeApp(securityService, authToken,
+          "translation suggestions for concept", UserRole.VIEWER);
+
+      final Refset refset = refsetService.getRefset(refsetId);
+      final Project project = refset.getProject();
+
+      final List<TranslationExtensionLanguage> translationExtensionLanguages =
+          project.getTranslationExtensionLanguages();
+
+      if (translationExtensionLanguages == null
+          || translationExtensionLanguages.isEmpty()) {
+        Logger.getLogger(getClass()).debug("No translation Extensions.");
+        return translationSuggestionsList;
+      }
+
+      // force to snowstorm
+      final SnowstormTerminologyHandler handler =
+          new SnowstormTerminologyHandler();
+      handler.setUrl(ConfigUtility.getConfigProperties()
+          .getProperty("terminology.handler.PUBLIC-BROWSER.defaultUrl"));
+      handler.setApiKey(ConfigUtility.getConfigProperties()
+          .getProperty("terminology.handler.PUBLIC-BROWSER.apiKey"));
+
+      for (TranslationExtensionLanguage te : translationExtensionLanguages) {
+        Logger.getLogger(getClass()).info(
+            "Getting concepts for " + te.getBranch() + " concept:" + conceptId);
+        final Concept concept = handler.getFullConcept(Long.toString(conceptId),
+            null, te.getBranch());
+        if (concept != null && concept.getDescriptions() != null) {
+          for (Description d : concept.getDescriptions()) {
+            if (!"en".equalsIgnoreCase(d.getLanguageCode())) {
+              TranslationSuggestion ts = new TranslationSuggestionImpl();
+              ts.setSuggestion(d.getTerm());
+              ts.setLanguageCode(d.getLanguageCode());
+              ts.setSource(te.getBranch());
+              if (!translationSuggestionsList.contains(ts)) {
+                translationSuggestionsList.addTranslationSuggestion(ts);
+              }
+            }
+          }
+        }
+      }
+
+    } catch (Exception e) {
+      handleException(e,
+          "trying to get translation suggestions for concept for refset "
+              + refsetId + " and concept " + conceptId);
+      return null;
+    } finally {
+      securityService.close();
+    }
+
+    return translationSuggestionsList;
+  }
+
+  private ValidationResult importTranslationDescriptions(
+    TranslationService translationService, Long translationId,
+    String ioHandlerInfoId, User user, InputStream inputStream,
+    WorkflowStatus workflowStatus, boolean isEditable) throws Exception {
+
+    return importTranslationDescriptions(translationService, translationId,
+        ioHandlerInfoId, user, inputStream, null, workflowStatus, isEditable);
+  }
+
+  private ValidationResult importTranslationDescriptions(
+    TranslationService translationService, Long translationId,
+    String ioHandlerInfoId, User user, Map<String, String> headers,
+    WorkflowStatus workflowStatus, boolean isEditable) throws Exception {
+
+    return importTranslationDescriptions(translationService, translationId,
+        ioHandlerInfoId, user, null, headers, workflowStatus, isEditable);
+  }
+
+  private ValidationResult importTranslationDescriptions(
+    TranslationService translationService, Long translationId,
+    String ioHandlerInfoId, User user, InputStream inputStream,
+    Map<String, String> headers, WorkflowStatus workflowStatus,
+    boolean isEditable) throws Exception {
+
+    translationService.setTransactionPerOperation(false);
+    translationService.beginTransaction();
+
+    try {
+      // Load translation
+      final Translation translation =
+          translationService.getTranslation(translationId);
+      if (translation == null) {
+        throw new Exception("Invalid translation id " + translationId);
+      }
+
+      // verify that staged
+      if (translation.getStagingType() != Translation.StagingType.IMPORT) {
+        throw new Exception(
+            "Translation is not staged for import, cannot finish.");
+      }
+
+      // get the staged change tracking object
+      final StagedTranslationChange change = translationService
+          .getStagedTranslationChangeFromOrigin(translation.getId());
+
+      // Obtain the import handler
+      ImportTranslationHandler handler =
+          translationService.getImportTranslationHandler(ioHandlerInfoId);
+      if (handler == null) {
+        throw new Exception("invalid handler id " + ioHandlerInfoId);
+      }
+
+      // Get copies of concepts for the current translation
+      final Map<String, Concept> conceptMap = new HashMap<>();
+      for (final Concept concept : translation.getConcepts()) {
+        conceptMap.put(concept.getTerminologyId(),
+            new ConceptJpa(concept, false));
+      }
+      Logger.getLogger(getClass())
+          .info("  translation count = " + conceptMap.size());
+
+      // Only allow delta import if there is at least one concept
+      if (conceptMap.size() == 0 && handler.isDeltaHandler()) {
+        throw new LocalException(
+            "A delta import handler should only be used if a translation already has concepts/descriptions.");
+      }
+
+      // Load concepts into memory and add to translation
+
+      final List<Concept> concepts;
+      if (IoType.FILE == handler.getIoType()) {
+        concepts = handler.importConcepts(translation, inputStream);
+      } else if (IoType.API == handler.getIoType()) {
+        concepts = handler.importConcepts(translation, headers);
+      } else {
+        throw new Exception("Invalid IoType in Import handler");
+      }
+
+      final ValidationResult validationResult = handler.getValidationResults();
+
+      int objectCt = 0;
+      int conceptAdded = 0;
+      int descriptonAdded = 0;
+
+      // Process concepts from import
+      for (final Concept concept : concepts) {
+        Logger.getLogger(getClass()).debug(
+            "  concept = " + concept.getTerminologyId() + ", " + concept);
+
+        // See if the concept already exists
+        Concept origConcept = conceptMap.get(concept.getTerminologyId());
+
+        // De-duplicate (because added concepts are put into the map)
+        if (!handler.isDeltaHandler() && origConcept != null) {
+          Logger.getLogger(getClass()).debug("    SKIP CONCEPT");
+          continue;
+        }
+
+        ++objectCt;
+
+        // Get orig descriptions - for a "new" concept there won't be any
+        final Map<String, Description> origDescMap = new HashMap<>();
+
+        // If orig concept exists, read its descriptions
+        if (origConcept != null) {
+          Logger.getLogger(getClass()).debug("    orig concept = "
+              + origConcept.getTerminologyId() + ", " + origConcept);
+          for (final Description desc : translationService
+              .getConcept(origConcept.getId()).getDescriptions()) {
+            final Description copy = new DescriptionJpa(desc, false);
+            origConcept.getDescriptions().add(copy);
+            origDescMap.put(desc.getTerminologyId(), copy);
+          }
+          Logger.getLogger(getClass())
+              .debug("  orig desc map = " + origDescMap);
+        }
+
+        // Otherwise add concept
+        else {
+          Logger.getLogger(getClass()).debug("    ADD CONCEPT");
+          concept.setId(null);
+          concept.setPublishable(true);
+          concept.setPublished(false);
+          concept.setName(TerminologyHandler.REQUIRES_NAME_LOOKUP);
+          concept.setActive(true);
+          concept.setTranslation(translation);
+          // Excel imported concepts should go to Review Available work
+          if (handler instanceof ImportTranslationExcelHandler) {
+            workflowStatus = WorkflowStatus.REVIEW_NEW;
+          } else {
+            // Mark as ready for publication as they are imported and can be
+            // further worked on from there
+            concept.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
+          }
+          if (handler instanceof ImportTranslationTermServerHandler) {
+            concept.setLastModifiedBy("Term Server");
+          } else {
+            concept.setLastModifiedBy(user.getUserName());
+          }
+          // Make a copy to detach it, otherwise they share the same description
+          // lists
+          origConcept =
+              new ConceptJpa(translationService.addConcept(concept), false);
+          ++conceptAdded;
+          conceptMap.put(concept.getTerminologyId(), origConcept);
+          Logger.getLogger(getClass())
+              .debug("      id = " + origConcept.getId());
+        }
+
+        // Process descriptions from import
+        for (final Description description : concept.getDescriptions()) {
+          Logger.getLogger(getClass()).debug("  desc = "
+              + description.getTerminologyId() + ", " + description);
+
+          // Get original description
+          Description origDesc =
+              origDescMap.get(description.getTerminologyId());
+
+          // Skip descriptions already present for a non-delta handler
+          // (e.g. de-duplicate)
+          if (!handler.isDeltaHandler() && origDesc != null) {
+            Logger.getLogger(getClass()).debug("    SKIP DESC");
+            continue;
+          }
+
+          // Get all members for current description
+          final List<LanguageRefsetMember> members =
+              description.getLanguageRefsetMembers();
+
+          // Get orig language members
+          final Map<String, LanguageRefsetMember> origMemberMap =
+              new HashMap<>();
+
+          // If orig description exists, read its members
+          if (origDesc != null) {
+            Logger.getLogger(getClass()).debug("    orig desc = "
+                + origDesc.getTerminologyId() + ", " + origDesc);
+            for (final LanguageRefsetMember member : translationService
+                .getDescription(origDesc.getId()).getLanguageRefsetMembers()) {
+              origDesc.getLanguageRefsetMembers().add(member);
+              origMemberMap.put(member.getTerminologyId(), member);
+            }
+            Logger.getLogger(getClass())
+                .debug("    orig member map = " + origMemberMap);
+          }
+
+          // Otherwise, add the description
+          else {
+            // Otherwise, add it
+            Logger.getLogger(getClass()).debug("    ADD DESC");
+            description.setId(null);
+            description.setPublishable(true);
+            description.setPublished(false);
+            description.setConcept(origConcept);
+            description.setEditable(isEditable);
+            if (handler instanceof ImportTranslationTermServerHandler) {
+              description.setLastModifiedBy("Term Server");
+            } else {
+              description.setLastModifiedBy(user.getUserName());
+            }
+            origConcept.getDescriptions().add(description);
+            // Copy the result to detach it - otherwise they share the same
+            // member list
+            origDesc = new DescriptionJpa(
+                translationService.addDescription(description), false);
+            ++descriptonAdded;
+            Logger.getLogger(getClass())
+                .debug("      id = " + origDesc.getId());
+          }
+
+          // Wire concept
+          origDesc.setConcept(origConcept);
+
+          // determine whether members list changed (e.g. due to remove or add)
+          boolean membersChanged = false;
+
+          // Process language refset members from import
+          for (final LanguageRefsetMember member : members) {
+            Logger.getLogger(getClass()).debug(
+                "    member = " + member.getTerminologyId() + ", " + member);
+
+            // Get original language member
+            LanguageRefsetMember origMember =
+                origMemberMap.get(member.getTerminologyId());
+
+            // If orig member exists, log it
+            if (origMember != null) {
+              Logger.getLogger(getClass()).debug("      orig member = "
+                  + origMember.getTerminologyId() + ", " + origMember);
+            }
+
+            // Otherwise, add language member
+            else {
+              // Otherwise, add it
+              Logger.getLogger(getClass()).debug("      ADD MEMBER");
+              member.setId(null);
+              member.setPublishable(true);
+              member.setPublished(false);
+              member.setDescriptionId(origDesc.getTerminologyId());
+              member.setLastModifiedBy(user.getUserName());
+              if (handler instanceof ImportTranslationTermServerHandler) {
+                member.setLastModifiedBy("Term Server");
+              } else {
+                member.setLastModifiedBy(user.getUserName());
+              }
+              origMember = translationService.addLanguageRefsetMember(member,
+                  translation.getTerminology());
+              origDesc.getLanguageRefsetMembers().add(origMember);
+              membersChanged = true;
+            }
+
+            // If delta handler and the description is to be removed
+            // Remove the corresponding language entry as well
+            if (handler.isDeltaHandler() && origDesc != null
+                && !description.isActive()) {
+              Logger.getLogger(getClass()).debug("      REMOVE MEMBER 1");
+              translationService.removeLanguageRefsetMember(origMember.getId());
+              origDesc.getLanguageRefsetMembers().remove(origMember);
+              membersChanged = true;
+            }
+
+            // Retire
+            else if (handler.isDeltaHandler() && origMember != null
+                && !member.isActive()) {
+              Logger.getLogger(getClass()).debug("      REMOVE MEMBER 2");
+              // If retired, remove from the refset
+              translationService.removeLanguageRefsetMember(origMember.getId());
+              origDesc.getLanguageRefsetMembers().remove(origMember);
+              membersChanged = true;
+            }
+
+            // Update if changed
+            else if (handler.isDeltaHandler() && origMember != null
+                && member.isActive()) {
+              Logger.getLogger(getClass()).debug("      UPDATE MEMBER");
+              // Update the terminologyId, effectiveTime, moduleId
+              origMember.setAcceptabilityId(member.getAcceptabilityId());
+              origMember.setEffectiveTime(member.getEffectiveTime());
+              origMember.setModuleId(member.getTerminologyId());
+              origMember.setLastModifiedBy(user.getUserName());
+              translationService.updateLanguageRefsetMember(origMember,
+                  translation.getTerminology());
+            }
+          }
+
+          // Retire descriptions for delta handler
+          if (handler.isDeltaHandler() && origDesc != null
+              && !description.isActive()) {
+            Logger.getLogger(getClass()).debug("    REMOVE DESC");
+            // If retired, remove from the concept
+            translationService.removeDescription(origDesc.getId());
+            origConcept.getDescriptions().remove(origDesc);
+          }
+
+          // if members changed or description already existed, update
+          else if (membersChanged || (handler.isDeltaHandler()
+              && origDesc != null && description.isActive())) {
+            Logger.getLogger(getClass()).debug("    UPDATE DESC");
+            // Update fields
+            origDesc.setCaseSignificanceId(description.getCaseSignificanceId());
+            origDesc.setLanguageCode(description.getLanguageCode());
+            if (handler instanceof ImportTranslationTermServerHandler) {
+              origDesc.setLastModifiedBy("Term Server");
+            } else {
+              origDesc.setLastModifiedBy(user.getUserName());
+            }
+            origDesc.setModuleId(description.getModuleId());
+            origDesc.setTypeId(description.getTypeId());
+            origDesc.setEffectiveTime(description.getEffectiveTime());
+            origDesc.setEditable(isEditable);
+
+            // Technically, these fields should yield new identity
+            if (!origDesc.getTerm().equals(description.getTerm())) {
+              throw new Exception(
+                  "Description term is not allowed to change without changing identity");
+            }
+            if (!origDesc.getTypeId().equals(description.getTypeId())) {
+              throw new Exception(
+                  "Description typeId is not allowed to change without changing identity");
+            }
+
+            // This will also pick up any cases of languages added or removed
+            translationService.updateDescription(origDesc);
+            // NOTE: this also just keeps any attached language entries
+          }
+        }
+
+        // If origConcept has no descriptions, remove it
+        if (origConcept.getDescriptions().size() == 0) {
+          Logger.getLogger(getClass()).debug("  REMOVE CONCEPT");
+          translationService.removeConcept(origConcept.getId(), false);
+          conceptMap.remove(concept.getTerminologyId());
+        }
+
+        // otherwise update the orig concept (which for a new concept will be
+        // the new one)
+        else {
+          Logger.getLogger(getClass()).debug("  UPDATE CONCEPT");
+          origConcept.setLastModifiedBy(user.getUserName());
+          translationService.updateConcept(origConcept);
+        }
+
+        // Commit every so often
+        if (objectCt % commitCt == 0) {
+          translationService.commitClearBegin();
+        }
+      }
+      translationService.commitClearBegin();
+
+      if (workflowStatus == WorkflowStatus.REVIEW_NEW) {
+        final UserRole projectRole = UserRole.AUTHOR;
+
+        // creates dupes if already exists - why oh why?
+        try (final WorkflowService workflowService = new WorkflowServiceJpa()) {
+          final WorkflowActionHandler workflowActionHandler =
+              workflowService.getWorkflowHandlerForPath(
+                  translation.getProject().getWorkflowPath());
+          for (Concept concept : concepts) {
+            Concept savedConcept = workflowService
+                .getConcept(concept.getTerminologyId(), translation.getId());
+            if (savedConcept != null && savedConcept
+                .getWorkflowStatus() != WorkflowStatus.EDITING_DONE) {
+              workflowActionHandler.performWorkflowAction(translation, user,
+                  projectRole, WorkflowAction.ASSIGN, savedConcept,
+                  workflowService);
+              workflowActionHandler.performWorkflowAction(translation, user,
+                  projectRole, WorkflowAction.FINISH, savedConcept,
+                  workflowService);
+            }
+          }
+        }
+      }
+
+      Logger.getLogger(getClass())
+          .info("  translation import count = " + objectCt);
+      Logger.getLogger(getClass()).info("  total = " + conceptMap.size());
+
+      // Remove the staged translation change and set staging type back to null
+      translationService.removeStagedTranslationChange(change.getId());
+      translation.setStagingType(null);
+      if (ConfigUtility.isAssignNames()) {
+        translation.setLookupInProgress(true);
+      }
+      translation.setLastModifiedBy(user.getUserName());
+      translationService.updateTranslation(translation);
+
+      // close transaction
+      translationService.commit();
+
+      // Lookup names and active status of concepts
+      if (ConfigUtility.isAssignNames()) {
+        translationService.lookupConceptNames(translationId,
+            "finish import concepts", ConfigUtility.isBackgroundLookup());
+      }
+
+      addLogEntry(translationService, user.getUserName(),
+          "FINISH IMPORT translation", translation.getProject().getId(),
+          translation.getId(), translation + "\n  count = " + objectCt);
+
+      if (IoType.API == handler.getIoType()) {
+        if (conceptMap.size() == conceptAdded && conceptAdded > 0) {
+          validationResult.addComment(
+              conceptAdded + " concepts loaded into Finished Concepts.");
+        } else if (conceptMap.size() != conceptAdded && conceptAdded > 0) {
+          validationResult.addComment(
+              conceptAdded + " concepts loaded into Finished Concepts.");
+          validationResult.addComment(
+              "The other concepts are being edited, reviewed or already finished.");
+        } else if (conceptAdded == 0 && conceptMap.size() > 0) {
+          validationResult.addComment((conceptMap.size() - conceptAdded)
+              + "  concepts are being edited, reviewed or already finished.");
+        } else {
+          validationResult
+              .addComment("No concepts loaded into Finished Concepts.");
+        }
+      } else if (handler instanceof ImportTranslationExcelHandler) {
+        if (concepts.size() == descriptonAdded && descriptonAdded > 0) {
+          validationResult.addComment(descriptonAdded
+              + " descriptions loaded into Available Concepts for Review.");
+        } else if (concepts.size() != descriptonAdded && descriptonAdded > 0) {
+          validationResult.addComment(descriptonAdded
+              + " descriptions loaded into Available Concepts for Review.");
+          validationResult.addComment(
+              "The other descriptions are being edited or already finished.");
+        } else if (descriptonAdded > 0 && concepts.size() > 0) {
+          validationResult.addComment((concepts.size() - descriptonAdded)
+              + "  descriptions are being edited or already finished.");
+        } else {
+          validationResult.addComment(
+              "No descriptions loaded into Available Concepts for Review.");
+        }
+      }
+
+      return validationResult;
+
+    } catch (Exception e) {
+      Logger.getLogger(getClass())
+          .error("Error importing translation descriptions ", e);
+      throw e;
+    }
+  }
+  
+  /* see superclass */
+  @Override
+  @GET
+  @Path("/dialects")
+  @ApiOperation(value = "Get language refset dialect info", notes = "Gets info related to languages and dialects from configuration files.", response = KeyValuePairList.class)
+  public KeyValuePairList getLanguageRefsetDialectInfo(
+    @ApiParam(value = "UseCase, e.g. 'DISPLAY'", required = true) @QueryParam("useCase") String useCase,
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info("RESTful call (Translation): dialects");
+
+    final TranslationService translationService =
+        new TranslationServiceJpa(getHeaders(headers));
+    try {
+      authorizeApp(securityService, authToken, "get dialects", UserRole.VIEWER);
+
+      String key = "language.refset.dialect." + useCase;
+      
+      
+      String[] keys = null;
+      // if useCase is 'ALL', return dialects for all dialect lists
+      if (useCase.contentEquals("ALL") || !ConfigUtility.getConfigProperties()
+          .containsKey("language.refset.dialect")) {
+        keys = ConfigUtility.getConfigProperties()
+            .getProperty("language.refset.dialect").split(",");
+      // otherwise just return the dialect list requested by name e.g. MANAGED-SERVICE
+      } else {
+        if (!ConfigUtility.getConfigProperties()
+            .containsKey(key)) {
+          throw new Exception(
+              "Unable to find " + key + " configuration, serious error.");
+        }
+        keys = new String[]{key};
+      }
+      final KeyValuePairList list = new KeyValuePairList();
+      Map<String, String> map = new HashMap<>();
+      
+      // add the dialect entries for each requested property to the map/list
+      for (String propertyKey : keys) {
+        String infoString =
+            ConfigUtility.getConfigProperties().getProperty("language.refset.dialect." + propertyKey);
+
+        for (final String info : infoString.split(";")) {
+          String[] values = FieldedStringTokenizer.split(info, "|");
+          // return language-country mapped to full-name|languageRefsetId
+          map.put(values[2], values[0] + "|" + values[1]);         
+        }
+      }
+      
+      // put them in map first to ensure uniqueness
+      for (  Entry<String, String> entry : map.entrySet()) {
+        KeyValuePair pair = new KeyValuePair();
+        pair.setKey(entry.getKey());
+        pair.setValue(entry.getValue());
+        list.addKeyValuePair(pair);
+      }
+      Collections.sort(list.getKeyValuePairs());
+      return list;
+    } catch (Exception e) {
+      handleException(e, "trying to get dialect info");
       return null;
     } finally {
       translationService.close();

@@ -1,5 +1,5 @@
 /**
- * Copyright 2015 West Coast Informatics, LLC
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.rest.impl;
 
@@ -30,7 +30,7 @@ public class RootServiceRestImpl {
 
   /** The user name for error messages. */
   private String userName;
-
+  
   /** The websocket. */
   private static NotificationWebsocket websocket = null;
 
@@ -65,7 +65,7 @@ public class RootServiceRestImpl {
     // throw the local exception as a web application exception
     if (e instanceof LocalException) {
       throw new WebApplicationException(
-          Response.status(500).entity(message).build());
+          Response.status(500).entity(message).type("text/plain").build());
     }
 
     // throw the web application exception as-is, e.g. for 401 errors
@@ -103,7 +103,7 @@ public class RootServiceRestImpl {
     userName = securityService.getUsernameForToken(authToken);
     return userName;
   }
-
+  
   /**
    * Authorize the users project role or accept application ADMIN.
    *
@@ -254,4 +254,5 @@ public class RootServiceRestImpl {
     // }
     return new HashMap<>();
   }
+
 }

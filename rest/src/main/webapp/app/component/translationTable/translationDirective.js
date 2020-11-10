@@ -57,6 +57,8 @@ tsApp
               $scope.filters = [];
               $scope.showLatest = true;
               $scope.withNotesOnly = false;
+              $scope.actionStatuses = [ 'All', 'Ready to Finish', 'Ready for Publication' ];
+              $scope.actionStatus = 'All';
 
               // Used for project admin to know what users are assigned to
               // something.
@@ -361,7 +363,8 @@ tsApp
               };
 
               // Get $scope.selected.translation.assigned
-              // If nextIndex is set, we need to open the edit concept modal for
+              // If nextIndex is set, we need to open the edit concept modal
+				// for
               // that entry
               $scope.getAssignedConcepts = function(translation, nextIndex) {
                 if (!$scope.projects.role) {
@@ -378,10 +381,14 @@ tsApp
                   queryRestriction : null
                 };
 
-                if ($scope.projects.role != 'ADMIN') {
+                if (($scope.project.workflowPath != 'SNOMED' && $scope.projects.role != 'REVIEWER') || ($scope.project.workflowPath == 'SNOMED'  && $scope.projects.role != 'REVIEWER2')) {
+                  $scope.actionStatus = 'All';
+                }
+
+                if (!['LEAD','ADMIN'].includes($scope.projects.role)) {
                   pfs.queryRestriction = $scope.paging['assigned'].filter;
                   workflowService.findAssignedConcepts($scope.projects.role, $scope.project.id,
-                    translation.id, $scope.user.userName, pfs).then(
+                    translation.id, $scope.user.userName, $scope.actionStatus, pfs).then(
                     // Success
                     function(data) {
                       translation.assigned = data.records;
@@ -391,10 +398,10 @@ tsApp
                           nextIndex);
                       }
                     });
-                } else if ($scope.projects.role == 'ADMIN') {
+                } else if (['LEAD','ADMIN'].includes($scope.projects.role)) {
                   pfs.queryRestriction = $scope.paging['assigned'].filter;
-                  workflowService.findAssignedConcepts('ADMIN', $scope.project.id, translation.id,
-                    null, pfs).then(
+                  workflowService.findAssignedConcepts($scope.projects.role, $scope.project.id, translation.id,
+                    null, $scope.actionStatus, pfs).then(
                   // Success
                   function(data) {
                     translation.assigned = data.records;
@@ -450,18 +457,36 @@ tsApp
 
               // Removes all translation concepts
               $scope.removeAllTranslationConcepts = function(translation) {
-                translationService.removeAllTranslationConcepts(translation.id).then(
-                  function(data) {
-                    translationService.fireTranslationChanged(translation);
-                  });
+                if ($window.confirm("Are you sure you want to remove the translation concepts in " + translation.name + "?")) {
+                  translationService.removeAllTranslationConcepts(translation.id).then(
+                    function(data) {
+                      translationService.fireTranslationChanged(translation);
+                    });
+                }
               };
 
               // Convert date to a string
               $scope.toSimpleDate = function(lastModified) {
                 return utilService.toSimpleDate(lastModified);
-
               };
 
+              $scope.getConceptTranslators = function (concept) {
+                var translators = [];
+                var translatorsStr = null;
+                concept.descriptions.forEach(function(description) {
+                     if(!translators.includes(description.lastModifiedBy)){
+                        translators.push(description.lastModifiedBy);
+                        if (translatorsStr == null) {
+                          translatorsStr = description.lastModifiedBy;
+                        } else {
+                          translatorsStr = translatorsStr + ", " + description.lastModifiedBy;
+                        }
+                     }
+                });
+                
+                return translatorsStr;
+              };
+              
               // Convert date to a string
               $scope.toDate = function(lastModified) {
                 return utilService.toDate(lastModified);
@@ -545,8 +570,8 @@ tsApp
               $scope.removeTranslation = function(translation) {
 
                 workflowService
-                  .findAssignedConcepts('ADMIN', $scope.project.id, translation.id,
-                   null, {
+                  .findAssignedConcepts($scope.projects.role, $scope.project.id, translation.id,
+                   null, $scope.actionStatus, {
                       startIndex : 0,
                       maxResults : 1
                     })
@@ -561,7 +586,7 @@ tsApp
 
                       // Now check for available concepts
                       workflowService
-                        .findAvailableConcepts('ADMIN', $scope.project.id, translation.id,
+                        .findAvailableConcepts($scope.projects.role, $scope.project.id, translation.id,
                           $scope.user.userName, {
                             startIndex : 0,
                             maxResults : 1
@@ -649,7 +674,7 @@ tsApp
                 };
 
                 workflowService.findAssignedConcepts($scope.projects.role, $scope.project.id,
-                  $scope.selected.translation.id, userName, pfs).then(
+                  $scope.selected.translation.id, userName, $scope.actionStatus, pfs).then(
                   // Success
                   function(data) {
 
@@ -694,10 +719,10 @@ tsApp
                     : $scope.paging['assigned'].ascending,
                   queryRestriction : $scope.paging['assigned'].filter
                 };
-
-                if ($scope.projects.role != 'ADMIN') {
+                
+                if (!['LEAD','ADMIN'].includes($scope.projects.role)) {
                   workflowService.findAssignedConcepts($scope.projects.role, $scope.project.id,
-                    $scope.selected.translation.id, userName, pfs).then(
+                    $scope.selected.translation.id, userName, $scope.actionStatus, pfs).then(
                     // Success
                     function(data) {
 
@@ -754,7 +779,7 @@ tsApp
                 };
 
                 workflowService.findAssignedConcepts($scope.projects.role, $scope.project.id,
-                  $scope.selected.translation.id, $scope.user.userName, pfs).then(
+                  $scope.selected.translation.id, $scope.user.userName, $scope.actionStatus, pfs).then(
                   // Success
                   function(data) {
 
@@ -790,6 +815,14 @@ tsApp
                 );
 
               };
+              
+              // Defines what is listed in Reviewer's Assigned Concepts
+              $scope.filterActionStatus = function(actionStatus) {
+                $scope.actionStatus = actionStatus;
+                console.log("actionStatus", actionStatus);
+                $scope.getAssignedConcepts($scope.selected.translation);
+              };
+
               // Performs a workflow action
               $scope.performWorkflowAction = function(concept, action) {
 
@@ -821,6 +854,17 @@ tsApp
                   }
                 });
               }
+              
+              // Need both a $scope version and a non one for modals.
+              $scope.changeRole = function(role) {
+                changeRole(role);
+              }
+              
+              function changeRole(role) {
+                if ($scope.projects.role === 'AUTHOR') {
+                  $scope.projects.role = role;
+                }
+              }
 
               // Refresh lookup progress
               $scope.refreshLookupProgress = function(translation) {
@@ -833,7 +877,7 @@ tsApp
                   // If all lookups in progress are at 100%, stop interval
                   var found = true;
                   for ( var key in $scope.translationLookupProgress) {
-                    if ($scope.translationLookupProgress[key] < 100) {
+                    if ($scope.translationLookupProgress[key] < 100 && $scope.translationLookupProgress[key] != -1) {
                       found = false;
                       break;
                     }
@@ -1418,7 +1462,8 @@ tsApp
                 $scope.errors = [];
                 $scope.feedbackRoleOptions = [];
 
-                // if feedback assignment, only options are users that were authors or reviewers
+                // if feedback assignment, only options are users that were
+				// authors or reviewers
                 if (action == 'FEEDBACK') {
                   var previousUsers = [];
                   $scope.role = 'AUTHOR';
@@ -1462,6 +1507,7 @@ tsApp
                   if ($scope.role == 'AUTHOR'
                     || $scope.project.userRoleMap[sortedUsers[i].userName] == 'REVIEWER'
                     || $scope.project.userRoleMap[sortedUsers[i].userName] == 'REVIEWER2'
+                    || $scope.project.userRoleMap[sortedUsers[i].userName] == 'LEAD'
                     || $scope.project.userRoleMap[sortedUsers[i].userName] == 'ADMIN') {
                     $scope.assignedUsers.push(sortedUsers[i]);
                   }
@@ -1609,6 +1655,7 @@ tsApp
                 for (var i = 0; i < sortedUsers.length; i++) {
                   if ($scope.role == 'AUTHOR'
                     || $scope.project.userRoleMap[sortedUsers[i].userName].startsWith('REVIEWER')
+                    || $scope.project.userRoleMap[sortedUsers[i].userName].startsWith('LEAD')
                     || $scope.project.userRoleMap[sortedUsers[i].userName] == 'ADMIN') {
                     $scope.assignedUsers.push(sortedUsers[i]);
                   }
@@ -1623,7 +1670,8 @@ tsApp
 
                   // Perform the same search as the current concept id list
                   // and make sure it still matches (otherwise someone else
-                  // may have assigned off this list first). If successful, send
+                  // may have assigned off this list first). If successful,
+					// send
                   // the request
                   var pfs = null;
                   if (type == 'Available') {
@@ -1864,8 +1912,10 @@ tsApp
                     var searchAgain = false;
                     var nextIndex = index;
                     if (action === 'FINISH' || action === 'SAVE') {
-                      // search again if we are at the end of the current search
-                      // results, but not at the end of the total search results
+                      // search again if we are at the end of the current
+						// search
+                      // results, but not at the end of the total search
+						// results
                       if ((index + 1) == $scope.selected.translation.assigned.length
                         && ((($scope.paging['assigned'].page - 1) * $scope.paging['assigned'].pageSize) + index + 1) 
                         < $scope.selected.translation.assigned.totalCount) {
@@ -1898,7 +1948,7 @@ tsApp
 
               // Import/Export modal
               $scope.openImportExportModal = function(ltranslation, loperation, ltype) {
-                console.debug('exportModal ', ltranslation);
+                console.debug('exportModal ', ltranslation, loperation, ltype);
 
                 var modalInstance = $uibModal.open({
                   templateUrl : 'app/component/translationTable/importExport.html',
@@ -1931,6 +1981,9 @@ tsApp
                       var pfs = prepPfs();
                       pfs.startIndex = -1;
                       return pfs;
+                    },
+                    project : function() {
+                      return $scope.project;
                     }
                   }
                 });
@@ -1944,7 +1997,7 @@ tsApp
 
               // Import/Export controller
               var ImportExportModalCtrl = function($scope, $uibModalInstance, translation,
-                metadata, operation, type, ioHandlers, query, pfs) {
+                metadata, operation, type, ioHandlers, query, pfs, project) {
                 console.debug('Entered import export modal control');
 
                 $scope.translation = translation;
@@ -1953,16 +2006,32 @@ tsApp
                 $scope.pfs = pfs;
                 $scope.ioHandlers = ioHandlers;
                 $scope.selectedIoHandler = null;
-                for (var i = 0; i < ioHandlers.length; i++) {
-                  // Choose first one if only one
-                  if ($scope.selectedIoHandler == null) {
-                    $scope.selectedIoHandler = ioHandlers[i];
-                  }
-                  // choose "rf2" as default otherwise
-                  if (ioHandlers[i].name.endsWith("RF2")) {
-                    $scope.selectedIoHandler = ioHandlers[i];
-                  }
-                }
+                $scope.project = project;
+                
+                
+                projectService.getProject($scope.translation.projectId).then(
+                    // Success
+                    function(data) {
+                      // TSV export only available for MANAGED-SERVICE projects
+                      if (data.terminologyHandlerKey != 'MANAGED-SERVICE') {
+                        $scope.ioHandlers = ioHandlers.filter(function(value, index, arr) { return value.id != 'TSV'; });
+                      }
+                      for (var i = 0; i < ioHandlers.length; i++) {
+                        // Choose first one if only one
+                        if ($scope.selectedIoHandler == null) {
+                          $scope.selectedIoHandler = ioHandlers[i];
+                        }
+                        // choose "rf2" as default otherwise
+                        if (ioHandlers[i].name.endsWith("RF2")) {
+                          $scope.selectedIoHandler = ioHandlers[i];
+                        }
+                      }
+                    },
+                    // Error
+                    function(data) {
+                      handleError($scope.errors, data);
+                    });
+                             
                 $scope.type = type;
                 $scope.operation = operation;
                 $scope.errors = [];
@@ -1970,6 +2039,7 @@ tsApp
                 $scope.comments = [];
                 $scope.importStarted = false;
                 $scope.importFinished = false;
+                $scope.fileImportErrorMessage = null;
                 if (type == 'Translation' && ($scope.query || $scope.pfs)) {
                   $scope.warnings
                     .push(operation + " is based on current search criteria and may not include all concepts.");
@@ -1979,19 +2049,35 @@ tsApp
                 $scope.export = function() {
                   if (type == 'Spelling Dictionary') {
                     translationService.exportSpellingDictionary($scope.translation);
+                    $uibModalInstance.close($scope.translation);
                   }
                   if (type == 'Phrase Memory') {
                     translationService.exportPhraseMemory($scope.translation);
+                    $uibModalInstance.close($scope.translation);
                   }
                   if (type == 'Translation') {
-                    translationService.exportConcepts($scope.translation, $scope.selectedIoHandler,
-                      $scope.query, $scope.pfs);
+                    // validate export first
+                    translationService.validateExportConcepts($scope.translation, $scope.selectedIoHandler,
+                      $scope.query, $scope.pfs).then(
+                        // Success
+                        function(data) {
+                          if (data.valid) {
+                            translationService.exportConcepts($scope.translation, $scope.selectedIoHandler,
+                              $scope.query, $scope.pfs)
+                              $uibModalInstance.close($scope.translation);
+                          } else {
+                            $scope.errors = data.errors;
+                          }
+                        },
+                        // Error
+                        function(data) {
+                          handleError($scope.errors, data);
+                        });
                   }
-                  $uibModalInstance.close($scope.translation);
                 };
 
                 // Handle import
-                $scope.import = function(file) {
+                $scope.import = function(file, action) {
                   if (type == 'Spelling Dictionary') {
                     translationService.importSpellingDictionary($scope.translation.id, file).then(
                     // Success
@@ -2017,6 +2103,10 @@ tsApp
                   }
 
                   if (type == 'Translation') {
+                    if ($scope.selectedIoHandler.id === 'EXCEL') {
+                      action = 'FINISHED';
+                    }
+                      
                     translationService.beginImportConcepts($scope.translation.id,
                       $scope.selectedIoHandler.id).then(
 
@@ -2028,9 +2118,82 @@ tsApp
                           $scope.errors = data.errors;
                         } else {
 
-                          // If there are no errors, finish import
-                          translationService.finishImportConcepts($scope.translation.id,
-                            $scope.selectedIoHandler.id, file).then(
+                          if ($scope.selectedIoHandler.ioType === 'FILE') {
+                            // If there are no errors, finish import
+                            translationService.finishImportConceptsFile($scope.translation.id,
+                              $scope.selectedIoHandler.id, file, action).then(
+                                // Success - close dialog
+                                function(data) {
+                                  $scope.importFinished = true;
+                                  $scope.errors = data.errors;
+                                  $scope.warnings = data.warnings;
+                                  $scope.comments = data.comments;
+                                  startLookup(translation);
+                                },
+                                // Failure - show error
+                                function(data) {
+                                  handleError($scope.errors, data);
+                                });
+                          } else if ($scope.selectedIoHandler.ioType === 'API') {
+                          
+                            // If there are no errors, finish import
+                            translationService.finishImportConceptsApi($scope.translation.id,
+                              $scope.selectedIoHandler.id, action).then(
+                                // Success - close dialog
+                                function(data) {
+                                  $scope.importFinished = true;
+                                  $scope.errors = data.errors;
+                                  $scope.warnings = data.warnings;
+                                  $scope.comments = data.comments;
+                                  startLookup(translation);
+                                },
+                                // Failure - show error
+                                function(data) {
+                                  handleError($scope.errors, data);
+                                });
+                          } else {
+                            console.log("ERROR - selected Io Hanlder is not FILE or API"); 
+                          }
+                        }
+                      },
+
+                      // Failure - show error, clear global error
+                      function(data) {
+                        handleError($scope.errors, data);
+                      });
+                  }
+                };
+
+                // Handle continue import
+                $scope.continueImport = function(file, wfStatus) {
+                  if (type === 'Translation') {
+                    if ($scope.selectedIoHandler.id === 'EXCEL' 
+                      || $scope.selectedIoHandler.id === 'TERMSERVER') {
+                      wfStatus = 'FINISHED';
+                    }
+                    
+                    if ($scope.selectedIoHandler.ioType === 'FILE') {
+                      translationService.finishImportConceptsFile($scope.translation.id,
+                        $scope.selectedIoHandler.id, file, wfStatus).then(
+                          // Success - close dialog
+                          function(data) {
+                            $scope.importFinished = true;
+                            $scope.errors = data.errors;
+                            $scope.warnings = data.warnings;
+                            $scope.comments = data.comments;
+                            startLookup(translation);
+                            if ($scope.selectedIoHandler.id === 'EXCEL') {
+                              changeRole('REVIEWER')
+                            } 
+                          },
+                          // Failure - show error
+                          function(data) {
+                            handleError($scope.errors, data);
+                          });
+                    } else if ($scope.selectedIoHandler.ioType === 'API') {
+                      // If there are no errors, finish import
+                      translationService.finishImportConceptsApi($scope.translation.id,
+                        $scope.selectedIoHandler.id, wfStatus).then(
                           // Success - close dialog
                           function(data) {
                             $scope.importFinished = true;
@@ -2043,37 +2206,18 @@ tsApp
                           function(data) {
                             handleError($scope.errors, data);
                           });
-                        }
-                      },
-
-                      // Failure - show error, clear global error
-                      function(data) {
-                        handleError($scope.errors, data);
-                      });
+                    }
                   }
                 };
-
-                // Handle continue import
-                $scope.continueImport = function(file) {
-
-                  if (type == 'Translation') {
-                    translationService.finishImportConcepts($scope.translation.id,
-                      $scope.selectedIoHandler.id, file).then(
-                    // Success - close dialog
-                    function(data) {
-                      $scope.importFinished = true;
-                      $scope.errors = data.errors;
-                      $scope.warnings = data.warnings;
-                      $scope.comments = data.comments;
-                      startLookup(translation);
-                    },
-                    // Failure - show error
-                    function(data) {
-                      handleError($scope.errors, data);
-                    });
+                
+                $scope.validateFile = function($invalidFiles){
+                  $scope.fileImportErrorMessage = null;
+                  if($invalidFiles && $invalidFiles.length > 0){
+                     $scope.fileImportErrorMessage = 
+                       "File must be " + $invalidFiles[0].$errorParam + ".";  
                   }
                 };
-
+                
                 // Dismiss modal
                 $scope.cancel = function() {
                   // If there are lingering errors, cancel the import
@@ -2231,7 +2375,8 @@ tsApp
 
                 $scope.errors = [];
                 $scope.translation = translation;
-                $scope.ioHandlers = ioHandlers;
+                // filter out the TSV export handler option because it is not appropriate for releases
+                $scope.ioHandlers = ioHandlers.filter(function(value, index, arr) { return value.id != 'TSV'; });
                 $scope.selectedIoHandler = $scope.ioHandlers[0];
                 $scope.releaseInfo = [];
                 $scope.validationResult = null;

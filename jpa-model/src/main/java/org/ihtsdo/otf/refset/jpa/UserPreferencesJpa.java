@@ -1,5 +1,5 @@
-/**
- * Copyright 2015 West Coast Informatics, LLC
+/*
+ * Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.jpa;
 
@@ -13,6 +13,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
@@ -49,7 +50,7 @@ public class UserPreferencesJpa implements UserPreferences {
 
   /** The language description types. */
   @OneToMany(cascade = CascadeType.ALL, targetEntity = LanguageDescriptionTypeJpa.class, orphanRemoval = true)
-  @CollectionTable(name = "user_pref_language_desc_types")
+  @CollectionTable(name = "user_pref_language_desc_types", joinColumns = @JoinColumn(name="user_preferences_id"))
   private List<LanguageDescriptionType> languageDescriptionTypes =
       new ArrayList<>();
 
@@ -392,21 +393,18 @@ public class UserPreferencesJpa implements UserPreferences {
   }
 
   /* see superclass */
-
   @Override
   public String getNamespace() {
     return namespace;
   }
 
   /* see superclass */
-
   @Override
   public void setNamespace(String namespace) {
     this.namespace = namespace;
   }
 
   /* see superclass */
-
   @Override
   public String getOrganization() {
     return organization;
@@ -470,7 +468,6 @@ public class UserPreferencesJpa implements UserPreferences {
   }
 
   /* see superclass */
-
   @Override
   public boolean equals(Object obj) {
     if (this == obj)

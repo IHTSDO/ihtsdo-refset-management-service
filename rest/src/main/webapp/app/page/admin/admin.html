@@ -98,7 +98,7 @@
     </uib-accordion-heading>
     <div class="col-md-12 col-xs-12">
       <h4>
-        <span style="float: right;">
+        <span style="float: right;" ng-if="user.applicationRole == 'ADMIN'">
           <button ng-click="openAddUserModal(luser)" title="Add user"
             class="btn btn-xs btn-primary">Add User</button>
         </span>
@@ -424,12 +424,11 @@
     </uib-accordion-group>
     <div></div>
 
-
     <h4>User &amp; Project Management</h4>
     <div class="col-md-6 col-xs-12">
       <h5 class="section-header">Project List</h5>
 
-      <div ng-show="candidateProjects.totalCount != 0" style="display: block;">
+      <div style="display: block;">
         <uib-pagination items-per-page="pageSize" max-size="5"
           boundary-links="true" class="pagination-sm" previous-text="&lsaquo;"
           next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;"
@@ -449,7 +448,7 @@
           ng-click="paging['candidateProject'].filter = ''; getCandidateProjects()"
           title="Click to clear filter text">Clear</button>
 
-        <table class="table">
+        <table class="table" ng-show="candidateProjects.totalCount != 0">
           <thead class="table-select-row">
             <tr>
               <th class="col-md-1 col-xs-1"
@@ -474,9 +473,10 @@
             </tr>
           </tbody>
         </table>
+        <span ng-show="candidateProjects.totalCount == 0" style="display: block;"
+          class="alert alert-warning"> No projects named {{paging['candidateProject'].filter}} </span>
       </div>
-      <span ng-show="candidateProjects.totalCount == 0" style="display: block;"
-        class="alert alert-warning"> No projects with admin role </span>
+
 
     </div>
 
@@ -524,10 +524,9 @@
                 <td>
                   <select ng-model="unassigned.projectRole"
                     ng-init="unassigned.projectRole='AUTHOR'"
-                    ng-options="item for item in projectRoles"></select>
+                    ng-options="item for item in rolesForSelectedProject"></select>
                 </td>
                 <td>
-
                   <i
                     ng-click="assignUserToProject(selectedProject.id, unassigned.userName, unassigned.projectRole)"
                     title="Add user to project with selected role."
@@ -540,17 +539,19 @@
         <span ng-show="!selectedProject" style="display: block;"
           class="alert alert-warning"> No project selected</span>
         <span
-          ng-show="selectedProject && unassignedUsers.totalCount == 0 
-        && paging['candidateUser'].filter == ''"
+          ng-show="selectedProject && unassignedUsers.totalCount == 0 && paging['candidateUser'].filter != ''"
+          style="display: block;" class="alert alert-warning"> Selected
+          project has no unassigned users matching {{paging['candidateUser'].filter}}</span>
+        <span
+          ng-show="selectedProject && unassignedUsers.totalCount == 0 && paging['candidateUser'].filter == ''"
           style="display: block;" class="alert alert-warning"> Selected
           project has no unassigned users</span>
-
       </div>
 
       <div ng-show="candidateProjects.totalCount != 0"
         class="col-md-12 col-xs-12">
         <h5 class="section-header">Assigned Users</h5>
-        <div ng-show="selectedProject && assignedUsers.totalCount > 0">
+        <div ng-show="selectedProject">
 
           <span style="display: block;">
             <uib-pagination items-per-page="pageSize" max-size="5"
@@ -574,7 +575,7 @@
               title="Click to clear filter text">Clear</button>
           </span>
 
-          <table class="table">
+          <table class="table" ng-show="assignedUsers.totalCount > 0">
             <thead class="table-select-row">
               <tr>
                 <th class="col-md-5 col-xs-5 table-select-row"
@@ -605,10 +606,12 @@
         </div>
         <span ng-show="!selectedProject" style="display: block;"
           class="alert alert-warning"> No project selected</span>
-        <span ng-show="selectedProject && assignedUsers.totalCount == 0"
+        <span ng-show="assignedUsers.totalCount == 0 && paging['assignedUser'].filter != ''"
+          style="display: block;" class="alert alert-warning"> Selected
+          project has no assigned users matching {{paging['assignedUser'].filter}}</span>
+        <span ng-show="assignedUsers.totalCount == 0 && paging['assignedUser'].filter == ''"
           style="display: block;" class="alert alert-warning"> Selected
           project has no assigned users</span>
-
       </div>
     </div>
   </div>

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 West Coast Informatics, LLC
+ * Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.model;
 
@@ -22,8 +22,8 @@ import org.ihtsdo.otf.refset.jpa.helpers.IndexedFieldTester;
 import org.ihtsdo.otf.refset.jpa.helpers.NullableFieldTester;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
-import org.ihtsdo.otf.refset.workflow.TrackingRecordJpa;
 import org.ihtsdo.otf.refset.workflow.TrackingRecord;
+import org.ihtsdo.otf.refset.workflow.TrackingRecordJpa;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -38,28 +38,28 @@ public class TrackingRecordJpaUnitTest extends ModelUnitSupport {
   /** The model object to test. */
   private TrackingRecordJpa object;
 
-  /** the test fixture t1 */
+  /**  the test fixture t1. */
   private Translation t1;
 
-  /** the test fixture t2 */
+  /**  the test fixture t2. */
   private Translation t2;
 
-  /** the test fixture r1 */
+  /**  the test fixture r1. */
   private Refset r1;
 
-  /** the test fixture r2 */
+  /**  the test fixture r2. */
   private Refset r2;
 
-  /** the test fixture c1 */
+  /**  the test fixture c1. */
   private Concept c1;
 
-  /** the test fixture c2 */
+  /**  the test fixture c2. */
   private Concept c2;
 
-  /** the test fixture p1 */
+  /**  the test fixture p1. */
   private Project p1;
 
-  /** the test fixture p2 */
+  /**  the test fixture p2. */
   private Project p2;
 
   /**
@@ -72,7 +72,8 @@ public class TrackingRecordJpaUnitTest extends ModelUnitSupport {
 
   /**
    * Setup.
-   * @throws Exception
+   *
+   * @throws Exception the exception
    */
   @Before
   public void setup() throws Exception {

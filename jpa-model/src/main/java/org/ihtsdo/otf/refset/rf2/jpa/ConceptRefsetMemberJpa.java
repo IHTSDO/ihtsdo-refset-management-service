@@ -1,10 +1,12 @@
 /*
- * Copyright 2015 West Coast Informatics, LLC
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.rf2.jpa;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -27,12 +29,15 @@ import org.hibernate.search.annotations.Fields;
 import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.IndexedEmbedded;
+import org.hibernate.search.annotations.SortableField;
 import org.hibernate.search.annotations.Store;
 import org.hibernate.search.bridge.builtin.EnumBridge;
 import org.hibernate.search.bridge.builtin.LongBridge;
+import org.ihtsdo.otf.refset.ConceptRefsetMemberSynonym;
 import org.ihtsdo.otf.refset.Note;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.jpa.ConceptRefsetMemberNoteJpa;
+import org.ihtsdo.otf.refset.jpa.ConceptRefsetMemberSynonymJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 
@@ -77,6 +82,17 @@ public class ConceptRefsetMemberJpa extends AbstractComponent
   @IndexedEmbedded(targetElement = ConceptRefsetMemberNoteJpa.class)
   private List<Note> notes = new ArrayList<>();
 
+//  /** The synonyms. */
+//  @ElementCollection
+//  @Column(name = "synonym", nullable = true)
+//  @CollectionTable(name = "concept_refset_members_synonyms")
+//  private List<String> synonyms;
+
+  /** The synonym. */
+  @OneToMany(mappedBy = "member", targetEntity = ConceptRefsetMemberSynonymJpa.class)
+  @IndexedEmbedded(targetElement = ConceptRefsetMemberSynonymJpa.class)
+  private Set<ConceptRefsetMemberSynonym> synonyms = new HashSet<>();  
+  
   /**
    * Instantiates an empty {@link ConceptRefsetMemberJpa}.
    */
@@ -101,6 +117,10 @@ public class ConceptRefsetMemberJpa extends AbstractComponent
       getNotes().add(
           new ConceptRefsetMemberNoteJpa((ConceptRefsetMemberNoteJpa) note));
     }
+    for (ConceptRefsetMemberSynonym synonym : member.getSynonyms()) {
+      getSynonyms().add(
+          new ConceptRefsetMemberSynonymJpa((ConceptRefsetMemberSynonymJpa) synonym));
+    }
   }
 
   /* see superclass */
@@ -110,6 +130,7 @@ public class ConceptRefsetMemberJpa extends AbstractComponent
    * @return the concept id
    */
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  @SortableField
   @Override
   public String getConceptId() {
     return conceptId;
@@ -183,6 +204,7 @@ public class ConceptRefsetMemberJpa extends AbstractComponent
       @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO),
       @Field(name = "conceptNameSort", index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   })
+  @SortableField(forField = "conceptNameSort")
   @Override
   public String getConceptName() {
     return conceptName;
@@ -199,6 +221,42 @@ public class ConceptRefsetMemberJpa extends AbstractComponent
     this.conceptName = conceptName;
   }
 
+//  /* see superclass */
+//  @Field(bridge = @FieldBridge(impl = CollectionToCsvBridge.class), index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+//  @Override
+//  public List<String> getSynonyms() {
+//    if (synonyms == null) {
+//      synonyms = new ArrayList<>();
+//    }
+//    return synonyms;
+//  }
+//
+//  /* see superclass */
+//  @Override
+//  public void setSynonyms(List<String> synonyms) {
+//    this.synonyms = synonyms;
+//  }
+
+  @XmlElement(type = ConceptRefsetMemberSynonymJpa.class)
+  @Override
+  public Set<ConceptRefsetMemberSynonym> getSynonyms() {
+    if (synonyms == null) {
+      synonyms = new HashSet<ConceptRefsetMemberSynonym>();
+    }
+    return synonyms;
+  }
+
+  /* see superclass */
+  /**
+   * Sets the notes.
+   *
+   * @param notes the notes
+   */
+  @Override
+  public void setSynonyms(Set<ConceptRefsetMemberSynonym> synonyms) {
+    this.synonyms = synonyms;
+  }
+  
   /* see superclass */
   /**
    * Indicates whether or not concept active is the case.
@@ -279,7 +337,8 @@ public class ConceptRefsetMemberJpa extends AbstractComponent
      * result = prime * result + ((memberType == null) ? 0 :
      * memberType.hashCode());
      */
-
+    result = prime * result
+        + ((synonyms == null || synonyms.isEmpty()) ? 0 : synonyms.hashCode());
     result =
         prime * result + ((refset == null || refset.getTerminologyId() == null)
             ? 0 : refset.getTerminologyId().hashCode());
@@ -318,6 +377,11 @@ public class ConceptRefsetMemberJpa extends AbstractComponent
     } else if (!refset.getTerminologyId()
         .equals(other.refset.getTerminologyId()))
       return false;
+    if (synonyms == null) {
+      if (other.synonyms != null)
+        return false;
+    } else if (!synonyms.equals(other.synonyms))
+      return false;
     return true;
   }
 
@@ -329,7 +393,7 @@ public class ConceptRefsetMemberJpa extends AbstractComponent
    */
   @Override
   public String toString() {
-    return "ConceptRefsetMemberJpa [refset.id="
+    return "ConceptRefsetMemberJpa [id =" + getId() + ", refset.id="
         + (refset == null ? "" : refset.getId()) + ", conceptId=" + conceptId
         + ", conceptName=" + conceptName + ", type=" + memberType
         + ", conceptActive=" + conceptActive + "]";

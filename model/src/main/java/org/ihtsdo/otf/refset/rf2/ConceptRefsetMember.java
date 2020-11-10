@@ -1,10 +1,12 @@
 /*
- * Copyright 2015 West Coast Informatics, LLC
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.rf2;
 
 import java.util.List;
+import java.util.Set;
 
+import org.ihtsdo.otf.refset.ConceptRefsetMemberSynonym;
 import org.ihtsdo.otf.refset.Note;
 import org.ihtsdo.otf.refset.Refset;
 
@@ -96,4 +98,18 @@ public interface ConceptRefsetMember extends Component {
    * @param notes the notes
    */
   public void setNotes(List<Note> notes);
+
+  /**
+   * Returns the synonyms.
+   *
+   * @return the synonyms
+   */
+  public Set<ConceptRefsetMemberSynonym> getSynonyms();
+
+  /**
+   * Sets the synonyms.
+   *
+   * @param synonyms the synonyms
+   */
+  public void setSynonyms(Set<ConceptRefsetMemberSynonym> synonyms);
 }

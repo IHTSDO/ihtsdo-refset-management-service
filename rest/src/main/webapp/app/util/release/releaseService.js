@@ -77,7 +77,28 @@ tsApp.service('releaseService', [
       });
       return deferred.promise;
     };
-    
+
+    // Validate refset release
+    this.validateRefsetReleases = function(projectId, refsetIds) {
+      console.debug('validateRefsetReleases');
+      var deferred = $q.defer();
+
+      gpService.increment();
+      $http.post(releaseUrl + 'refsets/validate/' + projectId, refsetIds).then(
+      // success
+      function(response) {
+        console.debug('  validate releases finished ');
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    };
 
     this.findCurrentRefsetReleaseInfo = function(refsetId) {
       console.debug('findCurrentRefsetReleaseInfo');
@@ -120,6 +141,29 @@ tsApp.service('releaseService', [
           gpService.decrement();
           deferred.reject(response.data);
         });
+      return deferred.promise;
+    };
+
+    // Beta refset release
+    this.betaRefsetReleases = function(projectId, refsetIds, ioHandlerId) {
+      console.debug('betaRefsetReleases');
+      var deferred = $q.defer();
+
+      gpService.increment();
+      $http.post(releaseUrl + 'refsets/beta/' + projectId + '?ioHandlerId=' + ioHandlerId,
+        refsetIds).then(
+      // success
+      function(response) {
+        console.debug('  beta releases finished ');
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
       return deferred.promise;
     };
 
@@ -228,10 +272,33 @@ tsApp.service('releaseService', [
 
       gpService.increment();
       $http.get(
-        releaseUrl + 'refset/begin?refsetId=' + refsetId + '&effectiveTime=' + effectiveTime).then(
+        releaseUrl + 'refset/begin?refsetId=' + refsetId + '&effectiveTime=' + effectiveTime + '&background=true').then(
       // success
       function(response) {
         console.debug('  release info = ', response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    };
+
+    // begin release for list of refsets
+    this.beginRefsetReleases = function(projectId, refsetIds, effectiveTime) {
+      console.debug('beginRefsetReleases');
+      var deferred = $q.defer();
+
+      gpService.increment();
+      $http.post(releaseUrl + 'refsets/begin/' + projectId + '?effectiveTime=' + effectiveTime,
+        refsetIds).then(
+      // success
+      function(response) {
+        console.debug('  begin releases finished ');
         gpService.decrement();
         deferred.resolve(response.data);
       },
@@ -317,12 +384,32 @@ tsApp.service('releaseService', [
       console.debug('cancelRefsetRelease');
       var deferred = $q.defer();
 
-      // get refset revision
       gpService.increment();
       $http.get(releaseUrl + 'refset/cancel?refsetId=' + refsetId).then(
       // success
       function(response) {
         console.debug('  cancel refset release = ', response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    };
+
+    this.cancelRefsetReleases = function(projectId, refsetIds) {
+      console.debug('cancelRefsetReleases');
+      var deferred = $q.defer();
+
+      gpService.increment();
+      $http.post(releaseUrl + 'refsets/cancel/' + projectId, refsetIds).then(
+      // success
+      function(response) {
+        console.debug('  cancel refset releases finished ');
         gpService.decrement();
         deferred.resolve(response.data);
       },
@@ -357,16 +444,41 @@ tsApp.service('releaseService', [
       return deferred.promise;
     };
 
-    this.finishRefsetRelease = function(refsetId) {
+    this.finishRefsetRelease = function(refsetId, override) {
       console.debug('finishRefsetRelease');
       var deferred = $q.defer();
 
       // get refset revision
       gpService.increment();
-      $http.get(releaseUrl + 'refset/finish?refsetId=' + refsetId).then(
+      $http.get(releaseUrl + 'refset/finish?refsetId=' + refsetId + (override != null ? '&override=' + override : '')).then(
       // success
       function(response) {
         console.debug('  finish refset release = ', response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        // 'inactive concepts' errors gets handled specially
+        if(!response.data.includes('inactive concepts')){
+          utilService.handleError(response);
+        }
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    };
+
+    this.finishRefsetReleases = function(projectId, refsetIds, override) {
+      console.debug('finishRefsetReleases');
+      var deferred = $q.defer();
+
+      // get refset revision
+      gpService.increment();
+      $http.post(releaseUrl + 'refsets/finish/' + projectId + (override != null ? '?override=' + override : ''), refsetIds).then(
+      // success
+      function(response) {
+        console.debug('  finish releases finished ');
         gpService.decrement();
         deferred.resolve(response.data);
       },
@@ -378,6 +490,7 @@ tsApp.service('releaseService', [
       });
       return deferred.promise;
     };
+
     // Remove release artifact
     this.removeReleaseArtifact = function(artifactId) {
       console.debug('removeReleaseArtifact');
@@ -501,6 +614,86 @@ tsApp.service('releaseService', [
         utilService.handleError(response);
         gpService.decrement();
       });
+    };
+
+    // find if refset is still progressing through specified process
+    this.getProcessProgress = function(process, refsetId) {
+      console.debug('getProcessProgress');
+      // Setup deferred
+      var deferred = $q.defer();
+
+      $http.post(releaseUrl + 'lookup/progress?process=' + process, refsetId).then(
+      // success
+      function(response) {
+        console.debug('  process progress returned ');
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    };
+
+    // gets the validation result from a completed process run
+    this.getProcessResult = function(refsetId, process) {
+      console.debug('getProcessProgress');
+      // Setup deferred
+      var deferred = $q.defer();
+
+      $http.get(releaseUrl + 'process/results/' + refsetId + '?process=' + process).then(
+      // success
+      function(response) {
+        console.debug('  process results returned ');
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    };    
+    
+    // find all refsets that are still progressing through specified bulk process
+    this.getBulkProcessProgress = function(process, refsetIds) {
+      console.debug('getBulkProcessProgress');
+      // Setup deferred
+      var deferred = $q.defer();
+
+      $http.post(releaseUrl + 'lookup/progress/bulk?process=' + process, refsetIds).then(
+      // success
+      function(response) {
+        console.debug('  process progress returned ');
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    };
+
+    // gets the validation results from a completed bulk process run
+    this.getBulkProcessResults = function(projectId, process) {
+      console.debug('getBulkProcessProgress');
+      // Setup deferred
+      var deferred = $q.defer();
+
+      $http.get(releaseUrl + 'process/results/bulk/' + projectId + '?process=' + process).then(
+      // success
+      function(response) {
+        console.debug('  process results returned ');
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
     };
 
   } ]);

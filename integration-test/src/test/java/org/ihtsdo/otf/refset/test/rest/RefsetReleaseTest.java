@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 West Coast Informatics, LLC
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 /*
  * 
@@ -133,7 +133,8 @@ public class RefsetReleaseTest extends RestSupport {
       throw new Exception("Test prerequisite: admin.user must be specified");
     }
     if (adminPassword == null || adminPassword.isEmpty()) {
-      throw new Exception("Test prerequisite: admin.password must be specified");
+      throw new Exception(
+          "Test prerequisite: admin.password must be specified");
     }
 
   }
@@ -179,9 +180,9 @@ public class RefsetReleaseTest extends RestSupport {
    * @return the refset jpa
    * @throws Exception the exception
    */
-  private RefsetJpa makeRefset(String name, String definition,
-    Refset.Type type, Project project, String refsetId, boolean importFlag,
-    User auth) throws Exception {
+  private RefsetJpa makeRefset(String name, String definition, Refset.Type type,
+    Project project, String refsetId, boolean importFlag, User auth)
+    throws Exception {
     RefsetJpa refset = new RefsetJpa();
     refset.setActive(true);
     refset.setType(type);
@@ -221,9 +222,8 @@ public class RefsetReleaseTest extends RestSupport {
     }
 
     // Validate refset
-    ValidationResult result =
-        validationService.validateRefset(refset, project.getId(),
-            auth.getAuthToken());
+    ValidationResult result = validationService.validateRefset(refset,
+        project.getId(), auth.getAuthToken());
     if (!result.isValid()) {
       Logger.getLogger(getClass()).error(result.toString());
       throw new Exception("Refset does not pass validation.");
@@ -235,25 +235,20 @@ public class RefsetReleaseTest extends RestSupport {
     if (importFlag) {
       if (type == Refset.Type.EXTENSIONAL) {
         // Import members (from file)
-        ValidationResult vr =
-            refsetService.beginImportMembers(refset.getId(), "DEFAULT",
-                auth.getAuthToken());
+        ValidationResult vr = refsetService.beginImportMembers(refset.getId(),
+            "DEFAULT", auth.getAuthToken());
         if (!vr.isValid()) {
           throw new Exception("import staging is invalid - " + vr);
         }
-        InputStream in =
-            new FileInputStream(
-                new File(
-                    "../config/src/main/resources/data/refset/der2_Refset_SimpleSnapshot_INT_20140731.txt"));
+        InputStream in = new FileInputStream(new File(
+            "../config/src/main/resources/data/refset/der2_Refset_SimpleSnapshot_INT_20140731.txt"));
         refsetService.finishImportMembers(null, in, refset.getId(), "DEFAULT",
             auth.getAuthToken());
         in.close();
       } else if (type == Refset.Type.INTENSIONAL) {
         // Import definition (from file)
-        InputStream in =
-            new FileInputStream(
-                new File(
-                    "../config/src/main/resources/data/refset/der2_Refset_DefinitionSnapshot_INT_20140731.txt"));
+        InputStream in = new FileInputStream(new File(
+            "../config/src/main/resources/data/refset/der2_Refset_DefinitionSnapshot_INT_20140731.txt"));
         refsetService.importDefinition(null, in, refset.getId(), "DEFAULT",
             auth.getAuthToken());
         in.close();
@@ -275,26 +270,22 @@ public class RefsetReleaseTest extends RestSupport {
     Project project2 = projectService.getProject(2L, adminAuthToken);
     User admin = securityService.authenticate(adminUser, adminPassword);
     // Create refset (intensional) and import definition
-    RefsetJpa refset1 =
-        makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project2, UUID
-            .randomUUID().toString(), true, admin);
+    RefsetJpa refset1 = makeRefset("refset1", null, Refset.Type.EXTENSIONAL,
+        project2, UUID.randomUUID().toString(), true, admin);
     // Begin release
     releaseService.beginRefsetRelease(refset1.getId(),
-        ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()),
+        ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()), false,
         adminAuthToken);
-    refset1 =
-        (RefsetJpa) refsetService.getRefset(refset1.getId(),
-            admin.getAuthToken());
+    refset1 = (RefsetJpa) refsetService.getRefset(refset1.getId(),
+        admin.getAuthToken());
     // Cancel release
     releaseService.cancelRefsetRelease(refset1.getId(), adminAuthToken);
-    refset1 =
-        (RefsetJpa) refsetService.getRefset(refset1.getId(),
-            admin.getAuthToken());
+    refset1 = (RefsetJpa) refsetService.getRefset(refset1.getId(),
+        admin.getAuthToken());
     // clean up
     refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
-    refset1 =
-        (RefsetJpa) refsetService.getRefset(refset1.getId(),
-            admin.getAuthToken());
+    refset1 = (RefsetJpa) refsetService.getRefset(refset1.getId(),
+        admin.getAuthToken());
 
   }
 
@@ -310,12 +301,11 @@ public class RefsetReleaseTest extends RestSupport {
     Project project2 = projectService.getProject(2L, adminAuthToken);
     User admin = securityService.authenticate(adminUser, adminPassword);
     // Create refset (intensional) and import definition
-    RefsetJpa refset1 =
-        makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project2, UUID
-            .randomUUID().toString(), true, admin);
+    RefsetJpa refset1 = makeRefset("refset1", null, Refset.Type.EXTENSIONAL,
+        project2, UUID.randomUUID().toString(), true, admin);
     // Begin release
     releaseService.beginRefsetRelease(refset1.getId(),
-        ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()),
+        ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()), false,
         adminAuthToken);
     // Validate release
     releaseService.validateRefsetRelease(refset1.getId(), adminAuthToken);
@@ -337,18 +327,17 @@ public class RefsetReleaseTest extends RestSupport {
     Project project2 = projectService.getProject(2L, adminAuthToken);
     User admin = securityService.authenticate(adminUser, adminPassword);
     // Create refset (intensional) and import definition
-    RefsetJpa refset1 =
-        makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project2, UUID
-            .randomUUID().toString(), true, admin);
+    RefsetJpa refset1 = makeRefset("refset1", null, Refset.Type.EXTENSIONAL,
+        project2, UUID.randomUUID().toString(), true, admin);
     // Begin release
     releaseService.beginRefsetRelease(refset1.getId(),
-        ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()),
+        ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()), false,
         adminAuthToken);
     // Validate release
     releaseService.validateRefsetRelease(refset1.getId(), adminAuthToken);
     // Beta release
-    releaseService
-        .betaRefsetRelease(refset1.getId(), "DEFAULT", adminAuthToken);
+    releaseService.betaRefsetRelease(refset1.getId(), "DEFAULT",
+        adminAuthToken);
     // Cancel release
     releaseService.cancelRefsetRelease(refset1.getId(), adminAuthToken);
     // clean up
@@ -367,20 +356,19 @@ public class RefsetReleaseTest extends RestSupport {
     Project project2 = projectService.getProject(2L, adminAuthToken);
     User admin = securityService.authenticate(adminUser, adminPassword);
     // Create refset (intensional) and import definition
-    RefsetJpa refset1 =
-        makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project2, UUID
-            .randomUUID().toString(), true, admin);
+    RefsetJpa refset1 = makeRefset("refset1", null, Refset.Type.EXTENSIONAL,
+        project2, UUID.randomUUID().toString(), true, admin);
     // Begin release
     releaseService.beginRefsetRelease(refset1.getId(),
-        ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()),
+        ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()), false,
         adminAuthToken);
     // Validate release
     releaseService.validateRefsetRelease(refset1.getId(), adminAuthToken);
     // Beta release
-    releaseService
-        .betaRefsetRelease(refset1.getId(), "DEFAULT", adminAuthToken);
+    releaseService.betaRefsetRelease(refset1.getId(), "DEFAULT",
+        adminAuthToken);
     // Finish release
-    releaseService.finishRefsetRelease(refset1.getId(), adminAuthToken);
+    releaseService.finishRefsetRelease(refset1.getId(), null, adminAuthToken);
     // clean up
     refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
   }
@@ -397,20 +385,19 @@ public class RefsetReleaseTest extends RestSupport {
     Project project2 = projectService.getProject(2L, adminAuthToken);
     User admin = securityService.authenticate(adminUser, adminPassword);
     // Create refset (intensional) and import definition
-    RefsetJpa refset1 =
-        makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project2, UUID
-            .randomUUID().toString(), true, admin);
+    RefsetJpa refset1 = makeRefset("refset1", null, Refset.Type.EXTENSIONAL,
+        project2, UUID.randomUUID().toString(), true, admin);
     // Begin release
     releaseService.beginRefsetRelease(refset1.getId(),
-        ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()),
+        ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()), false,
         adminAuthToken);
     // Validate release
     releaseService.validateRefsetRelease(refset1.getId(), adminAuthToken);
     // Beta release
-    releaseService
-        .betaRefsetRelease(refset1.getId(), "DEFAULT", adminAuthToken);
+    releaseService.betaRefsetRelease(refset1.getId(), "DEFAULT",
+        adminAuthToken);
     // Finish release
-    releaseService.finishRefsetRelease(refset1.getId(), adminAuthToken);
+    releaseService.finishRefsetRelease(refset1.getId(), null, adminAuthToken);
     // Add 5 members to refset
     ConceptRefsetMemberJpa member1 =
         makeConceptRefsetMember("member1", "123", refset1);
@@ -431,14 +418,14 @@ public class RefsetReleaseTest extends RestSupport {
     calendar.add(Calendar.MONDAY, 1);
     // Begin release
     releaseService.beginRefsetRelease(refset1.getId(),
-        ConfigUtility.DATE_FORMAT.format(calendar), adminAuthToken);
+        ConfigUtility.DATE_FORMAT.format(calendar), false, adminAuthToken);
     // Validate release
     releaseService.validateRefsetRelease(refset1.getId(), adminAuthToken);
     // Beta release
-    releaseService
-        .betaRefsetRelease(refset1.getId(), "DEFAULT", adminAuthToken);
+    releaseService.betaRefsetRelease(refset1.getId(), "DEFAULT",
+        adminAuthToken);
     // Finish release
-    releaseService.finishRefsetRelease(refset1.getId(), adminAuthToken);
+    releaseService.finishRefsetRelease(refset1.getId(), null, adminAuthToken);
     // clean up
     refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
   }
@@ -456,30 +443,28 @@ public class RefsetReleaseTest extends RestSupport {
     User admin = securityService.authenticate(adminUser, adminPassword);
 
     // Create refset (intensional) and import definition
-    RefsetJpa refset =
-        makeRefset("refset", null, Refset.Type.EXTENSIONAL, project, UUID
-            .randomUUID().toString(), true, admin);
+    RefsetJpa refset = makeRefset("refset", null, Refset.Type.EXTENSIONAL,
+        project, UUID.randomUUID().toString(), true, admin);
 
     // Create release
-    ReleaseInfo releaseInfo =
-        releaseService.beginRefsetRelease(refset.getId(),
-            ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()),
-            adminAuthToken);
+    releaseService.beginRefsetRelease(refset.getId(),
+        ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()), false,
+        adminAuthToken);
+
+    // Get release info
+    ReleaseInfo releaseInfo = releaseService
+        .getCurrentRefsetReleaseInfo(refset.getId(), adminAuthToken);
 
     // Create and import initial release
-    InputStream simpleRelArtRefset =
-        new FileInputStream(
-            new File(
-                "../config/src/main/resources/data/refset/der2_Refset_SimpleSnapshot_INT_20140731.txt"));
+    InputStream simpleRelArtRefset = new FileInputStream(new File(
+        "../config/src/main/resources/data/refset/der2_Refset_SimpleSnapshot_INT_20140731.txt"));
     ReleaseArtifact simpleImportedArtifact =
         releaseService.importReleaseArtifact(null, simpleRelArtRefset,
             releaseInfo.getId(), adminAuthToken);
 
     // Create and import second release
-    InputStream definitionArtRefset =
-        new FileInputStream(
-            new File(
-                "../config/src/main/resources/data/refset/der2_Refset_DefinitionSnapshot_INT_20140731.txt"));
+    InputStream definitionArtRefset = new FileInputStream(new File(
+        "../config/src/main/resources/data/refset/der2_Refset_DefinitionSnapshot_INT_20140731.txt"));
     ReleaseArtifact definitionImportedArtifact =
         releaseService.importReleaseArtifact(null, definitionArtRefset,
             releaseInfo.getId(), adminAuthToken);
@@ -489,9 +474,8 @@ public class RefsetReleaseTest extends RestSupport {
     releaseService.betaRefsetRelease(refset.getId(), "DEFAULT", adminAuthToken);
 
     // Verify that releaseInfo has two artifacts
-    ReleaseInfoList releasesList =
-        releaseService.findRefsetReleasesForQuery(refset.getId(), null, null,
-            adminAuthToken);
+    ReleaseInfoList releasesList = releaseService
+        .findRefsetReleasesForQuery(refset.getId(), null, null, adminAuthToken);
     ReleaseInfo release = releasesList.getObjects().get(0);
     assertEquals(2, release.getArtifacts().size());
 
@@ -500,26 +484,24 @@ public class RefsetReleaseTest extends RestSupport {
         adminAuthToken);
 
     // Verify that releaseInfo has one artifact
-    releasesList =
-        releaseService.findRefsetReleasesForQuery(refset.getId(), null, null,
-            adminAuthToken);
+    releasesList = releaseService.findRefsetReleasesForQuery(refset.getId(),
+        null, null, adminAuthToken);
     release = releasesList.getObjects().get(0);
     assertEquals(1, release.getArtifacts().size());
 
     // Ensure proper artifact was removed
-    assertEquals(definitionImportedArtifact.getName(), release.getArtifacts()
-        .get(0).getName());
-    assertEquals(definitionImportedArtifact.getId(), release.getArtifacts()
-        .get(0).getId());
+    assertEquals(definitionImportedArtifact.getName(),
+        release.getArtifacts().get(0).getName());
+    assertEquals(definitionImportedArtifact.getId(),
+        release.getArtifacts().get(0).getId());
 
     // Remove definitionImportedArtifact artifact
     releaseService.removeReleaseArtifact(definitionImportedArtifact.getId(),
         adminAuthToken);
 
     // Verify that releaseInfo has zero artifacts
-    releasesList =
-        releaseService.findRefsetReleasesForQuery(refset.getId(), null, null,
-            adminAuthToken);
+    releasesList = releaseService.findRefsetReleasesForQuery(refset.getId(),
+        null, null, adminAuthToken);
     release = releasesList.getObjects().get(0);
     assertEquals(0, release.getArtifacts().size());
 
@@ -542,40 +524,39 @@ public class RefsetReleaseTest extends RestSupport {
     User admin = securityService.authenticate(adminUser, adminPassword);
 
     // Create refset (intensional) and import definition
-    RefsetJpa refset1 =
-        makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project, UUID
-            .randomUUID().toString(), true, admin);
+    RefsetJpa refset1 = makeRefset("refset1", null, Refset.Type.EXTENSIONAL,
+        project, UUID.randomUUID().toString(), true, admin);
 
-    RefsetJpa refset2 =
-        makeRefset("refset2", null, Refset.Type.EXTENSIONAL, project, UUID
-            .randomUUID().toString(), true, admin);
+    RefsetJpa refset2 = makeRefset("refset2", null, Refset.Type.EXTENSIONAL,
+        project, UUID.randomUUID().toString(), true, admin);
 
     // Create two releases
-    ReleaseInfo releaseInfo1 =
-        releaseService.beginRefsetRelease(refset1.getId(),
-            ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()),
-            adminAuthToken);
+    releaseService.beginRefsetRelease(refset1.getId(),
+        ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()), false,
+        adminAuthToken);
 
-    ReleaseInfo releaseInfo2 =
-        releaseService.beginRefsetRelease(refset2.getId(),
-            ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()),
-            adminAuthToken);
+    releaseService.beginRefsetRelease(refset2.getId(),
+        ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()), false,
+        adminAuthToken);
+
+    // Get release infos
+    ReleaseInfo releaseInfo1 = releaseService
+        .getCurrentRefsetReleaseInfo(refset1.getId(), adminAuthToken);
+
+    ReleaseInfo releaseInfo2 = releaseService
+        .getCurrentRefsetReleaseInfo(refset2.getId(), adminAuthToken);
 
     // Create single artifact
-    InputStream is =
-        new FileInputStream(
-            new File(
-                "../config/src/main/resources/data/refset/der2_Refset_SimpleSnapshot_INT_20140731.txt"));
+    InputStream is = new FileInputStream(new File(
+        "../config/src/main/resources/data/refset/der2_Refset_SimpleSnapshot_INT_20140731.txt"));
 
     // Import artifact to release 1
-    ReleaseArtifact artifact1 =
-        releaseService.importReleaseArtifact(null, is, releaseInfo1.getId(),
-            adminAuthToken);
+    ReleaseArtifact artifact1 = releaseService.importReleaseArtifact(null, is,
+        releaseInfo1.getId(), adminAuthToken);
 
     // Verify successful import
-    ReleaseInfoList infoList1 =
-        releaseService.findRefsetReleasesForQuery(refset1.getId(), null, null,
-            adminAuthToken);
+    ReleaseInfoList infoList1 = releaseService.findRefsetReleasesForQuery(
+        refset1.getId(), null, null, adminAuthToken);
     assertEquals(1, infoList1.getCount());
 
     // Export Artifact from release 1
@@ -587,9 +568,8 @@ public class RefsetReleaseTest extends RestSupport {
         releaseInfo2.getId(), adminAuthToken);
 
     // Verify successful import
-    ReleaseInfoList infoList2 =
-        releaseService.findRefsetReleasesForQuery(refset2.getId(), null, null,
-            adminAuthToken);
+    ReleaseInfoList infoList2 = releaseService.findRefsetReleasesForQuery(
+        refset2.getId(), null, null, adminAuthToken);
     assertEquals(1, infoList2.getCount());
 
     // Verify releases are identical
@@ -628,6 +608,7 @@ public class RefsetReleaseTest extends RestSupport {
     member.setConceptActive(true);
     member.setConceptId(id);
     member.setConceptName(name);
+    member.setSynonyms(null);
     member.setEffectiveTime(new Date());
     member.setMemberType(Refset.MemberType.MEMBER);
     member.setModuleId(refset.getModuleId());
@@ -648,13 +629,12 @@ public class RefsetReleaseTest extends RestSupport {
     User admin = securityService.authenticate(adminUser, adminPassword);
 
     // Create refset (intensional) and import definition
-    RefsetJpa refset =
-        makeRefset("refset", null, Refset.Type.EXTENSIONAL, project, UUID
-            .randomUUID().toString(), true, admin);
+    RefsetJpa refset = makeRefset("refset", null, Refset.Type.EXTENSIONAL,
+        project, UUID.randomUUID().toString(), true, admin);
 
     // Begin release
     releaseService.beginRefsetRelease(refset.getId(),
-        ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()),
+        ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()), false,
         adminAuthToken);
     releaseService.validateRefsetRelease(refset.getId(), adminAuthToken);
     // Beta release
@@ -665,106 +645,106 @@ public class RefsetReleaseTest extends RestSupport {
      */
 
     // find releases per refset
-    ReleaseInfoList releases =
-        releaseService.findRefsetReleasesForQuery(refset.getId(), null, null,
-            adminAuthToken);
+    ReleaseInfoList releases = releaseService
+        .findRefsetReleasesForQuery(refset.getId(), null, null, adminAuthToken);
     assertEquals(1, releases.getCount());
 
     // find releases per terminologyId (there are two b/c of
     // beginRefsetRelease() with 2nd planned=false
-    releases =
-        releaseService.findRefsetReleasesForQuery(null, "refsetTerminologyId:"
-            + refset.getTerminologyId(), null, adminAuthToken);
+    releases = releaseService.findRefsetReleasesForQuery(null,
+        "refsetTerminologyId:" + refset.getTerminologyId(), null,
+        adminAuthToken);
     assertEquals(2, releases.getCount());
 
     // find releases per projectId. Will have 2 or more depending on how many
     // have been created in DB
-    releases =
-        releaseService.findRefsetReleasesForQuery(null,
-            "projectId:" + project.getId(), null, adminAuthToken);
+    releases = releaseService.findRefsetReleasesForQuery(null,
+        "projectId:" + project.getId(), null, adminAuthToken);
     assertTrue(releases.getCount() >= 2);
 
     // find releases per refsetId & projectId
-    releases =
-        releaseService.findRefsetReleasesForQuery(refset.getId(), "projectId:"
-            + project.getId(), null, adminAuthToken);
+    releases = releaseService.findRefsetReleasesForQuery(refset.getId(),
+        "projectId:" + project.getId(), null, adminAuthToken);
     assertEquals(1, releases.getCount());
 
     // find releases per refsetId & terminologyId
-    releases =
-        releaseService.findRefsetReleasesForQuery(refset.getId(),
-            "refsetTerminologyId:" + refset.getTerminologyId(), null,
-            adminAuthToken);
+    releases = releaseService.findRefsetReleasesForQuery(refset.getId(),
+        "refsetTerminologyId:" + refset.getTerminologyId(), null,
+        adminAuthToken);
     assertEquals(1, releases.getCount());
 
     // find releases per projectId & terminologyId. Reason is same as reason
     // during terminologyId only test
     releases =
-        releaseService.findRefsetReleasesForQuery(null, "refsetTerminologyId:"
-            + refset.getTerminologyId() + " AND projectId:" + project.getId(),
-            null, adminAuthToken);
+        releaseService
+            .findRefsetReleasesForQuery(null,
+                "refsetTerminologyId:" + refset.getTerminologyId()
+                    + " AND projectId:" + project.getId(),
+                null, adminAuthToken);
     assertEquals(2, releases.getCount());
 
     // find releases per refsetId & projectId & terminologyId
     releases =
-        releaseService.findRefsetReleasesForQuery(refset.getId(),
-            "refsetTerminologyId:" + refset.getTerminologyId()
-                + " AND projectId:" + project.getId(), null, adminAuthToken);
+        releaseService
+            .findRefsetReleasesForQuery(refset.getId(),
+                "refsetTerminologyId:" + refset.getTerminologyId()
+                    + " AND projectId:" + project.getId(),
+                null, adminAuthToken);
     assertEquals(1, releases.getCount());
 
     // Now finish the release
-    releaseService.finishRefsetRelease(refset.getId(), adminAuthToken);
+    releaseService.finishRefsetRelease(refset.getId(), null, adminAuthToken);
 
     /*
      * Following completed of release
      */
 
     // find releases per refset
-    releases =
-        releaseService.findRefsetReleasesForQuery(refset.getId(), null, null,
-            adminAuthToken);
+    releases = releaseService.findRefsetReleasesForQuery(refset.getId(), null,
+        null, adminAuthToken);
     assertEquals(0, releases.getCount());
 
     // find releases per terminologyId (there are two b/c of
     // beginRefsetRelease() with 2nd planned=false
-    releases =
-        releaseService.findRefsetReleasesForQuery(null, "refsetTerminologyId:"
-            + refset.getTerminologyId(), null, adminAuthToken);
+    releases = releaseService.findRefsetReleasesForQuery(null,
+        "refsetTerminologyId:" + refset.getTerminologyId(), null,
+        adminAuthToken);
     assertEquals(1, releases.getCount());
 
     // find releases per projectId. Will have 2 or more depending on how many
     // have been created in DB
-    releases =
-        releaseService.findRefsetReleasesForQuery(null,
-            "projectId:" + project.getId(), null, adminAuthToken);
+    releases = releaseService.findRefsetReleasesForQuery(null,
+        "projectId:" + project.getId(), null, adminAuthToken);
     assertTrue(releases.getCount() >= 1);
 
     // find releases per refsetId & projectId
-    releases =
-        releaseService.findRefsetReleasesForQuery(refset.getId(), "projectId:"
-            + project.getId(), null, adminAuthToken);
+    releases = releaseService.findRefsetReleasesForQuery(refset.getId(),
+        "projectId:" + project.getId(), null, adminAuthToken);
     assertEquals(0, releases.getCount());
 
     // find releases per refsetId & terminologyId
-    releases =
-        releaseService.findRefsetReleasesForQuery(refset.getId(),
-            "refsetTerminologyId:" + refset.getTerminologyId(), null,
-            adminAuthToken);
+    releases = releaseService.findRefsetReleasesForQuery(refset.getId(),
+        "refsetTerminologyId:" + refset.getTerminologyId(), null,
+        adminAuthToken);
     assertEquals(0, releases.getCount());
 
     // find releases per projectId & terminologyId. Reason is same as reason
     // during terminologyId only test
     releases =
-        releaseService.findRefsetReleasesForQuery(null, "refsetTerminologyId:"
-            + refset.getTerminologyId() + " AND projectId:" + project.getId(),
-            null, adminAuthToken);
+        releaseService
+            .findRefsetReleasesForQuery(null,
+                "refsetTerminologyId:" + refset.getTerminologyId()
+                    + " AND projectId:" + project.getId(),
+                null, adminAuthToken);
     assertEquals(1, releases.getCount());
 
     // find releases per refsetId & projectId & terminologyId
     releases =
-        releaseService.findRefsetReleasesForQuery(refset.getId(),
-            "refsetTerminologyId:" + refset.getTerminologyId()
-                + " AND projectId:" + project.getId(), null, adminAuthToken);
+        releaseService
+            .findRefsetReleasesForQuery(refset.getId(),
+                "refsetTerminologyId:" + refset.getTerminologyId()
+                    + " AND projectId:" + project.getId(),
+                null, adminAuthToken);
     assertEquals(0, releases.getCount());
 
     // clean up
@@ -784,13 +764,12 @@ public class RefsetReleaseTest extends RestSupport {
     User admin = securityService.authenticate(adminUser, adminPassword);
 
     // Create refset (intensional) and import definition
-    RefsetJpa refset =
-        makeRefset("refset", null, Refset.Type.EXTENSIONAL, project, UUID
-            .randomUUID().toString(), true, admin);
+    RefsetJpa refset = makeRefset("refset", null, Refset.Type.EXTENSIONAL,
+        project, UUID.randomUUID().toString(), true, admin);
 
     // Begin release
     releaseService.beginRefsetRelease(refset.getId(),
-        ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()),
+        ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()), false,
         adminAuthToken);
 
     // Validate and run beta
@@ -806,7 +785,7 @@ public class RefsetReleaseTest extends RestSupport {
     releaseService.resumeRelease(refset.getId(), adminAuthToken);
 
     // Finish release
-    releaseService.finishRefsetRelease(refset.getId(), adminAuthToken);
+    releaseService.finishRefsetRelease(refset.getId(), null, adminAuthToken);
 
     // clean up
     refsetService.removeRefset(refset.getId(), true, adminAuthToken);
@@ -821,9 +800,8 @@ public class RefsetReleaseTest extends RestSupport {
   public void testNonexistentRefsetReleaseAccess() throws Exception {
     Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
 
-    ReleaseInfo info =
-        releaseService.getCurrentRefsetReleaseInfo(123456789123456789L,
-            adminAuthToken);
+    ReleaseInfo info = releaseService
+        .getCurrentRefsetReleaseInfo(123456789123456789L, adminAuthToken);
     assertNull(info);
   }
 
@@ -839,9 +817,8 @@ public class RefsetReleaseTest extends RestSupport {
     Project project2 = projectService.getProject(2L, adminAuthToken);
     User admin = securityService.authenticate(adminUser, adminPassword);
     // Create refset (intensional) and import definition
-    RefsetJpa refset1 =
-        makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project2, UUID
-            .randomUUID().toString(), false, admin);
+    RefsetJpa refset1 = makeRefset("refset1", null, Refset.Type.EXTENSIONAL,
+        project2, UUID.randomUUID().toString(), false, admin);
 
     // 10000001 true
     ConceptRefsetMemberJpa member = new ConceptRefsetMemberJpa();
@@ -850,20 +827,18 @@ public class RefsetReleaseTest extends RestSupport {
     member.setMemberType(Refset.MemberType.MEMBER);
     member.setActive(true);
     member.setModuleId("");
-    ConceptRefsetMemberJpa member1 =
-        (ConceptRefsetMemberJpa) refsetService.addRefsetMember(member,
-            admin.getAuthToken());
+    ConceptRefsetMemberJpa member1 = (ConceptRefsetMemberJpa) refsetService
+        .addRefsetMember(member, admin.getAuthToken());
     // Begin release
-    releaseService.beginRefsetRelease(refset1.getId(), "20160101",
+    releaseService.beginRefsetRelease(refset1.getId(), "20160101", false,
         adminAuthToken);
     // Validate release
     releaseService.validateRefsetRelease(refset1.getId(), adminAuthToken);
     // Beta release
-    Refset release1 =
-        releaseService.betaRefsetRelease(refset1.getId(), "DEFAULT",
-            adminAuthToken);
+    Refset release1 = releaseService.betaRefsetRelease(refset1.getId(),
+        "DEFAULT", adminAuthToken);
     // Finish release
-    releaseService.finishRefsetRelease(refset1.getId(), adminAuthToken);
+    releaseService.finishRefsetRelease(refset1.getId(), null, adminAuthToken);
 
     Map<String, Boolean> activeMap = new HashMap<>();
     Map<String, String> etMap = new HashMap<>();
@@ -881,20 +856,18 @@ public class RefsetReleaseTest extends RestSupport {
     member.setMemberType(Refset.MemberType.MEMBER);
     member.setActive(true);
     member.setModuleId("");
-    ConceptRefsetMemberJpa member2 =
-        (ConceptRefsetMemberJpa) refsetService.addRefsetMember(member,
-            admin.getAuthToken());
+    ConceptRefsetMemberJpa member2 = (ConceptRefsetMemberJpa) refsetService
+        .addRefsetMember(member, admin.getAuthToken());
     // Begin release
-    releaseService.beginRefsetRelease(refset1.getId(), "20160102",
+    releaseService.beginRefsetRelease(refset1.getId(), "20160102", false,
         adminAuthToken);
     // Validate release
     releaseService.validateRefsetRelease(refset1.getId(), adminAuthToken);
     // Beta release
-    Refset release2 =
-        releaseService.betaRefsetRelease(refset1.getId(), "DEFAULT",
-            adminAuthToken);
+    Refset release2 = releaseService.betaRefsetRelease(refset1.getId(),
+        "DEFAULT", adminAuthToken);
     // Finish release
-    releaseService.finishRefsetRelease(refset1.getId(), adminAuthToken);
+    releaseService.finishRefsetRelease(refset1.getId(), null, adminAuthToken);
     activeMap = new HashMap<>();
     etMap = new HashMap<>();
     activeMap.put("10000001", true);
@@ -923,21 +896,19 @@ public class RefsetReleaseTest extends RestSupport {
     member.setMemberType(Refset.MemberType.MEMBER);
     member.setActive(true);
     member.setModuleId("");
-    member =
-        (ConceptRefsetMemberJpa) refsetService.addRefsetMember(member,
-            admin.getAuthToken());
+    member = (ConceptRefsetMemberJpa) refsetService.addRefsetMember(member,
+        admin.getAuthToken());
 
     // Begin release
-    releaseService.beginRefsetRelease(refset1.getId(), "20160103",
+    releaseService.beginRefsetRelease(refset1.getId(), "20160103", false,
         adminAuthToken);
     // Validate release
     releaseService.validateRefsetRelease(refset1.getId(), adminAuthToken);
     // Beta release
-    Refset release3 =
-        releaseService.betaRefsetRelease(refset1.getId(), "DEFAULT",
-            adminAuthToken);
+    Refset release3 = releaseService.betaRefsetRelease(refset1.getId(),
+        "DEFAULT", adminAuthToken);
     // Finish release
-    releaseService.finishRefsetRelease(refset1.getId(), adminAuthToken);
+    releaseService.finishRefsetRelease(refset1.getId(), null, adminAuthToken);
     activeMap = new HashMap<>();
     etMap = new HashMap<>();
     activeMap.put("10000001", false);
@@ -971,16 +942,15 @@ public class RefsetReleaseTest extends RestSupport {
     refsetService.addRefsetMember(member, admin.getAuthToken());
 
     // Begin release
-    releaseService.beginRefsetRelease(refset1.getId(), "20160104",
+    releaseService.beginRefsetRelease(refset1.getId(), "20160104", false,
         adminAuthToken);
     // Validate release
     releaseService.validateRefsetRelease(refset1.getId(), adminAuthToken);
     // Beta release
-    Refset release4 =
-        releaseService.betaRefsetRelease(refset1.getId(), "DEFAULT",
-            adminAuthToken);
+    Refset release4 = releaseService.betaRefsetRelease(refset1.getId(),
+        "DEFAULT", adminAuthToken);
     // Finish release
-    releaseService.finishRefsetRelease(refset1.getId(), adminAuthToken);
+    releaseService.finishRefsetRelease(refset1.getId(), null, adminAuthToken);
 
     activeMap = new HashMap<>();
     etMap = new HashMap<>();
@@ -1008,7 +978,7 @@ public class RefsetReleaseTest extends RestSupport {
   }
 
   /**
-   * Test two releases and verify artifacts are actually correctly rendered
+   * Test two releases and verify artifacts are actually correctly rendered.
    *
    * @throws Exception the exception
    */
@@ -1029,16 +999,15 @@ public class RefsetReleaseTest extends RestSupport {
     // 233711002 true
     //
     // Begin release
-    releaseService.beginRefsetRelease(refset1.getId(), "20160101",
+    releaseService.beginRefsetRelease(refset1.getId(), "20160101", false,
         adminAuthToken);
     // Validate release
     releaseService.validateRefsetRelease(refset1.getId(), adminAuthToken);
     // Beta release
-    Refset release1 =
-        releaseService.betaRefsetRelease(refset1.getId(), "DEFAULT",
-            adminAuthToken);
+    Refset release1 = releaseService.betaRefsetRelease(refset1.getId(),
+        "DEFAULT", adminAuthToken);
     // Finish release
-    releaseService.finishRefsetRelease(refset1.getId(), adminAuthToken);
+    releaseService.finishRefsetRelease(refset1.getId(), null, adminAuthToken);
     Map<String, Boolean> activeMap = new HashMap<>();
     Map<String, String> etMap = new HashMap<>();
     activeMap.put("10519008", true);
@@ -1056,20 +1025,18 @@ public class RefsetReleaseTest extends RestSupport {
     // 233711002 true
     refset1 =
         (RefsetJpa) refsetService.getRefset(refset1.getId(), adminAuthToken);
-    ConceptRefsetMemberJpa excl1 =
-        (ConceptRefsetMemberJpa) refsetService.addRefsetExclusion(
-            refset1.getId(), "10519008", false, adminAuthToken);
+    ConceptRefsetMemberJpa excl1 = (ConceptRefsetMemberJpa) refsetService
+        .addRefsetExclusion(refset1.getId(), "10519008", false, adminAuthToken);
     // Begin release
-    releaseService.beginRefsetRelease(refset1.getId(), "20160102",
+    releaseService.beginRefsetRelease(refset1.getId(), "20160102", false,
         adminAuthToken);
     // Validate release
     releaseService.validateRefsetRelease(refset1.getId(), adminAuthToken);
     // Beta release
-    Refset release2 =
-        releaseService.betaRefsetRelease(refset1.getId(), "DEFAULT",
-            adminAuthToken);
+    Refset release2 = releaseService.betaRefsetRelease(refset1.getId(),
+        "DEFAULT", adminAuthToken);
     // Finish release
-    releaseService.finishRefsetRelease(refset1.getId(), adminAuthToken);
+    releaseService.finishRefsetRelease(refset1.getId(), null, adminAuthToken);
     activeMap = new HashMap<>();
     etMap = new HashMap<>();
     activeMap.put("10519008", false);
@@ -1102,20 +1069,18 @@ public class RefsetReleaseTest extends RestSupport {
     member.setMemberType(Refset.MemberType.INCLUSION);
     member.setActive(true);
     member.setModuleId("");
-    ConceptRefsetMemberJpa incl1 =
-        (ConceptRefsetMemberJpa) refsetService.addRefsetInclusion(member,
-            false, adminAuthToken);
+    ConceptRefsetMemberJpa incl1 = (ConceptRefsetMemberJpa) refsetService
+        .addRefsetInclusion(member, false, adminAuthToken);
     // Begin release
-    releaseService.beginRefsetRelease(refset1.getId(), "20160103",
+    releaseService.beginRefsetRelease(refset1.getId(), "20160103", false,
         adminAuthToken);
     // Validate release
     releaseService.validateRefsetRelease(refset1.getId(), adminAuthToken);
     // Beta release
-    Refset release3 =
-        releaseService.betaRefsetRelease(refset1.getId(), "DEFAULT",
-            adminAuthToken);
+    Refset release3 = releaseService.betaRefsetRelease(refset1.getId(),
+        "DEFAULT", adminAuthToken);
     // Finish release
-    releaseService.finishRefsetRelease(refset1.getId(), adminAuthToken);
+    releaseService.finishRefsetRelease(refset1.getId(), null, adminAuthToken);
     activeMap = new HashMap<>();
     etMap = new HashMap<>();
     activeMap.put("10519008", true);
@@ -1143,16 +1108,15 @@ public class RefsetReleaseTest extends RestSupport {
         (RefsetJpa) refsetService.getRefset(refset1.getId(), adminAuthToken);
     refsetService.removeRefsetMember(incl1.getId(), adminAuthToken);
     // Begin release
-    releaseService.beginRefsetRelease(refset1.getId(), "20160104",
+    releaseService.beginRefsetRelease(refset1.getId(), "20160104", false,
         adminAuthToken);
     // Validate release
     releaseService.validateRefsetRelease(refset1.getId(), adminAuthToken);
     // Beta release
-    Refset release4 =
-        releaseService.betaRefsetRelease(refset1.getId(), "DEFAULT",
-            adminAuthToken);
+    Refset release4 = releaseService.betaRefsetRelease(refset1.getId(),
+        "DEFAULT", adminAuthToken);
     // Finish release
-    releaseService.finishRefsetRelease(refset1.getId(), adminAuthToken);
+    releaseService.finishRefsetRelease(refset1.getId(), null, adminAuthToken);
     activeMap = new HashMap<>();
     etMap = new HashMap<>();
     activeMap.put("10519008", true);
@@ -1185,16 +1149,15 @@ public class RefsetReleaseTest extends RestSupport {
     refset1.getDefinitionClauses().add(clause);
     refsetService.updateRefset(refset1, adminAuthToken);
     // Begin release
-    releaseService.beginRefsetRelease(refset1.getId(), "20160105",
+    releaseService.beginRefsetRelease(refset1.getId(), "20160105", false,
         adminAuthToken);
     // Validate release
     releaseService.validateRefsetRelease(refset1.getId(), adminAuthToken);
     // Beta release
-    Refset release5 =
-        releaseService.betaRefsetRelease(refset1.getId(), "DEFAULT",
-            adminAuthToken);
+    Refset release5 = releaseService.betaRefsetRelease(refset1.getId(),
+        "DEFAULT", adminAuthToken);
     // Finish release
-    releaseService.finishRefsetRelease(refset1.getId(), adminAuthToken);
+    releaseService.finishRefsetRelease(refset1.getId(), null, adminAuthToken);
     activeMap = new HashMap<>();
     etMap = new HashMap<>();
     activeMap.put("10519008", true);
@@ -1242,9 +1205,8 @@ public class RefsetReleaseTest extends RestSupport {
       if (artifact.getName().contains(type)) {
         // Each entry in the map must exist and match the data
         final BufferedReader in =
-            new BufferedReader(new InputStreamReader(
-                releaseService.exportReleaseArtifact(artifact.getId(),
-                    adminAuthToken)));
+            new BufferedReader(new InputStreamReader(releaseService
+                .exportReleaseArtifact(artifact.getId(), adminAuthToken)));
         String line = null;
         final Set<String> badLines = new HashSet<>();
         final Map<String, Boolean> activeMapCopy = new HashMap<>(activeMap);
@@ -1270,8 +1232,8 @@ public class RefsetReleaseTest extends RestSupport {
         if (activeMapCopy.size() > 1) {
           // bad lines contains things that didn't match expectations
           // activeMapCopy contains things that were expected but didn't exist
-          throw new Exception("Mismatched contents: " + activeMap + ", "
-              + badLines);
+          throw new Exception(
+              "Mismatched contents: " + activeMap + ", " + badLines);
         }
       }
     }

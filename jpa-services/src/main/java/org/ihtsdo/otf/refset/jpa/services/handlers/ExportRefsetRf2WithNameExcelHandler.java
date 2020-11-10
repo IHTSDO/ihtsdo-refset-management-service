@@ -20,7 +20,7 @@ public class ExportRefsetRf2WithNameExcelHandler
   /* see superclass */
   @Override
   public String getFileTypeFilter() {
-    return ".xls";
+    return ".xlsx";
   }
 
   /* see superclass */
@@ -32,7 +32,7 @@ public class ExportRefsetRf2WithNameExcelHandler
   /* see superclass */
   @Override
   public String getName() {
-    return "Export RF2 .xls with name";
+    return "Export RF2 .xlsx with name";
   }
 
 }

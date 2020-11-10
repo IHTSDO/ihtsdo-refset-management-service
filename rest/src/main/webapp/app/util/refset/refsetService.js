@@ -18,6 +18,11 @@ tsApp.service('refsetService', [
       $rootScope.$broadcast('refset:refsetChanged', refset);
     };
 
+    // broadcasts a refset being disabled for editing because a lookup is in progress
+    this.fireDisableEditing = function(refset) {
+      $rootScope.$broadcast('refset:disableEditing', refset);
+    };
+    
     // get refset revision
     this.getRefsetRevision = function(refsetId, date) {
       console.debug('getRefsetRevision');
@@ -69,7 +74,7 @@ tsApp.service('refsetService', [
       var deferred = $q.defer();
 
       gpService.increment();
-      $http.get(refsetUrl + '/' + refsetId).then(
+      $http.get(refsetUrl + refsetId).then(
       // success
       function(response) {
         console.debug('  refset = ', response.data);
@@ -318,7 +323,7 @@ tsApp.service('refsetService', [
       });
       return deferred.promise;
     };
-    
+
     // add refset member
     this.addRefsetMembers = function(members) {
       console.debug('addRefsetMembers');
@@ -388,28 +393,29 @@ tsApp.service('refsetService', [
     };
 
     // find members for refset
-    this.findRefsetMembersForQuery = function(refsetId, query, pfs, translated) {
+    this.findRefsetMembersForQuery = function(refsetId, query, pfs, translated, language, fsn) {
       console.debug('findRefsetMembersForQuery');
       var deferred = $q.defer();
 
       // find members
       gpService.increment();
       $http.post(
-        refsetUrl + 'members?refsetId=' + refsetId + '&query=' + utilService.prepQuery(query) +
-        (translated != null ? '&translated=' + translated : ''),
-        utilService.prepPfs(pfs)).then(
-      // success
-      function(response) {
-        console.debug('  members = ', response.data);
-        gpService.decrement();
-        deferred.resolve(response.data);
-      },
-      // error
-      function(response) {
-        utilService.handleError(response);
-        gpService.decrement();
-        deferred.reject(response.data);
-      });
+        refsetUrl + 'members?refsetId=' + refsetId + '&query=' + utilService.prepQuery(query)
+           + (language != null ? '&language=' + language : '') + (fsn != null ? '&fsn=' + fsn : '')
+           + (translated != null ? '&translated=' + translated : ''), utilService.prepPfs(pfs))
+        .then(
+        // success
+        function(response) {
+          console.debug('  members = ', response.data);
+          gpService.decrement();
+          deferred.resolve(response.data);
+        },
+        // error
+        function(response) {
+          utilService.handleError(response);
+          gpService.decrement();
+          deferred.reject(response.data);
+        });
       return deferred.promise;
     };
 
@@ -751,6 +757,27 @@ tsApp.service('refsetService', [
       return deferred.promise;
     };
 
+    // get required language refsets for branch
+    this.getRequiredLanguageRefsets = function(refsetId) {
+      console.debug('getRequiredLanguageRefsets');
+      var deferred = $q.defer();
+
+      // Get required language refsets
+      gpService.increment();
+      $http.get(refsetUrl + 'languages?refsetId=' + refsetId).then(
+      // success
+      function(response) {
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+      });
+      return deferred.promise;
+    };
+
     this.beginRedefinition = function(refsetId, definition) {
       console.debug('beginRedefinition');
       var deferred = $q.defer();
@@ -868,6 +895,41 @@ tsApp.service('refsetService', [
       gpService.increment();
       $http.get(refsetUrl + 'export/definition?refsetId=' + refset.id + '&handlerId=' + handler.id)
         .then(
+          // Success
+          function(response) {
+            var blob = new Blob([ response.data ], {
+              type : ''
+            });
+
+            // fake a file URL and download it
+            var fileURL = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = fileURL;
+            a.target = '_blank';
+            a.download = 'definition_' + utilService.toCamelCase(refset.name)
+              + refset.terminologyId + '_' + utilService.yyyymmdd(new Date())
+              + handler.fileTypeFilter;
+            document.body.appendChild(a);
+            gpService.decrement();
+            a.click();
+            window.URL.revokeObjectURL(fileURL);
+
+          },
+          // Error
+          function(response) {
+            utilService.handleError(response);
+            gpService.decrement();
+          });
+    };
+
+    this.exportMembers = function(refset, handler, query, language, pfs, fsn) {
+      console.debug('exportMembers');
+      gpService.increment();
+      
+      $http.post(
+        refsetUrl + 'export/members?refsetId=' + refset.id + '&handlerId=' + handler.id
+          + (query ? '&query=' + utilService.prepQuery(query) : "") 
+          + (language ? '&language=' + language : "") + (fsn != null ? '&fsn=' + fsn : ""), pfs).then(
         // Success
         function(response) {
           var blob = new Blob([ response.data ], {
@@ -879,12 +941,11 @@ tsApp.service('refsetService', [
           var a = document.createElement('a');
           a.href = fileURL;
           a.target = '_blank';
-          a.download = 'definition_' + utilService.toCamelCase(refset.name) + refset.terminologyId +
-            '_' + utilService.yyyymmdd(new Date()) + handler.fileTypeFilter;
+          a.download = 'members_' + utilService.toCamelCase(refset.name) + refset.terminologyId
+            + '_' + utilService.yyyymmdd(new Date()) + handler.fileTypeFilter;
           document.body.appendChild(a);
           gpService.decrement();
           a.click();
-          window.URL.revokeObjectURL(fileURL);
 
         },
         // Error
@@ -894,63 +955,18 @@ tsApp.service('refsetService', [
         });
     };
 
-    this.exportMembers = function(refset, handler, query, pfs) {
-      console.debug('exportMembers');
-      gpService.increment();
-      $http.post(
-        refsetUrl + 'export/members?refsetId=' + refset.id + '&handlerId=' + handler.id
-          + (query ? '&query=' + utilService.prepQuery(query) : ""), pfs).then(
-      // Success
-      function(response) {
-        var blob = new Blob([ response.data ], {
-          type : ''
-        });
-
-        // fake a file URL and download it
-        var fileURL = URL.createObjectURL(blob);
-        var a = document.createElement('a');
-        a.href = fileURL;
-        a.target = '_blank';
-        a.download = 'members_' + utilService.toCamelCase(refset.name) + refset.terminologyId +
-        '_' + utilService.yyyymmdd(new Date()) + handler.fileTypeFilter;
-        document.body.appendChild(a);
-        gpService.decrement();
-        a.click();
-
-      },
-      // Error
-      function(response) {
-        utilService.handleError(response);
-        gpService.decrement();
-      });
-    };
-    
-    this.exportDiffReport = function(action, reportToken, refset, migrationTerminology, migrationVersion) {
-      console.debug('exportDiffReport');
+    // returns the file names for migration reports for the given project and refset
+    this.getMigrationFileNames = function(projectId, refsetId) {
+      console.debug('get migration file names*');
       var deferred = $q.defer();
       gpService.increment();
-      $http.get(
-        refsetUrl + 'export/report?reportToken=' + reportToken + '&terminology=' + migrationTerminology
-        + '&version=' + migrationVersion).then(
-      // Success
+      $http.get(refsetUrl + 'export/report/fileNames?projectId=' + projectId + '&refsetId=' + refsetId).then(
+      // success
       function(response) {
-        var blob = new Blob([ response.data ], {
-          type : ''
-        });
-
-        // fake a file URL and download it
-        var fileURL = URL.createObjectURL(blob);
-        var a = document.createElement('a');
-        a.href = fileURL;
-        a.target = '_blank';
-        a.download = action + '_' + utilService.toCamelCase(refset.name) + refset.terminologyId +
-        '_' + utilService.yyyymmdd(new Date()) + '.xls';
-        document.body.appendChild(a);
         gpService.decrement();
-        a.click();
         deferred.resolve(response.data);
       },
-      // Error
+      // error
       function(response) {
         utilService.handleError(response);
         gpService.decrement();
@@ -959,12 +975,59 @@ tsApp.service('refsetService', [
       return deferred.promise;
     };
 
+    this.exportDiffReport = function(action, reportToken, refset, migrationTerminology,
+      migrationVersion) {
+      console.debug('exportDiffReport');
+      var reportFileName = getReportFileName(refset, action);
+      var deferred = $q.defer();
+      gpService.increment();
+      $http.get(
+        refsetUrl + 'export/report?reportToken=' + reportToken + '&terminology='
+          + migrationTerminology + '&version=' + migrationVersion + '&action=' 
+          + action + '&reportFileName=' + reportFileName, {
+            responseType: 'arraybuffer'
+          }).then(
+        // Success
+        function(response) {
+          console.debug('  export report result = ');
+          if (action == 'ExportReport') {
+            var blob = new Blob([ response.data ], {
+              type : 'application/vnd.ms-excel'
+            });
+
+            // hack to download store a file having its URL
+            var fileURL = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = fileURL;
+            a.target = '_blank';
+            a.download = reportFileName;
+            document.body.appendChild(a);
+            a.click();
+          }
+          gpService.decrement();
+          deferred.resolve(response.data);
+        },
+        // Error
+        function(response) {
+          utilService.handleError(response);
+          gpService.decrement();
+          deferred.reject(response.data);
+        });
+      return deferred.promise;
+    };
+    
+    var getReportFileName = function(refset, action) {
+      var date = new Date().toISOString().slice(0, 19).replace(/-/g, '').replace(/:/g, '').replace(/T/, '_');
+      return utilService.toCamelCase(refset.name) + '_' + refset.id + '_' + date + '_' + action + '.xlsx';
+    };
+
     // Begin import members - if validation is result, OK to proceed.
     this.beginImportMembers = function(refsetId, handlerId, conceptIds) {
       console.debug('begin import members');
       var deferred = $q.defer();
       gpService.increment();
-      $http.post(refsetUrl + 'import/begin?refsetId=' + refsetId + '&handlerId=' + handlerId, conceptIds).then(
+      $http.post(refsetUrl + 'import/begin?refsetId=' + refsetId + '&handlerId=' + handlerId,
+        conceptIds).then(
       // success
       function(response) {
         console.debug('  validation result = ', response.data);
@@ -979,12 +1042,13 @@ tsApp.service('refsetService', [
       });
       return deferred.promise;
     };
-       
+
     this.exportDuplicateMembers = function(refset, handler, conceptIds) {
-        console.debug('exportDuplicateMembers');
-        gpService.increment();
-        $http.post(
-          refsetUrl + '/export/report/duplicates?refsetId=' + refset.id + '&handlerId=' + handler.id, conceptIds).then(
+      console.debug('exportDuplicateMembers');
+      gpService.increment();
+      $http.post(
+        refsetUrl + '/export/report/duplicates?refsetId=' + refset.id + '&handlerId=' + handler.id,
+        conceptIds).then(
         // Success
         function(response) {
           var blob = new Blob([ response.data ], {
@@ -996,8 +1060,8 @@ tsApp.service('refsetService', [
           var a = document.createElement('a');
           a.href = fileURL;
           a.target = '_blank';
-          a.download = 'duplicates_' + utilService.toCamelCase(refset.name) + refset.terminologyId +
-          '_' + utilService.yyyymmdd(new Date()) + handler.fileTypeFilter;
+          a.download = 'duplicates_' + utilService.toCamelCase(refset.name) + refset.terminologyId
+            + '_' + utilService.yyyymmdd(new Date()) + handler.fileTypeFilter;
           document.body.appendChild(a);
           gpService.decrement();
           a.click();
@@ -1008,7 +1072,7 @@ tsApp.service('refsetService', [
           utilService.handleError(response);
           gpService.decrement();
         });
-      };
+    };
 
     // Cancel import members
     this.cancelImportMembers = function(refsetId) {
@@ -1098,8 +1162,7 @@ tsApp.service('refsetService', [
 
       // get refset revision
       gpService.increment();
-      $http.get(
-        refsetUrl + 'convert?refsetId=' + refset.id + '&type=' + type).then(
+      $http.get(refsetUrl + 'convert?refsetId=' + refset.id + '&type=' + type).then(
       // success
       function(response) {
         console.debug('  refset conversion = ', response.data);
@@ -1138,6 +1201,53 @@ tsApp.service('refsetService', [
       });
       return deferred.promise;
     };
+    
+    this.beginMigrations = function(projectId, refsetIds, terminology, version) {
+      console.debug('beginMigrations');
+      var deferred = $q.defer();
+
+      // get refset revision
+      gpService.increment();
+      $http.post(
+        refsetUrl + 'migrations/begin/' + projectId + '?newTerminology=' + terminology
+          + '&newVersion=' + version, refsetIds).then(
+      // success
+      function(response) {
+        console.debug(' begin migrations finished ');
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    };
+    
+    this.checkForInactiveConcepts = function(projectId, refsetIds) {
+      console.debug('checkForInactiveConcepts');
+      var deferred = $q.defer();
+
+      // get refset revision
+      gpService.increment();
+      $http.post(
+        refsetUrl + 'migrations/check/' + projectId, refsetIds).then(
+      // success
+      function(response) {
+        console.debug(' check refsets for inactive concepts finished ');
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    };    
 
     this.finishMigration = function(refsetId) {
       console.debug('finishMigration');
@@ -1160,6 +1270,28 @@ tsApp.service('refsetService', [
       });
       return deferred.promise;
     };
+    
+    this.finishMigrations = function(projectId, refsetIds) {
+      console.debug('finishMigrations');
+      var deferred = $q.defer();
+
+      // get refset revision
+      gpService.increment();
+      $http.post(refsetUrl + 'migrations/finish/' + projectId, refsetIds).then(
+      // success
+      function(response) {
+        console.debug('  finish migrations finished ');
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    };    
 
     this.cancelMigration = function(refsetId) {
       console.debug('cancelMigration');
@@ -1183,6 +1315,28 @@ tsApp.service('refsetService', [
       return deferred.promise;
     };
 
+    this.cancelMigrations = function(projectId, refsetIds) {
+      console.debug('cancelMigrations');
+      var deferred = $q.defer();
+
+      // get refset revision
+      gpService.increment();
+      $http.post(refsetUrl + 'migrations/cancel/' + projectId, refsetIds).then(
+      // success
+      function(response) {
+        console.debug('  cancel migrations finished ');
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    };
+    
     this.resumeMigration = function(refsetId) {
       console.debug('resumeMigration');
       var deferred = $q.defer();
@@ -1300,6 +1454,56 @@ tsApp.service('refsetService', [
       return deferred.promise;
     };
 
+    // 
+    this.getInactiveConcepts = function(projectId) {
+      console.debug('getInactiveConcepts');
+      // Setup deferred
+      var deferred = $q.defer();
+
+      gpService.increment();
+      $http.get(refsetUrl + 'members/inactive?projectId=' + projectId, {
+        headers : {
+          'Content-type' : 'text/plain'
+        }
+      }).then(
+      // success
+      function(response) {
+        console.debug('  refsets with inactive concepts = ', response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    };
+    
+    // Re-lookup all members for all active refsets, to pick up any description changes
+    this.refreshDescriptions = function(projectId) {
+      console.debug('refreshDescriptions');
+      // Setup deferred
+      var deferred = $q.defer();
+
+      gpService.increment();
+      $http.get(refsetUrl + 'members/refresh?projectId=' + projectId).then(
+      // success
+      function(response) {
+        console.debug(' project refsets descriptions refreshing ');
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    };    
+    
     // get the progress of the name/status member lookup process
     this.getLookupProgress = function(refsetId) {
       console.debug('getLookupProgress');
@@ -1330,7 +1534,8 @@ tsApp.service('refsetService', [
       var deferred = $q.defer();
 
       // get refset revision
-      $http.get(refsetUrl + 'lookup/start?refsetId=' + refsetId).then(
+      $http.get(
+        refsetUrl + 'lookup/start?refsetId=' + refsetId).then(
       // success
       function(response) {
         console.debug('  start lookup names = ', response.data);
@@ -1343,7 +1548,48 @@ tsApp.service('refsetService', [
       });
       return deferred.promise;
     };
+    
+    // cancel lookup of member names/statuses
+    this.cancelLookup = function(refsetId) {
+      console.debug('cancelLookup');
+      var deferred = $q.defer();
 
+      // cancel the lookup process
+      $http.get(
+        refsetUrl + 'lookup/cancel?refsetId=' + refsetId).then(
+      // success
+      function(response) {
+        console.debug('  cancel lookup names = ', response.data);
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    };    
+
+    // Get the progress message string for a project's bulkLookup process
+    this.getBulkLookupProgressMessage = function(projectId) {
+      console.debug('getBulkLookupProgressMessage');
+      // Setup deferred
+      var deferred = $q.defer();
+
+      $http.get(refsetUrl + 'lookup/progress/message?projectId=' + projectId).then(
+      // success
+      function(response) {
+        console.debug('  lookup progress message returned ');
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    };    
+    
     // get the count of items in the resolved expression
     this.countExpression = function(projectId, expression, terminology, version) {
       console.debug('count expression', projectId, expression, terminology, version);
@@ -1401,7 +1647,7 @@ tsApp.service('refsetService', [
       });
       return deferred.promise;
     };
-    
+
     // checks if terminology version is valid
     this.isTerminologyVersionValid = function(projectId, terminology, version) {
       console.debug('isTerminologyVersionValid', projectId, terminology, version);
@@ -1411,7 +1657,7 @@ tsApp.service('refsetService', [
       gpService.increment();
       $http.get(
         refsetUrl + 'version/valid?projectId=' + projectId + '&terminology=' + terminology
-          + '&version=' + version,  {
+          + '&version=' + version, {
           headers : {
             'Content-type' : 'text/plain'
           }
@@ -1499,6 +1745,100 @@ tsApp.service('refsetService', [
       });
       return deferred.promise;
     };
-
+    
+    // common filter used by controllers
+    this.filterTerminologyVersions =
+      function(terminologyHandler, selectedTerminology, unfilteredVersions) {
+      
+      var versions = [];
+      
+      for (var i = 0; i < unfilteredVersions[selectedTerminology].length ; i++) {
+        var path = unfilteredVersions[selectedTerminology][i];
+        var key = null;
+        
+        if (terminologyHandler === 'MANAGED-SERVICE') {
+          if (path.indexOf("SNOMEDCT-") != -1) {           
+            
+            //key is first non-date after MAIN
+            for(var k of path.substring(path.indexOf('/')+1).split('/')) {
+              if (!utilService.isValidDate(k.substring(0,10)) && k != selectedTerminology) {
+                  // valid paths have to end with the identified key
+                  //the first non-date after MAIN is the project, but subsequent folders are tasks and we should not point to those
+                  if (path.endsWith(k)){
+                      key = k;
+                      break;
+                  }
+                  else{
+                      break;
+                  }
+              }
+            }
+          // International edition, parse international version
+          } else {
+            for(var k of path.substring(path.indexOf('/')+1).split('/')) {
+              if (utilService.isValidDate(k) & k != selectedTerminology) {
+                key = k;
+                break;
+              }
+            }
+          }
+        }
+        else if (terminologyHandler === 'PUBLIC-BROWSER') {
+          if (path.indexOf("SNOMEDCT-") != -1) {           
+            
+            //key is first date after MAIN
+            for(var k of path.substring(path.indexOf('/')+1).split('/')) {
+              if (utilService.isValidDate(k.substring(0,10))) {
+                key = k;
+                break;
+              }
+            }
+          // International edition, parse international version
+          } else {
+            for(var k of path.substring(path.indexOf('/')+1).split('/')) {
+              if (utilService.isValidDate(k) & k != selectedTerminology) {
+                key = k;
+                break;
+              }
+            }
+          }
+        }        
+        else if (terminologyHandler === 'AUTHORING-INTL') {          
+          var keys = path.substring(path.indexOf('/')+1).split('/');
+          for(var k of keys) {
+            if (utilService.isValidDate(k)) {
+              key = k;
+              break;
+            }
+          }                  
+        }
+        
+        if (key != null) {
+          var vsn = {
+            key : key,
+            path : path
+          }
+          var found = false;
+          if (versions.indexOf(vsn) == -1) {
+            for (var j = 0; j < versions.length; j++) {
+              // determine if key is already used
+              if (versions[j].key == vsn.key) {
+                found = true;
+                if (vsn.path > versions[j].path) {
+                  // replace with more recent path for that key
+                  versions[j].path = vsn.path;
+                  break;
+                }
+              }
+            }
+            if (!found) {
+              versions.push(vsn);
+            }
+          }
+        }
+      }// end for loop
+      return versions;
+    };
+    
     // end
   } ]);

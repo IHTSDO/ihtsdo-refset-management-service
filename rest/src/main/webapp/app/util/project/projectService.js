@@ -193,7 +193,7 @@ tsApp
 
         // update project
         this.updateProject = function(project) {
-          console.debug();
+          console.debug('  updateProject = ', project);
           var deferred = $q.defer();
 
           // Add project
@@ -216,7 +216,7 @@ tsApp
 
         // remove project
         this.removeProject = function(project) {
-          console.debug();
+          console.debug('  removeProject = ', project);
           var deferred = $q.defer();
 
           // Add project
@@ -446,7 +446,7 @@ tsApp
 
         // Get parent concepts
         this.getConceptParents = function(projectId, terminologyId, terminology, version,
-          translationId) {
+          translationId, moveToLocationOnError) {
           console.debug('getConceptParents', projectId, terminologyId);
           // Setup deferred
           var deferred = $q.defer();
@@ -465,7 +465,7 @@ tsApp
           },
           // error
           function(response) {
-            utilService.handleError(response);
+            utilService.handleError(response, moveToLocationOnError);
             gpService.decrement();
             deferred.reject(response.data);
           });
@@ -475,7 +475,7 @@ tsApp
 
         // Get child concepts
         this.getConceptChildren = function(projectId, terminologyId, terminology, version,
-          translationId, pfs) {
+          translationId, pfs, moveToLocationOnError) {
           console.debug('getConceptChildren', projectId, terminologyId);
           // Setup deferred
           var deferred = $q.defer();
@@ -495,7 +495,7 @@ tsApp
           },
           // error
           function(response) {
-            utilService.handleError(response);
+            utilService.handleError(response, moveToLocationOnError);
             gpService.decrement();
             deferred.reject(response.data);
           });
@@ -505,7 +505,7 @@ tsApp
 
         // get concept with descriptions
         this.getFullConcept = function(projectId, terminologyId, terminology, version,
-          translationId) {
+          translationId, moveToLocationOnError) {
 
           console.debug('getFullConcept', projectId, terminologyId, terminology, version,
             translationId);
@@ -526,7 +526,7 @@ tsApp
           },
           // error
           function(response) {
-            utilService.handleError(response);
+            utilService.handleError(response, moveToLocationOnError);
             gpService.decrement();
             deferred.reject(response.data);
           });
@@ -761,4 +761,29 @@ tsApp
           }
         };
         // end
+                
+        // for new projects
+        this.getAvailableBranchesByTerminologyHandler = function() {
+          var deferred = $q.defer();
+          console.debug("getAvailableBranchesByTerminologyHandler");
+          
+          // Assign user to project
+          gpService.increment();
+          $http.get(
+            projectUrl + 'translationExtensionLanguages').then(
+          // success
+          function(response) {
+            console.debug('  available translation extension languages = ', response.data);
+            gpService.decrement();
+            deferred.resolve(response.data);
+          },
+          // error
+          function(response) {
+            utilService.handleError(response);
+            gpService.decrement();
+            deferred.reject(response.data);
+          });
+          return deferred.promise;
+        }; // end getBranches
+        
       } ]);

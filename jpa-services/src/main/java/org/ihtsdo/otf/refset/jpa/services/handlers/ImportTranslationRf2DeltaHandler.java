@@ -1,5 +1,5 @@
 /**
- * Copyright 2015 West Coast Informatics, LLC
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.jpa.services.handlers;
 
@@ -21,7 +21,6 @@ import org.ihtsdo.otf.refset.helpers.FieldedStringTokenizer;
 import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.jpa.ValidationResultJpa;
 import org.ihtsdo.otf.refset.jpa.services.TranslationServiceJpa;
-import org.ihtsdo.otf.refset.rf2.Component;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.Description;
 import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
@@ -29,13 +28,14 @@ import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.DescriptionJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.LanguageRefsetMemberJpa;
 import org.ihtsdo.otf.refset.services.TranslationService;
+import org.ihtsdo.otf.refset.services.handlers.ImportExportAbstract;
 import org.ihtsdo.otf.refset.services.handlers.ImportTranslationHandler;
 
 /**
  * Implementation of an algorithm to import a refset definition.
  */
-public class ImportTranslationRf2DeltaHandler implements
-    ImportTranslationHandler {
+public class ImportTranslationRf2DeltaHandler extends ImportExportAbstract
+    implements ImportTranslationHandler {
 
   /** The request cancel flag. */
   boolean requestCancel = false;
@@ -56,8 +56,27 @@ public class ImportTranslationRf2DeltaHandler implements
 
   /* see superclass */
   @Override
+  public void setId(String id) {
+    // not used
+  }
+
+  /* see superclass */
+  @Override
+  public String getId() {
+    // not used
+    return null;
+  }
+
+  /* see superclass */
+  @Override
   public boolean isDeltaHandler() {
-    return true;
+    return false;
+  }
+
+  /* see superclass */
+  @Override
+  public void setFileTypeFilter(String fileTypeFilter) {
+    // not used
   }
 
   /* see superclass */
@@ -68,14 +87,38 @@ public class ImportTranslationRf2DeltaHandler implements
 
   /* see superclass */
   @Override
+  public void setMimeType(String mimeType) {
+    // not used
+  }
+
+  /* see superclass */
+  @Override
   public String getMimeType() {
     return "application/zip";
   }
 
   /* see superclass */
   @Override
+  public void setName(String name) {
+    // not used
+  }
+
+  /* see superclass */
+  @Override
   public String getName() {
     return "Import RF2 Delta";
+  }
+
+  /* see superclass */
+  @Override
+  public void setIoType(IoType ioType) {
+    // not used
+  }
+
+  /* see superclass */
+  @Override
+  public IoType getIoType() {
+    return IoType.FILE;
   }
 
   /* see superclass */
@@ -111,8 +154,8 @@ public class ImportTranslationRf2DeltaHandler implements
     // Iterate through the zip entries
     for (ZipEntry zipEntry; (zipEntry = zin.getNextEntry()) != null;) {
 
-      Logger.getLogger(getClass()).debug(
-          "Import translation Rf2 handler - reading zipEntry "
+      Logger.getLogger(getClass())
+          .debug("Import translation Rf2 handler - reading zipEntry "
               + zipEntry.getName());
 
       // Find the descriptions file
@@ -157,8 +200,8 @@ public class ImportTranslationRf2DeltaHandler implements
             description.setActive(fields[2].equals("1"));
             description.setTerminologyId(fields[0]);
             if (!fields[1].equals("")) {
-              description.setEffectiveTime(ConfigUtility.DATE_FORMAT
-                  .parse(fields[1]));
+              description
+                  .setEffectiveTime(ConfigUtility.DATE_FORMAT.parse(fields[1]));
             }
             description.setLanguageCode(fields[5].intern());
             description.setTypeId(fields[6].intern());
@@ -172,8 +215,8 @@ public class ImportTranslationRf2DeltaHandler implements
               concept = conceptCache.get(fields[4]);
               setCommonFields(concept, translation);
               if (!fields[1].equals("")) {
-                concept.setEffectiveTime(ConfigUtility.DATE_FORMAT
-                    .parse(fields[1]));
+                concept.setEffectiveTime(
+                    ConfigUtility.DATE_FORMAT.parse(fields[1]));
               }
               concept.setTerminologyId(fields[4]);
               concept.setDefinitionStatusId("unknown");
@@ -184,14 +227,15 @@ public class ImportTranslationRf2DeltaHandler implements
             description.setConcept(concept);
             // Description ids are not allowed to be empty
             if (fields[0].equals("")) {
-              throw new LocalException("Empty description ids are not allowed, consider using TMP-* ids instead.");
+              throw new LocalException(
+                  "Empty description ids are not allowed, consider using TMP-* ids instead.");
             }
             // Cache the description for lookup by the language reset member
             descriptions.put(fields[0], description);
             addedDescriptionCt++;
-            Logger.getLogger(getClass()).debug(
-                "  description = " + description.getTerminologyId() + ", "
-                    + description.getTerm());
+            Logger.getLogger(getClass())
+                .debug("  description = " + description.getTerminologyId()
+                    + ", " + description.getTerm());
           }
         }
 
@@ -200,8 +244,8 @@ public class ImportTranslationRf2DeltaHandler implements
       // Find the languages file
       else if (zipEntry.getName().contains("Refset_Language")) {
 
-        Logger.getLogger(getClass()).debug(
-            "Import translation Rf2 handler - reading zipEntry "
+        Logger.getLogger(getClass())
+            .debug("Import translation Rf2 handler - reading zipEntry "
                 + zipEntry.getName());
 
         // Verify we have not encountered this already
@@ -220,7 +264,8 @@ public class ImportTranslationRf2DeltaHandler implements
 
           if (fields.length != 7) {
             sc.close();
-            throw new LocalException("Unexpected field count in language file.");
+            throw new LocalException(
+                "Unexpected field count in language file.");
           }
 
           if (!fields[0].equals(id)) { // header
@@ -252,8 +297,8 @@ public class ImportTranslationRf2DeltaHandler implements
             member.setActive(fields[2].equals("1"));
             member.setTerminologyId(fields[0]);
             if (!fields[1].equals("")) {
-              member.setEffectiveTime(ConfigUtility.DATE_FORMAT
-                  .parse(fields[1]));
+              member
+                  .setEffectiveTime(ConfigUtility.DATE_FORMAT.parse(fields[1]));
             }
 
             // Other fields
@@ -311,7 +356,8 @@ public class ImportTranslationRf2DeltaHandler implements
         else {
           for (final LanguageRefsetMember member : service
               .getTranslationDescription(description.getTerminologyId(),
-                  translation.getId()).getLanguageRefsetMembers()) {
+                  translation.getId())
+              .getLanguageRefsetMembers()) {
             description.getLanguageRefsetMembers().add(member);
           }
         }
@@ -326,9 +372,8 @@ public class ImportTranslationRf2DeltaHandler implements
         for (final String descriptionId : descLangMap.keySet()) {
 
           // Read description from DB and do a shallow copy (this should exist)
-          final Description orig =
-              service.getTranslationDescription(descriptionId,
-                  translation.getId());
+          final Description orig = service
+              .getTranslationDescription(descriptionId, translation.getId());
           if (orig == null) {
             // This in SPANISH SNOMED is a description that is from English
             // SNOMED.
@@ -374,14 +419,14 @@ public class ImportTranslationRf2DeltaHandler implements
     if (inactiveDescriptionCt == 1) {
       validationResult.addComment("1 description was retired.");
     } else if (inactiveDescriptionCt != 0) {
-      validationResult.addComment(inactiveDescriptionCt
-          + " inactive descriptions were retured.");
+      validationResult.addComment(
+          inactiveDescriptionCt + " inactive descriptions were retured.");
     }
     if (inactiveMemberCt == 1) {
       validationResult.addComment("1 language refset member was retired.");
     } else if (inactiveMemberCt != 0) {
-      validationResult.addComment(inactiveMemberCt
-          + " language refset members retired.");
+      validationResult
+          .addComment(inactiveMemberCt + " language refset members retired.");
     }
 
     if (addedDescriptionCt == 1) {
@@ -392,8 +437,8 @@ public class ImportTranslationRf2DeltaHandler implements
           + " inactive descriptions successfully loaded or updated.");
     }
     if (addedMemberCt == 1) {
-      validationResult
-          .addComment("1 language refset member successfully loaded or updated.");
+      validationResult.addComment(
+          "1 language refset member successfully loaded or updated.");
     } else if (addedMemberCt != 0) {
       validationResult.addComment(addedMemberCt
           + " language refset members successfully loaded or udpated.");
@@ -409,25 +454,17 @@ public class ImportTranslationRf2DeltaHandler implements
 
   }
 
-  /**
-   * Sets the common fields.
-   *
-   * @param c the c
-   * @param refset the refset
-   */
-  @SuppressWarnings("static-method")
-  private void setCommonFields(Component c, Translation translation) {
-    c.setActive(true);
-    c.setEffectiveTime(null);
-    c.setId(null);
-    c.setPublishable(true);
-    c.setPublished(false);
-    c.setModuleId(translation.getModuleId());
-  }
-
+  /* see superclass */
   @Override
   public ValidationResult getValidationResults() throws Exception {
     return validationResult;
+  }
+
+  /* see superclass */
+  @Override
+  public List<Concept> importConcepts(Translation translation,
+    Map<String, String> headers) throws Exception {
+    throw new Exception("Not implemented for this handler.");
   }
 
 }

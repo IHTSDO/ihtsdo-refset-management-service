@@ -1,5 +1,5 @@
 <div class="modal-header">
-  <h4 style="display: inline">Import Refset from Existing Project</h4>
+  <h4 style="display: inline">Import Refset From Existing Project</h4>
   <span style="float: right">
     <i ng-show="!hasResults()" class="noul glyphicon glyphicon-remove"
       ng-click="cancel()"></i>
@@ -11,6 +11,24 @@
 <div class="modal-body">
   <div>
     <table class="table">
+      <tr>
+        <td>
+          <select ng-model="selectedWorkflowStatus" ng-change="filterRefsets()"
+            ng-options="workflowStatus as workflowStatus for workflowStatus in workflowStatusList | orderBy:'toString()' ">
+              <option value="" selected>All Workflow Statuses</option>
+          </select>
+          &nbsp;&nbsp;
+          <select ng-model="selectedModule" ng-change="filterRefsets()"
+            ng-options="moduleId as moduleId for moduleId in moduleIdList | orderBy:'toString()'">
+              <option value="" selected>All Modules</option>
+          </select>
+          &nbsp;&nbsp;
+          <select ng-model="selectedEffectiveTime" ng-change="filterRefsets()"
+            ng-options="effectiveTime as effectiveTime for effectiveTime in effectiveTimeList | orderBy:'toString()':true">
+              <option value="" selected>All Dates</option>
+          </select>
+        </td>
+       </tr>
       <tr>
         <td>
           <select ng-model="selectedRefset" ng-change="changeRefset()" 

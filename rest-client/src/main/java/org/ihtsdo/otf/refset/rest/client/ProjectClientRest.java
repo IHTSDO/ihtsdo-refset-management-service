@@ -1,5 +1,5 @@
-/**
- * Copyright 2015 West Coast Informatics, LLC
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.rest.client;
 
@@ -30,6 +30,7 @@ import org.ihtsdo.otf.refset.jpa.helpers.DescriptionTypeListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ProjectListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.TerminologyListJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.TranslationExtensionLanguageListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.UserListJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.ProjectServiceRest;
 import org.ihtsdo.otf.refset.rf2.Concept;
@@ -242,14 +243,20 @@ public class ProjectClientRest extends RootClientRest
 
   /* see superclass */
   @Override
-  public void luceneReindex(String indexedObjects, String authToken)
-    throws Exception {
+  public void luceneReindex(String indexedObjects,
+    Integer batchSizeToLoadObjects, Integer threadsToLoadObjects,
+    String authToken) throws Exception {
     Logger.getLogger(getClass())
         .debug("Project Client - lucene reindex " + indexedObjects);
 
     Client client = ClientBuilder.newClient();
+    String queryString = ((batchSizeToLoadObjects != null)
+        ? "batchSizeToLoadObjects=" + batchSizeToLoadObjects : "")
+        + ((threadsToLoadObjects != null)
+            ? "threadsToLoadObjects=" + threadsToLoadObjects : "");
     WebTarget target =
-        client.target(config.getProperty("base.url") + "/project/reindex");
+        client.target(config.getProperty("base.url") + "/project/reindex"
+            + (queryString.isEmpty() ? "&" + queryString : ""));
     Response response = target.request(MediaType.APPLICATION_XML)
         .header("Authorization", authToken).post(Entity.text(indexedObjects));
 
@@ -259,7 +266,6 @@ public class ProjectClientRest extends RootClientRest
       if (response.getStatus() != 204)
         throw new Exception("Unexpected status " + response.getStatus());
     }
-
   }
 
   /* see superclass */
@@ -401,9 +407,10 @@ public class ProjectClientRest extends RootClientRest
 
   /* see superclass */
   @Override
-  public TerminologyList getAllTerminologyEditions(
-    String authToken) throws Exception {
-    Logger.getLogger(getClass()).debug("Project Client - get all terminologies");
+  public TerminologyList getAllTerminologyEditions(String authToken)
+    throws Exception {
+    Logger.getLogger(getClass())
+        .debug("Project Client - get all terminologies");
 
     Client client = ClientBuilder.newClient();
     WebTarget target = client
@@ -423,6 +430,7 @@ public class ProjectClientRest extends RootClientRest
         TerminologyListJpa.class);
 
   }
+
   /* see superclass */
   @Override
   public TerminologyList getTerminologyVersions(ProjectJpa project,
@@ -792,6 +800,31 @@ public class ProjectClientRest extends RootClientRest
     return true;
   }
 
+  /* see superclass */
+  @Override
+  public TranslationExtensionLanguageListJpa getTranslationExtensionLanguages(
+    String authToken) throws Exception {
+    Logger.getLogger(getClass()).debug("Refset Client - getTranslationExtensionLanguages ");
+
+    Client client = ClientBuilder.newClient();
+    WebTarget target = client.target(
+        config.getProperty("base.url") + "/translationExtensionLanguages");
+
+    Response response = target.request(MediaType.APPLICATION_XML)
+        .header("Authorization", authToken).get();
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() != Family.SUCCESSFUL) {
+      throw new Exception(response.toString());
+    }
+
+    // converting to object
+    return (TranslationExtensionLanguageListJpa) ConfigUtility
+        .getGraphForString(resultString,
+            TranslationExtensionLanguageListJpa.class);
+  }
+
+  /* see superclass */
   @Override
   public String translate(Long projectId, String text, String language,
     String authToken) throws Exception {
@@ -800,8 +833,8 @@ public class ProjectClientRest extends RootClientRest
     validateNotEmpty(text, "text");
 
     Client client = ClientBuilder.newClient();
-    WebTarget target = client
-        .target(config.getProperty("base.url") + "/project/translate?" + "projectId="
+    WebTarget target = client.target(
+        config.getProperty("base.url") + "/project/translate?" + "projectId="
             + projectId + "&text=" + text + "&language=" + language);
     Response response = target.request(MediaType.APPLICATION_XML)
         .header("Authorization", authToken).get();

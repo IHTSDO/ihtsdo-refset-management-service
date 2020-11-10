@@ -1,5 +1,5 @@
-/**
- * Copyright 2015 West Coast Informatics, LLC
+/*
+ * Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.workflow;
 
@@ -27,11 +27,14 @@ import javax.xml.bind.annotation.XmlTransient;
 
 import org.hibernate.envers.Audited;
 import org.hibernate.search.annotations.Analyze;
+import org.hibernate.search.annotations.DateBridge;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.FieldBridge;
 import org.hibernate.search.annotations.Fields;
 import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Indexed;
+import org.hibernate.search.annotations.Resolution;
+import org.hibernate.search.annotations.SortableField;
 import org.hibernate.search.annotations.Store;
 import org.hibernate.search.bridge.builtin.LongBridge;
 import org.ihtsdo.otf.refset.Refset;
@@ -42,7 +45,6 @@ import org.ihtsdo.otf.refset.jpa.helpers.CollectionToCsvBridge;
 import org.ihtsdo.otf.refset.jpa.helpers.ListOrderBridge;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
-import org.ihtsdo.otf.refset.workflow.TrackingRecord;
 
 /**
  * JPA enabled implementation of {@link TrackingRecord}.
@@ -154,6 +156,8 @@ public class TrackingRecordJpa implements TrackingRecord {
 
   /* see superclass */
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  @DateBridge(resolution = Resolution.SECOND)
+  @SortableField
   @Override
   public Date getLastModified() {
     return lastModified;
@@ -180,9 +184,10 @@ public class TrackingRecordJpa implements TrackingRecord {
 
   /* see superclass */
   @Fields({
-    @Field(bridge = @FieldBridge(impl = CollectionToCsvBridge.class), index = Index.YES, analyze = Analyze.YES, store = Store.NO),
-    @Field(name="authorsOrder", bridge = @FieldBridge(impl = ListOrderBridge.class), index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+      @Field(bridge = @FieldBridge(impl = CollectionToCsvBridge.class), index = Index.YES, analyze = Analyze.YES, store = Store.NO),
+      @Field(name = "authorsOrder", bridge = @FieldBridge(impl = ListOrderBridge.class), index = Index.YES, analyze = Analyze.YES, store = Store.NO)
   })
+  @SortableField(forField = "authorsOrder")
   @Override
   public List<String> getAuthors() {
     if (authors == null) {
@@ -218,9 +223,9 @@ public class TrackingRecordJpa implements TrackingRecord {
   /* see superclass */
   @Fields({
       @Field(bridge = @FieldBridge(impl = CollectionToCsvBridge.class), index = Index.YES, analyze = Analyze.YES, store = Store.NO),
-      @Field(name="reviewersOrder", bridge = @FieldBridge(impl = ListOrderBridge.class), index = Index.YES, analyze = Analyze.YES, store = Store.NO)
-
-  }) 
+      @Field(name = "reviewersOrder", bridge = @FieldBridge(impl = ListOrderBridge.class), index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+  })
+  @SortableField(forField = "reviewersOrder")
   @Override
   public List<String> getReviewers() {
     if (reviewers == null) {
@@ -364,6 +369,7 @@ public class TrackingRecordJpa implements TrackingRecord {
    */
   @XmlTransient
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  @SortableField
   public String getConceptTerminologyId() {
     return concept == null ? "" : concept.getTerminologyId();
   }
@@ -378,6 +384,7 @@ public class TrackingRecordJpa implements TrackingRecord {
       @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO),
       @Field(name = "conceptNameSort", index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   })
+  @SortableField(forField = "conceptNameSort")
   public String getConceptName() {
     return concept == null ? "" : concept.getName();
   }
@@ -392,13 +399,13 @@ public class TrackingRecordJpa implements TrackingRecord {
       @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO),
       @Field(name = "refsetNameSort", index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   })
+  @SortableField(forField = "refsetNameSort")
   public String getRefsetName() {
     return refset == null ? "" : refset.getName();
   }
 
   /**
    * Returns the refset module id. For indexing.
-   *
    * @return the refset module id
    */
   @XmlTransient
@@ -417,9 +424,9 @@ public class TrackingRecordJpa implements TrackingRecord {
   public String getRefsetType() {
     return refset == null ? "" : refset.getType().toString();
   }
-  
+
   /**
-   * Checks if is local set.  For indexing.
+   * Checks if is local set. For indexing.
    *
    * @return true, if is local set
    */
@@ -436,6 +443,7 @@ public class TrackingRecordJpa implements TrackingRecord {
    */
   @XmlTransient
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  @SortableField
   public String getWorkflowStatus() {
     if (concept != null) {
       return concept.getWorkflowStatus().toString();

@@ -1,11 +1,15 @@
-/**
- * Copyright 2015 West Coast Informatics, LLC
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.services;
 
+import java.io.InputStream;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
+import org.ihtsdo.otf.refset.ConceptRefsetMemberSynonym;
+import org.ihtsdo.otf.refset.MemberDiffReport;
 import org.ihtsdo.otf.refset.Note;
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
@@ -16,11 +20,14 @@ import org.ihtsdo.otf.refset.helpers.IoHandlerInfoList;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.RefsetList;
 import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
+import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefsetMember;
 import org.ihtsdo.otf.refset.services.handlers.ExportRefsetHandler;
 import org.ihtsdo.otf.refset.services.handlers.ImportRefsetHandler;
+import org.ihtsdo.otf.refset.services.handlers.TerminologyHandler;
 
+// TODO: Auto-generated Javadoc
 /**
  * Generically represents a service for accessing {@link Refset} information.
  */
@@ -84,12 +91,32 @@ public interface RefsetService extends ReleaseService {
     throws Exception;
 
   /**
+   * Adds the member.
+   *
+   * @param member the member
+   * @param inactiveMemberConceptIdsMap the inactive member concept ids
+   * @return the concept refset member
+   * @throws Exception the exception
+   */
+  public ConceptRefsetMember addMember(ConceptRefsetMember member,
+    Map<String, Long> inactiveMemberConceptIdsMap) throws Exception;
+
+  /**
    * Removes the refset member.
    *
    * @param id the id
    * @throws Exception the exception
    */
   public void removeMember(Long id) throws Exception;
+
+  /**
+   * Removes the member.
+   *
+   * @param id the id
+   * @param force the force
+   * @throws Exception the exception
+   */
+  public void removeMember(Long id, Boolean force) throws Exception;
 
   /**
    * Returns the refset descriptor ref set member.
@@ -132,11 +159,12 @@ public interface RefsetService extends ReleaseService {
    * @param refsetId the refset id
    * @param query the query
    * @param pfs the pfs
+   * @param active the active
    * @return the simple ref set member list
    * @throws Exception the exception
    */
   public ConceptRefsetMemberList findMembersForRefset(Long refsetId,
-    String query, PfsParameter pfs) throws Exception;
+    String query, PfsParameter pfs, Boolean active) throws Exception;
 
   /**
    * Returns the import refset handler.
@@ -173,6 +201,62 @@ public interface RefsetService extends ReleaseService {
    * @throws Exception the exception
    */
   public IoHandlerInfoList getExportRefsetHandlerInfo() throws Exception;
+
+  /**
+   * Gets the members in common.
+   *
+   * @param reportToken the report token
+   * @return the members in common
+   * @throws Exception the exception
+   */
+  public List<ConceptRefsetMember> getMembersInCommon(String reportToken)
+    throws Exception;
+
+  /**
+   * Put members in common.
+   *
+   * @param reportToken the report token
+   * @param membersInCommon the members in common
+   * @throws Exception the exception
+   */
+  public void putMembersInCommon(String reportToken,
+    List<ConceptRefsetMember> membersInCommon) throws Exception;
+
+  /**
+   * Removes the members in common.
+   *
+   * @param reportToken the report token
+   * @throws Exception the exception
+   */
+  public void removeMembersInCommon(String reportToken) throws Exception;
+
+  /**
+   * Gets the member diff report.
+   *
+   * @param reportToken the report token
+   * @return the members diff report
+   * @throws Exception the exception
+   */
+  public MemberDiffReport getMemberDiffReport(String reportToken)
+    throws Exception;
+
+  /**
+   * Put member diff report.
+   *
+   * @param reportToken the report token
+   * @param membersDiffReport the members diff report
+   * @throws Exception the exception
+   */
+  public void putMemberDiffReport(String reportToken,
+    MemberDiffReport membersDiffReport) throws Exception;
+
+  /**
+   * Removes the member diff report.
+   *
+   * @param reportToken the report token
+   * @throws Exception the exception
+   */
+  public void removeMemberDiffReport(String reportToken) throws Exception;
 
   /**
    * Adds the staged change.
@@ -250,6 +334,24 @@ public interface RefsetService extends ReleaseService {
   public void removeNote(Long id, Class<? extends Note> type) throws Exception;
 
   /**
+   * Adds the concept refset member synonym.
+   *
+   * @param synonym the synonym
+   * @return the concept refset member synonym
+   * @throws Exception the exception
+   */
+  public ConceptRefsetMemberSynonym addConceptRefsetMemberSynonym(
+    ConceptRefsetMemberSynonym synonym) throws Exception;
+
+  /**
+   * Removes the concept refset member synonym.
+   *
+   * @param id the id
+   * @throws Exception the exception
+   */
+  public void removeConceptRefsetMemberSynonym(Long id) throws Exception;
+
+  /**
    * Returns the current release info for refset.
    *
    * @param terminologyId the terminology id
@@ -287,16 +389,75 @@ public interface RefsetService extends ReleaseService {
   public void handleLazyInit(ConceptRefsetMember member);
 
   /**
+   * Begin migration.
+   *
+   * @param refsetId the refset id
+   * @param newTerminology the new terminology
+   * @param newVersion the new version
+   * @param userName the user name
+   * @param lookupNamesInBackground the lookup names in background
+   * @return the refset
+   * @throws Exception the exception
+   */
+  public Refset beginMigration(Long refsetId, String newTerminology,
+    String newVersion, String userName, Boolean lookupNamesInBackground)
+    throws Exception;
+
+  /**
+   * Finish migration.
+   *
+   * @param refsetId the refset id
+   * @param userName the user name
+   * @param lookupNamesInBackground the lookup names in background
+   * @return the refset
+   * @throws Exception the exception
+   */
+  public Refset finishMigration(Long refsetId, String userName,
+    Boolean lookupNamesInBackground) throws Exception;
+
+  /**
+   * Cancel migration.
+   *
+   * @param refsetId the refset id
+   * @param userName the user name
+   * @param lookupNamesInBackground the lookup names in background
+   * @throws Exception the exception
+   */
+  public void cancelMigration(Long refsetId, String userName,
+    Boolean lookupNamesInBackground) throws Exception;
+
+  /**
+   * Compare refsets.
+   *
+   * @param refset1 the refset 1
+   * @param refset2 the refset 2
+   * @return the string
+   * @throws Exception the exception
+   */
+  public String compareRefsets(Refset refset1, Refset refset2) throws Exception;
+
+  /**
+   * Gets the old not new for migration.
+   *
+   * @param refset the refset
+   * @param refsetCopy the refset copy
+   * @return the old not new for migration
+   */
+  public List<ConceptRefsetMember> getOldNotNewForMigration(Refset refset,
+    Refset refsetCopy);
+
+  /**
    * Launches thread to populate DB with name and active-status of refset
    * members.
    *
    * @param refsetId the refset
    * @param label the label
    * @param background the background
+   * @param lookupSynonyms the lookup synonyms
    * @throws Exception the exception
    */
-  public void lookupMemberNames(Long refsetId, String label, boolean background)
-    throws Exception;
+  public void lookupMemberNames(Long refsetId, String label, boolean background,
+    boolean lookupSynonyms) throws Exception;
 
   /**
    * Perform member lookup names for a known list of members. This is to support
@@ -306,12 +467,13 @@ public interface RefsetService extends ReleaseService {
    * @param members the members
    * @param label the label
    * @param saveMembers the save members
+   * @param lookupSynonyms the lookup synonyms
    * @param background the background
    * @throws Exception the exception
    */
   public void lookupMemberNames(Long refsetId,
     List<ConceptRefsetMember> members, String label, boolean saveMembers,
-    boolean background) throws Exception;
+    boolean lookupSynonyms, boolean background) throws Exception;
 
   /**
    * Returns the percentage of concepts within the refset whose lookup has been
@@ -324,6 +486,14 @@ public interface RefsetService extends ReleaseService {
    */
   public int getLookupProgress(Long objectId, boolean lookupInProgress)
     throws Exception;
+
+  /**
+   * Cancel lookup.
+   *
+   * @param objectId the object id
+   * @throws Exception the exception
+   */
+  public void cancelLookup(Long objectId) throws Exception;
 
   /**
    * Resolve refset definition.
@@ -403,12 +573,143 @@ public interface RefsetService extends ReleaseService {
    */
   public Integer countExpression(Project project, String terminology,
     String version, String expression) throws Exception;
-
+  
   /**
    * Gets the refsets.
    *
    * @return the refsets
    */
   public RefsetList getRefsets();
+
+  /**
+   * Handler already defined
+   * 
+   * Populate members object with concept's synonyms (from term server).
+   * 
+   * Synonyms are indexed (via Luc) and used for refset concept member
+   * filtering.
+   *
+   * @param member the member
+   * @param concept the concept
+   * @param refset the refset
+   * @param refsetService the refset service
+   * @param handler the handler
+   * @throws Exception the exception
+   */
+  public void populateMemberSynonyms(ConceptRefsetMember member,
+    Concept concept, Refset refset, RefsetService refsetService,
+    TerminologyHandler handler) throws Exception;
+
+  /**
+   * Need to access Handler
+   * 
+   * Populate members object with concept's synonyms (from term server).
+   * 
+   * Synonyms are indexed (via Luc) and used for refset concept member
+   * filtering.
+   *
+   * @param member the member
+   * @param concept the concept
+   * @param refset the refset
+   * @param refsetService the refset service
+   * @throws Exception the exception
+   */
+  public void populateMemberSynonyms(ConceptRefsetMember member,
+    Concept concept, Refset refset, RefsetService refsetService)
+    throws Exception;
+
+  /**
+   * Returns the display name for member.
+   *
+   * @param memberId the member id
+   * @param language the language
+   * @param fsn the fsn
+   * @return the display name for member
+   * @throws Exception the exception
+   */
+  public String getDisplayNameForMember(Long memberId, String language,
+    Boolean fsn) throws Exception;
+
+  /**
+   * Creates the diff report.
+   *
+   * @param reportToken the report token
+   * @param migrationTerminology the migration terminology
+   * @param migrationVersion the migration version
+   * @param action the action
+   * @param reportFileName the report file name
+   * @return the input stream
+   * @throws Exception the exception
+   */
+  public InputStream createDiffReport(String reportToken,
+    String migrationTerminology, String migrationVersion, String action,
+    String reportFileName) throws Exception;
+
+  /**
+   * Returns the migration file names.
+   *
+   * @param projectId the project id
+   * @param refsetId the refset id
+   * @return the migration file names
+   * @throws Exception the exception
+   */
+  public String getMigrationFileNames(String projectId, String refsetId)
+    throws Exception;
+
+  /**
+   * Lookup all inactive members of the given refset, and return a map of:
+   * ConceptId -> Id This is used to greatly increase efficiency for addMember.
+   *
+   * @param refsetId the refset id
+   * @return the map
+   * @throws Exception the exception
+   */
+  public Map<String, Long> mapInactiveMembers(Long refsetId) throws Exception;
+
+  /**
+   * Returns the FSN name for term.
+   *
+   * @param terminologyId terminologyId
+   * @return the FSN name for term
+   * @throws Exception the exception
+   */
+  public String getFSNNameForConcept(String terminologyId) throws Exception;
+
+  /**
+   * Returns the inactive concepts for refset.
+   *
+   * @param refset the refset
+   * @return the inactive concepts for refset
+   * @throws Exception the exception
+   */
+  public List<String> getInactiveConceptsForRefset(Refset refset)
+    throws Exception;
+
+  /**
+   * Gets the bulk lookup progress.
+   *
+   * @param projectId the project id
+   * @return the bulk lookup progress
+   * @throws Exception the exception
+   */
+  public String getBulkLookupProgress(Long projectId) throws Exception;
+
+  /**
+   * Sets the bulk lookup progress.
+   *
+   * @param projectId the project id
+   * @param processMessage the process message
+   * @throws Exception the exception
+   */
+  public void setBulkLookupProgress(Long projectId, String processMessage)
+    throws Exception;
+
+  /**
+   * Clear bulk lookup progress.
+   *
+   * @param projectId the project id
+   * @throws Exception the exception
+   */
+  public void clearBulkLookupProgress(Long projectId) throws Exception;
 
 }

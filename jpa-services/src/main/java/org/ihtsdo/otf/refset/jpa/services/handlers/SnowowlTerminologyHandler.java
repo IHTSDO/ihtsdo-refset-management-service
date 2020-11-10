@@ -1,13 +1,18 @@
-/**
- * Copyright 2015 West Coast Informatics, LLC
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.jpa.services.handlers;
 
+import java.io.IOException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -20,15 +25,19 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.Response.Status.Family;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.Terminology;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
+import org.ihtsdo.otf.refset.helpers.KeyValuePairList;
 import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
+import org.ihtsdo.otf.refset.helpers.TranslationExtensionLanguage;
 import org.ihtsdo.otf.refset.jpa.TerminologyJpa;
+import org.ihtsdo.otf.refset.jpa.TranslationExtensionLanguageJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.services.RootServiceJpa;
@@ -62,6 +71,19 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
   /** The terminology version language map. */
   private static Map<String, String> tvLanguageMap = new HashMap<>();
 
+  /** The terminologies for URL. */
+  private static Map<String, List<Terminology>> terminologiesForURL =
+      new HashMap<>();
+
+  /** The terminologies for URL expiration date. */
+  private static Date terminologiesForURLexpirationDate = new Date();
+
+  /** The generic user cookie. */
+  private static String genericUserCookie = null;
+
+  /** The generic user cookie expiration date. */
+  private static Date genericUserCookieExpirationDate = new Date();
+
   /** The ids to ignore. */
   private static List<String> idsToIgnore = new ArrayList<>();
 
@@ -85,7 +107,6 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
    */
   public SnowowlTerminologyHandler() throws Exception {
     super();
-    getGenericUserCookies();
   }
 
   /** The accept. */
@@ -107,9 +128,8 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
   /** The headers. */
   private Map<String, String> headers;
 
-  /** The generic user cookies. */
-  private String genericUserCookie = null;
-  
+  /** The max batch lookup size. */
+  private int maxBatchLookupSize = 101;
   
   /* see superclass */
   @Override
@@ -130,11 +150,20 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     
     final Response response =
         target.request(accept).header("Authorization", authHeader)
-            .header("Cookie", genericUserCookie != null ? genericUserCookie : getCookieHeader()).get();
+            .header("Cookie", getGenericUserCookie() != null
+                ? getGenericUserCookie() : getCookieHeader())
+            .get();
     
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
+    }
+    // If the generic user is logged out, it returns a 403 Forbidden error. In
+    // this case, clear out the generic use cookie so the next call can re-login
+    else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
+      genericUserCookie = null;
+      throw new LocalException(
+          "Connection with the terminology server has expired. Please reload the page to reconnect.");
     } else {
       throw new LocalException(
           "Unexpected terminology server failure. Message = " + resultString);
@@ -172,26 +201,148 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
   /* see superclass */
   @Override
   public List<Terminology> getTerminologyEditions() throws Exception {
-    List<Terminology> result = new ArrayList<>();
-    // Cache this if ever not hardcoded.
+    Logger.getLogger(getClass()).info("  get terminology editions ");
+
+    // Check if the terminologiesForURL cache is expired and needs to be cleared
+    // and re-read
+    if (new Date().after(terminologiesForURLexpirationDate)) {
+      terminologiesForURL.clear();
+
+      // Set the new expiration date for tomorrow
+      Calendar now = Calendar.getInstance();
+      now.add(Calendar.HOUR, 24);
+      terminologiesForURLexpirationDate = now.getTime();
+    }
+
+    if (terminologiesForURL.containsKey(url)) {
+      return terminologiesForURL.get(url);
+    }
+
+    final List<Terminology> result = new ArrayList<>();
+
+    // Make a webservice call to SnowOwl to get branches
+    final Client client = ClientBuilder.newClient();
+
+    PfsParameter localPfs = new PfsParameterJpa();
+    localPfs.setStartIndex(0);
+    localPfs.setMaxResults(Integer.MAX_VALUE);
+
+    WebTarget target =
+        client.target(url + "/branches?" + "limit=" + localPfs.getMaxResults());
+
+    Response response =
+        target.request(accept).header("Authorization", authHeader)
+            .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
+            .header("Cookie", getGenericUserCookie() != null
+                ? getGenericUserCookie() : getCookieHeader())
+            .get();
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    }
+    // If the generic user is logged out, it returns a 403 Forbidden error. In
+    // this case, clear out the generic use cookie so the next call can re-login
+    else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
+      genericUserCookie = null;
+      throw new LocalException(
+          "Connection with the terminology server has expired. Please reload the page to reconnect.");
+    } else {
+
+      throw new LocalException(
+          "Unexpected terminology server failure. Message = " + resultString);
+    }
+
+    // compile list of edition names from branches available
+    ObjectMapper mapper = new ObjectMapper();
+    JsonNode doc = mapper.readTree(resultString);
+
+    for (final JsonNode branchNode : doc.get("items")) {
+      JsonNode metadata = branchNode.get("metadata");
+      if (metadata != null && metadata.get("codeSystemShortName") != null) {
+    Terminology t = new TerminologyJpa();
+        t.setTerminology(metadata.get("codeSystemShortName").asText());
+        t.setName(metadata.get("codeSystemShortName").asText());
+        if (!result.contains(t)) {
+          result.add(t);
+        }
+      }
+    }
+
+    // add SNOMEDCT itself
     Terminology t = new TerminologyJpa();
     t.setTerminology("SNOMEDCT");
     t.setName("SNOMEDCT");
     result.add(t);
+
+    // Reverse sort
+    Collections.sort(result, new Comparator<Terminology>() {
+      @Override
+      public int compare(Terminology o1, Terminology o2) {
+        return o1.getName().compareTo(o2.getName());
+      }
+    });
+
+    // Add to static map, so it doesn't need to be looked up again
+    terminologiesForURL.put(url, result);
+
     return result;
   }
 
   /* see superclass */
   @Override
-  public List<Terminology> getTerminologyVersions(String edition)
-    throws Exception {
-    final List<Terminology> list = new ArrayList<Terminology>();
-    final Terminology main = new TerminologyJpa();
-    main.setTerminology(edition);
-    main.setVersion("MAIN");
-    main.setName(edition);
-    list.add(main);
-    return list;
+  public List<Terminology> getTerminologyVersions(String edition,
+    Boolean showFutureVersions) throws Exception {
+    // Make a webservice call to SnowOwl to get branches
+    final Client client = ClientBuilder.newClient();
+
+    PfsParameter localPfs = new PfsParameterJpa();
+    localPfs.setStartIndex(0);
+    localPfs.setMaxResults(Integer.MAX_VALUE);
+
+    WebTarget target =
+        client.target(url + "/branches?" + "limit=" + localPfs.getMaxResults());
+
+    Response response =
+        target.request(accept).header("Authorization", authHeader)
+            .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
+            .header("Cookie", getGenericUserCookie() != null
+                ? getGenericUserCookie() : getCookieHeader())
+            .get();
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+  }
+    // If the generic user is logged out, it returns a 403 Forbidden error. In
+    // this case, clear out the generic use cookie so the next call can re-login
+    else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
+      genericUserCookie = null;
+      throw new LocalException(
+          "Connection with the terminology server has expired. Please reload the page to reconnect.");
+    } else {
+
+      throw new LocalException(
+          "Unexpected terminology server failure. Message = " + resultString);
+    }
+
+    ObjectMapper mapper = new ObjectMapper();
+    JsonNode doc = mapper.readTree(resultString);
+
+    // return versions of all paths that contain the edition specified
+    List<Terminology> branches = new ArrayList<>();
+    for (final JsonNode branchNode : doc.get("items")) {
+      String path = branchNode.get("path").asText();
+      if ((edition.equals("SNOMEDCT") && !path.contains("SNOMEDCT-"))
+          || (edition.contains("SNOMEDCT-") && path.contains(edition))) {
+        final Terminology tmlgy = new TerminologyJpa();
+        tmlgy.setTerminology(edition);
+        tmlgy.setVersion(path);
+        tmlgy.setName(branchNode.get("name").asText());
+        branches.add(tmlgy);
+      }
+    }
+
+    return branches;
+
   }
 
   /* see superclass */
@@ -203,17 +354,25 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     // Make a webservice call to SnowOwl to get concept
     final Client client = ClientBuilder.newClient();
 
-    WebTarget target = client
-            .target(url + "/" + version + "/concepts/" + conceptId +
-            		"?expand=members()");
+    WebTarget target = client.target(
+        url + "/" + version + "/concepts/" + conceptId + "?expand=members()");
 
     Response response =
         target.request(accept).header("Authorization", authHeader)
             .header("Accept-Language", getAcceptLanguage(terminology, version))
-            .header("Cookie", genericUserCookie != null ? genericUserCookie : getCookieHeader()).get();
+            .header("Cookie", getGenericUserCookie() != null
+                ? getGenericUserCookie() : getCookieHeader())
+            .get();
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
+    }
+    // If the generic user is logged out, it returns a 403 Forbidden error. In
+    // this case, clear out the generic use cookie so the next call can re-login
+    else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
+      genericUserCookie = null;
+      throw new LocalException(
+          "Connection with the terminology server has expired. Please reload the page to reconnect.");
     } else {
 
       // Here's the messy part about trying to parse the return error message
@@ -286,30 +445,28 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
         int index = 0;
         while ((entry = member.get(index++)) != null) {
         	 JsonNode addFields = entry.findValue("additionalFields");
-        	 if (addFields != null && addFields.findValue("targetComponent") != null) {
+        if (addFields != null
+            && addFields.findValue("targetComponent") != null) {
         	   JsonNode key = addFields.findValue("id");
         	   JsonNode reasonId = entry.findValue("referenceSetId");
         	   reasonMap.put(key.asText(), reasonId.asText());
         	 }
-        /*Entry<String, JsonNode> entry = mapping.fields().next();
-        String key = entry.getKey();
-        String values = entry.getValue().toString();
-        if (values.contains("[")) {
-          values = values.substring(1, values.length() - 1);
+        /*
+         * Entry<String, JsonNode> entry = mapping.fields().next(); String key =
+         * entry.getKey(); String values = entry.getValue().toString(); if
+         * (values.contains("[")) { values = values.substring(1, values.length()
+         * - 1); } values = values.replaceAll("\"", ""); for (String value :
+         * values.split(",")) { // conceptId, reason reasonMap.put(value, key);
+         * }
+         */
         }
-        values = values.replaceAll("\"", "");
-        for (String value : values.split(",")) {
-          // conceptId, reason
-          reasonMap.put(value, key);
-        }*/
       }
-    }
 
     // Look up concepts - set "definition status id" to the reason for
     // inactivation
     // probably need a better placeholder for this, but for now - good enough
     ConceptList list = this.getConcepts(new ArrayList<>(reasonMap.keySet()),
-        terminology, version);
+        terminology, version, false);
     for (final Concept concept : list.getObjects()) {
       concept.setDefinitionStatusId(reasonMap.get(concept.getTerminologyId()));
     }
@@ -318,8 +475,129 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
 
   /* see superclass */
   @Override
+  public KeyValuePairList getRequiredLanguageRefsets(String terminology,
+    String version) throws Exception {
+    Logger.getLogger(getClass()).info(
+        "  get required language refsets  - " + terminology + ", " + version);
+    // Make a webservice call to SnowOwl to get branch and its required
+    // languages
+    final Client client = ClientBuilder.newClient();
+
+    WebTarget target = client.target(url + "/branches/" + version);
+
+    Response response =
+        target.request(accept).header("Authorization", authHeader)
+            .header("Accept-Language", getAcceptLanguage(terminology, version))
+            .header("Cookie", getGenericUserCookie() != null
+                ? getGenericUserCookie() : getCookieHeader())
+            .get();
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    }
+    // If the generic user is logged out, it returns a 403 Forbidden error. In
+    // this case, clear out the generic use cookie so the next call can re-login
+    else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
+      genericUserCookie = null;
+      throw new LocalException(
+          "Connection with the terminology server has expired. Please reload the page to reconnect.");
+    } else {
+
+      // Here's the messy part about trying to parse the return error message
+      if (resultString.contains("loop did not match anything")) {
+        return new KeyValuePairList();
+      }
+
+      throw new LocalException(
+          "Unexpected terminology server failure. Message = " + resultString);
+    }
+
+    ObjectMapper mapper = new ObjectMapper();
+    JsonNode doc = mapper.readTree(resultString);
+
+    // If this branch doesn't have the metadata tag
+    if (doc.get("metadata") == null) {
+      return new KeyValuePairList();
+    }
+    // If metadata is present but empty, try one level higher (if possible)
+    // until one is found.
+    if (doc.get("metadata").toString().equals("{}")) {
+      if (version.contains("/")) {
+        final String higherVersion =
+            version.substring(0, version.lastIndexOf("/"));
+        return (getRequiredLanguageRefsets(terminology, higherVersion));
+      } else {
+        return new KeyValuePairList();
+      }
+    }
+    List<String> requiredLanguageList = new ArrayList<>();
+    final JsonNode metadata = doc.get("metadata");
+    final JsonNode requiredLanguageRefsets =
+        metadata.get("requiredLanguageRefsets");
+    JsonNode entry = null;
+    int index = 0;
+    if (requiredLanguageRefsets != null) {
+      while ((entry = requiredLanguageRefsets.get(index++)) != null) {
+        String entryText = entry.toString();
+        // fragile solution to JsonNode.fields and fieldNames next() not working
+        String languageName = "";
+        if (entry.has("dialectName")) {
+          String dialectName =
+              entry.get("dialectName").toString().replace("\"", "");
+          // Keep the full dialect
+          languageName = dialectName;// .substring(0,2);
+        } else {
+          languageName = entryText.substring(entryText.indexOf(':') - 3,
+              entryText.indexOf(':') - 1);
+          if (entryText.substring(1, entryText.indexOf(':'))
+              .equals("\"default\"")) {
+            languageName = entryText.substring(entryText.lastIndexOf(':') - 3,
+                entryText.lastIndexOf(':') - 1);
+          }
+        }
+        if (!languageName.isBlank()
+            && !requiredLanguageList.contains(languageName)) {
+          requiredLanguageList.add(languageName);
+        }
+      }
+
+    } else {
+      if (metadata.toString().contains("requiredLanguageRefset")) {
+        // fragile solution to JsonNode.fields and fieldNames next() not
+        // working
+        String languageName = "";
+        if (metadata.toString().contains("dialectName")) {
+          // Only keep language portion of dialect
+          languageName = metadata.toString().substring(
+              metadata.toString().lastIndexOf(':') + 3,
+              metadata.toString().lastIndexOf(':') + 5);
+        }
+        // When only a single requiredLanguageRefset, the node changes name to
+        // contain the language itself.
+        // E.g. "requiredLanguageRefset.sv": "46011000052107"
+        else {
+          languageName = metadata.toString().substring(
+              metadata.toString().indexOf("requiredLanguageRefset.") + 23,
+              metadata.toString().indexOf("requiredLanguageRefset.") + 25);
+        }
+        if (!languageName.isBlank()
+            && !requiredLanguageList.contains(languageName)) {
+          requiredLanguageList.add(languageName);
+        }
+      }
+
+    }
+
+    if (requiredLanguageRefsets == null) {
+      return new KeyValuePairList();
+    }
+    return new KeyValuePairList();
+  }
+
+  /* see superclass */
+  @Override
   public ConceptList resolveExpression(String expr, String terminology,
-    String version, PfsParameter pfs) throws Exception {
+    String version, PfsParameter pfs, boolean descriptions) throws Exception {
     Logger.getLogger(getClass()).info("  resolve expression - " + terminology
         + ", " + version + ", " + expr + ", " + pfs);
     // Make a webservice call to SnowOwl to get concept
@@ -344,19 +622,31 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
 
     WebTarget target = client.target(url + "/" + version + "/concepts?ecl="
         + URLEncoder.encode(expr, "UTF-8").replaceAll(" ", "%20") + "&limit="
-        + Math.min(initialMaxLimit, localPfs.getMaxResults()) + "&expand=pt()");
-    Logger.getLogger(getClass()).info(  url + "/" + version + "/concepts?ecl="
-        + URLEncoder.encode(expr, "UTF-8").replaceAll(" ", "%20") + "&limit="
-        + Math.min(initialMaxLimit, localPfs.getMaxResults()) + "&expand=pt()");
+        + Math.min(initialMaxLimit, localPfs.getMaxResults()) + "&expand=pt()"
+        + (descriptions ? ",descriptions()" : ""));
+    Logger.getLogger(getClass())
+        .info(url + "/" + version + "/concepts?ecl="
+            + URLEncoder.encode(expr, "UTF-8").replaceAll(" ", "%20")
+            + "&limit=" + Math.min(initialMaxLimit, localPfs.getMaxResults())
+            + "&expand=pt()" + (descriptions ? ",descriptions()" : ""));
     
     Response response =
         target.request(accept).header("Authorization", authHeader)
             .header("Accept-Language", getAcceptLanguage(terminology, version))
-            .header("Cookie", genericUserCookie != null ? genericUserCookie : getCookieHeader()).get();
+            .header("Cookie", getGenericUserCookie() != null
+                ? getGenericUserCookie() : getCookieHeader())
+            .get();
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
+    }
+    // If the generic user is logged out, it returns a 403 Forbidden error. In
+    // this case, clear out the generic use cookie so the next call can re-login
+    else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
+      genericUserCookie = null;
+      throw new LocalException(
+          "Connection with the terminology server has expired. Please reload the page to reconnect.");
     } else {
 
       // Here's the messy part about trying to parse the return error message
@@ -425,10 +715,9 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
 
       concept.setActive(conceptNode.get("active").asText().equals("true"));
       concept.setTerminologyId(conceptNode.get("id").asText());
-      if (doc.has("effectiveTime")) {
-        concept.setEffectiveTime(
-          ConfigUtility.DATE_FORMAT.parse(doc.get("effectiveTime").asText()));
-        concept.setLastModified(concept.getEffectiveTime());
+      if (conceptNode.has("effectiveTime")) {
+        concept.setLastModified(ConfigUtility.DATE_FORMAT
+            .parse(conceptNode.get("effectiveTime").asText()));
       } else {
         concept.setLastModified(new Date());
       }
@@ -438,26 +727,95 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
           .setDefinitionStatusId(conceptNode.get("definitionStatus").asText());
 
       // pt.term is the name
+      if (conceptNode.get("pt") != null) {
       concept.setName(conceptNode.get("pt").get("term").asText());
+      } else {
+        concept.setName(UNABLE_TO_DETERMINE_NAME);
+      }
 
       concept.setPublishable(true);
       concept.setPublished(true);
 
       conceptList.addObject(concept);
+
+      if (conceptNode.get("descriptions") != null) {
+        for (final JsonNode desc : conceptNode.get("descriptions")
+            .get("items")) {
+          final Description description = new DescriptionJpa();
+
+          description.setActive(desc.get("active").asText().equals("true"));
+
+          description
+              .setCaseSignificanceId(desc.get("caseSignificance").asText());
+
+          description.setConcept(concept);
+          if (desc.has("effectiveTime")) {
+            description.setEffectiveTime(ConfigUtility.DATE_FORMAT
+                .parse(desc.get("effectiveTime").asText()));
+            description.setLastModified(description.getEffectiveTime());
+          } else {
+            description.setLastModified(new Date());
+    }
+          description.setLanguageCode(desc.get("languageCode").asText());
+          description.setLastModifiedBy(terminology);
+          description.setModuleId(desc.get("moduleId").asText());
+          description.setPublishable(true);
+          description.setPublished(true);
+          description.setTerm(desc.get("term").asText());
+          description.setTerminologyId(desc.get("id").asText());
+
+          description.setTypeId(desc.get("typeId").asText());
+
+          // update the concept name to the FSN if available
+          if (!desc.get("semanticTag").asText().isEmpty()
+              && desc.get("typeId").asText().equals("900000000000003001")
+              && desc.get("active").asText().equals("true")) {
+            concept.setName(desc.get("term").asText());
+          }
+          if (description.isActive()) {
+            for (final JsonNode language : desc.findValues("acceptability")) {
+              final LanguageRefsetMember member = new LanguageRefsetMemberJpa();
+              member.setActive(true);
+              member.setDescriptionId(concept.getTerminologyId());
+              String key = language.fieldNames().next();
+              member.setRefsetId(key);
+              member.setAcceptabilityId(language.get(key).asText());
+              if (member.getAcceptabilityId().equals("PREFERRED")) {
+                member.setAcceptabilityId("900000000000548007");
+              } else if (member.getAcceptabilityId().equals("ACCEPTABLE")) {
+                member.setAcceptabilityId("900000000000549004");
+              }
+              description.getLanguageRefsetMembers().add(member);
+            }
+          }
+
+          concept.getDescriptions().add(description);
+        }
+      }
     }
 
     // If the total is over the initial max limit and pfs max results is too.
     if (total > initialMaxLimit && localPfs.getMaxResults() > initialMaxLimit) {
       target = client.target(url + "/" + version + "/concepts?ecl="
           + URLEncoder.encode(expr, "UTF-8") + "&limit="
-          + (total - initialMaxLimit) + "&searchAfter="
-          + searchAfter + "&expand=pt()");
+          + (total - initialMaxLimit) + "&searchAfter=" + searchAfter
+          + "&expand=pt()" + (descriptions ? ",descriptions()" : ""));
       response = target.request(accept).header("Authorization", authHeader)
           .header("Accept-Language", getAcceptLanguage(terminology, version))
-          .header("Cookie", genericUserCookie != null ? genericUserCookie : getCookieHeader()).get();
+          .header("Cookie", getGenericUserCookie() != null
+              ? getGenericUserCookie() : getCookieHeader())
+          .get();
       resultString = response.readEntity(String.class);
       if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
         // n/a
+      }
+      // If the generic user is logged out, it returns a 403 Forbidden error. In
+      // this case, clear out the generic use cookie so the next call can
+      // re-login
+      else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
+        genericUserCookie = null;
+        throw new LocalException(
+            "Connection with the terminology server has expired. Please reload the page to reconnect.");
       } else {
         throw new LocalException(
             "Unexpected terminology server failure. Message = " + resultString);
@@ -496,6 +854,56 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
         concept.setPublished(true);
 
         conceptList.addObject(concept);
+
+        if (conceptNode.get("descriptions") != null) {
+          for (final JsonNode desc : conceptNode.get("descriptions")
+              .get("items")) {
+            final Description description = new DescriptionJpa();
+
+            description.setActive(desc.get("active").asText().equals("true"));
+
+            description
+                .setCaseSignificanceId(desc.get("caseSignificance").asText());
+
+            description.setConcept(concept);
+            if (desc.has("effectiveTime")) {
+              description.setEffectiveTime(ConfigUtility.DATE_FORMAT
+                  .parse(desc.get("effectiveTime").asText()));
+              description.setLastModified(description.getEffectiveTime());
+            } else {
+              description.setLastModified(new Date());
+      }
+            description.setLanguageCode(desc.get("languageCode").asText());
+            description.setLastModifiedBy(terminology);
+            description.setModuleId(desc.get("moduleId").asText());
+            description.setPublishable(true);
+            description.setPublished(true);
+            description.setTerm(desc.get("term").asText());
+            description.setTerminologyId(desc.get("id").asText());
+
+            description.setTypeId(desc.get("typeId").asText());
+
+            if (description.isActive()) {
+              for (final JsonNode language : desc.findValues("acceptability")) {
+                final LanguageRefsetMember member =
+                    new LanguageRefsetMemberJpa();
+                member.setActive(true);
+                member.setDescriptionId(concept.getTerminologyId());
+                String key = language.fieldNames().next();
+                member.setRefsetId(key);
+                member.setAcceptabilityId(language.get(key).asText());
+                if (member.getAcceptabilityId().equals("PREFERRED")) {
+                  member.setAcceptabilityId("900000000000548007");
+                } else if (member.getAcceptabilityId().equals("ACCEPTABLE")) {
+                  member.setAcceptabilityId("900000000000549004");
+    }
+                description.getLanguageRefsetMembers().add(member);
+              }
+            }
+
+            concept.getDescriptions().add(description);
+          }
+        }
       }
     }
 
@@ -514,16 +922,24 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     final Client client = ClientBuilder.newClient();
 
     WebTarget target = client.target(url + "/" + version + "/concepts?ecl="
-        + URLEncoder.encode(expr, "UTF-8").replaceAll(" ", "%20")
-        + "&limit=1");
+        + URLEncoder.encode(expr, "UTF-8").replaceAll(" ", "%20") + "&limit=1");
 
     Response response =
         target.request(accept).header("Authorization", authHeader)
             .header("Accept-Language", getAcceptLanguage(terminology, version))
-            .header("Cookie", genericUserCookie != null ? genericUserCookie : getCookieHeader()).get();
+            .header("Cookie", getGenericUserCookie() != null
+                ? getGenericUserCookie() : getCookieHeader())
+            .get();
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
+    }
+    // If the generic user is logged out, it returns a 403 Forbidden error. In
+    // this case, clear out the generic use cookie so the next call can re-login
+    else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
+      genericUserCookie = null;
+      throw new LocalException(
+          "Connection with the terminology server has expired. Please reload the page to reconnect.");
     } else {
 
       // Here's the messy part about trying to parse the return error message
@@ -547,22 +963,32 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
   @Override
   public Concept getFullConcept(String terminologyId, String terminology,
     String version) throws Exception {
-	Logger.getLogger(getClass())
-      .info("  get full concept - " + url + ", " + terminology + ", " + version);
+    Logger.getLogger(getClass()).info("  get full concept: " + terminologyId
+        + "- " + url + ", " + terminology + ", " + version);
     // TODO resolve this date conversion 20150131 -> 2015-01-31
     // version = "MAIN/2015-01-31";
     // Make a webservice call to SnowOwl to get concept
     final Client client = ClientBuilder.newClient();
     final WebTarget target = client
         .target(url + "/browser/" + version + "/concepts/" + terminologyId);
+
     final Response response =
         target.request("application/vnd.org.ihtsdo.browser+json")
             .header("Authorization", authHeader)
             .header("Accept-Language", getAcceptLanguage(terminology, version))
-            .header("Cookie", genericUserCookie != null ? genericUserCookie : getCookieHeader()).get();
+            .header("Cookie", getGenericUserCookie() != null
+                ? getGenericUserCookie() : getCookieHeader())
+            .get();
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
+    }
+    // If the generic user is logged out, it returns a 403 Forbidden error. In
+    // this case, clear out the generic use cookie so the next call can re-login
+    else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
+      genericUserCookie = null;
+      throw new LocalException(
+          "Connection with the terminology server has expired. Please reload the page to reconnect.");
     } else {
 
       // Here's the messy part about trying to parse the return error message
@@ -653,8 +1079,15 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     concept.setLastModifiedBy(terminology);
     concept.setModuleId(doc.get("moduleId").asText());
     concept.setDefinitionStatusId(doc.get("definitionStatus").asText());
-    concept.setName(doc.get("preferredSynonym").get("term") == null ? doc.get("preferredSynonym").asText() : doc.get("preferredSynonym").get("term").asText());
-
+    /*
+     * concept.setName(doc.get("preferredSynonym").get("term") == null ?
+     * doc.get("preferredSynonym").asText() :
+     * doc.get("preferredSynonym").get("term").asText());
+     */
+    JsonNode fsn = doc.get("fsn");
+    String term = fsn == null ? ""
+        : fsn.get("term") == null ? "" : fsn.get("term").asText();
+    concept.setName(term);
     concept.setPublishable(true);
     concept.setPublished(true);
 
@@ -689,6 +1122,8 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
           description.setTypeId("900000000000003001");
         } else if (description.getTypeId().equals("SYNONYM")) {
           description.setTypeId("900000000000013009");
+        } else if (description.getTypeId().equals("TEXT_DEFINITION")) {
+          description.setTypeId("900000000000550004");
         }
         if (description.isActive()) {
           for (final JsonNode language : desc.findValues("acceptabilityMap")) {
@@ -737,7 +1172,9 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
           rel.setLastModified(new Date());
         }
         rel.setModuleId(relNode.get("moduleId").asText());
-        rel.setTypeId((relNode.get("type").get("fsn").get("term") == null ? relNode.get("type").get("fsn").asText() :relNode.get("type").get("fsn").get("term").asText())
+        rel.setTypeId((relNode.get("type").get("fsn").get("term") == null
+            ? relNode.get("type").get("fsn").asText()
+            : relNode.get("type").get("fsn").get("term").asText())
             .replaceFirst(" \\([a-zA-Z0-9 ]*\\)", ""));
         // Skip "isa" rels
         if (rel.getTypeId().equals("Is a")) {
@@ -759,7 +1196,9 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
         } else {
           destination.setId(1L);
         }
-        destination.setName(relNode.get("target").get("fsn").get("term") == null ? relNode.get("target").get("fsn").asText() : relNode.get("target").get("fsn").get("term").asText());
+        destination.setName(relNode.get("target").get("fsn").get("term") == null
+            ? relNode.get("target").get("fsn").asText()
+            : relNode.get("target").get("fsn").get("term").asText());
         destination.setDefinitionStatusId(
             relNode.get("target").get("definitionStatus").asText());
         rel.setDestinationConcept(destination);
@@ -783,9 +1222,9 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
       return null;
     }
     ConceptList conceptList =
-        resolveExpression(terminologyId, terminology, version, null);
-    if (conceptList == null || conceptList.getObjects() == null ||
-    		conceptList.getObjects().size() == 0){
+        resolveExpression(terminologyId, terminology, version, null, false);
+    if (conceptList == null || conceptList.getObjects() == null
+        || conceptList.getObjects().size() == 0) {
     	return null;
     }
     return conceptList.getObjects().get(0);
@@ -794,7 +1233,7 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
   /* see superclass */
   @Override
   public ConceptList getConcepts(List<String> terminologyIds,
-    String terminology, String version) throws Exception {
+    String terminology, String version, boolean descriptions) throws Exception {
 
     final StringBuilder query = new StringBuilder();
     for (final String terminologyId : terminologyIds) {
@@ -807,7 +1246,8 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
       }
     }
 
-    return resolveExpression(query.toString(), terminology, version, null);
+    return resolveExpression(query.toString(), terminology, version, null,
+        descriptions);
   }
 
   /* see superclass */
@@ -843,24 +1283,39 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     }
 
     // It's either a concept id, otherwise a search term
-    // if a search term, we will return up to 100 concepts and fake the paging on the front end
-    // this is because we no longer have the offset parameter to do paging and keeping track
+    // if a search term, we will return up to 100 concepts and fake the paging
+    // on the front end
+    // this is because we no longer have the offset parameter to do paging and
+    // keeping track
     // of the searchAfter parameter is too complicated for our current needs
-    final WebTarget target = useTerm
-        ? client.target(url + "/" + version + "/concepts?term="
+    final WebTarget target =
+        useTerm
+            ? client
+                .target(url + "/" + version + "/concepts?term="
+                    + URLEncoder.encode(localQuery, "UTF-8").replaceAll(" ",
+                        "%20")
+                    + "&limit=100" + "&expand=pt(),fsn()")
+            : client.target(url + "/" + version + "/concepts/"
             + URLEncoder.encode(localQuery, "UTF-8").replaceAll(" ", "%20")
-             + "&limit=100" + "&expand=pt(),fsn()")
-        :
-          client.target(url + "/" + version + "/concepts/"
-        	        + URLEncoder.encode(localQuery, "UTF-8").replaceAll(" ", "%20")  + "?expand=pt()");
+                + "?expand=pt()");
 
-    final Response response = target.request(accept).header("Authorization", authHeader)
+    final Response response =
+        target.request(accept).header("Authorization", authHeader)
             .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
-            .header("Cookie", genericUserCookie != null ? genericUserCookie : getCookieHeader()).get();
+            .header("Cookie", getGenericUserCookie() != null
+                ? getGenericUserCookie() : getCookieHeader())
+            .get();
             
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
+    }
+    // If the generic user is logged out, it returns a 403 Forbidden error. In
+    // this case, clear out the generic use cookie so the next call can re-login
+    else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
+      genericUserCookie = null;
+      throw new LocalException(
+          "Connection with the terminology server has expired. Please reload the page to reconnect.");
     } else {
       throw new LocalException(
           "Unexpected terminology server failure. Message = " + resultString);
@@ -882,8 +1337,11 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
         JsonNode fsn = entry.findValue("fsn");
 
         final Description desc = new DescriptionJpa();
-        desc.setActive(pt.get("active").asText().equals("true"));
-        desc.setTerm(pt.get("term").asText());
+        desc.setActive(pt == null ? false : pt.get("active") == null ? false
+            : pt.get("active").asText().equals("true"));
+        String term = pt == null ? ""
+            : pt.get("term") == null ? "" : pt.get("term").asText();
+        desc.setTerm(term);
         if (conceptMap.containsKey(conceptId)) {
           final Concept concept = conceptMap.get(conceptId);
           if (desc.isActive() || !localPfs.getActiveOnly()) {
@@ -893,18 +1351,22 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
 
         else {
           // Filter out inactive concepts, if Active Only is set.
-          if(entry.get("active").asText().equals("true") && (pt.get("active").asText().equals("true")) || !localPfs.getActiveOnly()){
+          if (entry.get("active").asText().equals("true")
+              && (pt.get("active").asText().equals("true"))
+              || !localPfs.getActiveOnly()) {
             // Skip any new concepts past the limit
             if (index++ > 99) {
               break;
             }
             final Concept concept = new ConceptJpa();
             concept.setActive(entry.get("active").asText().equals("true"));
-          	concept.setDefinitionStatusId(
-          				  entry.get("definitionStatus").asText());
+            concept
+                .setDefinitionStatusId(entry.get("definitionStatus").asText());
           	concept.setTerminologyId(conceptId);
           	concept.setModuleId(entry.get("moduleId").asText());
-          	concept.setName(fsn.get("term").asText());
+            term = fsn == null ? ""
+                : fsn.get("term") == null ? "" : fsn.get("term").asText();
+            concept.setName(term);
           	concept.setPublishable(true);
           	concept.setPublished(true);
 
@@ -930,23 +1392,21 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
 
         concept.setTerminologyId(doc.findValue("conceptId").asText());
         if (doc.has("effectiveTime")) {
-          concept.setEffectiveTime(ConfigUtility.DATE_FORMAT
-            .parse(doc.get("effectiveTime").asText()));
+        concept.setEffectiveTime(
+            ConfigUtility.DATE_FORMAT.parse(doc.get("effectiveTime").asText()));
           concept.setLastModified(concept.getEffectiveTime());
         } else {
           concept.setLastModified(new Date());
         }
         concept.setLastModifiedBy(terminology);
         concept.setModuleId(doc.get("moduleId").asText());
-        concept.setDefinitionStatusId(
-            doc.get("definitionStatus").asText());
+      concept.setDefinitionStatusId(doc.get("definitionStatus").asText());
         concept.setName(doc.get("pt").get("term").asText());
 
         concept.setPublishable(true);
         concept.setPublished(true);
         Logger.getLogger(getClass()).debug("  concept = " + concept);
         conceptList.addObject(concept);
-
 
         // Set total count
         conceptList.setTotalCount(conceptList.getCount());
@@ -961,7 +1421,7 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     if (query != null && !query.isEmpty()) {
       List<Concept> list = resolveExpression(
           "<< 900000000000496009 | Simple map type reference set  |",
-          terminology, version, pfs).getObjects();
+          terminology, version, pfs, false).getObjects();
 
       final RootServiceJpa service = new RootServiceJpa() {
         // n/a
@@ -977,7 +1437,7 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     } else {
       return resolveExpression(
           "<< 900000000000496009 | Simple map type reference set  |",
-          terminology, version, pfs);
+          terminology, version, pfs, false);
     }
   }
 
@@ -987,7 +1447,7 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     throws Exception {
     return resolveExpression(
         "< 900000000000443000 | Module (core metadata concept) |", terminology,
-        version, null).getObjects();
+        version, null, false).getObjects();
   }
 
   /* see superclass */
@@ -1004,10 +1464,21 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
         target.request("application/vnd.org.ihtsdo.browser+json")
             .header("Authorization", authHeader)
             .header("Accept-Language", getAcceptLanguage(terminology, version))
-            .header("Cookie", genericUserCookie != null ? genericUserCookie : getCookieHeader()).get();
+            .header("Cookie", getGenericUserCookie() != null
+                ? getGenericUserCookie() : getCookieHeader())
+            .get();
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
+    }
+    // If the generic user is logged out, it returns a 403 Forbidden error. In
+    // this case, clear out the generic use cookie so the next call can re-login
+    else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
+      genericUserCookie = null;
+      throw new LocalException(
+          "Connection with the terminology server has expired. Please reload the page to reconnect.");
+    } else if (response.getStatusInfo() == Status.NOT_FOUND) {
+      throw new LocalException(getErrorMessage(resultString));
     } else {
       throw new LocalException(
           "Unexpected terminology server failure. Message = " + resultString);
@@ -1042,7 +1513,8 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
       // moduleId is not provided
       concept.setModuleId(null);
       concept.setDefinitionStatusId(entry.get("definitionStatus").asText());
-      concept.setName(entry.get("fsn").get("term") == null ? entry.get("fsn").asText() : entry.get("fsn").get("term").asText());
+      concept.setName(entry.get("fsn").get("term") == null
+          ? entry.get("fsn").asText() : entry.get("fsn").get("term").asText());
 
       concept.setPublishable(true);
       concept.setPublished(true);
@@ -1067,10 +1539,21 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
         target.request("application/vnd.org.ihtsdo.browser+json")
             .header("Authorization", authHeader)
             .header("Accept-Language", getAcceptLanguage(terminology, version))
-            .header("Cookie", genericUserCookie != null ? genericUserCookie : getCookieHeader()).get();
+            .header("Cookie", getGenericUserCookie() != null
+                ? getGenericUserCookie() : getCookieHeader())
+            .get();
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
+    }
+    // If the generic user is logged out, it returns a 403 Forbidden error. In
+    // this case, clear out the generic use cookie so the next call can re-login
+    else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
+      genericUserCookie = null;
+      throw new LocalException(
+          "Connection with the terminology server has expired. Please reload the page to reconnect.");
+    } else if (response.getStatusInfo() == Status.NOT_FOUND) {
+      throw new LocalException(getErrorMessage(resultString));
     } else {
       throw new LocalException(
           "Unexpected terminology server failure. Message = " + resultString);
@@ -1112,7 +1595,8 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
       // no moduleId supplied
       concept.setModuleId(entry.get("moduleId").asText());
       concept.setDefinitionStatusId(entry.get("definitionStatus").asText());
-      concept.setName(entry.get("fsn").get("term") == null ? entry.get("fsn").asText() : entry.get("fsn").get("term").asText());
+      concept.setName(entry.get("fsn").get("term") == null
+          ? entry.get("fsn").asText() : entry.get("fsn").get("term").asText());
       concept.setLeaf(entry.get("isLeafInferred").asText().equals("true"));
 
       concept.setPublishable(true);
@@ -1160,6 +1644,7 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     return "";
   }
 
+  /* see superclass */
   @Override
   public List<String> getLanguages(String terminology, String version)
     throws Exception {
@@ -1172,18 +1657,29 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     localPfs.setStartIndex(0);
     localPfs.setMaxResults(200);
 
-    WebTarget target = client.target(url + "/" + version + "/concepts?ecl="
-        + URLEncoder.encode("<900000000000506000", "UTF-8").replaceAll(" ",
-            "%20")
+    WebTarget target = client.target(url
+        + "/" + version + "/concepts?ecl=" + URLEncoder
+            .encode("<900000000000506000", "UTF-8").replaceAll(" ", "%20")
         + "&limit=" + localPfs.getMaxResults() + "&expand=fsn()");
 
     Response response =
         target.request(accept).header("Authorization", authHeader)
             .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
-            .header("Cookie", genericUserCookie != null ? genericUserCookie : getCookieHeader()).get();
+            .header("Cookie", getGenericUserCookie() != null
+                ? getGenericUserCookie() : getCookieHeader())
+            .get();
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
+    }
+    // If the generic user is logged out, it returns a 403 Forbidden error. In
+    // this case, clear out the generic use cookie so the next call can re-login
+    else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
+      genericUserCookie = null;
+      throw new LocalException(
+          "Connection with the terminology server has expired. Please reload the page to reconnect.");
+    } else if (response.getStatusInfo() == Status.NOT_FOUND) {
+      throw new LocalException(getErrorMessage(resultString));
     } else {
 
       throw new LocalException(
@@ -1239,8 +1735,10 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     }
   }
 
+  /* see superclass */
   @Override
-  public List<String> getBranches(String terminology, String version) throws Exception {
+  public List<String> getBranches(String terminology, String version)
+    throws Exception {
 	    Logger.getLogger(getClass())
         .info("  get branches - " + url + ", " + terminology + ", " + version);
     // Make a webservice call to SnowOwl to get branches
@@ -1248,7 +1746,7 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
 
     PfsParameter localPfs = new PfsParameterJpa();
     localPfs.setStartIndex(0);
-    localPfs.setMaxResults(50);
+    localPfs.setMaxResults(1000);
 
     WebTarget target = client.target(url + "/" + version + "/branches?" 
         + "limit=" + localPfs.getMaxResults());
@@ -1256,10 +1754,19 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     Response response =
         target.request(accept).header("Authorization", authHeader)
             .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
-            .header("Cookie", genericUserCookie != null ? genericUserCookie : getCookieHeader()).get();
+            .header("Cookie", getGenericUserCookie() != null
+                ? getGenericUserCookie() : getCookieHeader())
+            .get();
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
+    }
+    // If the generic user is logged out, it returns a 403 Forbidden error. In
+    // this case, clear out the generic use cookie so the next call can re-login
+    else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
+      genericUserCookie = null;
+      throw new LocalException(
+          "Connection with the terminology server has expired. Please reload the page to reconnect.");
     } else {
 
       throw new LocalException(
@@ -1272,16 +1779,46 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     List<String> branches = new ArrayList<>();
     for (final JsonNode branchNode : doc.get("items")) {
       String path = branchNode.get("path").asText();
+      if (terminology.isEmpty() || path.contains(terminology)) {
+        if (version.isEmpty() || path.contains(version)) {
       branches.add(path);     
+    }
+      }
     }
 
     return branches;
   }
   
-  private void getGenericUserCookies() throws Exception {
-    final String userName=ConfigUtility.getConfigProperties().getProperty("terminology.handler.SNOWOWL-SE.genericUserName");
-    final String password=ConfigUtility.getConfigProperties().getProperty("terminology.handler.SNOWOWL-SE.genericUserPassword");
-    final String imsUrl = ConfigUtility.getConfigProperties().getProperty("terminology.handler.SNOWOWL-SE.authenticationUrl");
+  /**
+   * Gets the generic user cookie.
+   *
+   * @return the generic user cookie
+   * @throws Exception the exception
+   */
+  private String getGenericUserCookie() throws Exception {
+
+    // Check if the generic user cookie is expired and needs to be cleared
+    // and re-read
+    if (new Date().after(genericUserCookieExpirationDate)) {
+      genericUserCookie = null;
+
+      // Set the new expiration date for tomorrow
+      Calendar now = Calendar.getInstance();
+      now.add(Calendar.HOUR, 24);
+      genericUserCookieExpirationDate = now.getTime();
+    }
+
+    if (genericUserCookie != null) {
+      return genericUserCookie;
+    }
+
+    // Login the generic user, then save and return the cookie
+    final String userName = ConfigUtility.getConfigProperties()
+        .getProperty("generic.user.userName");
+    final String password = ConfigUtility.getConfigProperties()
+        .getProperty("generic.user.password");
+    final String imsUrl = ConfigUtility.getConfigProperties()
+        .getProperty("generic.user.authenticationUrl");
 
     Client client = ClientBuilder.newClient();
     WebTarget target = client.target(imsUrl + "/authenticate");
@@ -1290,8 +1827,8 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
     Response response = builder.post(Entity.json("{ \"login\": \"" + userName
         + "\", \"password\": \"" + password + "\" }"));    
     if (response.getStatusInfo().getFamily() != Family.SUCCESSFUL) {
-      throw new LocalException("Authentication of generic user failed. "
-          + response.toString());
+      throw new LocalException(
+          "Authentication of generic user failed. " + response.toString());
     }
     Map<String, NewCookie> genericUserCookies = response.getCookies();
     StringBuilder sb = new StringBuilder();
@@ -1300,6 +1837,94 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
       sb.append(";");
     }
     genericUserCookie=sb.toString();
+    return genericUserCookie;
+  }
+
+  /* see superclass */
+  @Override
+  public List<TranslationExtensionLanguage> getAvailableTranslationExtensionLanguages()
+    throws Exception {
+    Logger.getLogger(getClass())
+        .info("  get translation extensions languages from branches - " + url);
+    // Make a webservice call to Snowowl to get branches and languages
+    final Client client = ClientBuilder.newClient();
+
+    final List<TranslationExtensionLanguage> translationExtensionLanguageList =
+        new ArrayList<>();
+
+    final PfsParameter localPfs = new PfsParameterJpa();
+    localPfs.setStartIndex(0);
+    localPfs.setMaxResults(1000);
+
+    final WebTarget target = client
+        .target(url + "/codesystems?" + "limit=" + localPfs.getMaxResults());
+
+    final Response response =
+        target.request(accept).header("Authorization", authHeader)
+            .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
+            .header("Cookie", getGenericUserCookie() != null
+                ? getGenericUserCookie() : getCookieHeader())
+            .get();
+    final String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() != Family.SUCCESSFUL) {
+      throw new LocalException(
+          "Unexpected terminology server failure. Message = " + resultString);
+}
+
+    final ObjectMapper mapper = new ObjectMapper();
+    final JsonNode doc = mapper.readTree(resultString);
+
+    for (final JsonNode branchNode : doc.get("items")) {
+      String branchPath = branchNode.get("branchPath").asText();
+
+      if (branchPath != null && branchPath.contains("SNOMED")) {
+        for (Iterator<String> language =
+            branchNode.get("languages").fieldNames(); language.hasNext();) {
+          final String lang = language.next();
+          if (!"en".equalsIgnoreCase(lang)) {
+            final TranslationExtensionLanguage tel =
+                new TranslationExtensionLanguageJpa();
+            tel.setBranch(branchPath);
+            tel.setLanguageCode(lang);
+            translationExtensionLanguageList.add(tel);
+          }
+        }
+      }
+    }
+    return translationExtensionLanguageList;
+  }
+
+  /**
+   * Return message from API response.
+   *
+   * @param jsonString JSON as string.
+   * @return error message.
+   * @throws IOException Signals that an I/O exception has occurred.
+   */
+  private String getErrorMessage(String jsonString) throws IOException {
+    /**
+     * <pre>
+     * {"error":"BAD_REQUEST","message":"Branch 'MAIN/2018-05-31' does not exist."}
+     * </pre>
+     */
+
+    final ObjectMapper mapper = new ObjectMapper();
+    final JsonNode jsonNode = mapper.readTree(jsonString);
+
+    return jsonNode.get("message").asText();
+  }
+
+  /* see superclass */
+  @Override
+  public int getMaxBatchLookupSize() throws Exception {
+    return maxBatchLookupSize;
+  }
+
+  @Override
+  public ConceptList getInactiveConcepts(List<String> terminologyIds,
+    String terminology, String version) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
   }
 
 }

@@ -54,8 +54,12 @@ public class CancelRefsetReleaseAlgorithm extends RefsetServiceJpa implements
     // Get release info and remove it
     ReleaseInfoList list =
         findRefsetReleasesForQuery(refset.getId(), null, null);
-    if (list.getCount() != 1) {
+    if (list.getCount() == 0) {
       throw new LocalException("Cannot find release info for refset "
+          + refset.getId());
+    }
+    if (list.getCount() > 1) {
+      throw new LocalException("Multiple release infos for refset "
           + refset.getId());
     }
     releaseInfo = list.getObjects().get(0);

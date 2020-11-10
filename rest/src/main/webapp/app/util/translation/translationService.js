@@ -65,6 +65,29 @@ tsApp.service('translationService', [
       });
       return deferred.promise;
     };
+    
+ 	// Finds concepts for translation revision
+    this.findTranslationSuggestionsForConcept = function(refsetId, terminologyId) {
+      console.debug('findTranslationSuggestionsForConcept');
+      var deferred = $q.defer();
+
+      // Finds concepts for translation revision
+      gpService.increment();
+      $http.get(translationUrl + 'refset/' + refsetId + '/concept/' + terminologyId).then(
+      // success
+      function(response) {
+        console.debug('  findTranslationSuggestionsForConcept ', response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    };
 
     // Get translation for id
     this.getTranslation = function(translationId) {
@@ -1031,7 +1054,7 @@ tsApp.service('translationService', [
     // Export concepts
     this.exportConcepts = function(translation, handler, query, pfs) {
       console.debug('exportConcepts');
-
+      var deferred = $q.defer();
       gpService.increment();
       $http.post(
         translationUrl + 'export?translationId=' + translation.id + '&handlerId=' + handler.id
@@ -1061,7 +1084,32 @@ tsApp.service('translationService', [
       function(response) {
         utilService.handleError(response);
         gpService.decrement();
+        deferred.reject(response.data);
       });
+      return deferred.promise;
+    };
+    
+    // Validate export concepts
+    this.validateExportConcepts = function(translation, handler, query, pfs) {
+      console.debug('validateExportConcepts');
+      var deferred = $q.defer();
+      gpService.increment();
+      $http.post(
+        translationUrl + 'validate/export?translationId=' + translation.id + '&handlerId=' + handler.id
+          + (query ? '&query=' + utilService.prepQuery(query) : ""), pfs).then(
+       // success
+          function(response) {
+            console.debug('  validation result = ', response.data);
+            gpService.decrement();
+            deferred.resolve(response.data);
+          },
+          // error
+          function(response) {
+            utilService.handleError(response);
+            gpService.decrement();
+            deferred.reject(response.data);
+          });
+        return deferred.promise;
     };
 
     // Begin import concepts - if validation is result, OK to proceed.
@@ -1108,14 +1156,14 @@ tsApp.service('translationService', [
     };
 
     // Finish import concepts - if validation is result, OK to proceed.
-    this.finishImportConcepts = function(translationId, handlerId, file) {
+    this.finishImportConceptsFile = function(translationId, handlerId, file, wfStatus) {
       console.debug('finish import concepts');
       var deferred = $q.defer();
       gpService.increment();
       Upload.upload(
         {
           url : translationUrl + 'import/finish?translationId=' + translationId + '&handlerId='
-            + handlerId,
+            + handlerId + '&wfStatus=' + wfStatus,
           data : {
             file : file
           }
@@ -1125,6 +1173,35 @@ tsApp.service('translationService', [
         gpService.decrement();
         deferred.resolve(response.data);
 
+      },
+      // error
+      function(response) {
+        //Handle user having document open while trying to upload
+        if(response.data == null){
+          response.data = "Error uploading file.  This can be caused by the file being open - please close and try again."
+        }        
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      },
+      // event
+      function(evt) {
+        var progressPercentage = parseInt(100.0 * evt.loaded / evt.total);
+        console.debug('progress: ' + progressPercentage + '% ' + evt.config.data.file.name);
+      });
+      return deferred.promise;
+    };
+    
+    this.finishImportConceptsApi = function(translationId, handlerId, wfStatus) {
+      console.debug('finish import concepts');
+      var deferred = $q.defer();
+      gpService.increment();
+      $http.post(translationUrl + 'import/finish/' + handlerId + '?translationId=' + translationId
+        + '&wfStatus=' + wfStatus).then(
+      // Success
+      function(response) {
+        gpService.decrement();
+        deferred.resolve(response.data);
       },
       // error
       function(response) {
@@ -1139,6 +1216,7 @@ tsApp.service('translationService', [
       });
       return deferred.promise;
     };
+    
     // Begin import phrase memory
     this.importPhraseMemory = function(translationId, file) {
       console.debug('import phrase memory');
@@ -1302,7 +1380,28 @@ tsApp.service('translationService', [
       });
       return deferred.promise;
     };
+    
+    this.getLanguageRefsetDialectInfo = function(useCase) {
+      console.debug('getLanguageRefsetDialectInfo', useCase);
+      // Setup deferred
+      var deferred = $q.defer();
 
+      $http.get(
+        translationUrl + 'dialects' + (useCase ? '?useCase=' + useCase : '')
+          ).then(
+      // success
+      function(response) {
+        console.debug('  dialects = ', response.data);
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    };
+    
     // end
 
   } ]);

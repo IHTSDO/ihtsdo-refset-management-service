@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 West Coast Informatics, LLC
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.lists;
 
@@ -21,7 +21,8 @@ import org.junit.Test;
 /**
  * Unit testing for {@link MemberValidationResultList}.
  */
-public class MemberValidationResultListUnitTest extends AbstractListUnit<MemberValidationResult> {
+public class MemberValidationResultListUnitTest
+    extends AbstractListUnit<MemberValidationResult> {
 
   /** The list1 test fixture . */
   private MemberValidationResultList list1;

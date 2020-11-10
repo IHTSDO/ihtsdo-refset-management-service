@@ -55,6 +55,32 @@ tsApp.service('workflowService', [
       return deferred.promise;
     };
 
+    // Perform workflow action on a list of refsets
+    this.performWorkflowActions = function(projectId, refsetIds, userName, projectRole, action) {
+      console.debug('performWorkflowActions');
+      var deferred = $q.defer();
+
+      // Perform workflow action on selected refset
+      gpService.increment();
+      $http.post(
+        workflowUrl + 'refsets/' + action + '?userName=' + userName
+          + '&projectId=' + projectId + '&projectRole=' + projectRole, refsetIds).then(
+      // success
+      function(response) {
+        console.debug(' bulk ' + action + ' workflow action completed ');
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    };    
+    
+    
     // Find available translation work
     this.findAvailableConcepts = function(userRole, projectId, translationId, userName, pfs) {
       console.debug('findAvailableConcepts');
@@ -82,7 +108,8 @@ tsApp.service('workflowService', [
     };
 
     // Find assigned translation work
-    this.findAssignedConcepts = function(userRole, projectId, translationId, userName, pfs) {
+    this.findAssignedConcepts = function(userRole, projectId, translationId, userName,
+      actionStatus, pfs) {
       console.debug('findAssignedConcepts');
       var deferred = $q.defer();
 
@@ -90,8 +117,8 @@ tsApp.service('workflowService', [
       gpService.increment();
       $http.post(
         workflowUrl + 'translation/assigned?userRole=' + userRole + '&projectId=' + projectId
-          + '&translationId=' + translationId + (userName ? '&userName=' + userName : ''),
-        utilService.prepPfs(pfs)).then(
+          + '&translationId=' + translationId + (userName ? '&userName=' + userName : '')
+          + (actionStatus ? '&actionStatus=' + actionStatus : ''), utilService.prepPfs(pfs)).then(
       // success
       function(response) {
         console.debug('  work = ', response.data);

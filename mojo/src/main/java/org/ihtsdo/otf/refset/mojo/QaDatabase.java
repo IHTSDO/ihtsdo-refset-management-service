@@ -1,5 +1,5 @@
-/**
- * Copyright 2015 West Coast Informatics, LLC
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.mojo;
 
@@ -13,7 +13,6 @@ import javax.persistence.EntityManager;
 import javax.persistence.Query;
 
 import org.apache.log4j.Logger;
-import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
@@ -30,13 +29,11 @@ import org.ihtsdo.otf.refset.services.handlers.ExceptionHandler;
  * See admin/qa/pom.xml for a sample execution.
  * 
  */
-@Mojo( name = "qa-database", defaultPhase = LifecyclePhase.PACKAGE)
-public class QaDatabase extends AbstractMojo {
+@Mojo(name = "qa-database", defaultPhase = LifecyclePhase.PACKAGE)
+public class QaDatabase extends AbstractRttMojo {
 
-  /**
-   * The queries
-   */
-  @Parameter( required = true )
+  /** The queries. */
+  @Parameter(required = true)
   private Properties queries;
 
   /** The manager. */
@@ -44,9 +41,9 @@ public class QaDatabase extends AbstractMojo {
 
   /**
    * Executes the plugin.
-   * 
+   *
    * @throws MojoExecutionException the mojo execution exception
-   * @throws MojoFailureException
+   * @throws MojoFailureException the mojo failure exception
    */
   @SuppressWarnings("unchecked")
   @Override
@@ -54,6 +51,7 @@ public class QaDatabase extends AbstractMojo {
     getLog().info("Starting database QA");
 
     try {
+      setupBindInfoPackage();
 
       // Obtain an entity manager;
       RootService service = new RootServiceJpa() {
@@ -100,7 +98,8 @@ public class QaDatabase extends AbstractMojo {
       if (!errors.isEmpty()) {
         StringBuilder msg = new StringBuilder();
         msg.append("\r\n");
-        msg.append("The automated database QA mojo has found some issues with the following checks:\r\n");
+        msg.append(
+            "The automated database QA mojo has found some issues with the following checks:\r\n");
         msg.append("\r\n");
 
         for (String key : errors.keySet()) {
@@ -128,8 +127,7 @@ public class QaDatabase extends AbstractMojo {
             from = config.getProperty("mail.smtp.user");
           }
 
-          ConfigUtility.sendEmail("[Refset Server] Database QA Results",
-              from,
+          ConfigUtility.sendEmail("[Refset Server] Database QA Results", from,
               config.getProperty("mail.smtp.to"), msg.toString(), config,
               "true".equals(config.get("mail.smtp.auth")));
         }
