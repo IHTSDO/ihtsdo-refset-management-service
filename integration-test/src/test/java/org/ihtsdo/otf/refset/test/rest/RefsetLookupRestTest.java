@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 West Coast Informatics, LLC
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 /*
  * 
@@ -275,11 +275,13 @@ public class RefsetLookupRestTest extends RestSupport {
     }
 
     ConceptRefsetMemberList members = refsetService.findRefsetMembersForQuery(
-        refset.getId(), "", false, new PfsParameterJpa(), adminAuthToken);
+        refset.getId(), "", null, false, false, new PfsParameterJpa(), adminAuthToken);
 
     // Verify proper name & statues set
     assertTrue(members.getObjects().get(0).getConceptName()
         .startsWith("Neoplasm of kidney"));
+    assertTrue(
+        members.getObjects().get(0).getSynonyms().contains("Renal tumour"));
     assertEquals(true, members.getObjects().get(0).isConceptActive());
 
     // clean up

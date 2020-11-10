@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <!-- Module Metadata -->
   <groupId>org.ihtsdo.otf.refset</groupId>
   <artifactId>refset-aggregator</artifactId>
-  <version>1.1.10-SNAPSHOT</version>
+  <version>1.4.6-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>IHTSDO refset management service</name>
   <description>Aggregator project.</description>
@@ -25,6 +26,34 @@
     <module>rest-client</module>
     <module>integration-test</module>
     <module>examples</module>
+    <module>mojo</module>
   </modules>
+
+  <!-- Distribution management -->
+  <repositories>
+    <repository>
+      <id>ihtsdo-public-nexus</id>
+      <name>IHTSDO Public Nexus Releases</name>
+      <url>https://maven3.ihtsdotools.org/repository/maven-releases/</url>
+    </repository>
+    <repository>
+      <id>ihtsdo-public-nexus-snapshot</id>
+      <name>IHTSDO Public Nexus Snapshots</name>
+      <url>https://maven3.ihtsdotools.org/repository/maven-snapshots/</url>
+    </repository>
+  </repositories>
+
+  <distributionManagement>
+    <repository>
+      <id>ihtsdo-public-nexus</id>
+      <name>IHTSDO Public Nexus Releases</name>
+      <url>https://maven3.ihtsdotools.org/repository/maven-releases/</url>
+    </repository>
+    <snapshotRepository>
+      <id>ihtsdo-public-nexus</id>
+      <name>IHTSDO Public Nexus Snapshots</name>
+      <url>https://maven3.ihtsdotools.org/repository/maven-snapshots/</url>
+    </snapshotRepository>
+  </distributionManagement>
 
 </project>

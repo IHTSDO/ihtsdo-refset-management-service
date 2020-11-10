@@ -1,5 +1,5 @@
-/**
- * Copyright 2015 West Coast Informatics, LLC
+/*
+ * Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.jpa;
 
@@ -29,10 +29,13 @@ import javax.xml.bind.annotation.XmlTransient;
 
 import org.hibernate.envers.Audited;
 import org.hibernate.search.annotations.Analyze;
+import org.hibernate.search.annotations.DateBridge;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.FieldBridge;
 import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Indexed;
+import org.hibernate.search.annotations.Resolution;
+import org.hibernate.search.annotations.SortableField;
 import org.hibernate.search.annotations.Store;
 import org.hibernate.search.bridge.builtin.LongBridge;
 import org.ihtsdo.otf.refset.Refset;
@@ -53,8 +56,7 @@ import org.ihtsdo.otf.refset.Translation;
 @Audited
 @Indexed
 @XmlRootElement(name = "releaseInfo")
-public class ReleaseInfoJpa implements ReleaseInfo {
-
+public class ReleaseInfoJpa implements ReleaseInfo { 
   /** The id. */
   @TableGenerator(name = "EntityIdGen", table = "table_generator", pkColumnValue = "Entity")
   @Id
@@ -407,6 +409,8 @@ public class ReleaseInfoJpa implements ReleaseInfo {
 
   /* see superclass */
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  @DateBridge(resolution=Resolution.SECOND)
+  @SortableField
   @Override
   public Date getLastModified() {
     return lastModified;

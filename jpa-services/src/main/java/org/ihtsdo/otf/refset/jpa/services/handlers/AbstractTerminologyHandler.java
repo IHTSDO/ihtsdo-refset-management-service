@@ -1,5 +1,5 @@
 /*
- *    Copyright 2015 West Coast Informatics, LLC
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.jpa.services.handlers;
 
@@ -7,11 +7,20 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.net.ConnectException;
 import java.net.HttpURLConnection;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.URLEncoder;
 
+import javax.ws.rs.ProcessingException;
+import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status.Family;
+
+import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
+import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.services.handlers.TerminologyHandler;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -50,7 +59,13 @@ public abstract class AbstractTerminologyHandler implements TerminologyHandler {
     GoogleTranslate.setHttpReferrer(
         ConfigUtility.getConfigProperties().getProperty("base.url"));
     GoogleTranslate.setKey(getApiKey());
-    return GoogleTranslate.execute(text, "en", language);
+    String translation = GoogleTranslate.execute(text, "en", language);
+    // Make sure first letter comes back uncapitalized
+    if (translation != null && translation.length() > 0) {
+      translation =
+          translation.substring(0, 1).toLowerCase() + translation.substring(1);
+    }
+    return translation;
   }
 
   /**
@@ -177,9 +192,20 @@ public abstract class AbstractTerminologyHandler implements TerminologyHandler {
             "You MUST have a Google API Key to use the V2 APIs. See http://code.google.com/apis/language/translate/v2/getting_started.html");
       }
 
+      String fromLang = fromLanguage;
+      String toLang = toLanguage;
+
+      if (fromLanguage != null && fromLanguage.length() > 2) {
+        fromLang = fromLanguage.substring(0, 2);
+      }
+
+      if (toLanguage != null && toLanguage.length() > 2) {
+        toLang = toLanguage.substring(0, 2);
+      }
+
       final String parameters =
           "format=text&key=" + key + "&q=" + URLEncoder.encode(text, "UTF-8")
-              + "&target=" + toLanguage + "&source=" + fromLanguage;
+              + "&target=" + toLang + "&source=" + fromLang;
       final URL url =
           new URL("https://www.googleapis.com/language/translate/v2");
       final JSONObject json = retrieveJSON(url, parameters);
@@ -221,4 +247,78 @@ public abstract class AbstractTerminologyHandler implements TerminologyHandler {
   public void setApiKey(String apiKey) {
     this.apiKey = apiKey;
   }
+
+  /**
+   * Gets the response as string. Retries X number of times if Socket or Connect
+   * exception.
+   *
+   * @param resourceLocation the resource location
+   * @param delay delay in milliseconds.
+   * @param maxTries Maximum number of retry attempts.
+   * @return the response as string
+   */
+  public String retryWithDelay(WebTarget target, int delay, int maxTries,
+    String accept, String authHeader, String acceptLanguage,
+    String cookieHeader) throws Exception {
+
+    String output = null;
+    int i = 0;
+
+    Response response = null;
+    String errorMessage = null;
+
+    try {
+
+      if (i > 0)
+        Thread.sleep(delay);
+
+      while (true) {
+        try {
+
+          response = target.request(accept).header("Authorization", authHeader)
+              .header("Accept-Language", acceptLanguage)
+              .header("Cookie", cookieHeader).get();
+
+          break;
+        } catch (ProcessingException e) { // retry in case of exception
+          if (e.getCause() instanceof SocketTimeoutException
+              || e.getCause() instanceof ConnectException && i < maxTries) {
+            errorMessage = e.getMessage();
+            i++;
+          } else {
+            errorMessage = null;
+            break;
+          }
+        }
+      }
+
+      if (errorMessage == null) {
+        output = response.readEntity(String.class);
+
+        if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+          // n/a
+        } else {
+
+          // Here's the messy part about trying to parse the return error
+          // message
+          if (output.contains("loop did not match anything")) {
+            return null;
+          }
+          throw new LocalException(
+              "Unexpected terminology server failure. Message = " + output);
+        }
+      } else {
+        throw new LocalException(
+            "Unexpected error calling server. " + errorMessage);
+      }
+
+    } catch (Exception e) {
+      Logger.getLogger(getClass()).error("Unexpected error calling server.", e);
+      throw e;
+    } finally {
+      response.close();
+    }
+    return output;
+  }
+
 }

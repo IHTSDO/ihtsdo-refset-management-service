@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
@@ -6,14 +7,14 @@
   <parent>
     <groupId>org.ihtsdo.otf.refset</groupId>
     <artifactId>refset-parent</artifactId>
-    <version>1.1.10-SNAPSHOT</version>
+    <version>1.4.6-SNAPSHOT</version>
     <relativePath>../parent</relativePath>
   </parent>
 
   <artifactId>refset-admin</artifactId>
   <name>IHTSDO refset management service admin project</name>
   <description>Maven-based administration tools.</description>
-  <packaging>maven-plugin</packaging>
+  <packaging>pom</packaging>
 
   <!-- Mojo parameters -->
   <properties>
@@ -24,97 +25,7 @@
     <!-- Inter-module dependencies -->
     <dependency>
       <groupId>org.ihtsdo.otf.refset</groupId>
-      <artifactId>refset-jpa-model</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.ihtsdo.otf.refset</groupId>
-      <artifactId>refset-rest</artifactId>
-      <classifier>classes</classifier>
-    </dependency>
-    <dependency>
-      <groupId>org.ihtsdo.otf.refset</groupId>
-      <artifactId>refset-rest-client</artifactId>
-    </dependency>
-
-    <!-- Maven Plugin API -->
-    <dependency>
-      <groupId>org.apache.maven</groupId>
-      <artifactId>maven-plugin-api</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.maven.plugin-tools</groupId>
-      <artifactId>maven-plugin-annotations</artifactId>
-    </dependency>
-
-    <!-- Required for Jersey and JSON -->
-    <dependency>
-      <groupId>org.glassfish.jersey.core</groupId>
-      <artifactId>jersey-server</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.glassfish.jersey.core</groupId>
-      <artifactId>jersey-client</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.glassfish.jersey.core</groupId>
-      <artifactId>jersey-common</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.glassfish.jersey.media</groupId>
-      <artifactId>jersey-media-jaxb</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.glassfish.jersey.media</groupId>
-      <artifactId>jersey-media-json-jackson</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.glassfish.jersey.containers</groupId>
-      <artifactId>jersey-container-servlet</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.glassfish.jersey.media</groupId>
-      <artifactId>jersey-media-multipart</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-core</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.fasterxml.jackson.module</groupId>
-      <artifactId>jackson-module-jaxb-annotations</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>asm</groupId>
-      <artifactId>asm</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.wordnik</groupId>
-      <artifactId>swagger-jersey2-jaxrs_2.10</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>javax.servlet</groupId>
-      <artifactId>javax.servlet-api</artifactId>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>javax.ws.rs</groupId>
-      <artifactId>javax.ws.rs-api</artifactId>
-    </dependency>
-
-    <!-- Logging -->
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-log4j12</artifactId>
-    </dependency>
-
-    <!-- Test -->
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <scope>test</scope>
+      <artifactId>refset-mojo</artifactId>
     </dependency>
   </dependencies>
 
@@ -129,7 +40,7 @@
           <!-- Create the database schema (or create it) -->
           <plugin>
             <groupId>org.ihtsdo.otf.refset</groupId>
-            <artifactId>refset-admin</artifactId>
+            <artifactId>refset-mojo</artifactId>
             <version>${project.version}</version>
             <executions>
               <execution>
@@ -157,7 +68,7 @@
           <!-- Update the database schema (or create it) -->
           <plugin>
             <groupId>org.ihtsdo.otf.refset</groupId>
-            <artifactId>refset-admin</artifactId>
+            <artifactId>refset-mojo</artifactId>
             <version>${project.version}</version>
             <executions>
               <execution>
@@ -184,7 +95,7 @@
           <!-- Reindex -->
           <plugin>
             <groupId>org.ihtsdo.otf.refset</groupId>
-            <artifactId>refset-admin</artifactId>
+            <artifactId>refset-mojo</artifactId>
             <version>${project.version}</version>
             <executions>
               <execution>
@@ -196,6 +107,8 @@
                 <configuration>
                   <!-- Specify -DindexedObjects=... and -Dserver=[true/false] -->
                   <indexedObjects>${indexed.objects}</indexedObjects>
+                  <batchSizeToLoadObjects>${batch.size.to.load.objects}</batchSizeToLoadObjects>
+                  <threadsToLoadObjects>${threads.to.load.objects}</threadsToLoadObjects>
                   <server>${server}</server>
                 </configuration>
               </execution>
@@ -213,7 +126,7 @@
           <!-- Generate sample data -->
           <plugin>
             <groupId>org.ihtsdo.otf.refset</groupId>
-            <artifactId>refset-admin</artifactId>
+            <artifactId>refset-mojo</artifactId>
             <version>${project.version}</version>
             <executions>
               <execution>
@@ -240,7 +153,7 @@
           <!-- Generate sample data -->
           <plugin>
             <groupId>org.ihtsdo.otf.refset</groupId>
-            <artifactId>refset-admin</artifactId>
+            <artifactId>refset-mojo</artifactId>
             <version>${project.version}</version>
             <executions>
               <execution>
@@ -267,7 +180,7 @@
           <!-- Generate sample data -->
           <plugin>
             <groupId>org.ihtsdo.otf.refset</groupId>
-            <artifactId>refset-admin</artifactId>
+            <artifactId>refset-mojo</artifactId>
             <version>${project.version}</version>
             <executions>
               <execution>
@@ -296,7 +209,7 @@
           <!-- Generate sample data -->
           <plugin>
             <groupId>org.ihtsdo.otf.refset</groupId>
-            <artifactId>refset-admin</artifactId>
+            <artifactId>refset-mojo</artifactId>
             <version>${project.version}</version>
             <executions>
               <execution>
@@ -321,7 +234,7 @@
         <plugins>
           <plugin>
             <groupId>org.ihtsdo.otf.refset</groupId>
-            <artifactId>refset-admin</artifactId>
+            <artifactId>refset-mojo</artifactId>
             <version>${project.version}</version>
             <executions>
               <execution>
@@ -359,7 +272,7 @@
           <!-- Update the database schema (or create it) -->
           <plugin>
             <groupId>org.ihtsdo.otf.refset</groupId>
-            <artifactId>refset-admin</artifactId>
+            <artifactId>refset-mojo</artifactId>
             <version>${project.version}</version>
             <executions>
               <execution>
@@ -371,6 +284,9 @@
                 <configuration>
                   <start>${start}</start>
                   <end>${end}</end>
+                  <refsetIds>${refsetids}</refsetIds>
+                  <projectIds>${projectids}</projectIds>
+                  <input>${input}</input>
                 </configuration>
               </execution>
             </executions>

@@ -1,8 +1,5 @@
-/**
- * Copyright 2015 West Coast Informatics, LLC
- */
 /*
- * 
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.jpa.services.rest;
 
@@ -13,6 +10,7 @@ import org.ihtsdo.otf.refset.helpers.KeyValuePairList;
 import org.ihtsdo.otf.refset.helpers.ProjectList;
 import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.helpers.TerminologyList;
+import org.ihtsdo.otf.refset.helpers.TranslationExtensionLanguageList;
 import org.ihtsdo.otf.refset.helpers.UserList;
 import org.ihtsdo.otf.refset.jpa.ProjectJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
@@ -143,11 +141,14 @@ public interface ProjectServiceRest {
    * Lucene reindex.
    *
    * @param indexedObjects the indexed objects
+   * @param batchSizeToLoadObjects the batch size to load objects
+   * @param threadsToLoadObjects the threads to load objects
    * @param authToken the auth token
    * @throws Exception the exception
    */
-  public void luceneReindex(String indexedObjects, String authToken)
-    throws Exception;
+  public void luceneReindex(String indexedObjects,
+    Integer batchSizeToLoadObjects, Integer threadsToLoadObjects,
+    String authToken) throws Exception;
 
   /**
    * Find projects.
@@ -349,5 +350,16 @@ public interface ProjectServiceRest {
    * @return the all terminology editions
    * @throws Exception the exception
    */
-  public TerminologyList getAllTerminologyEditions(String authToken) throws Exception;
+  public TerminologyList getAllTerminologyEditions(String authToken)
+    throws Exception;
+
+  /**
+   * Returns the translation extension languages.
+   *
+   * @param authToken the auth token
+   * @return the translation extension languages
+   * @throws Exception the exception
+   */
+  public TranslationExtensionLanguageList getTranslationExtensionLanguages(
+    String authToken) throws Exception;
 }

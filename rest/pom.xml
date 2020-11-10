@@ -1,13 +1,14 @@
 <?xml version="1.0"?>
 <project
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
-	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
 	<!-- Module Metadata -->
 	<parent>
 		<groupId>org.ihtsdo.otf.refset</groupId>
 		<artifactId>refset-parent</artifactId>
-		<version>1.1.10-SNAPSHOT</version>
+    <version>1.4.6-SNAPSHOT</version>
 		<relativePath>../parent</relativePath>
 	</parent>
 
@@ -28,7 +29,7 @@
 		<!-- Defaults for Eclipse dev -->
 		<deploy.title>Development Refset Deployment</deploy.title>
 		<site.tracking.code></site.tracking.code>
-		<deploy.footer.copyright>(c) Copyright IHTSDO 2015</deploy.footer.copyright>
+    <deploy.footer.copyright>(c) Copyright IHTSDO 2019</deploy.footer.copyright>
 		<deploy.presented.by></deploy.presented.by>
 		<base.url>http://localhost:8080</base.url>
 		<logout.url>http://localhost:8080/refset-rest/index.html</logout.url>
@@ -36,8 +37,6 @@
 	</properties>
 
 	<dependencies>
-
-
 		<!-- Model interfaces. -->
 		<dependency>
 			<groupId>org.ihtsdo.otf.refset</groupId>
@@ -57,42 +56,19 @@
 		</dependency>
 
 		<!-- JPA dependencies -->
-		<dependency>
-			<groupId>javax.transaction</groupId>
-			<artifactId>jta</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.hibernate</groupId>
-			<artifactId>hibernate-core</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.hibernate</groupId>
-			<artifactId>hibernate-c3p0</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.hibernate</groupId>
-			<artifactId>hibernate-envers</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.hibernate</groupId>
-			<artifactId>hibernate-search-orm</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.hibernate</groupId>
-			<artifactId>hibernate-entitymanager</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.hibernate</groupId>
-			<artifactId>hibernate-validator</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>mysql</groupId>
-			<artifactId>mysql-connector-java</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-log4j12</artifactId>
-		</dependency>
+    <!-- <dependency> <groupId>javax.transaction</groupId> <artifactId>jta</artifactId> 
+      </dependency> -->
+    <!-- <dependency> <groupId>org.hibernate</groupId> <artifactId>hibernate-core</artifactId> 
+      </dependency> <dependency> <groupId>org.hibernate</groupId> <artifactId>hibernate-c3p0</artifactId> 
+      </dependency> <dependency> <groupId>org.hibernate</groupId> <artifactId>hibernate-envers</artifactId> 
+      </dependency> <dependency> <groupId>org.hibernate</groupId> <artifactId>hibernate-search-orm</artifactId> 
+      </dependency> <dependency> <groupId>org.hibernate</groupId> <artifactId>hibernate-entitymanager</artifactId> 
+      </dependency> <dependency> <groupId>org.hibernate</groupId> <artifactId>hibernate-validator</artifactId> 
+      </dependency> -->
+    <!-- <dependency> <groupId>mysql</groupId> <artifactId>mysql-connector-java</artifactId> 
+      </dependency> -->
+    <!-- <dependency> <groupId>org.slf4j</groupId> <artifactId>slf4j-log4j12</artifactId> 
+      </dependency> -->
 
 		<!-- Websocket API -->
 		<dependency>
@@ -104,19 +80,15 @@
 		<!-- Required for Jersey and JSON -->
 		<dependency>
 			<groupId>org.glassfish.jersey.core</groupId>
-			<artifactId>jersey-server</artifactId>
+      <artifactId>jersey-common</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.glassfish.jersey.core</groupId>
 			<artifactId>jersey-client</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.glassfish.jersey.core</groupId>
-			<artifactId>jersey-common</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.glassfish.jersey.media</groupId>
-			<artifactId>jersey-media-jaxb</artifactId>
+      <groupId>org.glassfish.jersey.inject</groupId>
+      <artifactId>jersey-hk2</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.glassfish.jersey.media</groupId>
@@ -130,41 +102,17 @@
 			<groupId>org.glassfish.jersey.containers</groupId>
 			<artifactId>jersey-container-servlet</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>org.glassfish.jersey.media</groupId>
-			<artifactId>jersey-media-multipart</artifactId>
-		</dependency>
 
-		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-core</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.fasterxml.jackson.module</groupId>
-			<artifactId>jackson-module-jaxb-annotations</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>asm</groupId>
-			<artifactId>asm</artifactId>
-		</dependency>
 		<dependency>
 			<groupId>com.wordnik</groupId>
 			<artifactId>swagger-jersey2-jaxrs_2.10</artifactId>
 		</dependency>
+
+    <!-- javax -->
 		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>javax.servlet-api</artifactId>
 			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>javax.ws.rs</groupId>
-			<artifactId>javax.ws.rs-api</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>com.google.guava</groupId>
-			<artifactId>guava</artifactId>
 		</dependency>
 
 	</dependencies>
@@ -174,30 +122,12 @@
 
 		<!-- Unpack config -->
 		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-dependency-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>unpack</id>
-						<phase>initialize</phase>
-						<goals>
-							<goal>unpack</goal>
-						</goals>
-						<configuration>
-							<artifactItems>
-								<artifactItem>
-									<groupId>${config.groupId}</groupId>
-									<artifactId>${config.artifactId}</artifactId>
-									<version>${config.version}</version>
-									<type>zip</type>
-									<outputDirectory>${project.build.directory}/config/resources</outputDirectory>
-								</artifactItem>
-							</artifactItems>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
+      <!-- <plugin> <groupId>org.apache.maven.plugins</groupId> <artifactId>maven-dependency-plugin</artifactId> 
+        <executions> <execution> <id>unpack</id> <phase>initialize</phase> <goals> <goal>unpack</goal> 
+        </goals> <configuration> <artifactItems> <artifactItem> <groupId>${config.groupId}</groupId> 
+        <artifactId>${config.artifactId}</artifactId> <version>${config.version}</version> 
+        <type>zip</type> <outputDirectory>${project.build.directory}/config/resources</outputDirectory> 
+        </artifactItem> </artifactItems> </configuration> </execution> </executions> </plugin> -->
 
 			<!-- Configure .war settings -->
 			<plugin>
@@ -246,9 +176,26 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
-				<version>2.3</version>
 				<executions>
 					<execution>
+            <id>unpack</id>
+            <phase>initialize</phase>
+            <goals>
+              <goal>unpack</goal>
+            </goals>
+            <configuration>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>${config.groupId}</groupId>
+                  <artifactId>${config.artifactId}</artifactId>
+                  <version>${config.version}</version>
+                  <type>zip</type>
+                  <outputDirectory>${project.build.directory}/config/resources</outputDirectory>
+                </artifactItem>
+              </artifactItems>
+            </configuration>
+          </execution>
+          <execution>
 						<phase>package</phase>
 						<goals>
 							<goal>copy</goal>

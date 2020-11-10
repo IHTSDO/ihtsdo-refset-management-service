@@ -184,6 +184,11 @@ tsApp.controller('TabCtrl', [ '$scope', '$interval', '$timeout', 'securityServic
     $scope.isAdmin = function() {
       return securityService.isAdmin();
     };
+    
+        // for ng-show
+    $scope.isLead = function() {
+      return securityService.isLead();
+    };
 
     // for ng-show
     $scope.isUser = function() {
@@ -217,6 +222,11 @@ tsApp.controller('HeaderCtrl', [
       $location.path('/login');
     };
 
+    // Check if user is using Chrome or not (for showing browser warning page)
+    $scope.isUsingChrome = function() {
+      return securityService.isUsingChrome();
+    }; 
+    
     // Open help page dynamically
     $scope.goToHelp = function() {
       var path = $location.path();

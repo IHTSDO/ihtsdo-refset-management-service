@@ -1,5 +1,5 @@
 /**
- * Copyright 2015 West Coast Informatics, LLC
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.rest.impl;
 
@@ -41,8 +41,11 @@ import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.ProjectList;
 import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.helpers.TerminologyList;
+import org.ihtsdo.otf.refset.helpers.TranslationExtensionLanguage;
+import org.ihtsdo.otf.refset.helpers.TranslationExtensionLanguageList;
 import org.ihtsdo.otf.refset.helpers.UserList;
 import org.ihtsdo.otf.refset.jpa.ProjectJpa;
+import org.ihtsdo.otf.refset.jpa.TranslationExtensionLanguageJpa;
 import org.ihtsdo.otf.refset.jpa.UserJpa;
 import org.ihtsdo.otf.refset.jpa.algo.LuceneReindexAlgorithm;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptListJpa;
@@ -50,11 +53,13 @@ import org.ihtsdo.otf.refset.jpa.helpers.DescriptionTypeListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ProjectListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.TerminologyListJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.TranslationExtensionLanguageListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.UserListJpa;
 import org.ihtsdo.otf.refset.jpa.services.ProjectServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.RefsetServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.TranslationServiceJpa;
+import org.ihtsdo.otf.refset.jpa.services.handlers.SnowstormTerminologyHandler;
 import org.ihtsdo.otf.refset.jpa.services.rest.ProjectServiceRest;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.Description;
@@ -72,10 +77,6 @@ import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
 
 /**
- * REST implementation for {@link ProjectServiceRest}..
- */
-
-/**
  * Reference implementation of {@link ProjectServiceRest}. Includes hibernate
  * tags for MEME database.
  */
@@ -90,7 +91,7 @@ import com.wordnik.swagger.annotations.ApiParam;
 public class ProjectServiceRestImpl extends RootServiceRestImpl
     implements ProjectServiceRest {
 
-  /** Security context */
+  /** Security context. */
   @Context
   HttpHeaders headers;
 
@@ -123,6 +124,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
       list.setTotalCount(3);
       list.getObjects().add(UserRole.AUTHOR.toString());
       list.getObjects().add(UserRole.REVIEWER.toString());
+      list.getObjects().add(UserRole.LEAD.toString());
       list.getObjects().add(UserRole.ADMIN.toString());
       return list;
     } catch (Exception e) {
@@ -200,40 +202,14 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
       handleException(new Exception("Required parameter has a null value"), "");
     }
 
-    final ProjectService projectService = new ProjectServiceJpa();
     try {
-      // Check if user is either an ADMIN overall or an AUTHOR on this project
 
-      String authUser = null;
-      try {
-        authUser = authorizeApp(securityService, authToken,
-            "unassign user from project", UserRole.ADMIN);
-      } catch (Exception e) {
-        // now try to validate project role
-        authUser = authorizeProject(projectService, projectId, securityService,
-            authToken, "unassign user from project", UserRole.AUTHOR);
-      }
+      List<String> userNames = new ArrayList<>(List.of(userName));
+      return unassignUsers(projectId, authToken, userNames);
 
-      User user = securityService.getUser(userName);
-      User userCopy = new UserJpa(user);
-      Project project = projectService.getProject(projectId);
-      Project projectCopy = new ProjectJpa(project);
-
-      project.getUserRoleMap().remove(userCopy);
-      project.setLastModifiedBy(authUser);
-      projectService.updateProject(project);
-
-      user.getProjectRoleMap().remove(projectCopy);
-      securityService.updateUser(user);
-
-      addLogEntry(projectService, authUser, "UNASSIGN user from project",
-          projectId, projectId, userName);
-
-      return project;
     } catch (Exception e) {
       handleException(e, "trying to unassign user from project");
     } finally {
-      projectService.close();
       securityService.close();
     }
     return null;
@@ -359,10 +335,18 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
           pfs.setMaxResults(1);
           projectService.getTerminologyHandler(project, getHeaders(headers))
               .resolveExpression(project.getExclusionClause(),
-                  project.getTerminology(), "", pfs);
+                  project.getTerminology(), "", pfs, false);
         } catch (Exception e) {
           throw new LocalException("Project has invalid exclusion clause");
         }
+      }
+
+      // If any TranslationExtensionLanguageJpa objects are included, they need
+      // to be explicitly attached to the project (the object received from the
+      // client doesn't have the project set correctly)
+      for (TranslationExtensionLanguage tel : project
+          .getTranslationExtensionLanguages()) {
+        tel.setProject(project);
       }
 
       // Add project
@@ -419,10 +403,19 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
           pfs.setMaxResults(1);
           projectService.getTerminologyHandler(project, getHeaders(headers))
               .resolveExpression(project.getExclusionClause(),
-                  project.getTerminology(), "", pfs);
+                  project.getTerminology(), "", pfs, false);
         } catch (Exception e) {
           throw new LocalException("Project has invalid exclusion clause");
         }
+      }
+
+      if (project.getTranslationExtensionLanguages() != null
+          && project.getTranslationExtensionLanguages().size() > 0) {
+        project.getTranslationExtensionLanguages().forEach(tel -> {
+          ((TranslationExtensionLanguageJpa) tel).setProjectId(project.getId());
+        });
+      } else { // remove
+        project.getTranslationExtensionLanguages().clear();
       }
 
       // The map adapter for UserRoleMap only loads usernames and we need the
@@ -478,9 +471,12 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
       if (project == null) {
         throw new LocalException("Invalid project id: " + projectId);
       }
+      final List<String> userNames = new ArrayList<>();
       for (final User user : project.getUserRoleMap().keySet()) {
-        unassignUserFromProject(projectId, user.getUserName(), authToken);
+        userNames.add(user.getUserName());
       }
+      unassignUsers(projectId, authToken, userNames);
+
       // Create service and configure transaction scope
       projectService.removeProject(projectId);
 
@@ -563,6 +559,8 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
   @ApiOperation(value = "Reindex specified objects", notes = "Recomputes lucene indexes for the specified comma-separated objects")
   public void luceneReindex(
     @ApiParam(value = "Comma-separated list of objects to reindex, e.g. ConceptJpa (optional)", required = false) String indexedObjects,
+    @ApiParam(value = "Batch size of load objects to index (optional).", required = false) @QueryParam("batchSizeToLoadObjects") Integer batchSizeToLoadObjects,
+    @ApiParam(value = "Number of threads to load objects (optional)", required = false) @QueryParam("threadsToLoadObjects") Integer threadsToLoadObjects,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass())
@@ -576,6 +574,8 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     try {
       authorizeApp(securityService, authToken, "reindex", UserRole.ADMIN);
       algo.setIndexedObjects(indexedObjects);
+      algo.setBatchSizeToLoadObjects(batchSizeToLoadObjects);
+      algo.setThreadsToLoadObjects(threadsToLoadObjects);
       algo.compute();
       algo.close();
       // Final logging messages
@@ -589,7 +589,6 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
       algo.close();
       securityService.close();
     }
-
   }
 
   /* see superclass */
@@ -611,6 +610,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
       final StringBuilder sb = new StringBuilder();
       sb.append("(");
       sb.append("userRoleMap:" + user + UserRole.ADMIN).append(" OR ");
+      sb.append("userRoleMap:" + user + UserRole.LEAD).append(" OR ");
       sb.append("userRoleMap:" + user + UserRole.REVIEWER).append(" OR ");
       sb.append("userRoleMap:" + user + UserRole.AUTHOR).append(")");
       final ProjectList list = projectService
@@ -651,7 +651,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
       authorizeApp(securityService, authToken, "get terminology editions",
           UserRole.VIEWER);
       if (project == null) {
-        throw new LocalException("Get modules requires a project");
+        throw new LocalException("Get editions requires a project");
       }
 
       final List<Terminology> editions =
@@ -662,7 +662,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
       list.setTotalCount(list.getCount());
       return list;
     } catch (Exception e) {
-      handleException(e, "trying to get all terminologies");
+      handleException(e, "trying to get all editions");
     } finally {
       projectService.close();
       securityService.close();
@@ -681,25 +681,38 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     Logger.getLogger(getClass())
         .info("RESTful POST call (Project): /terminology/global");
 
-    final ProjectService projectService = new ProjectServiceJpa();
-    try {
+    try (final ProjectService projectService = new ProjectServiceJpa();) {
       authorizeApp(securityService, authToken, "get all terminology editions",
           UserRole.VIEWER);
       final TerminologyList list = new TerminologyListJpa();
-      for (Project project : projectService.getProjects().getObjects()) {
-        final List<Terminology> editions =
-            projectService.getTerminologyHandler(project, getHeaders(headers))
-                .getTerminologyEditions();
-        for (Terminology t : editions) {
-          list.addObject(t);
+      final List<Project> projects = projectService.getProjects().getObjects();
+      final List<Terminology> terminologyList = new ArrayList<>();
+
+      // make multiple calls in parallel
+      projects.parallelStream().map(project -> {
+        try {
+          return projectService
+              .getTerminologyHandler(project, getHeaders(headers))
+              .getTerminologyEditions();
+        } catch (Exception e) {
+          Logger.getLogger(getClass()).error("Error getting terminology for "
+              + project.getTerminologyHandlerUrl(), e);
+          e.printStackTrace();
         }
-      }
+        return null;
+      }).forEach(terminology -> {
+        terminology.forEach(t -> terminologyList.add(t));
+      });
+
+      // get unique values
+      terminologyList.parallelStream().distinct()
+          .forEach(t -> list.addObject(t));
+
       list.setTotalCount(list.getCount());
       return list;
     } catch (Exception e) {
       handleException(e, "trying to get all terminologies");
     } finally {
-      projectService.close();
       securityService.close();
     }
     return null;
@@ -728,10 +741,13 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
 
       final List<Terminology> versions =
           projectService.getTerminologyHandler(project, getHeaders(headers))
-              .getTerminologyVersions(terminology);
+              .getTerminologyVersions(terminology,
+                  (project.getTerminologyHandlerKey().equals("AUTHORING-INTL")
+                      ? true : false));
       final TerminologyList list = new TerminologyListJpa();
       list.setObjects(versions);
       list.setTotalCount(list.getCount());
+
       return list;
 
     } catch (Exception e) {
@@ -1077,7 +1093,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
       if (authToken != null) {
         userName = securityService.getUsernameForToken(authToken);
       }
-      
+
       final Project project = translationService.getProject(projectId);
       if (project == null) {
         throw new LocalException("Invalid project id: " + projectId);
@@ -1345,6 +1361,52 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     }
   }
 
+  /* see superclass */
+  @Override
+  @GET
+  @Path("/translationExtensionLanguages")
+  @ApiOperation(value = "Get a list of strings.", notes = "Get a list of available translation language extensions for a terminology handler.", response = StringList.class)
+  public TranslationExtensionLanguageList getTranslationExtensionLanguages(
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(getClass())
+        .info("RESTful GET call (Project): " + "/translationExtensions");
+
+    TranslationExtensionLanguageList translationExtensionLanguageList =
+        new TranslationExtensionLanguageListJpa();
+
+    try (final ProjectService projectService =
+        new ProjectServiceJpa(getHeaders(headers))) {
+
+      authorizeApp(securityService, authToken,
+          "translationExtensions get branches", UserRole.VIEWER);
+
+      // force to snowstorm
+      final SnowstormTerminologyHandler handler =
+          new SnowstormTerminologyHandler();
+      handler.setUrl(ConfigUtility.getConfigProperties()
+          .getProperty("terminology.handler.PUBLIC-BROWSER.defaultUrl"));
+      handler.setApiKey(ConfigUtility.getConfigProperties()
+          .getProperty("terminology.handler.PUBLIC-BROWSER.apiKey"));
+
+      List<TranslationExtensionLanguage> extensionLanguages =
+          handler.getAvailableTranslationExtensionLanguages();
+
+      translationExtensionLanguageList.setObjects(extensionLanguages);
+      translationExtensionLanguageList.setTotalCount(
+          (extensionLanguages != null) ? extensionLanguages.size() : 0);
+
+    } catch (Exception e) {
+      Logger.getLogger(getClass()).error("ERROR: ", e);
+      throw new LocalException("Error getting branches for terminology.");
+    } finally {
+      securityService.close();
+    }
+
+    return translationExtensionLanguageList;
+  }
+
   /**
    * Adds the descriptions helper.
    *
@@ -1391,6 +1453,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
 
     // Add all descriptions to the concept
     final Set<String> descIdsSeen = new HashSet<>();
+    final Set<String> descNameLangType = new HashSet<>();
     for (Concept conceptTranslated : list.getObjects()) {
 
       // Where the terminologyId matches but not the id, skip it
@@ -1431,9 +1494,13 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
         // "user prefs" translations is merely to get some idea of other names
         // not to have 100% precision
         //
-        if (!descIdsSeen.contains(desc.getTerminologyId())) {
+        if (!descIdsSeen.contains(desc.getTerminologyId())
+            && descNameLangType.contains(desc.getConcept().getName() + "|"
+                + desc.getTerm() + "|" + desc.getLanguageCode())) {
           concept.getDescriptions().add(desc);
           descIdsSeen.add(desc.getTerminologyId());
+          descNameLangType.add(desc.getConcept().getName() + "|"
+              + desc.getTerm() + "|" + desc.getLanguageCode());
         }
       }
     }
@@ -1445,4 +1512,50 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
 
   }
 
+  // Shared method to remove users.
+  // Requires security service to be available.
+  private Project unassignUsers(Long projectId, String authToken,
+    List<String> userNameList) throws Exception {
+    // Test preconditions
+    if (projectId == null || userNameList == null) {
+      handleException(new Exception("Required parameter has a null value"), "");
+    }
+
+    try (final ProjectService projectService = new ProjectServiceJpa();) {
+      // Check if user is either an ADMIN overall or an AUTHOR on this project
+
+      String authUser = null;
+      try {
+        authUser = authorizeApp(securityService, authToken,
+            "unassign user from project", UserRole.ADMIN);
+      } catch (Exception e) {
+        // now try to validate project role
+        authUser = authorizeProject(projectService, projectId, securityService,
+            authToken, "unassign user from project", UserRole.AUTHOR);
+      }
+
+      final Project project = projectService.getProject(projectId);
+      final Project projectCopy = new ProjectJpa(project);
+
+      for (String userName : userNameList) {
+        final User user = securityService.getUser(userName);
+        final User userCopy = new UserJpa(user);
+
+        project.getUserRoleMap().remove(userCopy);
+        project.setLastModifiedBy(authUser);
+        projectService.updateProject(project);
+
+        user.getProjectRoleMap().remove(projectCopy);
+        securityService.updateUser(user);
+
+        addLogEntry(projectService, authUser, "UNASSIGN user from project",
+            projectId, projectId, userName);
+
+      }
+      return project;
+    } catch (Exception e) {
+      handleException(e, "trying to unassign user from project");
+      return null;
+    }
+  }
 }

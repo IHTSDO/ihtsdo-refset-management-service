@@ -2,15 +2,15 @@
 <div class="row">
 
   <div class="col-md-12 col-xs-12"
-    ng-show="role == 'ADMIN' && value == 'ASSIGNED'">
-    <span class="alert alert-warning">Editing disabled for ADMIN. Choose
+    ng-show="['LEAD', 'ADMIN'].includes(role) && value == 'ASSIGNED'">
+    <span class="alert alert-warning">Editing disabled for ADMIN and LEAD. Choose
       AUTHOR or REVIEWER role to make changes.</span>
   </div>
 </div>
 
 <div class="row">
 
-  <div class="col-md-12 col-xs-12" ng-show="error">
+  <div class="col-md-12 col-xs-12" ng-show="error" id="error">
     <span class="alert alert-danger alert-error">
       {{error}}
       <span style="cursor: pointer; display: inline; float: right; width: 3%;">
@@ -64,11 +64,11 @@
         ng-show="data.memberTypes[concept.terminologyId].memberType == 'MEMBER'"
         uib-tooltip="Member">M</button>
       <i
-        ng-show="data.refset.type == 'INTENSIONAL' && data.memberTypes[concept.terminologyId].memberType == 'MEMBER'"
+        ng-show="data.refset.type == 'INTENSIONAL' && !disableMemberTypes && data.memberTypes[concept.terminologyId].memberType == 'MEMBER'"
         ng-click="openRemoveModal(data.refset, data.memberTypes[concept.terminologyId]); "
         title="Add exclusion" class="noul material-icons md-12">remove_circle_outline</i>
       <i
-        ng-show="data.refset.type == 'EXTENSIONAL' && data.memberTypes[concept.terminologyId].memberType == 'MEMBER'"
+        ng-show="data.refset.type == 'EXTENSIONAL' && !disableMemberTypes && data.memberTypes[concept.terminologyId].memberType == 'MEMBER'"
         ng-click="openRemoveModal(data.refset, data.memberTypes[concept.terminologyId]); "
         title="Remove member(s)" class="noul material-icons md-18">delete</i>
 
@@ -78,7 +78,7 @@
         ng-show="data.memberTypes[concept.terminologyId].memberType == 'EXCLUSION'"
         uib-tooltip="Exclusion">X</button>
       <i
-        ng-show="data.memberTypes[concept.terminologyId].memberType == 'EXCLUSION'"
+        ng-show="!disableMemberTypes && data.memberTypes[concept.terminologyId].memberType == 'EXCLUSION'"
         ng-click="removeRefsetExclusion(data.refset, data.memberTypes[concept.terminologyId]);"
         title="Remove exclusion" class="noul material-icons md-18">delete</i>
 
@@ -88,7 +88,7 @@
         ng-show="data.memberTypes[concept.terminologyId].memberType == 'INCLUSION'"
         uib-tooltip="Inclusion">I</button>
       <i
-        ng-show="data.memberTypes[concept.terminologyId].memberType == 'INCLUSION'"
+        ng-show="!disableMemberTypes && data.memberTypes[concept.terminologyId].memberType == 'INCLUSION'"
         confirm="Are you sure you want to remove the inclusion ({{data.memberTypes[concept.terminologyId].conceptName}})?"
         ng-click="removeRefsetInclusion(data.refset,data.memberTypes[concept.terminologyId]);"
         title="Remove inclusion" class="noul material-icons md-18">delete</i>

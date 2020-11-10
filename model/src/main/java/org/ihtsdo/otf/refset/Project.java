@@ -1,12 +1,14 @@
-/**
- * Copyright 2015 West Coast Informatics, LLC
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
 import org.ihtsdo.otf.refset.helpers.Searchable;
+import org.ihtsdo.otf.refset.helpers.TranslationExtensionLanguage;
 
 /**
  * Generically represents an editing project.
@@ -195,4 +197,81 @@ public interface Project extends Searchable {
    */
   public void setWorkflowPath(String workflowPath);
 
+  /**
+   * Returns the translation extension languages.
+   *
+   * @return the translation extension languages
+   */
+  public List<TranslationExtensionLanguage> getTranslationExtensionLanguages();
+
+  /**
+   * Sets the translation extension languages.
+   *
+   * @param translationExtensionLanguage the new translation extension languages
+   */
+  public void setTranslationExtensionLanguages(
+    List<TranslationExtensionLanguage> translationExtensionLanguage);
+
+  /**
+   * Adds the translation extension language.
+   *
+   * @param translationExtensionLanguage the translation extension language
+   */
+  public void addTranslationExtensionLanguage(
+    TranslationExtensionLanguage translationExtensionLanguage);
+
+  /**
+   * Removes the translation extension language.
+   *
+   * @param translationExtensionLanguage the translation extension language
+   */
+  public void removeTranslationExtensionLanguage(
+    TranslationExtensionLanguage translationExtensionLanguage);
+
+
+  /**
+   * Checks if is stable UUI ds.
+   *
+   * @return true, if is stable UUI ds
+   */
+  public boolean isStableUUIDs();
+
+
+  /**
+   * Sets the stable UUI ds.
+   *
+   * @param stableUUIDs the new stable UUI ds
+   */
+  public void setStableUUIDs(boolean stableUUIDs);
+
+  /**
+   * Returns the inactive last modified.
+   *
+   * @return the inactive last modified
+   */
+  public Date getInactiveLastModified();
+
+  /**
+   * Sets the inactive last modified.
+   *
+   * @param inactiveLastModified the inactive last modified
+   */
+  public void setInactiveLastModified(Date inactiveLastModified);
+
+  /**
+   * Gets the refesh descriptions last modified.
+   *
+   * @return the refesh descriptions last modified
+   */
+  public Date getRefeshDescriptionsLastModified();
+
+  /**
+   * Sets the refesh descriptions last modified.
+   *
+   * @param inactiveLastModified the new refesh descriptions last modified
+   */
+  public void setRefeshDescriptionsLastModified(Date inactiveLastModified);
+  
+  
+  
 }

@@ -1,5 +1,5 @@
-/**
- * Copyright 2015 West Coast Informatics, LLC
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset;
 
@@ -313,6 +313,14 @@ public interface Refset extends Component, Searchable {
   public List<ConceptRefsetMember> getMembers();
 
   /**
+   * Gets the members.
+   *
+   * @param includeInactives the include inactives
+   * @return the members
+   */
+  public List<ConceptRefsetMember> getMembers(Boolean includeInactives);
+
+  /**
    * Sets the refset members.
    *
    * @param members the refset members
@@ -359,7 +367,8 @@ public interface Refset extends Component, Searchable {
    *
    * @param enabledFeedbackEvents the enabled feedback events
    */
-  public void setEnabledFeedbackEvents(Set<FeedbackEvent> enabledFeedbackEvents);
+  public void setEnabledFeedbackEvents(
+    Set<FeedbackEvent> enabledFeedbackEvents);
 
   /**
    * Returns the user role map.
@@ -445,6 +454,21 @@ public interface Refset extends Component, Searchable {
   public boolean isLookupInProgress();
 
   /**
+   * Indicates whether or a lookup of member concepts names and statuses is
+   * needed.
+   *
+   * @return true, if is lookup aborted
+   */
+  public boolean isLookupRequired();
+
+  /**
+   * Updates whether a lookup of member concepts names and statuses is needed.
+   *
+   * @param lookupRequired the new lookup required
+   */
+  public void setLookupRequired(boolean lookupRequired);
+
+  /**
    * Sets the revision.
    *
    * @param revision the revision
@@ -499,4 +523,19 @@ public interface Refset extends Component, Searchable {
    * @param translated the new translated
    */
   public void setTranslated(boolean translated);
+
+  /**
+   * Returns the inactive concept count.
+   *
+   * @return the inactive concept count
+   */
+  public Integer getInactiveConceptCount();
+
+  /**
+   * Sets the inactive concept count.
+   *
+   * @param inactiveConceptCount the inactive concept count
+   */
+  public void setInactiveConceptCount(Integer inactiveConceptCount);
+
 }

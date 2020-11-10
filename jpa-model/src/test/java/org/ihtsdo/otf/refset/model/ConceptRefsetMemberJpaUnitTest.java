@@ -1,17 +1,22 @@
 /*
- * Copyright 2015 West Coast Informatics, LLC
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.model;
 
 import static org.junit.Assert.assertTrue;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.log4j.Logger;
+import org.ihtsdo.otf.refset.ConceptRefsetMemberSynonym;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.helpers.CopyConstructorTester;
 import org.ihtsdo.otf.refset.helpers.EqualsHashcodeTester;
 import org.ihtsdo.otf.refset.helpers.GetterSetterTester;
 import org.ihtsdo.otf.refset.helpers.ProxyTester;
 import org.ihtsdo.otf.refset.helpers.XmlSerializationTester;
+import org.ihtsdo.otf.refset.jpa.ConceptRefsetMemberSynonymJpa;
 import org.ihtsdo.otf.refset.jpa.ProjectJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.IndexedFieldTester;
@@ -38,6 +43,14 @@ public class ConceptRefsetMemberJpaUnitTest extends ModelUnitSupport {
   /** The r2. */
   private RefsetJpa r2;
 
+  /** The test fixture representing synonyms. */
+  @SuppressWarnings("rawtypes")
+  private List l1;
+
+  /** The test fixture representing notes. */
+  @SuppressWarnings("rawtypes")
+  private List l2;
+
   /**
    * Setup class.
    */
@@ -48,8 +61,12 @@ public class ConceptRefsetMemberJpaUnitTest extends ModelUnitSupport {
 
   /**
    * Setup.
-   * @throws Exception
+   *
+   * @throws Exception the exception
    */
+  @SuppressWarnings({
+      "rawtypes", "unchecked"
+  })
   @Before
   public void setup() throws Exception {
     object = new ConceptRefsetMemberJpa();
@@ -59,6 +76,12 @@ public class ConceptRefsetMemberJpaUnitTest extends ModelUnitSupport {
     r2 = (RefsetJpa) tester.createObject(2);
     r1.setProject(new ProjectJpa());
     r2.setProject(new ProjectJpa());
+
+    l1 = new ArrayList<ConceptRefsetMemberSynonym>();
+    l1.add(new ConceptRefsetMemberSynonymJpa("Test1","en","PT",null, true, "900000000000509007"));
+
+    l2 = (List) new ArrayList();
+    l2.add(null);
   }
 
   /**
@@ -92,6 +115,9 @@ public class ConceptRefsetMemberJpaUnitTest extends ModelUnitSupport {
 
     tester.proxy(Refset.class, 1, r1);
     tester.proxy(Refset.class, 2, r2);
+    tester.proxy(List.class, 1, l1);
+    tester.proxy(List.class, 2, l2);
+
     assertTrue(tester.testIdentitiyFieldEquals());
     assertTrue(tester.testNonIdentitiyFieldEquals());
     assertTrue(tester.testIdentityFieldNotEquals());
@@ -184,7 +210,8 @@ public class ConceptRefsetMemberJpaUnitTest extends ModelUnitSupport {
     tester.include("refsetId");
     tester.include("memberType");
     tester.include("conceptNameSort");
-
+    tester.include("active");
+    
     assertTrue(tester.testNotAnalyzedIndexedFields());
 
   }

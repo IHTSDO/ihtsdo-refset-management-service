@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 West Coast Informatics, LLC
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.rf2;
 
@@ -100,5 +100,19 @@ public interface Description extends Component {
    */
   public void setLanguageRefsetMembers(
     List<LanguageRefsetMember> languageRefsetMembers);
+
+  /**
+   * Returns the editable.
+   *
+   * @return the editable
+   */
+  public boolean getEditable();
+
+  /**
+   * Sets the editable.
+   *
+   * @param editable the editable
+   */
+  public void setEditable(boolean editable);
 
 }

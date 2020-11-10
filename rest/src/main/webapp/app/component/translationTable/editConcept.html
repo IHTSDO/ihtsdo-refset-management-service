@@ -7,6 +7,11 @@
     <i title="Close" class="noul glyphicon glyphicon-remove" ng-click="close()">
     </i>
   </span>
+  <div ng-if="role.includes('REVIEW')">
+    <span>
+      Translation Author(s): {{ authorNames.join(', ') }}
+    </span>
+  </div>
 </div>
 
 <div class="modal-body">
@@ -70,45 +75,49 @@
             ng-click="paging['descriptions'].filter = ''; getPagedDescriptions()"
             title="Click to clear filter text">Clear</button>
         </span>
-
-
         <table class="table">
           <thead>
             <tr>
-              <th ng-click="setSortField('term', null)">Name<span
-                  ng-bind="getSortIndicator('term')"></span></th>
-              <th><span ng-click="setSortField('typeId', null)">Type</span>
-                <span ng-bind="getSortIndicator('typeId')"></span> /<span
-                  ng-click="setSortField('caseSignificanceId', null)">Case</span>
-                <span ng-bind="getSortIndicator('caseSignificanceId')"></span></th>
+              <th>Name<span></span></th>
+              <th><span>Type</span> / <span>Case</span> / <span>Author</span></th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
-            <tr ng-repeat="description in pagedDescriptions">
+            <tr ng-repeat="(index, description) in pagedDescriptions">
               <td>
                 <div ng-class="{redborder: hasSuggestions(description)}">
                   <textarea id="tinymceId" title="Description term"
                     spellcheck="false" ng-model="description.term"
                     ui-tinymce="tinymceOptions"
                     ng-model-options="{ debounce: 300 }"
-                    ng-change="getSuggestions()"></textarea>
+                    ng-change="getSuggestions()"
+                    ng-disabled="description.editable == false"></textarea>
                 </div>
+                <br/>            
               </td>
               <td>
                 <select ng-model="description.type"
-                  ng-options="type.name for type in getDescriptionTypes()">
+                  ng-options="type.name for type in getDescriptionTypes()"
+                  ng-disabled="description.editable == false">
                 </select> <br /> <select style="margin-top: 5px; width: 115px"
                   ng-model="description.caseSignificanceId"
-                  ng-options="item.key as item.value for item in caseSignificanceTypes | orderBy:'item.key'">
+                  ng-options="item.key as item.value for item in caseSignificanceTypes | orderBy:'item.key'"
+                  ng-disabled="description.editable == false">
                 </select>
+                 <br /> <span ng-show="descriptionAuthor[description.id] != 'Term Server'">Authored by:</span> <span ng-show="descriptionAuthor[description.id] == 'Term Server'">Imported from:</span> 
+                 <span ng-show="description.id != null"> {{descriptionAuthor[description.id]}}</span>
+                 <span ng-show="description.id == null && description.term != ''"> {{description.lastModifiedBy}}</span>
+                 <br /> <span ng-show="descriptionAuthor[description.id] == 'Term Server'"> (Translations imported from the term server<br />cannot be modified or deleted) </span>
               </td>
+              
               <td>
                 <!-- remove description -->
-                <i ng-click="removeDescription($index)"
+                <i ng-show="description.editable == true || description.editable == null" 
+                  ng-click="removeDescription(index,paging['descriptions'].page)"
                   title="Remove description" class="noul material-icons md-18">delete</i>
                 <!-- Add all words -->
-                <i ng-show="hasSuggestions(description)"
+                <i ng-show="hasSuggestions(description)" 
                   ng-click="addAllSpellingEntries(description)"
                   title="Add all words" class="noul-red material-icons md-18">add</i>
               </td>
@@ -128,15 +137,36 @@
         </span>
       </h5>
       <div class="col-md-12 col-xs-12" ng-show="displaySuggest">
-        &nbsp;
-        <span ng-show="autoResult">{{autoResult}}</span>
-        <span ng-show="!autoResult">
+        <span ng-if="!autoResult && translationSuggestions.translationSuggestions == null">
           <small>No auto translation available</small>
         </span>
+        <table ng-show="autoResult || translationSuggestions.translationSuggestions != null" class="table">
+          <tbody>
+            <tr ng-show="autoResult">
+              <td><span>{{autoResult}}</span></td>
+              <td>{{translation.language.substring(0,2)}}</td>
+              <td><small>(Google Translate)</small></td>
+              <td>
+                <button class="btn btn-xs btn-primary"
+                  ng-show="autoResult"
+                  ng-click="addAutoDescription(autoResult);" title="Add description">Add</button>
+              </td>
+            </tr>
+            <tr ng-show="translationSuggestions.translationSuggestions.length > 0"
+              ng-repeat="ts in translationSuggestions.translationSuggestions">
+              <td>{{ts.suggestion}}</td>
+              <td>{{ts.languageCode}}</td>
+              <td><small>({{ts.source.substring(ts.source.lastIndexOf("/")+1)}})</small></td>
+              <td>
+                <button class="btn btn-xs btn-primary"
+                  ng-click="addAutoDescription(ts.suggestion);" title="Add description">Add</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
         &nbsp;
-        <button class="btn btn-xs btn-primary"
-          ng-click="addAutoDescription(autoResult);" title="Add description">Add</button>
       </div>
+      
       <br />
       <br />
 

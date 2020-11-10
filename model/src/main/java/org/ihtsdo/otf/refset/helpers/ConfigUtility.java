@@ -1,5 +1,5 @@
-/**
- * Copyright 2015 West Coast Informatics, LLC
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.helpers;
 
@@ -53,8 +53,8 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
-import org.apache.commons.lang3.text.WordUtils;
 import org.apache.commons.lang3.time.FastDateFormat;
+import org.apache.commons.text.WordUtils;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -247,7 +247,7 @@ public class ConfigUtility {
     }
     Object o = null;
     try {
-      o = toInstantiate.newInstance();
+      o = toInstantiate.getDeclaredConstructor().newInstance();
     } catch (Exception e) {
       // do nothing
     }
@@ -862,8 +862,9 @@ public class ConfigUtility {
     String txt = text.toLowerCase()
         // Replaces any - or _ characters with a space
         .replaceAll("-", " ").replaceAll("_", " ")
-        // Removes any non alphanumeric characters 
-        // "\\x7f-\\xff" makes sure to keep non-English characters like ä, å, etc.
+        // Removes any non alphanumeric characters
+        // "\\x7f-\\xff" makes sure to keep non-English characters like ä, å,
+        // etc.
         .replaceAll("[^A-Za-z0-9\\x7f-\\xff ]", "")
         // remove duplicate spaces
         .replaceAll("\\s+", " ");

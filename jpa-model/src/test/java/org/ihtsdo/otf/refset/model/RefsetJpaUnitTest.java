@@ -141,6 +141,7 @@ public class RefsetJpaUnitTest extends ModelUnitSupport {
     tester.include("lookupInProgress");
     tester.include("revision");
     tester.include("localSet");
+    tester.include("inactiveConceptCount");
 
     // Set up objects
     tester.proxy(Project.class, 1, p1);
@@ -227,6 +228,7 @@ public class RefsetJpaUnitTest extends ModelUnitSupport {
     tester.include("refsetDescriptorUuid");
     tester.include("inPublicationProcess");
     tester.include("lookupInProgress");
+    tester.include("lookupRequired");
     tester.include("revision");
 
     assertTrue(tester.testNotNullFields());
@@ -248,6 +250,7 @@ public class RefsetJpaUnitTest extends ModelUnitSupport {
     tester.include("userRoleMap");
     tester.include("userAnyRole");
     tester.include("organization");
+    
     assertTrue(tester.testAnalyzedIndexedFields());
 
     // Test non analyzed fields
@@ -277,6 +280,7 @@ public class RefsetJpaUnitTest extends ModelUnitSupport {
     tester.include("namespace");
     tester.include("domain");
     tester.include("revision");
+    tester.include("active");
 
     assertTrue(tester.testNotAnalyzedIndexedFields());
 

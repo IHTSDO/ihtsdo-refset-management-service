@@ -16,11 +16,12 @@
             <b>New Terminology:</b>
           </td>
           <td>
-            <select ng-model="newTerminology" ng-change="terminologySelected()"
+            <select ng-model="newTerminology"
+              ng-change="terminologySelected(newTerminology)"
               ng-options="item.terminology as item.name for item in metadata.terminologies"></select>
-          </td>
+          </td>         
         </tr>
-        <tr>
+        <tr ng-show="project.terminologyHandlerKey === 'PUBLIC-BROWSER' || project.terminologyHandlerKey === 'AUTHORING-INTL'">
           <td>
             <b>Current Version:</b>
           </td>
@@ -29,18 +30,26 @@
             <b>New Version:</b>
           </td>
           <td>
-            <!-- <select ng-model="newVersion" ng-options="item for item in versions"></select> -->
+            <select ng-model="newVersion"
+              ng-options="item.path as item.key for item in versions | orderBy:'-key'"></select>
+          </td>
+        </tr>
+        <tr>
+          <td></td>
+          <td></td>
+          <td>
+            <b>Terminology Path:</b>
+          </td>
+          <td>
             <input style="width: 252px" ng-model="newVersion" list="versions"
               placeholder="e.g. MAIN" ng-change="resetValidVersion();" />
-            <datalist id=versions>
-              <option ng-repeat="version in versions | orderBy:'version'"
-                value="{{version}}">{{version}}</option>
-            </datalist>
             <button class="btn btn-xs btn-warning" ng-show="newVersion"
               ng-click="newVersion=''">Clear</button>
             <button class="btn btn-xs btn-primary"
               ng-show="newVersion && versionNotInPicklist()"
               ng-click="testTerminologyVersion();">Test</button>
+            &nbsp;&nbsp;
+            <span flag-icon obj="refset"></span>
           </td>
         </tr>
       </tbody>
@@ -788,7 +797,7 @@
 
   <span style="float: left">
     <button ng-show="refset.staged" class="btn btn-xs btn-primary"
-      ng-click="exportDiffReport();">Export Report</button>
+      ng-click="exportDiffReport('ExportReport');">Export Report</button>
   </span>
   <button class="btn btn-xs btn-primary"
     ng-disabled="refset.staged || validVersion != 'true'"
@@ -796,12 +805,12 @@
     ng-click="beginMigration(newTerminology, newVersion);">Migrate</button>
 
   <button ng-show="refset.staged" class="btn btn-xs btn-primary"
-    ng-click="saveForLater(refset);">Save for later</button>
+    ng-click="saveForLater(refset)">Save for later</button>
 
   <button class="btn btn-xs btn-primary"
     confirm="Are you sure you want to finish migration?"
     ng-disabled="!refset.staged || stagedRefset.lookupInProgress || refset.lookupInProgress"
-    ng-click="finish(refset); ">Finish</button>
+    ng-click="finish(refset)">Finish</button>
 
   <button confirm="Are you sure you want to cancel migration?"
     class="btn btn-xs btn-warning"

@@ -3,10 +3,12 @@
  */
 package org.ihtsdo.otf.refset.mojo;
 
+import java.text.MessageFormat;
 import java.util.Properties;
 
+import javax.xml.bind.annotation.XmlSchema;
+
 import org.apache.log4j.Logger;
-import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -23,15 +25,28 @@ import org.ihtsdo.otf.refset.services.SecurityService;
  * See admin/pom.xml for sample usage
  *
  */
-@Mojo( name = "reindex", defaultPhase = LifecyclePhase.PACKAGE)
-public class LuceneReindexMojo extends AbstractMojo {
+@Mojo(name = "reindex", defaultPhase = LifecyclePhase.PACKAGE)
+public class LuceneReindexMojo extends AbstractRttMojo {
 
   /**
    * The specified objects to index.
    *
    */
-  @Parameter	
+  @Parameter
   private String indexedObjects;
+
+  /**
+   * Batch size to load objects for Full Text Entity Manager. Default is 100.
+   */
+  @Parameter
+  private Integer batchSizeToLoadObjects;
+
+  /**
+   * Threads used for loading objects for Full Text Entity Manager. Default is
+   * 4.
+   */
+  @Parameter
+  private Integer threadsToLoadObjects;
 
   /**
    * Whether to run this mojo against an active server.
@@ -50,16 +65,20 @@ public class LuceneReindexMojo extends AbstractMojo {
   /* see superclass */
   @Override
   public void execute() throws MojoFailureException {
+
     try {
       getLog().info("Lucene reindexing called via mojo.");
       getLog().info("  Indexed objects : " + indexedObjects);
       getLog().info("  Expect server up: " + server);
+
+      setupBindInfoPackage();
+
       Properties properties = ConfigUtility.getConfigProperties();
 
       boolean serverRunning = ConfigUtility.isServerActive();
 
-      getLog().info(
-          "Server status detected:  " + (!serverRunning ? "DOWN" : "UP"));
+      getLog()
+          .info("Server status detected:  " + (!serverRunning ? "DOWN" : "UP"));
 
       if (serverRunning && !server) {
         throw new MojoFailureException(
@@ -82,13 +101,15 @@ public class LuceneReindexMojo extends AbstractMojo {
         getLog().info("Running directly");
 
         ProjectServiceRestImpl contentService = new ProjectServiceRestImpl();
-        contentService.luceneReindex(indexedObjects, authToken);
+        contentService.luceneReindex(indexedObjects, batchSizeToLoadObjects,
+            threadsToLoadObjects, authToken);
 
       } else {
         getLog().info("Running against server");
 
         ProjectClientRest client = new ProjectClientRest(properties);
-        client.luceneReindex(indexedObjects, authToken);
+        client.luceneReindex(indexedObjects, batchSizeToLoadObjects,
+            threadsToLoadObjects, authToken);
       }
 
     } catch (Exception e) {

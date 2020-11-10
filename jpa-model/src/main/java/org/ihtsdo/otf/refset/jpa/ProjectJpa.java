@@ -1,5 +1,5 @@
 /**
- * Copyright 2015 West Coast Informatics, LLC
+ * Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.jpa;
 
@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.persistence.CascadeType;
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
@@ -33,23 +34,28 @@ import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import org.apache.lucene.analysis.core.WhitespaceAnalyzer;
-import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import org.hibernate.envers.Audited;
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Analyzer;
+import org.hibernate.search.annotations.DateBridge;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.FieldBridge;
 import org.hibernate.search.annotations.Fields;
 import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Indexed;
+import org.hibernate.search.annotations.Resolution;
+import org.hibernate.search.annotations.SortableField;
 import org.hibernate.search.annotations.Store;
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.UserRole;
+import org.ihtsdo.otf.refset.helpers.TranslationExtensionLanguage;
 import org.ihtsdo.otf.refset.jpa.helpers.UserMapUserNameBridge;
 import org.ihtsdo.otf.refset.jpa.helpers.UserRoleBridge;
 import org.ihtsdo.otf.refset.jpa.helpers.UserRoleMapAdapter;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
  * JPA enabled implementation of {@link Project}.
@@ -122,11 +128,15 @@ public class ProjectJpa implements Project {
   /** The terminology handler url. */
   @Column(nullable = true)
   private String terminologyHandlerUrl;
-  
+
   /** The workflow path. */
   @Column(nullable = false)
   private String workflowPath;
 
+  /** The "stable UUIDs" flag. */
+  @Column(nullable = false)
+  private boolean stableUUIDs = false;
+  
   /** The role map. */
   @ElementCollection
   @MapKeyClass(value = UserJpa.class)
@@ -146,6 +156,22 @@ public class ProjectJpa implements Project {
   @ElementCollection(fetch = FetchType.EAGER)
   @CollectionTable(name = "project_validation_checks")
   private List<String> validationChecks = new ArrayList<>();
+
+  /**  The translation preferred languages for suggestions. */
+  @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, targetEntity = TranslationExtensionLanguageJpa.class, orphanRemoval = true)
+  private List<TranslationExtensionLanguage> translationExtensionLanguages;
+
+  /** Inactive last modified. */
+  @Column(nullable = true)
+  @Temporal(TemporalType.TIMESTAMP)
+  private Date inactiveLastModified = new Date();
+
+
+  /** The refesh descriptions last modified. */
+  @Column(nullable = true)
+  @Temporal(TemporalType.TIMESTAMP)
+  private Date refeshDescriptionsLastModified = new Date();
+  
 
   /**
    * Instantiates an empty {@link ProjectJpa}.
@@ -177,14 +203,22 @@ public class ProjectJpa implements Project {
     feedbackEmail = project.getFeedbackEmail();
     exclusionClause = project.getExclusionClause();
     userRoleMap = new HashMap<>(project.getUserRoleMap());
+    translationExtensionLanguages =
+        new ArrayList<TranslationExtensionLanguage>();
+    for (TranslationExtensionLanguage t : project
+        .getTranslationExtensionLanguages()) {
+      translationExtensionLanguages.add(new TranslationExtensionLanguageJpa(t));
+    }
     refsets = new ArrayList<Refset>();
     for (Refset refset : project.getRefsets()) {
       refsets.add(new RefsetJpa(refset));
     }
+    stableUUIDs = project.isStableUUIDs();
   }
 
   /* see superclass */
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  @SortableField
   @Override
   public Long getId() {
     return this.id;
@@ -216,6 +250,8 @@ public class ProjectJpa implements Project {
 
   /* see superclass */
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  @DateBridge(resolution = Resolution.SECOND)
+  @SortableField
   @Override
   public Date getLastModified() {
     return lastModified;
@@ -226,7 +262,37 @@ public class ProjectJpa implements Project {
   public void setLastModified(Date lastModified) {
     this.lastModified = lastModified;
   }
+  
+  /* see superclass */
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  @DateBridge(resolution = Resolution.SECOND)
+  @SortableField
+  @Override
+  public Date getInactiveLastModified() {
+    return inactiveLastModified;
+  }
 
+  /* see superclass */
+  @Override
+  public void setInactiveLastModified(Date inactiveLastModified) {
+    this.inactiveLastModified = inactiveLastModified;
+  }
+
+  /* see superclass */
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  @DateBridge(resolution = Resolution.SECOND)
+  @SortableField
+  @Override
+  public Date getRefeshDescriptionsLastModified() {
+    return refeshDescriptionsLastModified;
+  }
+
+  /* see superclass */
+  @Override
+  public void setRefeshDescriptionsLastModified(Date refeshDescriptionsLastModified) {
+    this.refeshDescriptionsLastModified = refeshDescriptionsLastModified;
+  } 
+  
   /* see superclass */
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   @Override
@@ -337,6 +403,7 @@ public class ProjectJpa implements Project {
       @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO),
       @Field(name = "nameSort", index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   })
+  @SortableField(forField = "nameSort")
   public String getName() {
     return name;
   }
@@ -350,6 +417,7 @@ public class ProjectJpa implements Project {
   /* see superclass */
   @Override
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  @SortableField
   public String getNamespace() {
     return namespace;
   }
@@ -379,6 +447,7 @@ public class ProjectJpa implements Project {
       @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO),
       @Field(name = "descriptionSort", index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   })
+  @SortableField(forField = "descriptionSort")
   public String getDescription() {
     return description;
   }
@@ -394,6 +463,7 @@ public class ProjectJpa implements Project {
       @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO),
       @Field(name = "organizationSort", index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   })
+  @SortableField(forField = "organizationSort")
   @Override
   public String getOrganization() {
     return organization;
@@ -404,7 +474,7 @@ public class ProjectJpa implements Project {
   public void setOrganization(String organization) {
     this.organization = organization;
   }
-  
+
   /* see superclass */
   // n/a - @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   @Override
@@ -417,7 +487,6 @@ public class ProjectJpa implements Project {
   public void setWorkflowPath(String workflowPath) {
     this.workflowPath = workflowPath;
   }
-
 
   /* see superclass */
   @Override
@@ -511,6 +580,56 @@ public class ProjectJpa implements Project {
   }
 
   /* see superclass */
+  @XmlElement(type = TranslationExtensionLanguageJpa.class)
+  @Override
+  public List<TranslationExtensionLanguage> getTranslationExtensionLanguages() {
+    if (this.translationExtensionLanguages == null) {
+      this.translationExtensionLanguages =
+          new ArrayList<TranslationExtensionLanguage>();
+    }
+    return this.translationExtensionLanguages;
+  }
+
+  /* see superclass */
+  @Override
+  public void setTranslationExtensionLanguages(
+    List<TranslationExtensionLanguage> translationExtensionLanguages) {
+    this.translationExtensionLanguages = translationExtensionLanguages;
+  }
+
+  /* see superclass */
+  @Override
+  public void addTranslationExtensionLanguage(
+    TranslationExtensionLanguage translationExtensionLanguage) {
+    if (this.translationExtensionLanguages == null) {
+      this.translationExtensionLanguages =
+          new ArrayList<TranslationExtensionLanguage>();
+    }
+    this.translationExtensionLanguages.add(translationExtensionLanguage);
+  }
+
+  /* see superclass */
+  @Override
+  public void removeTranslationExtensionLanguage(
+    TranslationExtensionLanguage translationExtensionLanguage) {
+    this.translationExtensionLanguages.remove(translationExtensionLanguage);
+  }
+
+
+  /* see superclass */
+  @Override
+  public boolean isStableUUIDs() {
+    return stableUUIDs;
+  }
+
+  /* see superclass */
+  @Override
+  public void setStableUUIDs(boolean stableUUIDs) {
+    this.stableUUIDs = stableUUIDs;
+  }
+  
+  
+  /* see superclass */
   @Override
   public boolean equals(Object obj) {
     if (this == obj)
@@ -583,14 +702,15 @@ public class ProjectJpa implements Project {
   @Override
   public String toString() {
     return "ProjectJpa [id=" + id + ", lastModified=" + lastModified
-        + ", lastModifiedBy=" + lastModifiedBy + ", name=" + name
-        + ", namespace=" + namespace + ", moduleId=" + moduleId
+        + ", lastModifiedBy=" + lastModifiedBy + ", inactiveLastModified=" + inactiveLastModified 
+        + ", name=" + name + ", namespace=" + namespace + ", moduleId=" + moduleId
         + ", organization=" + organization + ", description=" + description
         + ", terminology=" + terminology + ", version=" + version
         + ", terminologyHandlerKey=" + terminologyHandlerKey + ", workflowPath="
-        + workflowPath
-        + ", exclusionClause=" + exclusionClause + ", userRoleMap="
-        + userRoleMap + ", validationChecks=" + validationChecks + "]";
+        + workflowPath + ", exclusionClause=" + exclusionClause
+        + ", userRoleMap=" + userRoleMap + ", validationChecks="
+        + validationChecks + ", translationExtensionLanguages="
+        + translationExtensionLanguages + "], stableUUIDs=" + stableUUIDs;
   }
 
 }

@@ -1,5 +1,5 @@
-/**
- * Copyright 2015 West Coast Informatics, LLC
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.jpa.algo;
 
@@ -53,12 +53,26 @@ public class PerformRefsetPublishAlgorithm extends RefsetServiceJpa
   /** The staged refset change. */
   private StagedRefsetChange stagedRefsetChange;
 
+  /** The override. */
+  private boolean override;
+
   /**
    * Instantiates an empty {@link PerformRefsetPublishAlgorithm}.
    * @throws Exception if anything goes wrong
    */
   public PerformRefsetPublishAlgorithm() throws Exception {
     super();
+  }
+
+  /**
+   * Instantiates a new perform refset publish algorithm.
+   *
+   * @param override the override
+   * @throws Exception the exception
+   */
+  public PerformRefsetPublishAlgorithm(boolean override) throws Exception {
+    super();
+    this.override = override;
   }
 
   /* see superclass */
@@ -74,6 +88,14 @@ public class PerformRefsetPublishAlgorithm extends RefsetServiceJpa
         .equals(stagedRefsetChange.getStagedRefset().getWorkflowStatus())) {
       throw new Exception(
           "Refset must be staged and with a workflow status of BETA");
+    }
+    //For MANAGED-SERVICE projects only, check for inactive concepts
+    if (!override && refset.getProject().getTerminologyHandlerKey().equals("MANAGED-SERVICE")) {
+      List<String> inactiveConcepts = getInactiveConceptsForRefset(refset);
+      if (inactiveConcepts.size() > 0) {
+        throw new LocalException("This refset has " + inactiveConcepts.size()
+        + " inactive concepts identified in dependent package.  This suggests a migration is required.");
+      }
     }
   }
 
@@ -109,7 +131,6 @@ public class PerformRefsetPublishAlgorithm extends RefsetServiceJpa
     stagedRefset.setProvisional(false);
     stagedRefset.setInPublicationProcess(false);
     stagedRefset.setLastModifiedBy(userName);
-    updateRefset(stagedRefset);
 
     // Update the PUBLISHED refset release info published/planned flags.
     list = findRefsetReleasesForQuery(stagedRefset.getId(), null, null);
@@ -211,6 +232,24 @@ public class PerformRefsetPublishAlgorithm extends RefsetServiceJpa
    */
   public Refset getPublishedRefset() {
     return stagedRefset;
+  }
+
+  /**
+   * Indicates whether or not override is the case.
+   *
+   * @return <code>true</code> if so, <code>false</code> otherwise
+   */
+  public boolean isOverride() {
+    return override;
+  }
+
+  /**
+   * Sets the override.
+   *
+   * @param override the override
+   */
+  public void setOverride(boolean override) {
+    this.override = override;
   }
 
 }

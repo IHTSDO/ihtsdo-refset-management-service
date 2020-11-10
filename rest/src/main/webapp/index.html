@@ -17,7 +17,7 @@
   rel="stylesheet">
 
 <!-- JQuery: for Jira feedback -->
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
 
 <!-- Angular core and standard plugins -->
 <script type="text/javascript"
@@ -98,6 +98,12 @@
   <!-- Blank for header -->
   <div class="hidden-xs" style="height: 60px;">Makes room for content</div>
   <div class="visible-xs" style="height: 60px;">Makes room for content</div>
+  
+  <!-- Additional Blank if browser warning is showing -->
+   <div class="container-fluid">
+     <div ng-show="!isUsingChrome()" class="row" style="height: 35px;" ng-controller="HeaderCtrl">Makes room for content</div>
+   </div>
+  
   <div class="container-fluid">
     <!-- Show global error message -->
     <div ng-include src="'app/page/general/error.html'"></div>
@@ -127,26 +133,9 @@
 
   <!-- Cookie Policy, TODO: make this config??-->
   <script type="text/javascript">
-      var _iub = _iub || [];
-      _iub.csConfiguration = {
-        cookiePolicyId : 7822445,
-        siteId : 522873,
-        lang : "en"
-      };
-      (function(w, d) {
-        var loader = function() {
-          var s = d.createElement("script"), tag = d.getElementsByTagName("script")[0];
-          s.src = "//cdn.iubenda.com/cookie_solution/iubenda_cs.js";
-          tag.parentNode.insertBefore(s, tag);
-        };
-        if (w.addEventListener) {
-          w.addEventListener("load", loader, false);
-        } else if (w.attachEvent) {
-          w.attachEvent("onload", loader);
-        } else {
-          w.onload = loader;
-        }
-      })(window, document);
-    </script>
+  var _iub = _iub || [];
+  _iub.csConfiguration = {"whitelabel":false,"siteId":522873,"cookiePolicyId":7822445,"lang":"en"};
+  </script>
+  <script type="text/javascript" src="//cdn.iubenda.com/cs/iubenda_cs.js" charset="UTF-8" async></script>
 </body>
 </html>

@@ -80,7 +80,7 @@ tsApp
           return pfs;
         };
 
-        this.toText = function(camelCase, captializefirst) {
+        this.toText = function(camelCase, capitalizeFirst) {
           if (capitalizeFirst) {
             var str = camelCase.replace(/([A-Z]+)/g, " $1").replace(/([A-Z][a-z])/g, " $1");
             return str[0].toUpperCase() + str.slice(1)
@@ -130,7 +130,7 @@ tsApp
         };
 
         // Handle error message
-        this.handleError = function(response) {
+        this.handleError = function(response, location) {
           console.debug('Handle error: ', response);
           if (response.data && response.data.length > 120) {
             this.error.message = "Unexpected error, click the icon to view attached full error";
@@ -147,6 +147,10 @@ tsApp
             // Reroute back to login page with 'auth token has
             // expired' message
             $location.path('/login');
+          } else if (location) {
+            // scroll to specified location of page
+            $location.hash(location);
+            $anchorScroll();
           } else {
             // scroll to top of page
             $location.hash('top');
@@ -155,8 +159,16 @@ tsApp
         };
 
         // Dialog error handler
+        this.handleBulkDialogErrors = function(){
+          // Errors are handled by the bulk modals.
+          // Just clear out the top-level error,  so it doesn't get displayed on the main screen as well.
+            this.clearError();
+        }
+        
+        // Dialog error handler
         this.handleDialogError = function(errors, error) {
           console.debug('Handle dialog error: ', errors, error);
+
           // handle long error
           if (error && error.length > 100) {
             errors[0] = "Unexpected error, click the icon to view attached full error";
@@ -196,7 +208,7 @@ tsApp
           return new Date(y, m, d).getTime();
         }
 
-        // Convert date to a string
+        // Convert date to a string in UTC
         var workDate = new Date();
         this.toDate = function(lastModified) {
           var date = new Date(lastModified + ((60 + workDate.getTimezoneOffset()) * 60000));
@@ -223,8 +235,35 @@ tsApp
           }
           return year + '-' + month + '-' + day + ' ' + hour + ':' + minute + ':' + second;
         };
+        
+        // Convert date to a string in local timezone
+        this.toLocalDate = function(lastModified) {
+          var date = new Date(lastModified);
+          var year = '' + date.getFullYear();
+          var month = '' + (date.getMonth() + 1);
+          if (month.length == 1) {
+            month = '0' + month;
+          }
+          var day = '' + date.getDate();
+          if (day.length == 1) {
+            day = '0' + day;
+          }
+          var hour = '' + date.getHours();
+          if (hour.length == 1) {
+            hour = '0' + hour;
+          }
+          var minute = '' + date.getMinutes();
+          if (minute.length == 1) {
+            minute = '0' + minute;
+          }
+          var second = '' + date.getSeconds();
+          if (second.length == 1) {
+            second = '0' + second;
+          }
+          return year + '-' + month + '-' + day + ' ' + hour + ':' + minute + ':' + second;
+        };        
 
-        // Convert date to a short string
+        // Convert date to a short string in UTC
         this.toShortDate = function(lastModified) {
           var date = new Date(lastModified + ((60 + workDate.getTimezoneOffset()) * 60000));
           var year = '' + date.getFullYear();
@@ -239,7 +278,7 @@ tsApp
           return year + '-' + month + '-' + day;
         };
 
-        // Convert date to a simple string
+        // Convert date to a simple string in UTC
         this.toSimpleDate = function(lastModified) {
           if (lastModified == null) {
           	return '';
@@ -459,6 +498,31 @@ tsApp
           }
           return phrases;
         };
+        
+        //validates dates in YYYY-MM-DD format
+        this.isValidDate = function(dateString) {
+          // First check for the pattern
+          var regex_date = /^\d{4}\-\d{1,2}\-\d{1,2}$/;
+          if (!regex_date.test(dateString)) {
+            return false;
+          }
+          // Parse the date parts to integers
+          var parts = dateString.split("-");
+          var day = parseInt(parts[2], 10);
+          var month = parseInt(parts[1], 10);
+          var year = parseInt(parts[0], 10);
+          // Check the ranges of month and year
+          if (year < 1000 || year > 3000 || month == 0 || month > 12) {
+            return false;
+          }
+          var monthLength = [ 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 ];
+          // Adjust for leap years
+          if (year % 400 == 0 || (year % 100 != 0 && year % 4 == 0)) {
+            monthLength[1] = 29;
+          }
+          // Check the range of the day
+          return day > 0 && day <= monthLength[month - 1];
+        };
 
       } ]);
 
@@ -570,6 +634,29 @@ tsApp.service('securityService', [
         }
       }
       return user;
+    };
+    
+    // Gets the user
+    this.getUserByUsername = function(username) {
+      console.debug('getUser (username) ' + username);
+      var deferred = $q.defer();
+
+      // Get users
+      gpService.increment();
+      $http.get(securityUrl + 'user/name/' + username).then(
+      // success
+      function(response) {
+        console.debug('  user = ', response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
     };
 
     // Sets the user
@@ -755,7 +842,7 @@ tsApp.service('securityService', [
       console.debug('removeUser');
       var deferred = $q.defer();
 
-      // Add user
+      // Remove user
       gpService.increment();
       $http['delete'](securityUrl + 'user/remove/' + user.id).then(
       // success
@@ -872,6 +959,13 @@ tsApp.service('securityService', [
       });
       return deferred.promise;
     };
+    
+    // Check if user is using Chrome or not (for showing browser warning page)
+    this.isUsingChrome = function() {
+      var isChrome = !!window.chrome && (!!window.chrome.webstore || !!window.chrome.runtime);
+      return isChrome;
+    }; 
+    
   } ]);
 
 // Tab service
@@ -907,6 +1001,11 @@ tsApp.service('tabService', [ '$location', 'utilService', 'gpService', 'security
       this.selectedTab = tab;
     };
 
+    // Check if user is using Chrome or not (for showing browser warning page)
+    this.isUsingChrome = function() {
+      return securityService.isUsingChrome();
+    }; 
+    
     // sets the selected tab by label
     // to be called by controllers when their
     // respective tab is selected

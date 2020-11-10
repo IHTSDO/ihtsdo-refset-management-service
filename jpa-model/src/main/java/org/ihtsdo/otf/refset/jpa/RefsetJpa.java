@@ -1,5 +1,5 @@
-/**
- * Copyright 2015 West Coast Informatics, LLC
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.jpa;
 
@@ -27,7 +27,6 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
-import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import org.hibernate.envers.Audited;
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Field;
@@ -36,6 +35,7 @@ import org.hibernate.search.annotations.Fields;
 import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.IndexedEmbedded;
+import org.hibernate.search.annotations.SortableField;
 import org.hibernate.search.annotations.Store;
 import org.hibernate.search.bridge.builtin.EnumBridge;
 import org.hibernate.search.bridge.builtin.LongBridge;
@@ -52,6 +52,8 @@ import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.AbstractComponent;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
 import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
  * JPA enabled implementation of {@link Refset}. This object extends
@@ -124,7 +126,11 @@ public class RefsetJpa extends AbstractComponent implements Refset {
 
   /** The lookup in progress. */
   @Column(nullable = false)
-  private boolean lookupInProgress;
+  private boolean lookupInProgress = false;
+
+  /** The lookup in progress. */
+  @Column(nullable = false)
+  private boolean lookupRequired = false;
 
   /** The feedback email. */
   @Column(nullable = true)
@@ -172,6 +178,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
 
   /** The definition clauses. */
   @OneToMany(cascade = CascadeType.ALL, targetEntity = DefinitionClauseJpa.class)
+  @CollectionTable(name = "refsets_definition_clauses", joinColumns = @JoinColumn(name = "refsets_id"))
   private List<DefinitionClause> definitionClauses = new ArrayList<>();
 
   /** The translations. */
@@ -194,6 +201,12 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   @OneToMany(mappedBy = "refset", targetEntity = RefsetNoteJpa.class)
   @IndexedEmbedded(targetElement = RefsetNoteJpa.class)
   private List<Note> notes = new ArrayList<>();
+
+  /** The inactive concept count. */
+  @Column(nullable = true)
+  private Integer inactiveConceptCount;
+
+
 
   /**
    * Instantiates an empty {@link RefsetJpa}.
@@ -224,10 +237,12 @@ public class RefsetJpa extends AbstractComponent implements Refset {
     forTranslation = refset.isForTranslation();
     inPublicationProcess = refset.isInPublicationProcess();
     lookupInProgress = refset.isLookupInProgress();
+    lookupRequired = refset.isLookupRequired();
     feedbackEmail = refset.getFeedbackEmail();
     workflowStatus = refset.getWorkflowStatus();
     project = refset.getProject();
     localSet = refset.isLocalSet();
+    inactiveConceptCount = refset.getInactiveConceptCount();
     enabledFeedbackEvents = new HashSet<>(refset.getEnabledFeedbackEvents());
     for (DefinitionClause definitionClause : refset.getDefinitionClauses()) {
       getDefinitionClauses().add(new DefinitionClauseJpa(definitionClause));
@@ -249,6 +264,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
       @Field(name = "nameSort", index = Index.YES, analyze = Analyze.NO, store = Store.NO),
       @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
   })
+  @SortableField(forField = "nameSort")
   public String getName() {
     return name;
   }
@@ -259,6 +275,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
       @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO),
       @Field(name = "descriptionSort", index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   })
+  @SortableField(forField = "descriptionSort")
   public String getDescription() {
     return description;
   }
@@ -452,6 +469,18 @@ public class RefsetJpa extends AbstractComponent implements Refset {
 
   /* see superclass */
   @Override
+  public boolean isLookupRequired() {
+    return lookupRequired;
+  }
+
+  /* see superclass */
+  @Override
+  public void setLookupRequired(boolean lookupRequired) {
+    this.lookupRequired = lookupRequired;
+  }
+
+  /* see superclass */
+  @Override
   public String getFeedbackEmail() {
     return feedbackEmail;
   }
@@ -554,6 +583,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
       @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO),
       @Field(name = "organizationSort", index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   })
+  @SortableField(forField = "organizationSort")
   @Override
   public String getOrganization() {
     return (project != null) ? project.getOrganization() : "";
@@ -578,8 +608,27 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   public List<ConceptRefsetMember> getMembers() {
     if (members == null) {
       members = new ArrayList<>();
+      return members;
     }
-    return members;
+    List<ConceptRefsetMember> activeMembers = new ArrayList<>();
+    for (ConceptRefsetMember member : members) {
+      if (member.isActive()) {
+        activeMembers.add(member);
+      }
+    }
+    return activeMembers;
+  }
+
+
+  /* see superclass */
+  @Override
+  public List<ConceptRefsetMember> getMembers(Boolean includeInactives) {
+
+    if (!includeInactives) {
+      return getMembers();
+    } else {
+      return members;
+    }
   }
 
   /* see superclass */
@@ -758,6 +807,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
 
   /* see superclass */
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  @SortableField
   @Override
   public String getTerminology() {
     return terminology;
@@ -796,8 +846,9 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   }
 
   /* see superclass */
-  @Override
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  @SortableField
+  @Override
   public String getDomain() {
     return domain;
   }
@@ -806,6 +857,18 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   @Override
   public void setDomain(String domain) {
     this.domain = domain;
+  }
+  
+  /* see superclass */
+  @Override
+  public Integer getInactiveConceptCount() {
+    return inactiveConceptCount;
+  }
+
+  /* see superclass */
+  @Override
+  public void setInactiveConceptCount(Integer inactiveConceptCount) {
+    this.inactiveConceptCount = inactiveConceptCount;
   }
 
   /* see superclass */
@@ -827,9 +890,13 @@ public class RefsetJpa extends AbstractComponent implements Refset {
     result = prime * result + (localSet ? 1231 : 1237);
     result =
         prime * result + ((terminology == null) ? 0 : terminology.hashCode());
+    result =
+        prime * result
+            + ((inactiveConceptCount == null) ? 0 : inactiveConceptCount.hashCode());
     // not version
     result = prime * result + ((name == null) ? 0 : name.hashCode());
     result = prime * result + ((namespace == null) ? 0 : namespace.hashCode());
+
     result = prime * result + ((domain == null) ? 0 : domain.hashCode());
     result = prime * result + ((project == null) ? 0 : project.hashCode());
     result = prime * result + ((type == null) ? 0 : type.hashCode());
@@ -890,6 +957,11 @@ public class RefsetJpa extends AbstractComponent implements Refset {
         return false;
     } else if (!namespace.equals(other.namespace))
       return false;
+    if (inactiveConceptCount == null) {
+      if (other.inactiveConceptCount != null)
+        return false;
+    } else if (!inactiveConceptCount.equals(other.inactiveConceptCount))
+      return false;
     if (domain == null) {
       if (other.domain != null)
         return false;
@@ -917,9 +989,9 @@ public class RefsetJpa extends AbstractComponent implements Refset {
         + ", terminology=" + getTerminology() + ", version=" + getVersion()
         + ", namespace=" + namespace + ", definitionClauses="
         + definitionClauses + ", extUrl=" + externalUrl + ", workflowStatus="
-        + workflowStatus  + ", domain="
-        + domain + ", project=" + (project == null ? null : project.getId())
-        + ", localSet=" + localSet + "]";
+        + workflowStatus + ", domain=" + domain + ", project="
+        + (project == null ? null : project.getId()) + ", localSet=" + localSet
+        + ", inactiveConceptCount=" + getInactiveConceptCount() + "]";
   }
 
 }

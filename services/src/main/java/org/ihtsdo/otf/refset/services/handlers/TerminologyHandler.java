@@ -1,5 +1,5 @@
-/**
- * Copyright 2015 West Coast Informatics, LLC
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.services.handlers;
 
@@ -9,10 +9,11 @@ import java.util.Map;
 import org.ihtsdo.otf.refset.Terminology;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.Configurable;
+import org.ihtsdo.otf.refset.helpers.KeyValuePairList;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
+import org.ihtsdo.otf.refset.helpers.TranslationExtensionLanguage;
 import org.ihtsdo.otf.refset.rf2.Concept;
 
-// TODO: Auto-generated Javadoc
 /**
  * Generically represents a handler for accessing terminology objects.
  */
@@ -25,6 +26,9 @@ public interface TerminologyHandler extends Configurable {
   /** The Constant NAME_LOOKUP_IN_PROGRESS. */
   public final static String NAME_LOOKUP_IN_PROGRESS =
       "name lookup in progress";
+
+  /** The Constant REQUIRES_NAME_LOOKUP. */
+  public final static String REQUIRES_NAME_LOOKUP = "requires name lookup";
 
   /**
    * Copy the handler. This is needed used because of how the terminology
@@ -58,24 +62,26 @@ public interface TerminologyHandler extends Configurable {
    * Returns the terminology versions.
    *
    * @param edition the edition
+   * @param showFutureVersions the show future versions
    * @return the terminology versions
    * @throws Exception the exception
    */
-  public List<Terminology> getTerminologyVersions(String edition)
-    throws Exception;
+  public List<Terminology> getTerminologyVersions(String edition,
+    Boolean showFutureVersions) throws Exception;
 
   /**
    * Resolve expression.
    *
    * @param expr the expr
-   * @param terminolgy the terminolgy
+   * @param terminology the terminology
    * @param version the version
    * @param pfs the pfs
+   * @param descriptions the descriptions
    * @return the concept list
    * @throws Exception the exception
    */
-  public ConceptList resolveExpression(String expr, String terminolgy,
-    String version, PfsParameter pfs) throws Exception;
+  public ConceptList resolveExpression(String expr, String terminology,
+    String version, PfsParameter pfs, boolean descriptions) throws Exception;
 
   /**
    * Returns the concept with descriptions and relationships. Inactive
@@ -104,16 +110,17 @@ public interface TerminologyHandler extends Configurable {
     String version) throws Exception;
 
   /**
-   * Returns the concepts.
+   * Gets the concepts.
    *
    * @param terminologyIds the terminology ids
    * @param terminology the terminology
    * @param version the version
+   * @param descriptions the descriptions
    * @return the concepts
    * @throws Exception the exception
    */
   public ConceptList getConcepts(List<String> terminologyIds,
-    String terminology, String version) throws Exception;
+    String terminology, String version, boolean descriptions) throws Exception;
 
   /**
    * Find concepts for query.
@@ -243,7 +250,7 @@ public interface TerminologyHandler extends Configurable {
    */
   public List<String> getLanguages(String terminology, String version)
     throws Exception;
-  
+
   /**
    * Gets the branches.
    *
@@ -253,7 +260,7 @@ public interface TerminologyHandler extends Configurable {
    * @throws Exception the exception
    */
   public List<String> getBranches(String terminology, String version)
-		    throws Exception;
+    throws Exception;
 
   /**
    * Translate.
@@ -264,4 +271,44 @@ public interface TerminologyHandler extends Configurable {
    * @throws Exception the exception
    */
   public String translate(String text, String langauge) throws Exception;
+
+  /**
+   * Gets the required language refsets.
+   *
+   * @param terminology the terminology
+   * @param version the version
+   * @return the required language refsets
+   * @throws Exception the exception
+   */
+  public KeyValuePairList getRequiredLanguageRefsets(String terminology,
+    String version) throws Exception;
+
+  /**
+   * Returns the available translation extension languages.
+   *
+   * @return the available translation extension languages
+   * @throws Exception the exception
+   */
+  public List<TranslationExtensionLanguage> getAvailableTranslationExtensionLanguages()
+    throws Exception;
+
+  /**
+   * Gets the max batch lookup size.
+   *
+   * @return the max batch lookup size
+   * @throws Exception the exception
+   */
+  public int getMaxBatchLookupSize() throws Exception;
+
+  /**
+   * Returns the inactive concepts.
+   *
+   * @param terminologyIds the terminology ids
+   * @param terminology the terminology
+   * @param version the version
+   * @return the inactive concepts
+   * @throws Exception the exception
+   */
+  public ConceptList getInactiveConcepts(List<String> terminologyIds,
+    String terminology, String version) throws Exception;
 }

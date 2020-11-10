@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 West Coast Informatics, LLC
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.rf2.jpa;
 
@@ -16,9 +16,12 @@ import javax.persistence.TemporalType;
 
 import org.hibernate.envers.Audited;
 import org.hibernate.search.annotations.Analyze;
+import org.hibernate.search.annotations.DateBridge;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.FieldBridge;
 import org.hibernate.search.annotations.Index;
+import org.hibernate.search.annotations.Resolution;
+import org.hibernate.search.annotations.SortableField;
 import org.hibernate.search.annotations.Store;
 import org.hibernate.search.bridge.builtin.LongBridge;
 import org.ihtsdo.otf.refset.rf2.Component;
@@ -109,6 +112,8 @@ public abstract class AbstractComponent implements Component {
   /* see superclass */
   @Override
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  @DateBridge(resolution=Resolution.SECOND)
+  @SortableField
   public Date getEffectiveTime() {
     return effectiveTime;
   }
@@ -120,8 +125,10 @@ public abstract class AbstractComponent implements Component {
   }
 
   /* see superclass */
-  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   @Override
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  @DateBridge(resolution=Resolution.SECOND)
+  @SortableField
   public Date getLastModified() {
     return lastModified;
   }
@@ -146,6 +153,7 @@ public abstract class AbstractComponent implements Component {
   }
 
   /* see superclass */
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   @Override
   public boolean isActive() {
     return active;
@@ -184,6 +192,7 @@ public abstract class AbstractComponent implements Component {
   /* see superclass */
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   @Override
+  @SortableField
   public String getModuleId() {
     return moduleId;
   }
@@ -201,9 +210,8 @@ public abstract class AbstractComponent implements Component {
     int result = 1;
     result = prime * result + (active ? 1231 : 1237);
     result = prime * result + ((moduleId == null) ? 0 : moduleId.hashCode());
-    result =
-        prime * result
-            + ((terminologyId == null) ? 0 : terminologyId.hashCode());
+    result = prime * result
+        + ((terminologyId == null) ? 0 : terminologyId.hashCode());
     // Removed bc was preventing compare on migrations from returning anything
     // in common
     // result = prime * result + ((version == null) ? 0 : version.hashCode());
@@ -240,6 +248,7 @@ public abstract class AbstractComponent implements Component {
   /* see superclass */
   @Override
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  @SortableField
   public String getTerminologyId() {
     return terminologyId;
   }

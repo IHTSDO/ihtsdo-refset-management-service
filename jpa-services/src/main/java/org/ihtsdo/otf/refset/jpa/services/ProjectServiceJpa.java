@@ -1,5 +1,5 @@
-/**
- * Copyright 2015 West Coast Informatics, LLC
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.jpa.services;
 
@@ -44,6 +44,10 @@ public class ProjectServiceJpa extends RootServiceJpa
 
   /** The terminology handler . */
   private static Map<String, TerminologyHandler> terminologyHandlers =
+      new HashMap<>();
+
+  /** The terminology handler for a specific handler/URL combination. */
+  private static Map<String, TerminologyHandler> instantiatedTerminologyHandlers =
       new HashMap<>();
 
   static {
@@ -270,6 +274,9 @@ public class ProjectServiceJpa extends RootServiceJpa
     if (project.getUserRoleMap() != null) {
       project.getUserRoleMap().size();
     }
+    if (project.getTranslationExtensionLanguages() != null) {
+      project.getTranslationExtensionLanguages().size();
+    }
   }
 
   /* see superclass */
@@ -322,13 +329,54 @@ public class ProjectServiceJpa extends RootServiceJpa
           "No terminology handler exists for the specified key: "
               + project.getTerminologyHandlerKey());
     }
+
+    if (instantiatedTerminologyHandlers
+        .containsKey(project.getTerminologyHandlerKey() + "|"
+            + project.getTerminologyHandlerUrl())) {
+      return instantiatedTerminologyHandlers
+          .get(project.getTerminologyHandlerKey() + "|"
+              + project.getTerminologyHandlerUrl());
+    }
+
     final TerminologyHandler handler =
         terminologyHandlers.get(project.getTerminologyHandlerKey()).copy();
     handler.setUrl(project.getTerminologyHandlerUrl());
     handler.setHeaders(headers);
+
+    instantiatedTerminologyHandlers.put(project.getTerminologyHandlerKey() + "|"
+        + project.getTerminologyHandlerUrl(), handler);
     return handler;
   }
 
+  /* see superclass */
+  @Override
+  public TerminologyHandler getTerminologyHandler(String terminologyHandlerKey,
+    String terminologyHandlerUrl, Map<String, String> headers)
+    throws Exception {
+
+    if (!terminologyHandlers.containsKey(terminologyHandlerKey)) {
+      throw new LocalException(
+          "No terminology handler exists for the specified key: "
+              + terminologyHandlerKey);
+    }
+
+    if (instantiatedTerminologyHandlers
+        .containsKey(terminologyHandlerKey + "|" + terminologyHandlerUrl)) {
+      return instantiatedTerminologyHandlers
+          .get(terminologyHandlerKey + "|" + terminologyHandlerUrl);
+    }
+
+    final TerminologyHandler handler =
+        terminologyHandlers.get(terminologyHandlerKey).copy();
+    handler.setUrl(terminologyHandlerUrl);
+    handler.setHeaders(headers);
+
+    instantiatedTerminologyHandlers
+        .put(terminologyHandlerKey + "|" + terminologyHandlerUrl, handler);
+    return handler;
+  }
+
+  /* see superclass */
   @Override
   public KeyValuePairList getTerminologyHandlers() throws Exception {
     final KeyValuePairList list = new KeyValuePairList();

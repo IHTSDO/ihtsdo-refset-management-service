@@ -1,0 +1,104 @@
+<div class="modal-header">
+  <h4 style="display: inline">Bulk {{action}}</h4>
+  <span style="float: right">
+    <i class="noul glyphicon glyphicon-remove" ng-click="close()"></i>
+  </span>
+</div>
+<div class="modal-body">
+  <div class="container">
+    <div class="row" ng-show="action == 'ASSIGN' && value == 'AVAILABLE' && (role == 'ADMIN' || role == 'LEAD')">
+      <div class="col-md-2 col-xs-2">Select by:</div>
+      <div class="col-md-8 col-xs-8">
+        <span>
+          <select ng-model="selectedWorkflowStatus" ng-change="selectRefsets()"
+            ng-options="workflowStatus as workflowStatus for workflowStatus in workflowStatusList">
+          </select>
+        </span>
+      </div>
+    </div>    
+    <div class="row">&nbsp;</div>
+    <div class="row" ng-show="action == 'ASSIGN'">
+      <div class="col-md-2 col-xs-2">User:</div>
+      <div class="col-md-8 col-xs-8">
+        <span ng-show="assignedUsers.length > 1">
+          <select ng-model="selectedUser" ng-options="item.name for item in assignedUsers"></select>
+        </span>
+        <span ng-show="selectedRefsetIds.length == 0 && assignedUsers.length == 0">
+          Select some refsets to activate user-list
+        </span>                
+      </div>
+    </div>
+    <div class="row">&nbsp;</div>
+     <div class="row">
+      <table class="table">
+        <thead class="table-select-row">
+          <tr>
+            <th class="text-right"><input type="checkbox"
+              ng-click="toggleSelectAll(); setButtonDisableValues(); checkHideAuthors()" title="Select/Deselect All Refsets"
+              ng-checked="isAllSelected()" value="{{allSelected}}"></th>
+            <th>Refset Id</th>
+            <th>Name</th>
+            <th>Version</th>
+            <th>Workflow Status</th>
+            <th ng-show="action=='UNASSIGN'">Assigned to</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody class="table-select-row">
+          <tr ng-repeat="refset in refsets">
+            <td class="text-right">
+              <input type="checkbox"
+                ng-disabled="refset.inPublicationProcess || refset.stagingType == 'MIGRATION'"
+                ng-click="toggleSelection(refset); setButtonDisableValues(); checkHideAuthors()"
+                title="Select/Deselect Refset"
+                ng-checked="isRowSelected(refset)"
+                value="{{selectedRefsets[refset.id]}}">
+            </td>
+            <td>{{refset.terminologyId}}</td>
+            <td>{{refset.name}}</td>
+            <td>{{refset.version}}</td>
+            <td>{{refset.workflowStatus}}</td>
+            <td ng-show="action=='UNASSIGN'">{{refset.lastModifiedBy}}</td>
+            <td>
+              <span ng-show="refsetStatus(refset) != 'FAILED'">{{refsetStatus(refset)}}</span>
+              <span class="alert alert-danger"
+                ng-show="refsetStatus(refset) == 'FAILED'">{{refsetStatus(refset)}}</span>
+              <span class="alert alert-warning" title="Cannot assign refset mid-release"
+                ng-show="refset.inPublicationProcess">Release in progress</span>
+              <span class="alert alert-warning" title="Cannot assign/unassign refset mid-migration" 
+                ng-show="refset.stagingType == 'MIGRATION'">Migration in progress</span>                
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<div>
+    <!-- Errors and warnings-->
+  <span ng-show="warnings.length > 0">
+    <td>&nbsp;</td>
+    <td>
+      <div class="alert alert-warning" ng-repeat="warning in warnings">
+        {{warning}}</div>
+    </td>
+  </span>
+  <span ng-show="errors.length > 0">
+    <td>&nbsp;</td>
+    <td>
+      <div class="alert alert-danger alert-error" ng-repeat="error in errors">
+        {{error}}</div>
+    </td>
+  </span>
+</div>
+<div class="modal-footer">
+  <button class="btn btn-xs btn-primary" ng-show="action == 'ASSIGN'" ng-disabled="assignDisabled"
+    ng-click="bulkWorkflow()">Assign</button>
+  <button class="btn btn-xs btn-primary" ng-show="action == 'UNASSIGN'" 
+    ng-click="bulkWorkflow()">Unassign</button>
+  <button class="btn btn-xs btn-primary" ng-show="action == 'FINISH'" 
+    ng-click="bulkWorkflow()">Finish</button>
+  <button class="btn btn-xs btn-primary" ng-show="action == 'PREPARE_FOR_PUBLICATION'" 
+    ng-click="bulkWorkflow()">Mark ready for publication</button>
+  <button class="btn" ng-click="close()">Close</button>
+</div>

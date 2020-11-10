@@ -1,5 +1,5 @@
 /**
- * Copyright 2015 West Coast Informatics, LLC
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 /**
  * Copyright (c) 2012 International Health Terminology Standards Development
@@ -34,7 +34,6 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
-import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -83,7 +82,7 @@ import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
  * 
  */
 @Mojo(name = "sample-data2", defaultPhase = LifecyclePhase.PACKAGE)
-public class GenerateSampleData2Mojo extends AbstractMojo {
+public class GenerateSampleData2Mojo extends AbstractRttMojo {
 
   /** The assign names. */
   private Boolean assignNames;
@@ -113,9 +112,12 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
   /* see superclass */
   @Override
   public void execute() throws MojoFailureException {
+
     try {
       getLog().info("Generate sample data");
       getLog().info("  mode = " + mode);
+
+      setupBindInfoPackage();
 
       // Handle creating the database if the mode parameter is set
       Properties properties = ConfigUtility.getConfigProperties();
@@ -145,7 +147,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
       // Handle reindexing database if mode is set
       if (mode != null && mode.equals("create")) {
         ProjectServiceRestImpl contentService = new ProjectServiceRestImpl();
-        contentService.luceneReindex(null, authToken);
+        contentService.luceneReindex(null, null, null, authToken);
       }
 
       boolean serverRunning = ConfigUtility.isServerActive();
@@ -1059,7 +1061,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
         new File("../config/src/main/resources/data/translation" + num
             + "/translation.zip"));
     translationService.finishImportConcepts(null, in, translation.getId(),
-        "DEFAULT", auth.getAuthToken());
+        "DEFAULT", null, auth.getAuthToken());
     in.close();
 
     // refset release info
