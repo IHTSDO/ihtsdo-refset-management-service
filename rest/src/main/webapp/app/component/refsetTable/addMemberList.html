@@ -90,14 +90,6 @@
         </td>
       </tr>
 
-      <tr ng-show="warnings.length > 0">
-        <td>&nbsp;</td>
-        <td>
-          <div class="alert alert-warning" ng-repeat="warning in warnings">
-            {{warning}}</div>
-        </td>
-      </tr>
-
       <!-- Errors and warnings-->
       <tr
         ng-show="errors.length == 1 || (errors.length == 2 && errors[1].length>100)">
@@ -123,7 +115,7 @@
             ng-repeat="error in errors">{{error}}</div>
         </td>
       </tr>
-      <tr class="alert alert-warning" ng-repeat="warning in warnings">
+      <tr ng-repeat="warning in warnings">
         <td colspan="2">
           <div class="alert alert-warning" ng-repeat="warning in warnings">{{warning}}</div>
         </td>

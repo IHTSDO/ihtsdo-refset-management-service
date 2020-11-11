@@ -2746,7 +2746,7 @@ tsApp
                 $scope.beginRefsetRelease = function(refset) {
 
                   if (!refset.effectiveTime) {
-                     window.alert('Release Date cannot be empty');
+                     window.alert('Invalid Release Date');
                      return;
                   }
                                   
@@ -3323,7 +3323,7 @@ tsApp
                   $scope.warningRefsetIds = [];
                   
                   if (!$scope.effectiveTime) {
-                    window.alert('Release Date cannot be empty');
+                    window.alert('Invalid Release Date');
                     return;
                  }
                   
@@ -4570,12 +4570,18 @@ tsApp
                       }
 
                       if (!refset.localSet && !refset.moduleId) {
-                        $scope.errors[0] = 'ModuleId must not be empty.';
-                        return;
+                        $scope.errors.push('ModuleId must not be empty.');
                       }
 
                       if (!refset.name || !refset.description) {
-                        $scope.errors[0] = 'Refset name and description must not be empty.';
+                        $scope.errors.push('Refset name and description must not be empty.');
+                      }
+                      
+                      if(!refset.version) {
+                        $scope.errors.push('Refset version must not be empty.');
+                      }
+                      
+                      if($scope.errors.length > 0){
                         return;
                       }
 
@@ -4773,6 +4779,22 @@ tsApp
                         return;
                       } else {
                         $scope.warnings = [];
+                      }
+                      
+                      if (!refset.localSet && !refset.moduleId) {
+                        $scope.errors.push('ModuleId must not be empty.');
+                      }
+
+                      if (!refset.name || !refset.description) {
+                        $scope.errors.push('Refset name and description must not be empty.');
+                      }
+                      
+                      if(!refset.version) {
+                        $scope.errors.push('Refset version must not be empty.');
+                      }
+                      
+                      if($scope.errors.length > 0){
+                        return;
                       }
 
                       // Success - validate refset
