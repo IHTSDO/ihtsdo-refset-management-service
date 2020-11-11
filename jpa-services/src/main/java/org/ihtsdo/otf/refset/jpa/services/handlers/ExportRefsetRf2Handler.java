@@ -42,19 +42,21 @@ public class ExportRefsetRf2Handler implements ExportRefsetHandler {
   /* see superclass */
   @Override
   public String getFileName(String betaFileName) {
-    // Strip off the "x" and remove the build date
-    String fileExt = betaFileName.substring(betaFileName.lastIndexOf('.'));
-    String fileName = betaFileName.substring(1, betaFileName.lastIndexOf('_'));
-    return fileName + fileExt;
+    // Strip off the "x" 
+    return betaFileName.substring(1);
   }
 
   @Override
   public String getBetaFileName(Refset refset, String type, String version) {
     String namespace = refset.getProject().getNamespace();
+    String edition = "";
+    if (refset.getProject().getTerminology().contains("-")) {
+    	edition = refset.getProject().getTerminology().substring(refset.getProject().getTerminology().indexOf('-') + 1);
+    }
     // Use "INT" for the namespace if null
-    return "xder2_Refset_" + ConfigUtility.toCamelCase(refset.getName()) + type + "_"
+    return "xder2_Refset_" + ConfigUtility.toCamelCase(refset.getName()) + type + "_" + edition
         + (namespace == null || namespace.isEmpty() ? "INT" : namespace) + "_"
-        + version + "_" + ConfigUtility.DATE_FORMAT5.format(new Date()) + getFileTypeFilter();
+        + version + getFileTypeFilter();
   }
 
   /* see superclass */
