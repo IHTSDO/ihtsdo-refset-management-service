@@ -1428,6 +1428,9 @@ tsApp
                 $scope.addClause = function(refset, clause) {
                   $scope.errors = [];
 
+				  // Get rid of any carriage returns
+				  clause.value.replace(/[\n\r]+/g, ' ');
+
                   // Confirm clauses are unique, skip if not
                   for (var i = 0; i < $scope.newClauses.length; i++) {
                     if ($scope.newClauses[i].value == clause.value) {
