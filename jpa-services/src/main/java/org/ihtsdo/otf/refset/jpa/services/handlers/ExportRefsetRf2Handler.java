@@ -147,7 +147,10 @@ public class ExportRefsetRf2Handler implements ExportRefsetHandler {
     sb.append(refset.getTerminologyId()).append("\t");
     // fake id for now
     sb.append(refset.getTerminologyId()).append("\t");
-    sb.append(refset.computeDefinition(inclusions, exclusions));
+    String computedDefinition = refset.computeDefinition(inclusions, exclusions);
+    Logger.getLogger(getClass())
+    .info("Computed definition: " + computedDefinition);
+    sb.append(computedDefinition);
     sb.append("\r\n");
 
     return new ByteArrayInputStream(sb.toString().getBytes("UTF-8"));
