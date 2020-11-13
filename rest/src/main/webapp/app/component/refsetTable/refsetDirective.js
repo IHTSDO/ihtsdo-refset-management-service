@@ -2550,17 +2550,19 @@ tsApp
                   return $scope.allSelected;
                 }
                 
-                
-                // Handle export
-                $scope.export = function() {
-                  
-                  //  Clear out any previous warnings
-                  $scope.warnings = [];
-                  
-                  // Get release artifacts for all selected refsets
-                  for (var i = 0; i < $scope.filteredRefsets.length; i++) {
-                    if($scope.selectedRefsetIds.includes($scope.filteredRefsets[i].id)){
-                      releaseService.findRefsetReleasesForQuery($scope.filteredRefsets[i].id, null, null).then(
+				//Running all downloads simultaneously resulted in many files not downloading.
+				//Space out the downloads by 1/2 second to resolve
+				function delay(timeToWait) {
+				  return new Promise(resolve => setTimeout(resolve, timeToWait));
+				}                
+
+				async function delayedExport(refsetId, timeToWait) {
+				  // notice that we can await a function
+				  // that returns a promise
+				  await delay(timeToWait);
+		
+		            if($scope.selectedRefsetIds.includes(refsetId)){
+                      releaseService.findRefsetReleasesForQuery(refsetId).then(
                         function(data) {
                           var refsetReleaseInfo = data.releaseInfos[0];
                           var artifacts = refsetReleaseInfo.artifacts;
@@ -2577,12 +2579,23 @@ tsApp
                           
                           // Download the files to the user's computer
                           for(var j = 0; j < artifacts.length; j++){
-                            if($scope.selectedFileType == 'Both' || artifacts[j].name.includes($scope.selectedFileType)){
+                            if($scope.selectedFileType == 'Both' || artifacts[j].name.includes($scope.selectedFileType + "_")){
                               releaseService.exportReleaseArtifact(artifacts[j]);
                             }
                           }
                         });
                     }
+				}
+
+                // Handle export
+                $scope.export = function() {
+                  
+                  //  Clear out any previous warnings
+                  $scope.warnings = [];
+                  
+                  // Get release artifacts for all selected refsets
+                  for (var i = 0; i < $scope.filteredRefsets.length; i++) {
+					delayedExport($scope.filteredRefsets[i].id, i*500);
                   }
                 };
 
