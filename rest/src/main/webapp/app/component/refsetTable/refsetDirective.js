@@ -2561,7 +2561,6 @@ tsApp
 				  // that returns a promise
 				  await delay(timeToWait);
 		
-		            if($scope.selectedRefsetIds.includes(refsetId)){
                       releaseService.findRefsetReleasesForQuery(refsetId).then(
                         function(data) {
                           var refsetReleaseInfo = data.releaseInfos[0];
@@ -2584,7 +2583,6 @@ tsApp
                             }
                           }
                         });
-                    }
 				}
 
                 // Handle export
@@ -2594,8 +2592,12 @@ tsApp
                   $scope.warnings = [];
                   
                   // Get release artifacts for all selected refsets
+				  var downloadCount = 0;
                   for (var i = 0; i < $scope.filteredRefsets.length; i++) {
-					delayedExport($scope.filteredRefsets[i].id, i*500);
+			      	if($scope.selectedRefsetIds.includes($scope.filteredRefsets[i].id)){
+						delayedExport($scope.filteredRefsets[i].id, downloadCount*500);
+						downloadCount++;
+					}
                   }
                 };
 
