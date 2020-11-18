@@ -132,7 +132,7 @@ public class PerformTranslationPublishAlgorithm extends TranslationServiceJpa
       ExportRefsetHandler handler =
           getExportRefsetHandler(artifact.getIoHandlerId());
       // Convert beta filename to published filename
-      artifact.setName(handler.getFileName(artifact.getName()));
+      artifact.setName(handler.getFileName(artifact.getName(), null));
       updateReleaseArtifact(artifact);
     }
 

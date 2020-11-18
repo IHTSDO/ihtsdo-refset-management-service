@@ -37,7 +37,7 @@ public class ExportRefsetRf2WithNameHandler extends ExportRefsetRf2Handler {
 
   /* see superclass */
   @Override
-  public String getFileName(String betaFileName) {
+  public String getFileName(String betaFileName, Refset refset) {
     // Strip off the "x" and remove the build date
     String fileExt = betaFileName.substring(betaFileName.lastIndexOf('.'));
     String fileName = betaFileName.substring(1, betaFileName.lastIndexOf('_'));
