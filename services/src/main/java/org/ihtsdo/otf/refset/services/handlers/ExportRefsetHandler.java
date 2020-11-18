@@ -35,9 +35,10 @@ public interface ExportRefsetHandler extends Configurable {
    * Returns the release file name computed from the beta file name.
    *
    * @param betaFileName the beta file name
+   * @param refset the refset
    * @return the file name
    */
-  public String getFileName(String betaFileName);
+  public String getFileName(String betaFileName, Refset refset);
 
   /**
    * Returns the beta file name.

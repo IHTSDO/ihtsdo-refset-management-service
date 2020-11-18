@@ -10,6 +10,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.Refset;
@@ -41,7 +42,17 @@ public class ExportRefsetRf2Handler implements ExportRefsetHandler {
 
   /* see superclass */
   @Override
-  public String getFileName(String betaFileName) {
+  public String getFileName(String betaFileName, Refset refset) {
+	// if the betaFileName still has the old formatting ending with a "yyyyMMddhhmmss" date, it needs to be fixed
+	if (Pattern.matches(".*_[0-9]{14}.txt", betaFileName)) {
+		betaFileName = betaFileName.substring(0, betaFileName.lastIndexOf("_")) + ".txt";
+		String edition = "";
+	    if (refset != null && refset.getProject().getTerminology().contains("-")) {
+	    	edition = refset.getProject().getTerminology().substring(refset.getProject().getTerminology().indexOf('-') + 1);
+	    }
+		betaFileName = betaFileName.replace("Delta_", "SimpleRefsetDelta_" + edition);	 
+		betaFileName = betaFileName.replace("ActiveSnapshot_", "ActiveSnapshot_" + edition);
+	}
     // Strip off the "x" 
     return betaFileName.substring(1);
   }
