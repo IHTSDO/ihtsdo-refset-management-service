@@ -115,7 +115,7 @@
             ng-repeat="error in errors">{{error}}</div>
         </td>
       </tr>
-      <tr ng-repeat="warning in warnings">
+      <tr ng-show="warnings.length > 0">
         <td colspan="2">
           <div class="alert alert-warning" ng-repeat="warning in warnings">{{warning}}</div>
         </td>
