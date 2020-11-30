@@ -155,12 +155,6 @@ tsApp
                             }
                           }
 
-                          // Force the initial choice to be "AUTHOR" instead of
-                          // "LEAD"/"ADMIN"
-                          if (['LEAD','ADMIN'].includes($scope.projects.role)
-                            && !$scope.user.userPreferences.lastProjectRole) {
-                            $scope.projects.role = 'AUTHOR';
-                          }
                           if ($scope.user.userPreferences.lastProjectRole) {
                             $scope.projects.role = $scope.user.userPreferences.lastProjectRole;
                           }
