@@ -79,7 +79,6 @@
                 title="Edit" class="noul material-icons md-18">edit</i>
 
               <i ng-show="user.applicationRole == 'ADMIN'"
-                confirm="Are you sure you want to remove the project ({{project.name}})?"
                 ng-click="removeProject(project); $event.stopPropagation()"
                 title="Delete" class="noul material-icons md-18">delete</i>
 
@@ -152,7 +151,6 @@
                 ng-click="openEditUserModal(localUser); $event.stopPropagation()"
                 title="Edit" class="noul material-icons md-18">edit</i>
               <i ng-if="user.applicationRole == 'ADMIN'"
-                confirm="Are you sure you want to remove the user ({{localUser.userName}})?"
                 ng-click="removeUser(localUser); $event.stopPropagation()"
                 title="Delete" class="noul material-icons md-18">delete</i>
             </td>
