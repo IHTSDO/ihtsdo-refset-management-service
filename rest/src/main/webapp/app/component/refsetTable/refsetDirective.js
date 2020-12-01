@@ -726,6 +726,9 @@ tsApp
 
               // Remove a refset
               $scope.removeRefset = function(refset) {
+                if(!confirm("Are you sure you want to delete this refset?")) {
+                  return;
+                }
                 workflowService.findAssignedRefsets($scope.projects.role, $scope.project.id, null, {
                   startIndex : 0,
                   maxResults : 1,
