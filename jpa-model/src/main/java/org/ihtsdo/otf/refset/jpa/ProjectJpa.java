@@ -33,19 +33,33 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
+import org.apache.lucene.analysis.core.KeywordTokenizerFactory;
+import org.apache.lucene.analysis.core.LowerCaseFilterFactory;
+import org.apache.lucene.analysis.core.StopFilterFactory;
 import org.apache.lucene.analysis.core.WhitespaceAnalyzer;
+import org.apache.lucene.analysis.miscellaneous.WordDelimiterFilterFactory;
+import org.apache.lucene.analysis.ngram.EdgeNGramFilterFactory;
+import org.apache.lucene.analysis.ngram.NGramFilterFactory;
+import org.apache.lucene.analysis.pattern.PatternReplaceFilterFactory;
+import org.apache.lucene.analysis.standard.StandardFilterFactory;
+import org.apache.lucene.analysis.standard.StandardTokenizerFactory;
 import org.hibernate.envers.Audited;
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Analyzer;
+import org.hibernate.search.annotations.AnalyzerDef;
+import org.hibernate.search.annotations.AnalyzerDefs;
 import org.hibernate.search.annotations.DateBridge;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.FieldBridge;
 import org.hibernate.search.annotations.Fields;
 import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Indexed;
+import org.hibernate.search.annotations.Parameter;
 import org.hibernate.search.annotations.Resolution;
 import org.hibernate.search.annotations.SortableField;
 import org.hibernate.search.annotations.Store;
+import org.hibernate.search.annotations.TokenFilterDef;
+import org.hibernate.search.annotations.TokenizerDef;
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.User;
@@ -66,6 +80,45 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 }))
 @Audited
 @Indexed
+@AnalyzerDefs({
+    @AnalyzerDef(name = "projectNoStopWord", tokenizer = @TokenizerDef(factory = StandardTokenizerFactory.class), filters = {
+        @TokenFilterDef(factory = StandardFilterFactory.class),
+        @TokenFilterDef(factory = LowerCaseFilterFactory.class)
+    }), @AnalyzerDef(name = "projectAutocompleteEdgeAnalyzer",
+        // Split input into tokens according to tokenizer
+        tokenizer = @TokenizerDef(factory = KeywordTokenizerFactory.class), filters = {
+            // Normalize token text to lowercase, as the user is unlikely to
+            // care about casing when searching for matches
+            @TokenFilterDef(factory = PatternReplaceFilterFactory.class, params = {
+                @Parameter(name = "pattern", value = "([^a-zA-Z0-9\\.])"),
+                @Parameter(name = "replacement", value = " "),
+                @Parameter(name = "replace", value = "all")
+            }), @TokenFilterDef(factory = LowerCaseFilterFactory.class),
+            @TokenFilterDef(factory = StopFilterFactory.class),
+            // Index partial words starting at the front, so we can provide
+            // Autocomplete functionality
+            @TokenFilterDef(factory = EdgeNGramFilterFactory.class, params = {
+                @Parameter(name = "minGramSize", value = "3"),
+                @Parameter(name = "maxGramSize", value = "255")
+            })
+        }), @AnalyzerDef(name = "projectAutocompleteNGramAnalyzer",
+            // Split input into tokens according to tokenizer
+            tokenizer = @TokenizerDef(factory = StandardTokenizerFactory.class), filters = {
+                // Normalize token text to lowercase, as the user is unlikely to
+                // care about casing when searching for matches
+                @TokenFilterDef(factory = WordDelimiterFilterFactory.class),
+                @TokenFilterDef(factory = LowerCaseFilterFactory.class),
+                @TokenFilterDef(factory = NGramFilterFactory.class, params = {
+                    @Parameter(name = "minGramSize", value = "3"),
+                    @Parameter(name = "maxGramSize", value = "5")
+                }),
+                @TokenFilterDef(factory = PatternReplaceFilterFactory.class, params = {
+                    @Parameter(name = "pattern", value = "([^a-zA-Z0-9\\.])"),
+                    @Parameter(name = "replacement", value = " "),
+                    @Parameter(name = "replace", value = "all")
+                })
+            })
+})
 @XmlRootElement(name = "project")
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ProjectJpa implements Project {
@@ -136,7 +189,7 @@ public class ProjectJpa implements Project {
   /** The "stable UUIDs" flag. */
   @Column(nullable = false)
   private boolean stableUUIDs = false;
-  
+
   /** The role map. */
   @ElementCollection
   @MapKeyClass(value = UserJpa.class)
@@ -157,7 +210,7 @@ public class ProjectJpa implements Project {
   @CollectionTable(name = "project_validation_checks")
   private List<String> validationChecks = new ArrayList<>();
 
-  /**  The translation preferred languages for suggestions. */
+  /** The translation preferred languages for suggestions. */
   @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, targetEntity = TranslationExtensionLanguageJpa.class, orphanRemoval = true)
   private List<TranslationExtensionLanguage> translationExtensionLanguages;
 
@@ -166,12 +219,10 @@ public class ProjectJpa implements Project {
   @Temporal(TemporalType.TIMESTAMP)
   private Date inactiveLastModified = new Date();
 
-
   /** The refesh descriptions last modified. */
   @Column(nullable = true)
   @Temporal(TemporalType.TIMESTAMP)
   private Date refeshDescriptionsLastModified = new Date();
-  
 
   /**
    * Instantiates an empty {@link ProjectJpa}.
@@ -262,7 +313,7 @@ public class ProjectJpa implements Project {
   public void setLastModified(Date lastModified) {
     this.lastModified = lastModified;
   }
-  
+
   /* see superclass */
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   @DateBridge(resolution = Resolution.SECOND)
@@ -289,10 +340,11 @@ public class ProjectJpa implements Project {
 
   /* see superclass */
   @Override
-  public void setRefeshDescriptionsLastModified(Date refeshDescriptionsLastModified) {
+  public void setRefeshDescriptionsLastModified(
+    Date refeshDescriptionsLastModified) {
     this.refeshDescriptionsLastModified = refeshDescriptionsLastModified;
-  } 
-  
+  }
+
   /* see superclass */
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   @Override
@@ -400,8 +452,10 @@ public class ProjectJpa implements Project {
   /* see superclass */
   @Override
   @Fields({
-      @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO),
-      @Field(name = "nameSort", index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+      @Field(name = "name", index = Index.YES, store = Store.NO, analyze = Analyze.YES, analyzer = @Analyzer(definition = "projectNoStopWord")),
+      @Field(name = "nameSort", index = Index.YES, analyze = Analyze.NO, store = Store.NO),
+      @Field(name = "nameEdgeNGram", index = Index.YES, store = Store.NO, analyze = Analyze.YES, analyzer = @Analyzer(definition = "projectAutocompleteEdgeAnalyzer")),
+      @Field(name = "nameNGram", index = Index.YES, store = Store.NO, analyze = Analyze.YES, analyzer = @Analyzer(definition = "projectAutocompleteNGramAnalyzer"))
   })
   @SortableField(forField = "nameSort")
   public String getName() {
@@ -444,8 +498,10 @@ public class ProjectJpa implements Project {
   /* see superclass */
   @Override
   @Fields({
-      @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO),
-      @Field(name = "descriptionSort", index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+      @Field(name = "description", index = Index.YES, store = Store.NO, analyze = Analyze.YES, analyzer = @Analyzer(definition = "projectNoStopWord")),
+      @Field(name = "descriptionSort", index = Index.YES, analyze = Analyze.NO, store = Store.NO),
+      @Field(name = "descriptionEdgeNGram", index = Index.YES, store = Store.NO, analyze = Analyze.YES, analyzer = @Analyzer(definition = "projectAutocompleteEdgeAnalyzer")),
+      @Field(name = "descriptionNGram", index = Index.YES, store = Store.NO, analyze = Analyze.YES, analyzer = @Analyzer(definition = "projectAutocompleteNGramAnalyzer"))
   })
   @SortableField(forField = "descriptionSort")
   public String getDescription() {
@@ -460,8 +516,10 @@ public class ProjectJpa implements Project {
 
   /* see superclass */
   @Fields({
-      @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO),
-      @Field(name = "organizationSort", index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+      @Field(name = "organization", index = Index.YES, store = Store.NO, analyze = Analyze.YES, analyzer = @Analyzer(definition = "projectNoStopWord")),
+      @Field(name = "organizationSort", index = Index.YES, analyze = Analyze.NO, store = Store.NO),
+      @Field(name = "organizationEdgeNGram", index = Index.YES, store = Store.NO, analyze = Analyze.YES, analyzer = @Analyzer(definition = "projectAutocompleteEdgeAnalyzer")),
+      @Field(name = "organizationNGram", index = Index.YES, store = Store.NO, analyze = Analyze.YES, analyzer = @Analyzer(definition = "projectAutocompleteNGramAnalyzer"))
   })
   @SortableField(forField = "organizationSort")
   @Override
@@ -615,7 +673,6 @@ public class ProjectJpa implements Project {
     this.translationExtensionLanguages.remove(translationExtensionLanguage);
   }
 
-
   /* see superclass */
   @Override
   public boolean isStableUUIDs() {
@@ -627,8 +684,7 @@ public class ProjectJpa implements Project {
   public void setStableUUIDs(boolean stableUUIDs) {
     this.stableUUIDs = stableUUIDs;
   }
-  
-  
+
   /* see superclass */
   @Override
   public boolean equals(Object obj) {
@@ -702,15 +758,16 @@ public class ProjectJpa implements Project {
   @Override
   public String toString() {
     return "ProjectJpa [id=" + id + ", lastModified=" + lastModified
-        + ", lastModifiedBy=" + lastModifiedBy + ", inactiveLastModified=" + inactiveLastModified 
-        + ", name=" + name + ", namespace=" + namespace + ", moduleId=" + moduleId
-        + ", organization=" + organization + ", description=" + description
-        + ", terminology=" + terminology + ", version=" + version
-        + ", terminologyHandlerKey=" + terminologyHandlerKey + ", workflowPath="
-        + workflowPath + ", exclusionClause=" + exclusionClause
-        + ", userRoleMap=" + userRoleMap + ", validationChecks="
-        + validationChecks + ", translationExtensionLanguages="
-        + translationExtensionLanguages + "], stableUUIDs=" + stableUUIDs;
+        + ", lastModifiedBy=" + lastModifiedBy + ", inactiveLastModified="
+        + inactiveLastModified + ", name=" + name + ", namespace=" + namespace
+        + ", moduleId=" + moduleId + ", organization=" + organization
+        + ", description=" + description + ", terminology=" + terminology
+        + ", version=" + version + ", terminologyHandlerKey="
+        + terminologyHandlerKey + ", workflowPath=" + workflowPath
+        + ", exclusionClause=" + exclusionClause + ", userRoleMap="
+        + userRoleMap + ", validationChecks=" + validationChecks
+        + ", translationExtensionLanguages=" + translationExtensionLanguages
+        + "], stableUUIDs=" + stableUUIDs;
   }
 
 }

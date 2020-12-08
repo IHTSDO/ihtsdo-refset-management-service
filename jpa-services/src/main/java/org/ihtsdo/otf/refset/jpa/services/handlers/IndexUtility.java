@@ -101,8 +101,8 @@ public class IndexUtility {
 		// Avoid ngram and sort fields (these have special uses)
 		Set<String> exclusions = new HashSet<>();
 		// exclusions.add("Sort");
-		exclusions.add("nGram");
-		exclusions.add("NGram");
+		// exclusions.add("nGram");
+		// exclusions.add("NGram");
 
 		// When looking for default fields, exclude definitions and branches
 		Set<String> stringExclusions = new HashSet<>();

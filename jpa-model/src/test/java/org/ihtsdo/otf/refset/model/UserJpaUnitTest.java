@@ -147,6 +147,8 @@ public class UserJpaUnitTest extends ModelUnitSupport {
     tester.include("name");
     tester.include("projectAnyRole");
     tester.include("projectRoleMap");
+    tester.include("nameEdgeNGram");
+    tester.include("nameNGram");
     assertTrue(tester.testAnalyzedIndexedFields());
 
     // Test non analyzed fields

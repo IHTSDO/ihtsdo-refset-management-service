@@ -156,10 +156,16 @@ public class ProjectJpaUnitTest extends ModelUnitSupport {
     // Test analyzed fields
     IndexedFieldTester tester = new IndexedFieldTester(object);
     tester.include("name");
+    tester.include("nameEdgeNGram");
+    tester.include("nameNGram");
     tester.include("description");
+    tester.include("descriptionEdgeNGram");
+    tester.include("descriptionNGram");
     tester.include("userRoleMap");
     tester.include("userAnyRole");
     tester.include("organization");
+    tester.include("organizationEdgeNGram");
+    tester.include("organizationNGram");
     assertTrue(tester.testAnalyzedIndexedFields());
 
     // Test non analyzed fields

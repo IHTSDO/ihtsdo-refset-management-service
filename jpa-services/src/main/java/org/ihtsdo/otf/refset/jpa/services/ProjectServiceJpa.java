@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 import javax.persistence.NoResultException;
 
@@ -22,10 +23,25 @@ import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.ProjectList;
 import org.ihtsdo.otf.refset.jpa.ProjectJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ProjectListJpa;
+import org.ihtsdo.otf.refset.jpa.services.handlers.IndexUtility;
 import org.ihtsdo.otf.refset.services.ProjectService;
 import org.ihtsdo.otf.refset.services.handlers.IdentifierAssignmentHandler;
 import org.ihtsdo.otf.refset.services.handlers.TerminologyHandler;
 import org.ihtsdo.otf.refset.services.handlers.WorkflowListener;
+
+import org.apache.lucene.index.Term;
+import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
+import org.apache.lucene.queryparser.classic.QueryParser;
+import org.apache.lucene.queryparser.classic.QueryParserBase;
+import org.apache.lucene.search.BooleanClause;
+import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.TermQuery;
+import org.hibernate.search.SearchFactory;
+import org.hibernate.search.jpa.FullTextEntityManager;
+import org.hibernate.search.jpa.FullTextQuery;
+import org.hibernate.search.jpa.Search;
+import org.hibernate.search.query.dsl.QueryBuilder;
 
 /**
  * JPA enabled implementation of {@link ProjectService}.
@@ -232,24 +248,31 @@ public class ProjectServiceJpa extends RootServiceJpa
   public ProjectList findProjectsForQuery(String query, PfsParameter pfs)
     throws Exception {
     Logger.getLogger(getClass())
-        .info("Project Service - find projects " + "/" + query);
+        .info("Project Service - find projects " + "/ query [" + query + "] pfs ["+ pfs +"]");
 
-    try {
-      int[] totalCt = new int[1];
-      List<Project> list = (List<Project>) getQueryResults(
-          query == null || query.isEmpty() ? "id:[* TO *]" : query,
-          ProjectJpa.class, ProjectJpa.class, pfs, totalCt);
-      ProjectList result = new ProjectListJpa();
-      result.setTotalCount(totalCt[0]);
-      result.setObjects(list);
-      for (Project project : result.getObjects()) {
-        handleLazyInit(project);
+    if (query == null || query.replace("*", "").length() < 3) {
+      try {
+        int[] totalCt = new int[1];
+        List<Project> list = (List<Project>) getQueryResults(
+            query == null || query.isEmpty() ? "id:[* TO *]" : query,
+            ProjectJpa.class, ProjectJpa.class, pfs, totalCt);
+        ProjectList result = new ProjectListJpa();
+        result.setTotalCount(totalCt[0]);
+        result.setObjects(list);
+        for (Project project : result.getObjects()) {
+          handleLazyInit(project);
+        }
+        return result;
+      } catch (ParseException e) {
+        // On parse error, return empty results
+        return new ProjectListJpa();
       }
-      return result;
-    } catch (ParseException e) {
-      // On parse error, return empty results
-      return new ProjectListJpa();
+    } else {
+      Logger.getLogger(getClass())
+          .info("Project Service - autocomplete project name " + query);
+      return autocompleteHelper(query, pfs, ProjectJpa.class);
     }
+    
   }
 
   /**
@@ -409,6 +432,67 @@ public class ProjectServiceJpa extends RootServiceJpa
     handler.setHeaders(headers);
     handler.test(terminology, version);
     return true;
+  }
+  
+  /* see superclass */
+  @Override
+  public ProjectList autocompleteProjectName(String projectName, PfsParameter pfs) throws Exception {
+    Logger.getLogger(getClass()).info("Project Service - autocomplete project name "+ projectName);
+    return autocompleteHelper(projectName,pfs, ProjectJpa.class);
+  }
+  
+  /**
+   * 
+   * @param <T>
+   * @param name
+   * @param clazz
+   * @return
+   */
+  private <T extends Project> ProjectList autocompleteHelper(String searchTerm,
+    PfsParameter pfs, Class<T> clazz) throws Exception {
+
+    if (searchTerm == null) {
+      return new ProjectListJpa();
+    }
+
+    final String EDGE_NGRAM_INDEX = "nameEdgeNGram";
+    final String NGRAM_INDEX = "nameNGram";
+
+    final FullTextEntityManager fullTextEntityManager =
+        Search.getFullTextEntityManager(manager);
+
+    // final QueryParser queryParser = new MultiFieldQueryParser(
+    // IndexUtility.getIndexedFieldNames(clazz, true).toArray(new String[] {}),
+    // fullTextEntityManager.getSearchFactory().getAnalyzer(clazz));
+
+    final QueryBuilder queryBuilder = fullTextEntityManager.getSearchFactory()
+        .buildQueryBuilder().forEntity(clazz).get();
+
+    final Query query = queryBuilder.phrase().withSlop(2).onField(NGRAM_INDEX)
+        .andField(EDGE_NGRAM_INDEX).boostedTo(0)
+        .andField("name").boostedTo(5).sentence(searchTerm.toLowerCase())
+        .createQuery();
+
+    final BooleanQuery.Builder booleanQuery = new BooleanQuery.Builder();
+    booleanQuery.add(query, BooleanClause.Occur.MUST);
+    
+    final FullTextQuery fullTextQuery = IndexUtility.applyPfsToLuceneQuery(
+        clazz, clazz, booleanQuery.build().toString(), pfs, manager);
+
+    @SuppressWarnings("unchecked")
+    final List<Project> results = fullTextQuery.getResultList();
+
+    final ProjectList list = new ProjectListJpa();
+    list.setTotalCount(fullTextQuery.getResultSize());
+    for (Project project : results) {
+      handleLazyInit(project);
+    }
+    // exclude duplicates
+    list.getObjects()
+        .addAll(results.stream().distinct().collect(Collectors.toList()));
+
+    return list;
+
   }
 
 }

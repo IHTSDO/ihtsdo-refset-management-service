@@ -9,21 +9,34 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 import javax.persistence.NoResultException;
 
 import org.apache.log4j.Logger;
 import org.apache.lucene.queryparser.classic.ParseException;
+import org.apache.lucene.search.BooleanClause;
+import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.Query;
+import org.hibernate.search.jpa.FullTextEntityManager;
+import org.hibernate.search.jpa.FullTextQuery;
+import org.hibernate.search.jpa.Search;
+import org.hibernate.search.query.dsl.QueryBuilder;
+import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.UserPreferences;
 import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
+import org.ihtsdo.otf.refset.helpers.ProjectList;
 import org.ihtsdo.otf.refset.helpers.UserList;
+import org.ihtsdo.otf.refset.jpa.ProjectJpa;
 import org.ihtsdo.otf.refset.jpa.UserJpa;
 import org.ihtsdo.otf.refset.jpa.UserPreferencesJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.ProjectListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.UserListJpa;
+import org.ihtsdo.otf.refset.jpa.services.handlers.IndexUtility;
 import org.ihtsdo.otf.refset.services.ProjectService;
 import org.ihtsdo.otf.refset.services.SecurityService;
 import org.ihtsdo.otf.refset.services.handlers.SecurityServiceHandler;
@@ -374,21 +387,27 @@ public class SecurityServiceJpa extends RootServiceJpa
     Logger.getLogger(getClass())
         .info("Security Service - find users " + query + ", pfs= " + pfs);
 
-    try {
-      int[] totalCt = new int[1];
-      final List<User> list = (List<User>) getQueryResults(
-          query == null || query.isEmpty() ? "id:[* TO *]" : query,
-          UserJpa.class, UserJpa.class, pfs, totalCt);
-      final UserList result = new UserListJpa();
-      result.setTotalCount(totalCt[0]);
-      result.setObjects(list);
-      for (final User user : result.getObjects()) {
-        handleLazyInit(user);
+    if (query == null || query.replace("*", "").length() < 3) {
+      try {
+        int[] totalCt = new int[1];
+        final List<User> list = (List<User>) getQueryResults(
+            query == null || query.isEmpty() ? "id:[* TO *]" : query,
+            UserJpa.class, UserJpa.class, pfs, totalCt);
+        final UserList result = new UserListJpa();
+        result.setTotalCount(totalCt[0]);
+        result.setObjects(list);
+        for (final User user : result.getObjects()) {
+          handleLazyInit(user);
+        }
+        return result;
+      } catch (ParseException e) {
+        // On parse error, return empty results
+        return new UserListJpa();
       }
-      return result;
-    } catch (ParseException e) {
-      // On parse error, return empty results
-      return new UserListJpa();
+    } else {
+      Logger.getLogger(getClass())
+          .info("Security Service - autocomplete users by name " + query);
+      return autocompleteHelper(query, pfs, UserJpa.class);
     }
   }
 
@@ -491,5 +510,62 @@ public class SecurityServiceJpa extends RootServiceJpa
       user.getUserPreferences().getLanguageDescriptionTypes().get(0)
           .getDescriptionType().getName();
     }
+  }
+  
+  
+  /* see superclass */
+  @Override
+  public UserList autocompleteUsersName(String name, PfsParameter pfs) throws Exception {
+    Logger.getLogger(getClass()).info("Security Service - autocomplete user's name "+ name);
+    return autocompleteHelper(name, pfs, UserJpa.class);
+  }
+  
+  /**
+   * 
+   * @param <T>
+   * @param name
+   * @param clazz
+   * @return
+   */
+  private <T extends User> UserList autocompleteHelper(String name,
+    PfsParameter pfs, Class<T> clazz) throws Exception {
+
+    if (name == null) {
+      return new UserListJpa();
+    }
+
+    final String EDGE_NGRAM_INDEX = "nameEdgeNGram";
+    final String NGRAM_INDEX = "nameNGram";
+
+    final FullTextEntityManager fullTextEntityManager =
+        Search.getFullTextEntityManager(manager);
+
+    final QueryBuilder queryBuilder = fullTextEntityManager.getSearchFactory()
+        .buildQueryBuilder().forEntity(clazz).get();
+
+    final Query query = queryBuilder.phrase().withSlop(2).onField(NGRAM_INDEX)
+        .andField(EDGE_NGRAM_INDEX).boostedTo(0).andField("name").boostedTo(5)
+        .sentence(name.toLowerCase()).createQuery();
+
+    final BooleanQuery.Builder booleanQuery = new BooleanQuery.Builder();
+    booleanQuery.add(query, BooleanClause.Occur.MUST);
+
+    final FullTextQuery fullTextQuery = IndexUtility.applyPfsToLuceneQuery(
+        clazz, clazz, booleanQuery.build().toString(), pfs, manager);
+
+    @SuppressWarnings("unchecked")
+    final List<User> results = fullTextQuery.getResultList();
+
+    final UserList list = new UserListJpa();
+    list.setTotalCount(fullTextQuery.getResultSize());
+    for (User user : results) {
+      handleLazyInit(user);
+    }
+    // exclude duplicates
+    list.getObjects()
+        .addAll(results.stream().distinct().collect(Collectors.toList()));
+
+    return list;
+
   }
 }

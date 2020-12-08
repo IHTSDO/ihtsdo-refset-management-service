@@ -246,7 +246,7 @@ tsApp
 
           // Make POST call
           gpService.increment();
-          $http.post(projectUrl + 'projects?query=' + utilService.prepQuery(query),
+          $http.post(projectUrl + 'projects?query=' + utilService.prepQuery(query, ''),
             utilService.prepPfs(pfs)).then(
           // success
           function(response) {

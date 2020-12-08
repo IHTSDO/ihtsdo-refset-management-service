@@ -26,17 +26,31 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
+import org.apache.lucene.analysis.core.KeywordTokenizerFactory;
+import org.apache.lucene.analysis.core.LowerCaseFilterFactory;
+import org.apache.lucene.analysis.core.StopFilterFactory;
 import org.apache.lucene.analysis.core.WhitespaceAnalyzer;
+import org.apache.lucene.analysis.miscellaneous.WordDelimiterFilterFactory;
+import org.apache.lucene.analysis.ngram.EdgeNGramFilterFactory;
+import org.apache.lucene.analysis.ngram.NGramFilterFactory;
+import org.apache.lucene.analysis.pattern.PatternReplaceFilterFactory;
+import org.apache.lucene.analysis.standard.StandardFilterFactory;
+import org.apache.lucene.analysis.standard.StandardTokenizerFactory;
 import org.hibernate.envers.Audited;
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Analyzer;
+import org.hibernate.search.annotations.AnalyzerDef;
+import org.hibernate.search.annotations.AnalyzerDefs;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.FieldBridge;
 import org.hibernate.search.annotations.Fields;
 import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Indexed;
+import org.hibernate.search.annotations.Parameter;
 import org.hibernate.search.annotations.SortableField;
 import org.hibernate.search.annotations.Store;
+import org.hibernate.search.annotations.TokenFilterDef;
+import org.hibernate.search.annotations.TokenizerDef;
 import org.hibernate.search.bridge.builtin.EnumBridge;
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.User;
@@ -55,6 +69,44 @@ import org.ihtsdo.otf.refset.jpa.helpers.ProjectRoleMapAdapter;
 }))
 @Audited
 @Indexed
+@AnalyzerDefs({
+  @AnalyzerDef(name = "userNoStopWord", tokenizer = @TokenizerDef(factory = StandardTokenizerFactory.class), filters = {
+      @TokenFilterDef(factory = StandardFilterFactory.class),
+      @TokenFilterDef(factory = LowerCaseFilterFactory.class)
+  }),
+  @AnalyzerDef(name = "userAutocompleteEdgeAnalyzer",
+      // Split input into tokens according to tokenizer
+      tokenizer = @TokenizerDef(factory = KeywordTokenizerFactory.class), filters = {
+          // Normalize token text to lowercase, as the user is unlikely to
+          // care about casing when searching for matches
+          @TokenFilterDef(factory = PatternReplaceFilterFactory.class, params = {
+              @Parameter(name = "pattern", value = "([^a-zA-Z0-9\\.])"),
+              @Parameter(name = "replacement", value = " "),
+              @Parameter(name = "replace", value = "all")
+          }), @TokenFilterDef(factory = LowerCaseFilterFactory.class), @TokenFilterDef(factory = StopFilterFactory.class),
+          // Index partial words starting at the front, so we can provide
+          // Autocomplete functionality
+          @TokenFilterDef(factory = EdgeNGramFilterFactory.class, params = {
+              @Parameter(name = "minGramSize", value = "3"),
+              @Parameter(name = "maxGramSize", value = "255")
+          })
+      }), @AnalyzerDef(name = "userAutocompleteNGramAnalyzer",
+          // Split input into tokens according to tokenizer
+          tokenizer = @TokenizerDef(factory = StandardTokenizerFactory.class), filters = {
+              // Normalize token text to lowercase, as the user is unlikely to
+              // care about casing when searching for matches
+              @TokenFilterDef(factory = WordDelimiterFilterFactory.class),
+              @TokenFilterDef(factory = LowerCaseFilterFactory.class),
+              @TokenFilterDef(factory = NGramFilterFactory.class, params = {
+                  @Parameter(name = "minGramSize", value = "3"),
+                  @Parameter(name = "maxGramSize", value = "5")
+              }), @TokenFilterDef(factory = PatternReplaceFilterFactory.class, params = {
+                  @Parameter(name = "pattern", value = "([^a-zA-Z0-9\\.])"),
+                  @Parameter(name = "replacement", value = " "),
+                  @Parameter(name = "replace", value = "all")
+              })
+          })
+})
 @XmlRootElement(name = "user")
 public class UserJpa implements User {
 
@@ -152,8 +204,10 @@ public class UserJpa implements User {
   /* see superclass */
   @Override
   @Fields({
-      @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO),
-      @Field(name = "nameSort", index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+      @Field(name = "name", index = Index.YES, store = Store.NO, analyze = Analyze.YES, analyzer = @Analyzer(definition = "userNoStopWord")),
+      @Field(name = "nameSort", index = Index.YES, analyze = Analyze.NO, store = Store.NO),
+      @Field(name = "nameEdgeNGram", index = Index.YES, store = Store.NO, analyze = Analyze.YES, analyzer = @Analyzer(definition = "userAutocompleteEdgeAnalyzer")),
+      @Field(name = "nameNGram", index = Index.YES, store = Store.NO, analyze = Analyze.YES, analyzer = @Analyzer(definition = "userAutocompleteNGramAnalyzer"))
   })
   @SortableField(forField = "nameSort")
   public String getName() {
