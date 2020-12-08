@@ -285,6 +285,9 @@ tsApp
 
         // Removes a project
         $scope.removeProject = function(project) {
+          if(!confirm("Are you sure you want to remove this project?")) {
+            return;
+          }
           // check for users
           if (project.userRoleMap != null && project.userRoleMap != undefined
             && Object.keys(project.userRoleMap).length > 0) {
@@ -324,6 +327,9 @@ tsApp
 
         // Removes a user
         $scope.removeUser = function(user) {
+          if(!confirm("Are you sure you want to delete this user?")) {
+            return;
+          }
           if (user.projectRoleMap && Object.keys(user.projectRoleMap).length > 0) {
             window.alert('You can not delete a user that is assigned to a project -'
               + 'Remove this user from all projects before deleting it');

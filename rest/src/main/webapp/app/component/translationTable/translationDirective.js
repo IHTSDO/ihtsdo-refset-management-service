@@ -568,6 +568,9 @@ tsApp
 
               // Remove a translation
               $scope.removeTranslation = function(translation) {
+                if(!confirm("Are you sure you want to delete this translation?")) {
+                  return;
+                }
 
                 workflowService
                   .findAssignedConcepts($scope.projects.role, $scope.project.id, translation.id,
@@ -636,6 +639,9 @@ tsApp
 
               // Remove concept
               $scope.removeConcept = function(translation, concept) {
+                if(!confirm("Are you sure you want to delete this concept?")) {
+                  return;
+                }
                 translationService.removeTranslationConcept(concept.id).then(
                 // Success
                 function() {
@@ -915,6 +921,9 @@ tsApp
 
               // Clear spelling dictionary
               $scope.clearSpellingDictionary = function(translation) {
+                if(!confirm("Are you sure you want to clear this dictionary?")) {
+                  return;
+                }
                 translationService.clearSpellingDictionary(translation.id).then(function(data) {
                   translationService.fireTranslationChanged(translation);
                 });
