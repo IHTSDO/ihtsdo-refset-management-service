@@ -26,7 +26,7 @@
           <span ng-show="action != 'Add'">{{user.name}}</span>
         </td>
       </tr>
-      <tr ng-if="applicationRole == 'ADMIN'">
+      <tr ng-show="applicationRole == 'ADMIN'">
         <td>
           <b>Email</b>
         </td>
@@ -35,7 +35,7 @@
           <span ng-show="action != 'Add'">{{user.email}}</span>
         </td>
       </tr>
-      <tr ng-if="applicationRole == 'ADMIN'">
+      <tr ng-show="applicationRole == 'ADMIN'">
         <td>
           <b>Application Role</b>
         </td>
