@@ -105,6 +105,7 @@ tsApp
 
         // Fire a 'projectChanged' event after looking up role
         $scope.setProject = function(project) {
+          
           $scope.project = project;
           if (!$scope.project) {
             return;
@@ -113,12 +114,8 @@ tsApp
           // Lookup terminology info for this project
           $scope.getTerminologyMetadata(project);
 
+          var projectRole = $scope.user.userPreferences.lastProjectRole;
           // Only save lastProjectRole if lastProject is the same
-          if ($scope.user.userPreferences.lastProjectId != $scope.project.id) {
-            $scope.user.userPreferences.lastProjectRole = null;
-            $scope.user.userPreferences.lastRefsetId = null;
-            $scope.user.userPreferences.lastTranslationId = null;
-          }
           $scope.user.userPreferences.lastProjectId = $scope.project.id;
 
           // Lookup workflow config for this project
@@ -155,20 +152,18 @@ tsApp
                             }
                           }
 
-                          if ($scope.user.userPreferences.lastProjectRole) {
-                            $scope.projects.role = $scope.user.userPreferences.lastProjectRole;
-                          }
+                          $scope.projects.role = projectRole;
 
-                          // ensure that user's role is allowed on refset tab - if not, assign user to be AUTHOR
+                          // ensure that user's role is allowed on refset tab - if not, assign user to default role
                           var found = false;
-                          for (var j = 0; j < availableRoles.length; j++) {
-                            if ($scope.projects.role == availableRoles[j]) {
+                          for (var j = 0; j < $scope.roleOptions.length; j++) {
+                            if ($scope.projects.role == $scope.roleOptions[j]) {
                               found = true;
                               break;
                             }
                           }
                           if (!found) {
-                            $scope.projects.role = 'AUTHOR';
+                            $scope.projects.role = $scope.projects.assignedUsers[i].projectRoleMap[$scope.project.id];
                           }
                           break;
                         }
