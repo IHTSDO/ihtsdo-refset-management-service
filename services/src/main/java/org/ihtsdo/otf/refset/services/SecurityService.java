@@ -151,4 +151,14 @@ public interface SecurityService extends RootService {
    * @param user the user
    */
   public void handleLazyInit(User user);
+  
+  /**
+   * Retrieve a list of users with an matching name
+   * 
+   * @param name the name
+   * @param pfs the pfs
+   * @return UserList - a list of users matching the name
+   * @throws Exception the exception
+   */
+  public UserList autocompleteUsersName(String name, PfsParameter pfs) throws Exception;
 }

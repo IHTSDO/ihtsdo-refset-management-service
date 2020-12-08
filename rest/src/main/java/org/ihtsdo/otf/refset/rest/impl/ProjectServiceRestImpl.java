@@ -533,7 +533,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     throws Exception {
 
     Logger.getLogger(getClass())
-        .info("RESTful call POST (Project): find projects for query, " + pfs);
+        .info("RESTful call POST (Project): find projects for query [" + query + "] pfs [" + pfs + "]");
 
     final ProjectService projectService = new ProjectServiceJpa();
     try {
@@ -541,6 +541,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
           UserRole.VIEWER);
 
       return projectService.findProjectsForQuery(query, pfs);
+      
     } catch (Exception e) {
       handleException(e, "trying find projects for query");
       return null;

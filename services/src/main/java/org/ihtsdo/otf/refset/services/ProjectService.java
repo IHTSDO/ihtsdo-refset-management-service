@@ -159,4 +159,12 @@ public interface ProjectService extends RootService {
    */
   public boolean testHandlerUrl(String key, String url, String terminology,
     String version) throws Exception;
+  
+  /**
+   * 
+   * @param <T>
+   * @param projectName
+   * @return
+   */
+  public ProjectList autocompleteProjectName(String projectName, PfsParameter pfs) throws Exception;
 }
