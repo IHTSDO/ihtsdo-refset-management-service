@@ -128,6 +128,28 @@ tsApp
 
               $scope.migrationFiles = new Array();
 
+              // reset paging when project changes	
+              $scope.$watch('project', function() {
+                resetFilters();
+              });	
+
+              // reset paging when project changes	
+              $scope.$watch('projects.role', function() {
+                resetFilters();
+              });
+              
+              function resetFilters() {
+              	$scope.paging['refset'] = {
+                  page : 1,
+                  filter : $routeParams.refsetId ? 'id:' + $routeParams.refsetId : '',
+                  typeFilter : '',
+                  sortField : $scope.value == 'ASSIGNED' ? 'refsetName' : 'name',
+                  ascending : null,
+                  pageSize : 10
+                };
+                $scope.getRefsets();
+              }
+
               // Refset Changed handler
               $scope.$on('refset:refsetChanged', function(event, data) {
                 console.debug('on refset:refsetChanged', data);
