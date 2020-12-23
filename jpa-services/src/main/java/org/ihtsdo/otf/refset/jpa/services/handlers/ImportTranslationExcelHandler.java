@@ -66,16 +66,39 @@ public class ImportTranslationExcelHandler extends ImportExportAbstract
   /** The Constant ACCEPTABILITY. */
   private static final int ACCEPTABILITY = 7;
 
+  /**
+   * file format
+   * 01. Concept Id - CONCEPT_ID -
+   * 01. GB/US FSN Term - FSN_TERM -
+   * 02. Preferred Term (For reference only)
+   * 03. Translated Term - TRANSLATED_TERM -
+   * 04. Language Code - LANGUAGE_CODE -
+   * 05. Case Signifiance - CASE_SIGNIFIANCE - used
+   * 06. Type - TYPE - used
+   * 07. Language reference set - LANGUAGE_REFERENCE_SET - NOT used
+   * 08. Acceptability - ACCEPTABILITY - used
+   * 09. Language reference set - LANGUAGE_REFERENCE_SET - NOT used
+   * 10. Acceptability - ACCEPTABILITY - NOT used
+   * 11. Language reference set - LANGUAGE_REFERENCE_SET - NOT used
+   * 12. Acceptability - ACCEPTABILITY - NOT used
+   * 13. Notes
+   */
   private Map<Integer, String> columnIndexNameMap = new HashMap<>() {
     {
       put(0, "Concept ID");
       put(1, "GB/US FSN Term");
-      put(2, "Translated Term");
-      put(3, "Language Code");
-      put(4, "Case significance");
-      put(5, "Type");
-      put(6, "Language reference set");
-      put(7, "Acceptability");
+      put(2, "Preferred Term");
+      put(3, "Translated Term");
+      put(4, "Language Code");
+      put(5, "Case significance");
+      put(6, "Type");
+      put(7, "Language reference set");
+      put(8, "Acceptability");
+      put(9, "Language reference set");
+      put(10, "Acceptability");
+      put(11, "Language reference set");
+      put(12, "Acceptability");
+      put(12, "Notes");
     }
   };
 
@@ -263,15 +286,20 @@ public class ImportTranslationExcelHandler extends ImportExportAbstract
           }
 
           // file format
-          // 1. Concept Id - CONCEPT_ID -
-          // 2. GB/US FSN Term - FSN_TERM -
-          // 3. Translated Term - TRANSLATED_TERM -
-          // 4. Language Code - LANGUAGE_CODE -
-          // 5. Case Signifiance - CASE_SIGNIFIANCE - used
-          // 6. Type - TYPE - used
-          // 7. Language reference set - LANGUAGE_REFERENCE_SET - NOT used
-          // 8. Acceptability - ACCEPTABILITY - used
-
+          //  1. Concept Id - CONCEPT_ID -
+          //  2. GB/US FSN Term - FSN_TERM -
+          //  3. Preferred Term (For reference only)
+          //  4. Translated Term - TRANSLATED_TERM -
+          //  5. Language Code - LANGUAGE_CODE -
+          //  6. Case Signifiance - CASE_SIGNIFIANCE - used
+          //  7. Type - TYPE - used
+          //  8. Language reference set - LANGUAGE_REFERENCE_SET - NOT used
+          //  9. Acceptability - ACCEPTABILITY - used
+          // 10. Language reference set - LANGUAGE_REFERENCE_SET - NOT used
+          // 11. Acceptability - ACCEPTABILITY - NOT used
+          // 12. Language reference set - LANGUAGE_REFERENCE_SET - NOT used
+          // 13. Acceptability - ACCEPTABILITY - NOT used
+          // 14. Notes
 
           boolean skipRow = false;
           // Check for missing required data
