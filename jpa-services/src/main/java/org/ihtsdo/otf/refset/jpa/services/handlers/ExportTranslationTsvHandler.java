@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
+import org.ihtsdo.otf.refset.Note;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.FieldedStringTokenizer;
@@ -91,6 +92,7 @@ public class ExportTranslationTsvHandler implements ExportTranslationHandler {
     StringBuilder descSb = new StringBuilder();
     descSb.append("Concept Id").append("\t");
     descSb.append("GB/US FSN Term (For reference only)").append("\t");
+    descSb.append("Preferred Term (For reference only)").append("\t");
     descSb.append("Translated Term").append("\t");
     descSb.append("Language Code").append("\t");
     descSb.append("Case significance").append("\t");
@@ -102,6 +104,7 @@ public class ExportTranslationTsvHandler implements ExportTranslationHandler {
     descSb.append("Acceptability").append("\t");
     descSb.append("Language reference set").append("\t");
     descSb.append("Acceptability").append("\t");
+    descSb.append("Notes").append("\t");
     descSb.append("\r\n");
 
     for (final Concept concept : concepts) {
@@ -127,23 +130,68 @@ public class ExportTranslationTsvHandler implements ExportTranslationHandler {
 
           StringBuffer thisMember = new StringBuffer();
           Logger.getLogger(getClass()).debug("    member = " + member);
+          
+          // Concept ID
           thisMember.append(concept.getTerminologyId()).append("\t");
 
+          // GB/US FSN Term (For reference only)
           thisMember.append(concept.getName()).append("\t");
+          
+          // Preferred Term (For reference only)
+          thisMember.append(concept.getName()).append("\t");
+          
+          // Translated Term
           thisMember.append(description.getTerm()).append("\t");
+          
+          // Language Code
           if (languageRefsetToLanguageCodeMap.containsKey(description.getLanguageCode())) {
             thisMember.append(languageRefsetToLanguageCodeMap.get(description.getLanguageCode())).append("\t");
           }  else {
             throw new LocalException("The TSV export handler does not currently support language " + description.getLanguageCode() + ".");
           }
+          
+          // Case significance
           thisMember.append(caseSignificanceMap.get(description.getCaseSignificanceId())).append("\t");
+          
+          // Type
           thisMember.append(description.getTypeId().contentEquals("900000000000003001") ? "FSN" : "SYNONYM").append("\t");
+          
+          // Language reference set (1)
           if (allowedLanguageRefsets.containsKey(description.getLanguageCode())) {
             thisMember.append(allowedLanguageRefsets.get(description.getLanguageCode())).append("\t");
           } else {
             throw new LocalException("The TSV export handler does not currently support language " + description.getLanguageCode() + ".");
           }
-          thisMember.append(member.getAcceptabilityId().contentEquals("900000000000548007") ? "PREFERRED" : "ACCEPTABLE");
+          
+          // Acceptability  (1)
+          thisMember.append(member.getAcceptabilityId().contentEquals("900000000000548007") ? "PREFERRED" : "ACCEPTABLE").append("\t");
+          
+          // Language reference set (2)
+          thisMember.append("\t");
+          
+          // Acceptability  (2)
+          thisMember.append("\t");
+          
+          // Language reference set (3)
+          thisMember.append("\t");
+          
+          // Acceptability  (3)
+          thisMember.append("\t");
+          
+          // Notes
+          if (concept.getNotes() != null) {
+            String noteDelimiter = "";
+            for (Note note : concept.getNotes()) {
+              thisMember.append(noteDelimiter);
+              noteDelimiter = " | ";
+              thisMember.append(note.getValue());
+            }
+          }
+          //else {
+          //  thisMember.append("\t");
+          //}
+          
+          // end of row
           thisMember.append("\r\n");
           
           // if preferred, write out to descSb first
@@ -152,11 +200,8 @@ public class ExportTranslationTsvHandler implements ExportTranslationHandler {
           // otherwise synonyms will get cached till after PTs are written
           } else {
             cachedSynMembers.add(thisMember.toString());
-          }
-          
+          } 
         }
-        
-       
       }
       // PTs are already added to return buffer, so add the synonyms now
       for (String synMember : cachedSynMembers) {
