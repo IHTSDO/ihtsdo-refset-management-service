@@ -8,9 +8,11 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.Note;
@@ -18,6 +20,7 @@ import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.FieldedStringTokenizer;
 import org.ihtsdo.otf.refset.helpers.LocalException;
+import org.ihtsdo.otf.refset.jpa.services.TranslationServiceJpa;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.Description;
 import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
@@ -106,7 +109,18 @@ public class ExportTranslationTsvHandler implements ExportTranslationHandler {
     descSb.append("Acceptability").append("\t");
     descSb.append("Notes").append("\t");
     descSb.append("\r\n");
+    
+    final TranslationServiceJpa translationService = new TranslationServiceJpa();
+    
+    final Set<Long> translationIds = new HashSet<>();
+    concepts.parallelStream().forEach(concept -> {
+      translationIds.add(concept.getTranslation().getId());
+    });
 
+    // save PTs and FSNs for later use
+    Map<Long, Map<String, String>> conceptPtFsnMap =
+        translationService.getTranslationPtAndFSN(translationIds);
+   
     for (final Concept concept : concepts) {
       
       if (concept.isRevision()) {
@@ -135,7 +149,8 @@ public class ExportTranslationTsvHandler implements ExportTranslationHandler {
           thisMember.append(concept.getTerminologyId()).append("\t");
 
           // GB/US FSN Term (For reference only)
-          thisMember.append(concept.getName()).append("\t");
+          Map<String, String> conceptPtFsn = conceptPtFsnMap.get(concept.getId());
+          thisMember.append((conceptPtFsn != null) ? conceptPtFsn.get("FSN") : "").append("\t");  
           
           // Preferred Term (For reference only)
           thisMember.append(concept.getName()).append("\t");
@@ -217,7 +232,6 @@ public class ExportTranslationTsvHandler implements ExportTranslationHandler {
     //
     Logger.getLogger(getClass()).info("  prepare .zip file");
 
-    
     return new ByteArrayInputStream(descSb.toString().getBytes("UTF-8"));
   }
 
