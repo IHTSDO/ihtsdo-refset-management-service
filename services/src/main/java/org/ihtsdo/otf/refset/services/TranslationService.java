@@ -6,6 +6,7 @@ package org.ihtsdo.otf.refset.services;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.ihtsdo.otf.refset.MemoryEntry;
 import org.ihtsdo.otf.refset.PhraseMemory;
@@ -590,9 +591,19 @@ public interface TranslationService extends RefsetService {
    *
    * @param translation the translation
    * @param conceptId the concept id
- * @return 
+   * @return 
    * @throws Exception the exception
    */
   public Concept updateConceptName(Translation translation, String conceptId) throws Exception;
 
+  /**
+   * Returns map of Preferred Term and Fully Specified name
+   * ConceptId
+   *   -- PT or FSN and description
+   *    
+   * @param translationIds
+   * @return Map of PT and FSN per concept
+   * @throws Exception
+   */
+  public Map<Long, Map<String, String>> getTranslationPtAndFSN(Set<Long> translationIds) throws Exception;
 }

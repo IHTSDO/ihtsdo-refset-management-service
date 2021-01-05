@@ -10,6 +10,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.persistence.NoResultException;
 
@@ -392,6 +393,50 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements Translati
       // On parse error, return empty results
       return new ConceptListJpa();
     }
+  }
+  
+  /* see superclass */
+  @Override
+  public Map<Long, Map<String, String>> getTranslationPtAndFSN(Set<Long> translationIds) throws Exception {
+
+    Map<Long, Map<String, String>> results =
+        new HashMap<Long, Map<String, String>>();
+
+    try {
+      javax.persistence.Query query = manager.createQuery(
+          "select c.id as conceptId, crms.termType as termType, ltrim(crms.synonym) as description"
+              + " from ConceptJpa c, ConceptRefsetMemberJpa crm, ConceptRefsetMemberSynonymJpa crms, TranslationJpa t, RefsetJpa r "
+              + " where c.terminologyId = crm.conceptId "
+              + " and t.refset.id = r.id " + " and c.translation.id = t.id "
+              + " and crm.refset.id = r.id " + " and crms.member.id = crm.id "
+              + " and crms.languageRefsetId = '900000000000509007' "
+              + " and crms.termType in ('PT','FSN') "
+              + " and c.workflowStatus = 'READY_FOR_PUBLICATION' "
+              + " and c.translation.id in (:translationIds) ");
+
+      query.setParameter("translationIds", translationIds);
+
+      @SuppressWarnings("unchecked")
+      List<Object[]> rows = query.getResultList();
+
+      for (Object[] row : rows) {
+        final Long conceptId = Long.valueOf(row[0].toString());
+        Map<String, String> temp = results.get(conceptId);
+        if (temp != null) {
+          temp.putIfAbsent(row[1].toString(), row[2].toString());
+        } else {
+          temp = new HashMap<String, String>();
+          temp.put(row[1].toString(), row[2].toString());
+        }
+        results.put(conceptId, temp);
+      }
+
+    } catch (Exception e) {
+      Logger.getLogger(getClass()).error("Error fetching PT and FSN for translation Ids " + translationIds, e);
+      throw e;
+    }
+
+    return results;
   }
 
   /* see superclass */
