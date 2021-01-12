@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Row;
@@ -19,10 +20,12 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.ss.util.NumberToTextConverter;
+import org.ihtsdo.otf.refset.Note;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.LocalException;
+import org.ihtsdo.otf.refset.jpa.ConceptNoteJpa;
 import org.ihtsdo.otf.refset.jpa.ValidationResultJpa;
 import org.ihtsdo.otf.refset.jpa.services.RefsetServiceJpa;
 import org.ihtsdo.otf.refset.rf2.Concept;
@@ -48,23 +51,29 @@ public class ImportTranslationExcelHandler extends ImportExportAbstract
   /** The Constant FSN_TERM. */
   private static final int FSN_TERM = 1;
 
+  /** The Constant PERFERRED_TERM */
+  private static final int PREFERRED_TERM = 2;
+  
   /** The Constant TRANSLATED_TERM. */
-  private static final int TRANSLATED_TERM = 2;
+  private static final int TRANSLATED_TERM = 3;
 
   /** The Constant LANGUAGE_CODE. */
-  private static final int LANGUAGE_CODE = 3;
+  private static final int LANGUAGE_CODE = 4;
 
   /** The Constant CASE_SIGNIFIANCE. */
-  private static final int CASE_SIGNIFIANCE = 4;
+  private static final int CASE_SIGNIFIANCE = 5;
 
   /** The Constant TYPE. */
-  private static final int TYPE = 5;
+  private static final int TYPE = 6;
 
   /** The Constant LANGUAGE_REFERENCE_SET. */
-  private static final int LANGUAGE_REFERENCE_SET = 6;
+  private static final int LANGUAGE_REFERENCE_SET = 7;
 
   /** The Constant ACCEPTABILITY. */
-  private static final int ACCEPTABILITY = 7;
+  private static final int ACCEPTABILITY = 8;
+  
+  /** The Constant NOTES. */
+  private static final int NOTES = 13;
 
   /**
    * file format
@@ -98,7 +107,7 @@ public class ImportTranslationExcelHandler extends ImportExportAbstract
       put(10, "Acceptability");
       put(11, "Language reference set");
       put(12, "Acceptability");
-      put(12, "Notes");
+      put(13, "Notes");
     }
   };
 
@@ -353,11 +362,18 @@ public class ImportTranslationExcelHandler extends ImportExportAbstract
           setCommonFields(concept, translation.getRefset());
           // not in file. set to current
           concept.setEffectiveTime(new Date());
-          concept.setName(getCellValue(row, FSN_TERM));
+          concept.setName(getCellValue(row, PREFERRED_TERM));
           concept.setTerminologyId(conceptId);
           concept.setDefinitionStatusId("unknown");
           concept.setTranslation(translation);
           concept.getDescriptions().add(description);
+          
+          final String notes = getCellValue(row, NOTES); 
+          if (StringUtils.isNotBlank(notes)) {
+            final Note note = new ConceptNoteJpa();
+            concept.getNotes().add(note);
+          }
+          
           description.setConcept(concept);
 
           // Cache the description for lookup by the language reset member
