@@ -1665,6 +1665,10 @@ tsApp.service('refsetService', [
       // success
       function(response) {
         console.debug('  terminology version valid = ' + response.data);
+        if(response.data == "true")
+          $("button.refset-buttons").attr("disabled", false);
+        else
+          $("button.refset-buttons").attr("disabled", true);
         gpService.decrement();
         deferred.resolve(response.data);
       },

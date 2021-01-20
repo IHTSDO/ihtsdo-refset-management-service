@@ -4521,6 +4521,7 @@ tsApp
                 }
 
                 $scope.resetValidVersion = function() {
+                  $("button.refset-buttons").attr("disabled", true);
                   $scope.validVersion = null;
                 }
 
@@ -4770,6 +4771,7 @@ tsApp
                 };
 
                 $scope.resetValidVersion = function() {
+                  $("button.refset-buttons").attr("disabled", true);
                   $scope.validVersion = null;
                 }
 
