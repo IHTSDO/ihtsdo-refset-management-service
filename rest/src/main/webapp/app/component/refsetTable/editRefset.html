@@ -266,12 +266,12 @@
   </p>
 
   <div class="modal-footer">
-    <button ng-show="action == 'Add'" class="btn btn-xs btn-primary"
+    <button ng-show="action == 'Add'" class="btn btn-xs btn-primary refset-buttons""
       ng-click="submitRefset(refset);">Add</button>
-    <button ng-show="action == 'Edit'" class="btn btn-xs btn-primary"
+    <button ng-show="action == 'Edit'" class="btn btn-xs btn-primary refset-buttons"
       ng-click="submitRefset(refset);">Save</button>
     <button ng-show="action == 'Clone' && comments.length == 0"
-      ng-disabled="validVersion != 'true'" class="btn btn-xs btn-primary"
+      ng-disabled="validVersion != 'true'" class="btn btn-xs btn-primary refset-buttons"
       ng-click="submitRefset(refset); ">Clone</button>
     <button class="btn btn-xs btn-warning" ng-click="cancel()">Cancel</button>
     <button ng-show="comments.length > 0" class="btn btn-xs btn-warning"
