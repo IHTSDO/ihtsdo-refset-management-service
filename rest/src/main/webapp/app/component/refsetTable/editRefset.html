@@ -78,7 +78,8 @@
         </td>
         <td>
           <select ng-model="refset.version" 
-            ng-options="item.path as item.key for item in versions | orderBy:'-key'"></select>
+            ng-options="item.path as item.key for item in versions | orderBy:'-key'"
+            ng-change="resetValidVersion();"></select>
           
           <button class="btn btn-xs btn-warning" ng-show="refset.version && project.terminologyHandlerKey === 'PUBLIC-BROWSER'"
             ng-click="refset.version=null">Clear</button>
