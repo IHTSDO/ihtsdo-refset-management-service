@@ -370,8 +370,11 @@ public class ImportTranslationExcelHandler extends ImportExportAbstract
           
           final String notes = getCellValue(row, NOTES); 
           if (StringUtils.isNotBlank(notes)) {
-            final Note note = new ConceptNoteJpa();
-            concept.getNotes().add(note);
+			final Note conceptNote = new ConceptNoteJpa();
+            conceptNote.setValue(notes);
+            ((ConceptNoteJpa) conceptNote).setConcept(concept);
+
+            concept.getNotes().add(conceptNote);
           }
           
           description.setConcept(concept);

@@ -98,7 +98,7 @@ public class ConceptJpa extends AbstractComponent implements Concept {
   /** The notes. */
   @OneToMany(mappedBy = "concept", targetEntity = ConceptNoteJpa.class)
   @IndexedEmbedded(targetElement = ConceptNoteJpa.class)
-  private List<Note> notes = new ArrayList<>();
+  private List<Note> notes = null;
 
   /** The revision. */
   @Column(nullable = false)
