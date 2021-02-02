@@ -12,6 +12,7 @@ import javax.xml.bind.annotation.XmlTransient;
 
 import org.hibernate.envers.Audited;
 import org.hibernate.search.annotations.Analyze;
+import org.hibernate.search.annotations.ContainedIn;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.FieldBridge;
 import org.hibernate.search.annotations.Index;
@@ -35,6 +36,7 @@ public class ConceptNoteJpa extends AbstractNote {
 
   /** The concept. */
   @ManyToOne(targetEntity = ConceptJpa.class, optional = false)
+  @ContainedIn
   private Concept concept;
 
   /**

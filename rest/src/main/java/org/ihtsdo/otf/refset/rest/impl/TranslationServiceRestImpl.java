@@ -3604,6 +3604,22 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
           // lists
           origConcept =
               new ConceptJpa(translationService.addConcept(concept), false);
+          
+          for (Note cptNote : concept.getNotes()) {
+        	  // Create the note
+              final Note conceptNote = new ConceptNoteJpa();
+              conceptNote.setValue(cptNote.getValue());
+              ((ConceptNoteJpa) conceptNote).setConcept(origConcept);
+
+              // Add and return the note
+              conceptNote.setLastModifiedBy(user.getUserName());
+              final Note newNote = translationService.addNote(conceptNote);
+
+              // for indexing
+              origConcept.getNotes().add(newNote);
+          }
+          
+          
           ++conceptAdded;
           conceptMap.put(concept.getTerminologyId(), origConcept);
           Logger.getLogger(getClass())
