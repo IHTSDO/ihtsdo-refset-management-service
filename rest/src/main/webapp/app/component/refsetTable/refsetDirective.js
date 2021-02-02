@@ -5352,6 +5352,11 @@ tsApp
                     $scope.validVersion = data;
                   });
                 }
+                
+                $scope.resetMigrationCheck = function() {
+                  document.getElementById("migration-value").value = "";
+                  document.getElementById("migration-button").disabled = true;
+                }
 
                 $scope.resetValidVersion = function() {
                   $scope.validVersion = null;
