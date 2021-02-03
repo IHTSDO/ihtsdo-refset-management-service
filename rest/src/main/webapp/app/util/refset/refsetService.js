@@ -1665,10 +1665,6 @@ tsApp.service('refsetService', [
       // success
       function(response) {
         console.debug('  terminology version valid = ' + response.data);
-        if(response.data == "true")
-          $scope.versionChecked = true;
-        else
-          $scope.versionChecked = false;
         gpService.decrement();
         deferred.resolve(response.data);
       },
