@@ -4516,12 +4516,16 @@ tsApp
                   refsetService.isTerminologyVersionValid($scope.project.id,
                     $scope.refset.terminology, $scope.refset.version).then(function(data) {
                     $scope.validVersion = data;
+                    if(data == true)
+                      $scope.versionChecked = true;
                     $scope.getModules();
                   });
                 }
 
-                $scope.resetValidVersion = function() {
-                  $("button.refset-buttons").attr("disabled", true);
+                $scope.resetValidVersion = function(clear) {
+                  $scope.versionChecked = false;
+                  if(clear)
+                    $scope.refset.version=null;
                   $scope.validVersion = null;
                 }
 
@@ -4742,6 +4746,8 @@ tsApp
                   refsetService.isTerminologyVersionValid($scope.project.id,
                     $scope.refset.terminology, $scope.refset.version).then(function(data) {
                     $scope.validVersion = data;
+                    if(data == true)
+                      $scope.versionChecked = true;
                     $scope.getModules();
                   });
                 }
@@ -4770,8 +4776,10 @@ tsApp
                   $scope.getModules();
                 };
 
-                $scope.resetValidVersion = function() {
-                  $("button.refset-buttons").attr("disabled", true);
+                $scope.resetValidVersion = function(clear) {
+                  $scope.versionChecked = false;
+                  if(clear)
+                    $scope.refset.version=null;
                   $scope.validVersion = null;
                 }
 
