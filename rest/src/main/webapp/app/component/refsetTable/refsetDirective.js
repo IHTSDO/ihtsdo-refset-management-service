@@ -1836,6 +1836,8 @@ tsApp
                   refsetService.isTerminologyVersionValid($scope.project.id,
                     $scope.refset.terminology, $scope.refset.version).then(function(data) {
                     $scope.validVersion = data;
+                    if(data == "true")
+                      $scope.versionChecked = true;
                   });
                 }
 
@@ -4516,7 +4518,7 @@ tsApp
                   refsetService.isTerminologyVersionValid($scope.project.id,
                     $scope.refset.terminology, $scope.refset.version).then(function(data) {
                     $scope.validVersion = data;
-                    if(data == true)
+                    if(data == "true")
                       $scope.versionChecked = true;
                     $scope.getModules();
                   });
@@ -4746,7 +4748,7 @@ tsApp
                   refsetService.isTerminologyVersionValid($scope.project.id,
                     $scope.refset.terminology, $scope.refset.version).then(function(data) {
                     $scope.validVersion = data;
-                    if(data == true)
+                    if(data == "true")
                       $scope.versionChecked = true;
                     $scope.getModules();
                   });
@@ -5358,6 +5360,8 @@ tsApp
                   refsetService.isTerminologyVersionValid($scope.project.id, $scope.newTerminology,
                     $scope.newVersion).then(function(data) {
                     $scope.validVersion = data;
+                    if(data == "true")
+                      $scope.versionChecked = true;
                   });
                 }
                 
@@ -6524,6 +6528,8 @@ tsApp
                     $scope.newVersion).then(function(data) {
                     $scope.validVersion = data;
                     $scope.setButtonDisableValues();
+                    if(data == "true")
+                      $scope.versionChecked = true;
                   });
                 }
 
