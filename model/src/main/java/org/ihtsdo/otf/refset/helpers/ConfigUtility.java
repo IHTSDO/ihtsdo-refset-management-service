@@ -17,6 +17,7 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -189,7 +190,7 @@ public class ConfigUtility {
       Logger.getLogger(ConfigUtility.class.getName()).info("  refset.config"
           + (label.isEmpty() ? "" : "." + label) + " = " + configFileName);
       config = new Properties();
-      FileReader in = new FileReader(new File(configFileName));
+      BufferedReader in = Files.newBufferedReader(new File(configFileName).toPath(), StandardCharsets.UTF_8);
       config.load(in);
       in.close();
       Logger.getLogger(ConfigUtility.class).debug("  properties = " + config);

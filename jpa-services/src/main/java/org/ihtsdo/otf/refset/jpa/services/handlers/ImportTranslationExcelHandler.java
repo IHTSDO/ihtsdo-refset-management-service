@@ -24,6 +24,7 @@ import org.ihtsdo.otf.refset.Note;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
+import org.ihtsdo.otf.refset.helpers.FieldedStringTokenizer;
 import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.jpa.ConceptNoteJpa;
 import org.ihtsdo.otf.refset.jpa.ValidationResultJpa;
@@ -264,6 +265,25 @@ public class ImportTranslationExcelHandler extends ImportExportAbstract
 
     int skippedDueToLanguageNotMatching = 0;
     int skippedDueToMissingData = 0;
+    
+    // map languageRefset file dialect to description file dialect
+    Map<String, String> nameMapping = new HashMap<>();
+    
+    // Check config.properties to see if language contribution to file name needs to be adjusted 
+    String[] keys = ConfigUtility.getConfigProperties()
+          .getProperty("language.refset.dialect").split(",");
+    
+    // add the dialect entries for each requested property to the map/list
+    for (String propertyKey : keys) {
+      String infoString =
+          ConfigUtility.getConfigProperties().getProperty("language.refset.dialect." + propertyKey);
+
+      for (final String info : infoString.split(";")) {
+        String[] values = FieldedStringTokenizer.split(info, "|");
+        // return full-name mapped to language-dialect combo
+        nameMapping.put(values[0], values[2]);         
+      }
+    }
 
     /** The descriptions. */
     List<Description> descriptions = new ArrayList<>();
@@ -331,8 +351,12 @@ public class ImportTranslationExcelHandler extends ImportExportAbstract
           // If excel language doesn't match translation's language, skip
           if (!translation.getLanguage()
               .equals(getCellValue(row, LANGUAGE_CODE))) {
-            skippedDueToLanguageNotMatching++;
-            continue;
+        	  // check if the dialect matches, before skipping
+        	  if (nameMapping.get(getCellValue(row, LANGUAGE_REFERENCE_SET)) == null || 
+        			  !translation.getLanguage().contentEquals(nameMapping.get(getCellValue(row, LANGUAGE_REFERENCE_SET)))) {
+        		  skippedDueToLanguageNotMatching++;
+        		  continue;
+        	  }
           }
 
           // Create description and populate from RF2
