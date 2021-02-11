@@ -54,7 +54,7 @@ public class ImportTranslationExcelHandler extends ImportExportAbstract
 
   /** The Constant PERFERRED_TERM */
   private static final int PREFERRED_TERM = 2;
-  
+
   /** The Constant TRANSLATED_TERM. */
   private static final int TRANSLATED_TERM = 3;
 
@@ -72,27 +72,26 @@ public class ImportTranslationExcelHandler extends ImportExportAbstract
 
   /** The Constant ACCEPTABILITY. */
   private static final int ACCEPTABILITY = 8;
-  
+
   /** The Constant NOTES. */
   private static final int NOTES = 13;
 
-  /**
-   * file format
-   * 01. Concept Id - CONCEPT_ID -
-   * 01. GB/US FSN Term - FSN_TERM -
-   * 02. Preferred Term (For reference only)
-   * 03. Translated Term - TRANSLATED_TERM -
-   * 04. Language Code - LANGUAGE_CODE -
-   * 05. Case Signifiance - CASE_SIGNIFIANCE - used
-   * 06. Type - TYPE - used
-   * 07. Language reference set - LANGUAGE_REFERENCE_SET - NOT used
-   * 08. Acceptability - ACCEPTABILITY - used
-   * 09. Language reference set - LANGUAGE_REFERENCE_SET - NOT used
-   * 10. Acceptability - ACCEPTABILITY - NOT used
-   * 11. Language reference set - LANGUAGE_REFERENCE_SET - NOT used
-   * 12. Acceptability - ACCEPTABILITY - NOT used
-   * 13. Notes
-   */
+  // file format
+  // 01. Concept Id - CONCEPT_ID
+  // 02. GB/US FSN Term - FSN_TERM
+  // 03. Preferred Term (For reference only)
+  // 04. Translated Term - TRANSLATED_TERM
+  // 05. Language Code - LANGUAGE_CODE
+  // 06. Case Signifiance - CASE_SIGNIFIANCE
+  // 07. Type - TYPE
+  // 08. Language reference set - LANGUAGE_REFERENCE_SET used
+  // 09. Acceptability - ACCEPTABILITY - used
+  // 10. Language reference set - LANGUAGE_REFERENCE_SET - NOT used
+  // 11. Acceptability - ACCEPTABILITY - NOT used
+  // 12. Language reference set - LANGUAGE_REFERENCE_SET - NOT used
+  // 13. Acceptability - ACCEPTABILITY - NOT used
+  // 14. Notes
+
   private Map<Integer, String> columnIndexNameMap = new HashMap<>() {
     {
       put(0, "Concept ID");
@@ -171,8 +170,7 @@ public class ImportTranslationExcelHandler extends ImportExportAbstract
     inactivationReasonCodeMap.put("Not semantically equivalent", "723278000");
     inactivationReasonCodeMap.put("Outdated", "900000000000483008");
     inactivationReasonCodeMap.put("Erroneous", "900000000000485001");
-    inactivationReasonCodeMap.put("Non-conformance to editorial policy",
-        "723277005");
+    inactivationReasonCodeMap.put("Non-conformance to editorial policy", "723277005");
     inactivationReasonCodeMap.put("Duplicate", "900000000000482003");
     inactivationReasonCodeMap.put("Ambiguous", "900000000000484000");
     inactivationReasonCodeMap.put("Moved elsewhere", "900000000000487009");
@@ -256,8 +254,8 @@ public class ImportTranslationExcelHandler extends ImportExportAbstract
   /* see superclass */
   @SuppressWarnings("resource")
   @Override
-  public List<Concept> importConcepts(Translation translation,
-    InputStream content) throws Exception {
+  public List<Concept> importConcepts(Translation translation, InputStream content)
+    throws Exception {
     Logger.getLogger(getClass()).info("Import translation concepts");
 
     // initialize
@@ -265,14 +263,15 @@ public class ImportTranslationExcelHandler extends ImportExportAbstract
 
     int skippedDueToLanguageNotMatching = 0;
     int skippedDueToMissingData = 0;
-    
+
     // map languageRefset file dialect to description file dialect
     Map<String, String> nameMapping = new HashMap<>();
-    
-    // Check config.properties to see if language contribution to file name needs to be adjusted 
-    String[] keys = ConfigUtility.getConfigProperties()
-          .getProperty("language.refset.dialect").split(",");
-    
+
+    // Check config.properties to see if language contribution to file name
+    // needs to be adjusted
+    String[] keys =
+        ConfigUtility.getConfigProperties().getProperty("language.refset.dialect").split(",");
+
     // add the dialect entries for each requested property to the map/list
     for (String propertyKey : keys) {
       String infoString =
@@ -281,7 +280,7 @@ public class ImportTranslationExcelHandler extends ImportExportAbstract
       for (final String info : infoString.split(";")) {
         String[] values = FieldedStringTokenizer.split(info, "|");
         // return full-name mapped to language-dialect combo
-        nameMapping.put(values[0], values[2]);         
+        nameMapping.put(values[0], values[2]);
       }
     }
 
@@ -302,8 +301,7 @@ public class ImportTranslationExcelHandler extends ImportExportAbstract
 
       try (final RefsetService service = new RefsetServiceJpa();) {
 
-        Logger.getLogger(getClass())
-            .debug("Import translation Rf2 handler - reading Excel file.");
+        Logger.getLogger(getClass()).debug("Import translation Rf2 handler - reading Excel file.");
 
         boolean isFirstRow = true;
         for (final Row row : sheet) {
@@ -315,15 +313,15 @@ public class ImportTranslationExcelHandler extends ImportExportAbstract
           }
 
           // file format
-          //  1. Concept Id - CONCEPT_ID -
-          //  2. GB/US FSN Term - FSN_TERM -
-          //  3. Preferred Term (For reference only)
-          //  4. Translated Term - TRANSLATED_TERM -
-          //  5. Language Code - LANGUAGE_CODE -
-          //  6. Case Signifiance - CASE_SIGNIFIANCE - used
-          //  7. Type - TYPE - used
-          //  8. Language reference set - LANGUAGE_REFERENCE_SET - NOT used
-          //  9. Acceptability - ACCEPTABILITY - used
+          // 1. Concept Id - CONCEPT_ID -
+          // 2. GB/US FSN Term - FSN_TERM -
+          // 3. Preferred Term (For reference only)
+          // 4. Translated Term - TRANSLATED_TERM -
+          // 5. Language Code - LANGUAGE_CODE -
+          // 6. Case Signifiance - CASE_SIGNIFIANCE - used
+          // 7. Type - TYPE - used
+          // 8. Language reference set - LANGUAGE_REFERENCE_SET - NOT used
+          // 9. Acceptability - ACCEPTABILITY - used
           // 10. Language reference set - LANGUAGE_REFERENCE_SET - NOT used
           // 11. Acceptability - ACCEPTABILITY - NOT used
           // 12. Language reference set - LANGUAGE_REFERENCE_SET - NOT used
@@ -334,11 +332,12 @@ public class ImportTranslationExcelHandler extends ImportExportAbstract
           // Check for missing required data
           for (int i = 0; i < columnIndexNameMap.size(); i++) {
             // The language reference set column is not required.
-            if(i==LANGUAGE_REFERENCE_SET) {
+            if (i == LANGUAGE_REFERENCE_SET) {
               continue;
             }
             if (row.getCell(i) == null) {
-                validationResult.addError("Required \"" + columnIndexNameMap.get(i) + "\" data missing for at least one row.");
+              validationResult.addError("Required \"" + columnIndexNameMap.get(i)
+                  + "\" data missing for at least one row.");
 
               skippedDueToMissingData++;
               skipRow = true;
@@ -347,16 +346,16 @@ public class ImportTranslationExcelHandler extends ImportExportAbstract
           if (skipRow) {
             continue;
           }
-          
+
           // If excel language doesn't match translation's language, skip
-          if (!translation.getLanguage()
-              .equals(getCellValue(row, LANGUAGE_CODE))) {
-        	  // check if the dialect matches, before skipping
-        	  if (nameMapping.get(getCellValue(row, LANGUAGE_REFERENCE_SET)) == null || 
-        			  !translation.getLanguage().contentEquals(nameMapping.get(getCellValue(row, LANGUAGE_REFERENCE_SET)))) {
-        		  skippedDueToLanguageNotMatching++;
-        		  continue;
-        	  }
+          if (!translation.getLanguage().equals(getCellValue(row, LANGUAGE_CODE))) {
+            // check if the dialect matches, before skipping
+            if (nameMapping.get(getCellValue(row, LANGUAGE_REFERENCE_SET)) == null
+                || !translation.getLanguage()
+                    .contentEquals(nameMapping.get(getCellValue(row, LANGUAGE_REFERENCE_SET)))) {
+              skippedDueToLanguageNotMatching++;
+              continue;
+            }
           }
 
           // Create description and populate from RF2
@@ -366,12 +365,10 @@ public class ImportTranslationExcelHandler extends ImportExportAbstract
           // FSN Term
           description.setTerm(getCellValue(row, TRANSLATED_TERM));
           description.setTerminologyId(null);
-          description.setLanguageCode(getCellValue(row, LANGUAGE_CODE));
-          description
-              .setTypeId(descriptionTypeCodeMap.get(getCellValue(row, TYPE)));
+          description.setLanguageCode(translation.getLanguage());
+          description.setTypeId(descriptionTypeCodeMap.get(getCellValue(row, TYPE)));
           String caseSignificanceString = getCellValue(row, CASE_SIGNIFIANCE);
-          String caseSignificanceId =
-              caseSignificanceCodeMap.get(caseSignificanceString);
+          String caseSignificanceId = caseSignificanceCodeMap.get(caseSignificanceString);
           description.setCaseSignificanceId(
               caseSignificanceCodeMap.get(getCellValue(row, CASE_SIGNIFIANCE)));
           description.setEffectiveTime(new Date());
@@ -391,25 +388,23 @@ public class ImportTranslationExcelHandler extends ImportExportAbstract
           concept.setDefinitionStatusId("unknown");
           concept.setTranslation(translation);
           concept.getDescriptions().add(description);
-          
-          final String notes = getCellValue(row, NOTES); 
+
+          final String notes = getCellValue(row, NOTES);
           if (StringUtils.isNotBlank(notes)) {
-			final Note conceptNote = new ConceptNoteJpa();
+            final Note conceptNote = new ConceptNoteJpa();
             conceptNote.setValue(notes);
             ((ConceptNoteJpa) conceptNote).setConcept(concept);
 
             concept.getNotes().add(conceptNote);
           }
-          
+
           description.setConcept(concept);
 
           // Cache the description for lookup by the language reset member
           descriptions.add(description);
 
-          Logger.getLogger(getClass())
-              .debug("  description = " + conceptId + ", "
-                  + description.getTerminologyId() + ", "
-                  + description.getTerm());
+          Logger.getLogger(getClass()).debug("  description = " + conceptId + ", "
+              + description.getTerminologyId() + ", " + description.getTerm());
 
           // Create and configure the member
           final LanguageRefsetMember member = new LanguageRefsetMemberJpa();
@@ -421,8 +416,7 @@ public class ImportTranslationExcelHandler extends ImportExportAbstract
           member.setRefsetId(translation.getRefset().getTerminologyId());
 
           // Language unique attributes
-          member.setAcceptabilityId(
-              acceptibilityCodeMap.get(getCellValue(row, ACCEPTABILITY)));
+          member.setAcceptabilityId(acceptibilityCodeMap.get(getCellValue(row, ACCEPTABILITY)));
 
           // Connect description and language refset member object
           member.setDescriptionId(description.getTerminologyId());
@@ -440,16 +434,15 @@ public class ImportTranslationExcelHandler extends ImportExportAbstract
           }
         }
 
-        validationResult
-            .addComment(descriptions.size() + " descriptions read from file.");
+        validationResult.addComment(descriptions.size() + " descriptions read from file.");
 
         if (skippedDueToLanguageNotMatching > 0) {
           validationResult.addComment(skippedDueToLanguageNotMatching
               + " descriptions skipped: language code in file not same as translation language.");
         }
         if (skippedDueToMissingData > 0) {
-          validationResult.addComment(skippedDueToMissingData
-              + " descriptions skipped: missing required data");
+          validationResult
+              .addComment(skippedDueToMissingData + " descriptions skipped: missing required data");
         }
 
       } catch (Exception e) {
@@ -488,15 +481,14 @@ public class ImportTranslationExcelHandler extends ImportExportAbstract
     if (row.getCell(cellIndex).getCellType() == CellType.STRING) {
       value = row.getCell(cellIndex).getStringCellValue();
     } else if (row.getCell(cellIndex).getCellType() == CellType.NUMERIC) {
-      value = NumberToTextConverter
-          .toText(row.getCell(cellIndex).getNumericCellValue());
+      value = NumberToTextConverter.toText(row.getCell(cellIndex).getNumericCellValue());
     }
     return value;
   }
 
   @Override
-  public List<Concept> importConcepts(Translation translation,
-    Map<String, String> headers) throws Exception {
+  public List<Concept> importConcepts(Translation translation, Map<String, String> headers)
+    throws Exception {
     // not implemented
     return null;
   }
