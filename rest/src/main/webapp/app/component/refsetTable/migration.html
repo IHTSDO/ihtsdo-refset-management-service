@@ -797,7 +797,8 @@
 
   <span style="float: left">
     <button ng-show="refset.staged" class="btn btn-xs btn-primary"
-      ng-click="exportDiffReport('ExportReport');">Export Report</button>
+      ng-click="exportDiffReport('ExportReport');"
+      ng-disabled="termPathTested != true">Export Report</button>
   </span>
   <button class="btn btn-xs btn-primary"
   	id="migration-button"

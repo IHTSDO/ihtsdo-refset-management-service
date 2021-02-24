@@ -5339,9 +5339,15 @@ tsApp
                 };
 
                 $scope.exportDiffReport = function(action) {
+                  $scope.errors = [];
+                  var paths = $scope.versions.map(a => a.path);
+                  if(paths.indexOf($scope.newVersion) == -1){
+                    $scope.errors.push("Invalid terminology path or version");
+                    return;
+                  }
                   refsetService.exportDiffReport(action, $scope.reportToken, $scope.refset, $scope.newTerminology, $scope.newVersion);
                   // update migration files list
-                  $scope.migrationFiles = new Array();
+                  $scope.migrationFiles = [];
                   refsetService.getMigrationFileNames($scope.project.id, $scope.refset.terminologyId).then(
                     function(data) {
                       if (data != '') {                     
@@ -5362,6 +5368,8 @@ tsApp
                     $scope.validVersion = data;
                     if(data == "true")
                       $scope.versionChecked = true;
+                    $scope.termPathTested = (data == "true") ? true : false;
+                      
                   });
                 }
                 
