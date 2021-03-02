@@ -128,6 +128,28 @@ tsApp
 
               $scope.migrationFiles = new Array();
 
+              // reset paging when project changes	
+              $scope.$watch('project', function() {
+                resetFilters();
+              });	
+
+              // reset paging when project changes	
+              $scope.$watch('projects.role', function() {
+                resetFilters();
+              });
+              
+              function resetFilters() {
+              	$scope.paging['refset'] = {
+                  page : 1,
+                  filter : $routeParams.refsetId ? 'id:' + $routeParams.refsetId : '',
+                  typeFilter : '',
+                  sortField : $scope.value == 'ASSIGNED' ? 'refsetName' : 'name',
+                  ascending : null,
+                  pageSize : 10
+                };
+                $scope.getRefsets();
+              }
+
               // Refset Changed handler
               $scope.$on('refset:refsetChanged', function(event, data) {
                 console.debug('on refset:refsetChanged', data);
@@ -1814,6 +1836,8 @@ tsApp
                   refsetService.isTerminologyVersionValid($scope.project.id,
                     $scope.refset.terminology, $scope.refset.version).then(function(data) {
                     $scope.validVersion = data;
+                    if(data == "true")
+                      $scope.versionChecked = true;
                   });
                 }
 
@@ -4494,11 +4518,16 @@ tsApp
                   refsetService.isTerminologyVersionValid($scope.project.id,
                     $scope.refset.terminology, $scope.refset.version).then(function(data) {
                     $scope.validVersion = data;
+                    if(data == "true")
+                      $scope.versionChecked = true;
                     $scope.getModules();
                   });
                 }
 
-                $scope.resetValidVersion = function() {
+                $scope.resetValidVersion = function(clear) {
+                  $scope.versionChecked = false;
+                  if(clear)
+                    $scope.refset.version=null;
                   $scope.validVersion = null;
                 }
 
@@ -4719,6 +4748,8 @@ tsApp
                   refsetService.isTerminologyVersionValid($scope.project.id,
                     $scope.refset.terminology, $scope.refset.version).then(function(data) {
                     $scope.validVersion = data;
+                    if(data == "true")
+                      $scope.versionChecked = true;
                     $scope.getModules();
                   });
                 }
@@ -4747,7 +4778,10 @@ tsApp
                   $scope.getModules();
                 };
 
-                $scope.resetValidVersion = function() {
+                $scope.resetValidVersion = function(clear) {
+                  $scope.versionChecked = false;
+                  if(clear)
+                    $scope.refset.version=null;
                   $scope.validVersion = null;
                 }
 
@@ -5305,9 +5339,15 @@ tsApp
                 };
 
                 $scope.exportDiffReport = function(action) {
+                  $scope.errors = [];
+                  var paths = $scope.versions.map(a => a.path);
+                  if(paths.indexOf($scope.newVersion) == -1){
+                    $scope.errors.push("Invalid terminology path or version");
+                    return;
+                  }
                   refsetService.exportDiffReport(action, $scope.reportToken, $scope.refset, $scope.newTerminology, $scope.newVersion);
                   // update migration files list
-                  $scope.migrationFiles = new Array();
+                  $scope.migrationFiles = [];
                   refsetService.getMigrationFileNames($scope.project.id, $scope.refset.terminologyId).then(
                     function(data) {
                       if (data != '') {                     
@@ -5326,7 +5366,16 @@ tsApp
                   refsetService.isTerminologyVersionValid($scope.project.id, $scope.newTerminology,
                     $scope.newVersion).then(function(data) {
                     $scope.validVersion = data;
+                    if(data == "true")
+                      $scope.versionChecked = true;
+                    $scope.termPathTested = (data == "true") ? true : false;
+                      
                   });
+                }
+                
+                $scope.resetMigrationCheck = function() {
+                  document.getElementById("migration-value").value = "";
+                  document.getElementById("migration-button").disabled = true;
                 }
 
                 $scope.resetValidVersion = function() {
@@ -6487,6 +6536,8 @@ tsApp
                     $scope.newVersion).then(function(data) {
                     $scope.validVersion = data;
                     $scope.setButtonDisableValues();
+                    if(data == "true")
+                      $scope.versionChecked = true;
                   });
                 }
 

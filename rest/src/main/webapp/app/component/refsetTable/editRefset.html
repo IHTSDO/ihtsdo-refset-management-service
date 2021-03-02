@@ -78,10 +78,11 @@
         </td>
         <td>
           <select ng-model="refset.version" 
-            ng-options="item.path as item.key for item in versions | orderBy:'-key'"></select>
+            ng-options="item.path as item.key for item in versions | orderBy:'-key'"
+            ng-change="resetValidVersion(false);"></select>
           
           <button class="btn btn-xs btn-warning" ng-show="refset.version && project.terminologyHandlerKey === 'PUBLIC-BROWSER'"
-            ng-click="refset.version=null">Clear</button>
+            ng-click="resetValidVersion(true);">Clear</button>
           <button class="btn btn-xs btn-primary"
             ng-show="refset.version && versionNotInPicklist() && project.terminologyHandlerKey === 'PUBLIC-BROWSER'"
             ng-click="testTerminologyVersion();">Test</button>
@@ -96,11 +97,11 @@
         </td>
         <td>
           <input style="width: 352px" ng-model="refset.version" list="versions"
-            placeholder="e.g. MAIN" ng-change="resetValidVersion();" />
+            placeholder="e.g. MAIN" ng-change="resetValidVersion(false);" />
           <br/>
           <br/>
           <button class="btn btn-xs btn-warning" ng-show="refset.version"
-            ng-click="refset.version=null">Clear</button>
+            ng-click="resetValidVersion(true);">Clear</button>
           <button class="btn btn-xs btn-primary"
             ng-show="refset.version && versionNotInPicklist()"
             ng-click="testTerminologyVersion();">Test</button>
@@ -266,10 +267,10 @@
   </p>
 
   <div class="modal-footer">
-    <button ng-show="action == 'Add'" class="btn btn-xs btn-primary"
-      ng-click="submitRefset(refset);">Add</button>
+    <button ng-show="action == 'Add'" class="btn btn-xs btn-primary""
+      ng-click="submitRefset(refset);" ng-disabled="versionChecked == false">Add</button>
     <button ng-show="action == 'Edit'" class="btn btn-xs btn-primary"
-      ng-click="submitRefset(refset);">Save</button>
+      ng-click="submitRefset(refset);" ng-disabled="versionChecked == false">Save</button>
     <button ng-show="action == 'Clone' && comments.length == 0"
       ng-disabled="validVersion != 'true'" class="btn btn-xs btn-primary"
       ng-click="submitRefset(refset); ">Clone</button>
