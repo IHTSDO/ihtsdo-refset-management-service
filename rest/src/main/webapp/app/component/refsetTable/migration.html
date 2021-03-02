@@ -41,10 +41,10 @@
             <b>Terminology Path:</b>
           </td>
           <td>
-            <input style="width: 252px" ng-model="newVersion" list="versions"
+            <input style="width: 252px" ng-model="newVersion" list="versions" id="migration-value"
               placeholder="e.g. MAIN" ng-change="resetValidVersion();" />
             <button class="btn btn-xs btn-warning" ng-show="newVersion"
-              ng-click="newVersion=''">Clear</button>
+              ng-click="resetMigrationCheck();">Clear</button>
             <button class="btn btn-xs btn-primary"
               ng-show="newVersion && versionNotInPicklist()"
               ng-click="testTerminologyVersion();">Test</button>
@@ -797,9 +797,11 @@
 
   <span style="float: left">
     <button ng-show="refset.staged" class="btn btn-xs btn-primary"
-      ng-click="exportDiffReport('ExportReport');">Export Report</button>
+      ng-click="exportDiffReport('ExportReport');"
+      ng-disabled="termPathTested != true">Export Report</button>
   </span>
   <button class="btn btn-xs btn-primary"
+  	id="migration-button"
     ng-disabled="refset.staged || validVersion != 'true'"
     title="Test version before migrating"
     ng-click="beginMigration(newTerminology, newVersion);">Migrate</button>
