@@ -5363,6 +5363,7 @@ tsApp
                 }
 
                 $scope.testTerminologyVersion = function() {
+                  $scope.errors = [];
                   refsetService.isTerminologyVersionValid($scope.project.id, $scope.newTerminology,
                     $scope.newVersion).then(function(data) {
                     $scope.validVersion = data;
