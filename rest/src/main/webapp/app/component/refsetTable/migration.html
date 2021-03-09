@@ -41,10 +41,10 @@
             <b>Terminology Path:</b>
           </td>
           <td>
-            <input style="width: 252px" ng-model="newVersion" list="versions" id="migration-value"
+            <input style="width: 252px" ng-model="newVersion" list="versions"
               placeholder="e.g. MAIN" ng-change="resetValidVersion();" />
             <button class="btn btn-xs btn-warning" ng-show="newVersion"
-              ng-click="resetMigrationCheck();">Clear</button>
+              ng-click="newVersion=''; resetValidVersion();">Clear</button>
             <button class="btn btn-xs btn-primary"
               ng-show="newVersion && versionNotInPicklist()"
               ng-click="testTerminologyVersion();">Test</button>
