@@ -291,13 +291,8 @@ public class ImportTranslationExcelHandler extends ImportExportAbstract
     // Handle the input stream as an input stream
     try (final Workbook workbook = WorkbookFactory.create(content);) {
 
-      if (workbook.getNumberOfSheets() != 1) {
-        throw new LocalException(
-            "Unexpected number of sheets in Excel file. File must have one sheet.");
-      }
-
-      // expecting only one workbook in file with translations.
-      final Sheet sheet = workbook.getSheetAt(0);
+      // expecting given template
+      final Sheet sheet = workbook.getSheet("Description Additions");
 
       try (final RefsetService service = new RefsetServiceJpa();) {
 
@@ -311,6 +306,10 @@ public class ImportTranslationExcelHandler extends ImportExportAbstract
             isFirstRow = false;
             continue;
           }
+          
+          //pre-emptive check for translation term and ID
+          if((row.getCell(3) == null || row.getCell(3).getStringCellValue() == "") && (row.getCell(1) == null || row.getCell(1).getStringCellValue() == ""))
+            continue;
 
           // file format
           // 1. Concept Id - CONCEPT_ID -
