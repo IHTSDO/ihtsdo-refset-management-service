@@ -231,8 +231,7 @@ public class ImportTranslationTermServerHandler extends ImportExportAbstract
 
       for (Description originalDescription : sourceConcept.getDescriptions()) {
 
-        if (translation.getLanguage()
-            .equalsIgnoreCase(originalDescription.getLanguageCode())) {
+        if (translation.getLanguage().toLowerCase().contains(originalDescription.getLanguageCode())) {
 
           final Description description = new DescriptionJpa();
           setCommonFields(description, translation.getRefset());
