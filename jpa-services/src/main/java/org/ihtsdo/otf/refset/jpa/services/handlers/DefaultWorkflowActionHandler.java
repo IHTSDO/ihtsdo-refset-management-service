@@ -1046,15 +1046,52 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     // Use applyPfsToList if there is a filter
     else {
 
-      // Remove query restriction, add it back in later.
-      final Query query =
-          ((RootServiceJpa) service).applyPfsToJqlQuery(queryStr, null);
+      // First get concepts that match on concept name
+      Query query = ((RootServiceJpa) service).applyPfsToJqlQuery(queryStr, null);
       query.setParameter("editingDone", WorkflowStatus.EDITING_DONE);
       query.setParameter("translationId", translation.getId());
       int[] totalCt = new int[1];
       results = query.getResultList();
+      PfsParameter newPfs = new PfsParameterJpa();
+      newPfs.setQueryRestriction(pfs.getQueryRestriction());
+      results = service.applyPfsToList(results, Concept.class, totalCt, newPfs);
+
+      // Next get concepts that match on description term
+      if (pfs.getQueryRestriction().endsWith("*")) {
+        pfs.setQueryRestriction(pfs.getQueryRestriction().replace("*", ""));
+      }
+
+      Query descQuery = ((RootServiceJpa) service).getEntityManager().createQuery(
+          "select distinct a from ConceptJpa a, TranslationJpa b, TrackingRecordJpa c, DescriptionJpa d "
+              + "where a.translation = b and c.translation = b and a = d.concept "
+              + "and a = c.concept and a.workflowStatus = :editingDone "
+              + "and b.id = :translationId and d.term like :searchTerm");
+
+      descQuery.setParameter("editingDone", WorkflowStatus.EDITING_DONE);
+      descQuery.setParameter("translationId", translation.getId());
+      descQuery.setParameter("searchTerm", "%" + pfs.getQueryRestriction() + "%");
+
+      // ensure there are no duplicates (concepts that match on concept name and
+      // description term
+      // or on multiple description terms)
+      List<Concept> descResultsToKeep = new ArrayList<>();
+      for (Object result : descQuery.getResultList()) {
+        Concept cpt = (Concept) result;
+        for (Object priorResult : results) {
+          if (!cpt.getName().equals(((Concept) priorResult).getName())) {
+            descResultsToKeep.add(cpt);
+          }
+        }
+      }
+      results.addAll(descResultsToKeep);
+
+      totalCount = results.size();
+
+      // with full list of matches on query restriction, now apply any paging or
+      // sorting
+      pfs.setQueryRestriction(null);
       results = service.applyPfsToList(results, Concept.class, totalCt, pfs);
-      totalCount = totalCt[0];
+
     }
 
     list.getObjects().addAll(results);
