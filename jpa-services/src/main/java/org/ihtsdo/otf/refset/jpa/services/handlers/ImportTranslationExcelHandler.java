@@ -5,11 +5,14 @@ package org.ihtsdo.otf.refset.jpa.services.handlers;
 
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
@@ -25,7 +28,6 @@ import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.FieldedStringTokenizer;
-import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.jpa.ConceptNoteJpa;
 import org.ihtsdo.otf.refset.jpa.ValidationResultJpa;
 import org.ihtsdo.otf.refset.jpa.services.RefsetServiceJpa;
@@ -73,24 +75,40 @@ public class ImportTranslationExcelHandler extends ImportExportAbstract
   /** The Constant ACCEPTABILITY. */
   private static final int ACCEPTABILITY = 8;
 
+  /** The Constant LANGUAGE_REFERENCE_SET_2. */
+  private static final int LANGUAGE_REFERENCE_SET_2 = 9;
+
+  /** The Constant ACCEPTABILITY_2. */
+  private static final int ACCEPTABILITY_2 = 10;
+
+  /** The Constant LANGUAGE_REFERENCE_SET_3. */
+  private static final int LANGUAGE_REFERENCE_SET_3 = 11;
+
+  /** The Constant ACCEPTABILITY_3. */
+  private static final int ACCEPTABILITY_3 = 12;
+
   /** The Constant NOTES. */
   private static final int NOTES = 13;
 
   // file format
-  // 01. Concept Id - CONCEPT_ID
-  // 02. GB/US FSN Term - FSN_TERM
-  // 03. Preferred Term (For reference only)
-  // 04. Translated Term - TRANSLATED_TERM
-  // 05. Language Code - LANGUAGE_CODE
-  // 06. Case Signifiance - CASE_SIGNIFIANCE
-  // 07. Type - TYPE
-  // 08. Language reference set - LANGUAGE_REFERENCE_SET used
-  // 09. Acceptability - ACCEPTABILITY - used
+  // 1. Concept Id - CONCEPT_ID
+  // 2. GB/US FSN Term (For reference only) - FSN_TERM - NOT used
+  // 3. Preferred Term (For reference only) - PREFERRED_TERM - NOT used
+  // 4. Translated Term - TRANSLATED_TERM
+  // 5. Language Code - LANGUAGE_CODE
+  // 6. Case Signifiance - CASE_SIGNIFIANCE
+  // 7. Type - TYPE
+  // 8. Language reference set - LANGUAGE_REFERENCE_SET - conditional
+  // 9. Acceptability - ACCEPTABILITY - used
   // 10. Language reference set - LANGUAGE_REFERENCE_SET - NOT used
   // 11. Acceptability - ACCEPTABILITY - NOT used
   // 12. Language reference set - LANGUAGE_REFERENCE_SET - NOT used
   // 13. Acceptability - ACCEPTABILITY - NOT used
-  // 14. Notes
+  // 14. Notes - optional
+
+  /** The list of fields. */
+  private Set<Integer> requiredFields = new HashSet<>(Arrays.asList(CONCEPT_ID, TRANSLATED_TERM,
+      LANGUAGE_CODE, CASE_SIGNIFIANCE, TYPE, ACCEPTABILITY));
 
   private Map<Integer, String> columnIndexNameMap = new HashMap<>() {
     {
@@ -116,10 +134,6 @@ public class ImportTranslationExcelHandler extends ImportExportAbstract
   private Map<String, String> descriptionTypeCodeMap = new HashMap<>();
 
   private Map<String, String> caseSignificanceCodeMap = new HashMap<>();
-
-  private Map<String, String> languageReferenceSetCodeMap = new HashMap<>();
-
-  private Map<String, String> inactivationReasonCodeMap = new HashMap<>();
 
   /** The request cancel flag. */
   boolean requestCancel = false;
@@ -153,28 +167,6 @@ public class ImportTranslationExcelHandler extends ImportExportAbstract
     caseSignificanceCodeMap.put("CS", "900000000000017005");
     caseSignificanceCodeMap.put("cI", "900000000000020002");
 
-    languageReferenceSetCodeMap.put("Belgian French", "21000172104");
-    languageReferenceSetCodeMap.put("Belgian Dutch", "31000172101");
-    languageReferenceSetCodeMap.put("GB English", "900000000000508004");
-    languageReferenceSetCodeMap.put("US English", "900000000000509007");
-    languageReferenceSetCodeMap.put("Irish", "21000220103");
-    languageReferenceSetCodeMap.put("Danish", "554461000005103");
-    languageReferenceSetCodeMap.put("Swiss German", "2041000195100");
-    languageReferenceSetCodeMap.put("Swiss French", "2021000195106");
-    languageReferenceSetCodeMap.put("Swiss Italian", "2031000195108");
-    languageReferenceSetCodeMap.put("Norwegian Bokmål", "61000202103");
-    languageReferenceSetCodeMap.put("Norwegian Nynorsk", "91000202106");
-    languageReferenceSetCodeMap.put("Estonian", "71000181105");
-    languageReferenceSetCodeMap.put("Swedish", "46011000052107");
-
-    inactivationReasonCodeMap.put("Not semantically equivalent", "723278000");
-    inactivationReasonCodeMap.put("Outdated", "900000000000483008");
-    inactivationReasonCodeMap.put("Erroneous", "900000000000485001");
-    inactivationReasonCodeMap.put("Non-conformance to editorial policy", "723277005");
-    inactivationReasonCodeMap.put("Duplicate", "900000000000482003");
-    inactivationReasonCodeMap.put("Ambiguous", "900000000000484000");
-    inactivationReasonCodeMap.put("Moved elsewhere", "900000000000487009");
-    inactivationReasonCodeMap.put("Limited", "900000000000486000");
   }
 
   /* see superclass */
@@ -306,40 +298,43 @@ public class ImportTranslationExcelHandler extends ImportExportAbstract
             isFirstRow = false;
             continue;
           }
-          
-          //pre-emptive check for translation term and ID
-          if((row.getCell(3) == null || row.getCell(3).getStringCellValue() == "") && (row.getCell(1) == null || row.getCell(1).getStringCellValue() == ""))
+
+          // pre-emptive check for translation term and ID
+          if ((row.getCell(3) == null || row.getCell(3).getStringCellValue().equals(""))
+              && (row.getCell(1) == null || row.getCell(1).getStringCellValue().equals("")))
             continue;
 
           // file format
-          // 1. Concept Id - CONCEPT_ID -
-          // 2. GB/US FSN Term - FSN_TERM -
+          // 1. Concept Id - CONCEPT_ID
+          // 2. GB/US FSN Term - FSN_TERM
           // 3. Preferred Term (For reference only)
-          // 4. Translated Term - TRANSLATED_TERM -
-          // 5. Language Code - LANGUAGE_CODE -
-          // 6. Case Signifiance - CASE_SIGNIFIANCE - used
-          // 7. Type - TYPE - used
-          // 8. Language reference set - LANGUAGE_REFERENCE_SET - NOT used
+          // 4. Translated Term - TRANSLATED_TERM
+          // 5. Language Code - LANGUAGE_CODE
+          // 6. Case Signifiance - CASE_SIGNIFIANCE
+          // 7. Type - TYPE
+          // 8. Language reference set - LANGUAGE_REFERENCE_SET - conditional
           // 9. Acceptability - ACCEPTABILITY - used
           // 10. Language reference set - LANGUAGE_REFERENCE_SET - NOT used
           // 11. Acceptability - ACCEPTABILITY - NOT used
           // 12. Language reference set - LANGUAGE_REFERENCE_SET - NOT used
           // 13. Acceptability - ACCEPTABILITY - NOT used
-          // 14. Notes
+          // 14. Notes - optional
 
           boolean skipRow = false;
           // Check for missing required data
           for (int i = 0; i < columnIndexNameMap.size(); i++) {
-            // The language reference set column is not required.
-            if (i == LANGUAGE_REFERENCE_SET) {
+            // If a required field is blank, add an error
+            if (!requiredFields.contains(i)) {
               continue;
             }
-            if (row.getCell(i) == null) {
+            if (row.getCell(i) == null || row.getCell(i).getStringCellValue().equals("")) {
               validationResult.addError("Required \"" + columnIndexNameMap.get(i)
                   + "\" data missing for at least one row.");
 
-              skippedDueToMissingData++;
-              skipRow = true;
+              if (!skipRow) {
+                skippedDueToMissingData++;
+                skipRow = true;
+              }
             }
           }
           if (skipRow) {
@@ -366,8 +361,6 @@ public class ImportTranslationExcelHandler extends ImportExportAbstract
           description.setTerminologyId(null);
           description.setLanguageCode(translation.getLanguage());
           description.setTypeId(descriptionTypeCodeMap.get(getCellValue(row, TYPE)));
-          String caseSignificanceString = getCellValue(row, CASE_SIGNIFIANCE);
-          String caseSignificanceId = caseSignificanceCodeMap.get(caseSignificanceString);
           description.setCaseSignificanceId(
               caseSignificanceCodeMap.get(getCellValue(row, CASE_SIGNIFIANCE)));
           description.setEffectiveTime(new Date());
