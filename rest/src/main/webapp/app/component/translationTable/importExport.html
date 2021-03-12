@@ -94,19 +94,26 @@
             {{warning}}</div>
         </td>
       </tr>
-      <tr ng-show="errors.length > 0">
+      <tr ng-show="errors.length == 1">
         <td colspan="2">
           <div class="alert alert-danger alert-error">
             {{errors[0]}}
+          </div>
+        </td>
+      </tr>      
+      <tr ng-show="errors.length > 1">
+        <td colspan="2">
+          <div class="alert alert-danger alert-error">
+            Multiple errors:
             <div style="display: inline; float: right;">
-              <i ng-show="errors[1]"
-                title="{{error.expand ? 'Show' : 'Hide'}} long error"
+              <i title="{{error.expand ? 'Show' : 'Hide'}} long error"
                 class="noul material-icons md-18"
                 ng-click="error.expand = !error.expand;">attach_file</i>
             </div>
-            <p ng-show="errors[1] && error.expand">
-              <br />{{errors[1]}}
-            </p>
+            <div ng-show="error.expand == true">
+               <div class="alert alert-danger alert-error" ng-repeat="error in errors">
+                  {{error}}<br /></div>
+            </div>
           </div>
         </td>
       </tr>
