@@ -2823,6 +2823,12 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
     //
     syncNotes(originRefset.getNotes(), currentRefset.getNotes());
 
+
+    // see RTT-6343
+    // updateRefset without removing the members will cause a duplicate exception
+    // in the database
+    currentRefset.setMembers(null);
+    
     //
     // at the end, originRefset should have exactly the right members
     // attached to it (for indexing)
