@@ -999,16 +999,19 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
       // ensure there are no duplicates (concepts that match on concept name and
       // description term
       // or on multiple description terms)
-      List<Concept> descResultsToKeep = new ArrayList<>();
       for (Object result : descQuery.getResultList()) {
         Concept cpt = (Concept) result;
+        boolean duplicateResult = false;
         for (Object priorResult : results) {
-          if (!cpt.getName().equals(((Concept) priorResult).getName())) {
-            descResultsToKeep.add(cpt);
+          if (cpt.getName().equals(((Concept) priorResult).getName())) {
+            duplicateResult=true;
+            break;
           }
         }
+        if(!duplicateResult) {
+          results.add(cpt);
+        }
       }
-      results.addAll(descResultsToKeep);
 
       totalCount = results.size();
 
