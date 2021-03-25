@@ -284,7 +284,17 @@ public class ImportTranslationExcelHandler extends ImportExportAbstract
     try (final Workbook workbook = WorkbookFactory.create(content);) {
 
       // expecting given template
-      final Sheet sheet = workbook.getSheet("Description Additions");
+      Sheet sheet = null;
+      if(workbook.getNumberOfSheets() == 1) {
+        sheet = workbook.getSheetAt(0);
+      }
+      else
+        sheet = workbook.getSheet("Description Additions");
+      Logger.getLogger(getClass()).info(sheet);
+      if(sheet.getRow(0) == null) {
+        validationResult.addError("Translation template requires a sheet named \"Description Additions\".");
+        return new ArrayList<>();
+      }
 
       try (final RefsetService service = new RefsetServiceJpa();) {
 
