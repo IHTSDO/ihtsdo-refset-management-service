@@ -310,8 +310,8 @@ public class ImportTranslationExcelHandler extends ImportExportAbstract
           }
 
           // pre-emptive check for translation term and ID
-          if ((row.getCell(3) == null || row.getCell(3).getStringCellValue().equals(""))
-              && (row.getCell(1) == null || row.getCell(1).getStringCellValue().equals("")))
+          if ((row.getCell(3) == null || getCellValue(row, 3) == null || getCellValue(row, 3).equals(""))
+              && (row.getCell(1) == null || getCellValue(row, 1) == null || getCellValue(row, 1).equals("")))
             continue;
 
           // file format
@@ -337,7 +337,7 @@ public class ImportTranslationExcelHandler extends ImportExportAbstract
             if (!requiredFields.contains(i)) {
               continue;
             }
-            if (row.getCell(i) == null || row.getCell(i).getStringCellValue().equals("")) {
+            if (row.getCell(i) == null || getCellValue(row, i) == null || getCellValue(row, i).equals("")) {
               validationResult.addError("Required \"" + columnIndexNameMap.get(i)
                   + "\" data missing for at least one row.");
 
@@ -480,6 +480,7 @@ public class ImportTranslationExcelHandler extends ImportExportAbstract
   private String getCellValue(Row row, int cellIndex) {
 
     String value = null;
+
     if (row.getCell(cellIndex).getCellType() == CellType.STRING) {
       value = row.getCell(cellIndex).getStringCellValue();
     } else if (row.getCell(cellIndex).getCellType() == CellType.NUMERIC) {
