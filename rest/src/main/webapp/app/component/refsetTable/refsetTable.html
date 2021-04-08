@@ -355,14 +355,12 @@
               ng-click="removeRefset(refset); $event.stopPropagation()"
               title="Remove" class="noul material-icons md-18">delete</i>
             <i ng-show="['LEAD','ADMIN'].includes(projects.role) && (refset.staged || refset.inPublicationProcess) && (refset.workflowStatus == 'PUBLISHED' || refset.workflowStatus == 'READY_FOR_PUBLICATION')"
-              ng-click="removeRefset(refset); $event.stopPropagation()"
               title="Cannot remove refset mid-release" class="inactive material-icons md-18">delete</i>              
             <!-- TODO -->
             <i ng-show="isAllowed('ASSIGN', refset) && !refset.inPublicationProcess"
               ng-click="openAssignRefsetModal(refset,'ASSIGN'); $event.stopPropagation()"
               title="Assign" class="noul material-icons md-18">assignment_ind</i>
             <i ng-show="isAllowed('ASSIGN', refset) && refset.inPublicationProcess"
-              ng-click="openAssignRefsetModal(refset,'ASSIGN'); $event.stopPropagation()"
               title="Cannot assign refset mid-release" class="inactive material-icons md-18">assignment_ind</i>              
             <i ng-show="isAllowed('FEEDBACK', refset)"
               ng-click="openAssignRefsetModal(refset,'FEEDBACK'); $event.stopPropagation()"
