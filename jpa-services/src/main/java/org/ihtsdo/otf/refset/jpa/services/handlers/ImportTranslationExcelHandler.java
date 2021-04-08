@@ -299,7 +299,6 @@ public class ImportTranslationExcelHandler extends ImportExportAbstract
       try (final RefsetService service = new RefsetServiceJpa();) {
 
         Logger.getLogger(getClass()).debug("Import translation Rf2 handler - reading Excel file.");
-
         boolean isFirstRow = true;
         for (final Row row : sheet) {
 
@@ -481,6 +480,8 @@ public class ImportTranslationExcelHandler extends ImportExportAbstract
 
     String value = null;
 
+    if(row.getCell(cellIndex) == null)
+      return value;
     if (row.getCell(cellIndex).getCellType() == CellType.STRING) {
       value = row.getCell(cellIndex).getStringCellValue();
     } else if (row.getCell(cellIndex).getCellType() == CellType.NUMERIC) {
