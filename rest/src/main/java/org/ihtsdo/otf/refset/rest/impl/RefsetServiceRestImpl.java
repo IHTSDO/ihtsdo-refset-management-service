@@ -690,7 +690,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
       }
       refsetService.commit();
     } catch (Exception e) {
-      handleException(e, "trying to update a refset");
+      handleException(e, "trying to remove refset members for expression");
     } finally {
       refsetService.close();
       securityService.close();
@@ -785,8 +785,20 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
             refset.getProject().getId(), refset.getId(),
             refset.getDefinitionClauses().toString());
       }
+      
+      
 
+      translationService.commitClearBegin();
+      
+      // if the branch has changed in the update, need to re-populateMemberSynonyms for each concept member
+      if (!oldRefset.getTerminology().contentEquals(refset.getTerminology())) {
+        // Look up members and synonyms for this refset
+        translationService.lookupMemberNames(refset.getId(),
+            "updated refset terminology/version", true, true, true);
+      }
+      
       translationService.commit();
+      
     } catch (Exception e) {
       handleException(e, "trying to update a refset");
     } finally {

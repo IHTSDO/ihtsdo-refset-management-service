@@ -1817,6 +1817,14 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
   @Override
   public void lookupMemberNames(Long refsetId, String label, boolean background,
     boolean lookupSynonyms) throws Exception {
+    lookupMemberNames(refsetId, label, background, lookupSynonyms, false);
+    
+  }
+  
+  /* see superclass */
+  @Override
+  public void lookupMemberNames(Long refsetId, String label, boolean background,
+    boolean lookupSynonyms, boolean forceLookupSynonyms) throws Exception {
     Logger.getLogger(getClass()).info("Refset Service - lookup member names - "
         + refsetId + ", " + background);
 
@@ -1868,7 +1876,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
 
         // Create new thread
         Runnable lookup =
-            new LookupMemberNamesThread(refsetId, label, lookupSynonyms);
+            new LookupMemberNamesThread(refsetId, label, lookupSynonyms, forceLookupSynonyms);
         Thread t = new Thread(lookup);
         t.start();
         // Handle non-background
@@ -2068,8 +2076,11 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
     /** The save members. */
     private boolean saveMembers = true;
 
-    /** The lookup synonyms. */
+    /** Indicates if synonyms could be looked up, if other parameters are met. */
     private boolean lookupSynonyms = true;
+    
+    /** Indicates synonyms must be looked up, even if some exist previously. */
+    private boolean forceLookupSynonyms = false;
 
     /** The lookup canceled. */
     private boolean lookupCanceled = false;
@@ -2084,10 +2095,11 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
      * @throws Exception the exception
      */
     public LookupMemberNamesThread(Long id, String label,
-        boolean lookupSynonyms) throws Exception {
+        boolean lookupSynonyms, boolean forceLookupSynonyms) throws Exception {
       this.refsetId = id;
       this.label = label;
       this.lookupSynonyms = lookupSynonyms;
+      this.forceLookupSynonyms = forceLookupSynonyms;
     }
 
     /**
@@ -2166,7 +2178,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
         int count = 0;
         for (final ConceptRefsetMember member : members) {
           memberMap.put(member.getConceptId(), member);
-          if (member.getConceptName()
+          if (forceLookupSynonyms || member.getConceptName()
               .equals(TerminologyHandler.REQUIRES_NAME_LOOKUP)
               || member.getConceptName()
                   .equals(TerminologyHandler.NAME_LOOKUP_IN_PROGRESS)
@@ -3240,4 +3252,6 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
 
     return inactiveConceptIds;
   }
+
+
 }
