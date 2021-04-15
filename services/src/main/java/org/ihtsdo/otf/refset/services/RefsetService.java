@@ -458,6 +458,19 @@ public interface RefsetService extends ReleaseService {
    */
   public void lookupMemberNames(Long refsetId, String label, boolean background,
     boolean lookupSynonyms) throws Exception;
+  
+  /**
+   * Lookup member names.
+   *
+   * @param refsetId the refset id
+   * @param label the label
+   * @param background the background
+   * @param lookupSynonyms the lookup synonyms
+   * @param forceLookupSynonyms the force lookup synonyms
+   * @throws Exception the exception
+   */
+  public void lookupMemberNames(Long refsetId, String label, boolean background,
+    boolean lookupSynonyms, boolean forceLookupSynonyms) throws Exception;
 
   /**
    * Perform member lookup names for a known list of members. This is to support
