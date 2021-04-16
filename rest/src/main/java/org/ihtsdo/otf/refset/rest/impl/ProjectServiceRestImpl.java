@@ -4,6 +4,7 @@
 package org.ihtsdo.otf.refset.rest.impl;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
@@ -687,7 +688,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
           UserRole.VIEWER);
       final TerminologyList list = new TerminologyListJpa();
       final List<Project> projects = projectService.getProjects().getObjects();
-      final List<Terminology> terminologyList = new ArrayList<>();
+      final List<Terminology> terminologyList = Collections.synchronizedList(new ArrayList<>());
 
       // make multiple calls in parallel
       projects.parallelStream().map(project -> {
