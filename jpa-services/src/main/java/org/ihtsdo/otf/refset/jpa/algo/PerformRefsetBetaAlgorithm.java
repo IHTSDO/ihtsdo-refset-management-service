@@ -237,6 +237,10 @@ public class PerformRefsetBetaAlgorithm extends RefsetServiceJpa implements
     // not planned anymore, but also not published yet
     stageReleaseInfo.setPlanned(false);
     addReleaseInfo(stageReleaseInfo);
+    
+    // Look up members and synonyms for this refset
+    lookupMemberNames(stagedRefset.getId(), "perform beta release",
+        true, true, true);
   }
 
   /* see superclass */
