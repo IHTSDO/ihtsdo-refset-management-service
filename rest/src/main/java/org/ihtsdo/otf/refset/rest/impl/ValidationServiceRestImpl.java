@@ -128,7 +128,7 @@ public class ValidationServiceRestImpl extends RootServiceRestImpl
 
     try {
       authorizeProject(refsetService, refset.getProjectId(), securityService,
-          authToken, "validate a refset", UserRole.AUTHOR);
+          authToken, "validate a refset", UserRole.VIEWER);
 
       final Project project = refsetService.getProject(projectId);
       final ValidationResult result =

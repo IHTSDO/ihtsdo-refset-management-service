@@ -92,7 +92,8 @@ public class DefaultValidationCheck extends AbstractValidationCheck {
 
     // For MANAGED-SERVICE projects only, check for inactive concepts at
     // publication time
-    if (refset.isInPublicationProcess() && refset.getProject()
+    if (refset.isInPublicationProcess() && 
+        refset.getProject().getTerminologyHandlerKey() != null && refset.getProject()
         .getTerminologyHandlerKey().equals("MANAGED-SERVICE")) {
       try {
         List<String> inactiveConcepts =
