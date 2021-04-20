@@ -1761,7 +1761,7 @@ tsApp.service('refsetService', [
             
             //key is first non-date after MAIN
             for(var k of path.substring(path.indexOf('/')+1).split('/')) {
-              if (!utilService.isValidDate(k.substring(0,10)) && k != selectedTerminology) {
+              if (!utilService.isValidDate(k.substring(0,10)) ) {
                   // valid paths have to end with the identified key
                   //the first non-date after MAIN is the project, but subsequent folders are tasks and we should not point to those
                   if (path.endsWith(k)){
