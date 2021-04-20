@@ -315,7 +315,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
         if (version != null && !version.isEmpty() && !seen.contains(version)) {
 	          final Terminology terminology = new TerminologyJpa();
 	          terminology.setTerminology(edition);
-          terminology.setVersion(entry.get("branchPath").asText());
+          terminology.setVersion(entry.get("parentBranchPath").asText());
           terminology.setName(version);
 	          list.add(terminology);
 	        }
