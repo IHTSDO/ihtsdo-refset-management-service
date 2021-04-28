@@ -308,18 +308,33 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     ObjectMapper mapper = new ObjectMapper();
     JsonNode doc = mapper.readTree(resultString);
 
-	    final List<String> seen = new ArrayList<>();
+	    final List<String> seenVersions = new ArrayList<>();
+	    final List<String> seenBranchPaths = new ArrayList<>();
 	    for (final JsonNode entry : doc.get("items")) {
 	      if (entry.get("shortName").asText().equals(edition)) {
 	        final String version = entry.get("version").asText();
-        if (version != null && !version.isEmpty() && !seen.contains(version)) {
-	          final Terminology terminology = new TerminologyJpa();
-	          terminology.setTerminology(edition);
-          terminology.setVersion(entry.get("parentBranchPath").asText());
-          terminology.setName(version);
-	          list.add(terminology);
-	        }
-	        seen.add(version);
+        if (version != null && !version.isEmpty() && !seenVersions.contains(version)) {
+              String branchPath = (entry.get("branchPath").asText());
+              if (branchPath != null && !branchPath.isEmpty() && !seenBranchPaths.contains(branchPath)) {
+                final Terminology terminology = new TerminologyJpa();
+                terminology.setTerminology(edition);
+            terminology.setVersion(branchPath);
+            terminology.setName(version);
+                list.add(terminology);
+                seenBranchPaths.add(branchPath);
+                seenVersions.add(version);
+              }
+              //Also create entry for top-level terminology
+              branchPath = (entry.get("parentBranchPath").asText());
+              if (branchPath != null && !branchPath.isEmpty() && !seenBranchPaths.contains(branchPath)) {
+                final Terminology terminology = new TerminologyJpa();
+                terminology.setTerminology(edition);
+            terminology.setVersion(branchPath);
+            terminology.setName("");
+                list.add(terminology);
+                seenBranchPaths.add(branchPath);
+              }
+            }
 	      }
 	    }
 
