@@ -76,8 +76,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
   private static Map<String, String> tvLanguageMap = new HashMap<>();
 
   /** The terminologies for URL. */
-  private static Map<String, List<Terminology>> terminologiesForURL =
-      new HashMap<>();
+  private static Map<String, List<Terminology>> terminologiesForURL = new HashMap<>();
 
   /** The terminologies for URL expiration date. */
   private static Date terminologiesForURLexpirationDate = new Date();
@@ -144,8 +143,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
   /* see superclass */
   @Override
   public TerminologyHandler copy() throws Exception {
-    final SnowstormTerminologyHandler handler =
-        new SnowstormTerminologyHandler();
+    final SnowstormTerminologyHandler handler = new SnowstormTerminologyHandler();
     handler.defaultUrl = this.defaultUrl;
     handler.authHeader = this.authHeader;
     handler.setApiKey(getApiKey());
@@ -156,14 +154,11 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
   @Override
   public boolean test(String terminology, String version) throws Exception {
     final Client client = ClientBuilder.newClient();
-    final WebTarget target =
-        client.target(url + "/branches/" + (version == null ? "" : version));
+    final WebTarget target = client.target(url + "/branches/" + (version == null ? "" : version));
 
     final Response response =
-        target.request(accept).header("Authorization", authHeader)
-            .header("Cookie", getGenericUserCookie() != null
-                ? getGenericUserCookie() : getCookieHeader())
-            .get();
+        target.request(accept).header("Authorization", authHeader).header("Cookie",
+            getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader()).get();
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -175,8 +170,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
       throw new LocalException(
           "Connection with the terminology server has expired. Please reload the page to reconnect.");
     } else {
-      throw new LocalException(
-          "Unexpected terminology server failure. Message = " + resultString);
+      throw new LocalException("Unexpected terminology server failure. Message = " + resultString);
     }
     return true;
   }
@@ -221,7 +215,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
       Calendar now = Calendar.getInstance();
       now.add(Calendar.HOUR, 24);
       terminologiesForURLexpirationDate = now.getTime();
-  }
+    }
 
     if (terminologiesForURL.containsKey(url)) {
       return terminologiesForURL.get(url);
@@ -229,20 +223,17 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
 
     final List<Terminology> result = new ArrayList<Terminology>();
 
-	    // Make a webservice call
-	    final Client client = ClientBuilder.newClient();
-	    Logger.getLogger(getClass())
-        .debug("  Get terminology editions - " + url + "/codesystems");
+    // Make a webservice call
+    final Client client = ClientBuilder.newClient();
+    Logger.getLogger(getClass()).debug("  Get terminology editions - " + url + "/codesystems");
     final WebTarget target = client.target(url + "/codesystems");
-    final Response response =
-        target.request(accept).header("Authorization", authHeader)
-            .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
-            .header("Cookie", getGenericUserCookie() != null
-                ? getGenericUserCookie() : getCookieHeader())
-            .get();
-	    final String resultString = response.readEntity(String.class);
-	    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-	      // n/a
+    final Response response = target.request(accept).header("Authorization", authHeader)
+        .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6").header("Cookie",
+            getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
+        .get();
+    final String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
     }
     // If the generic user is logged out, it returns a 403 Forbidden error. In
     // this case, clear out the generic use cookie so the next call can re-login
@@ -250,13 +241,12 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
       genericUserCookie = null;
       throw new LocalException(
           "Connection with the terminology server has expired. Please reload the page to reconnect.");
-	    } else {
-	      throw new LocalException(
-	          "Unexpected terminology server failure. Message = " + resultString);
-	    }
+    } else {
+      throw new LocalException("Unexpected terminology server failure. Message = " + resultString);
+    }
 
-	    final ObjectMapper mapper = new ObjectMapper();
-	    final JsonNode doc = mapper.readTree(resultString);
+    final ObjectMapper mapper = new ObjectMapper();
+    final JsonNode doc = mapper.readTree(resultString);
 
     for (final JsonNode entry : doc.get("items")) {
       final Terminology terminology = new TerminologyJpa();
@@ -273,23 +263,19 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
 
   /* see superclass */
   @Override
-  public List<Terminology> getTerminologyVersions(String edition,
-    Boolean showFutureVersions) throws Exception {
+  public List<Terminology> getTerminologyVersions(String edition, Boolean showFutureVersions)
+    throws Exception {
     final List<Terminology> list = new ArrayList<Terminology>();
     // Make a webservice call to get codesystems
     final Client client = ClientBuilder.newClient();
-    Logger.getLogger(getClass())
-        .debug("  Get terminology versions - " + url + "/codesystems/" + edition
-            + "/versions"
-            + (showFutureVersions ? "?showFutureVersions=true" : ""));
-    WebTarget target = client.target(url + "/codesystems/" + edition
-        + "/versions" + (showFutureVersions ? "?showFutureVersions=true" : ""));
-    Response response =
-        target.request(accept).header("Authorization", authHeader)
-            .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
-            .header("Cookie", getGenericUserCookie() != null
-                ? getGenericUserCookie() : getCookieHeader())
-            .get();
+    Logger.getLogger(getClass()).debug("  Get terminology versions - " + url + "/codesystems/"
+        + edition + "/versions" + (showFutureVersions ? "?showFutureVersions=true" : ""));
+    WebTarget target = client.target(url + "/codesystems/" + edition + "/versions"
+        + (showFutureVersions ? "?showFutureVersions=true" : ""));
+    Response response = target.request(accept).header("Authorization", authHeader)
+        .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6").header("Cookie",
+            getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
+        .get();
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -301,42 +287,43 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
       throw new LocalException(
           "Connection with the terminology server has expired. Please reload the page to reconnect.");
     } else {
-      throw new LocalException(
-          "Unexpected terminology server failure. Message = " + resultString);
+      throw new LocalException("Unexpected terminology server failure. Message = " + resultString);
     }
 
     ObjectMapper mapper = new ObjectMapper();
     JsonNode doc = mapper.readTree(resultString);
 
-	    final List<String> seenVersions = new ArrayList<>();
-	    final List<String> seenBranchPaths = new ArrayList<>();
-	    for (final JsonNode entry : doc.get("items")) {
-	      if (entry.get("shortName").asText().equals(edition)) {
-	        final String version = entry.get("version").asText();
+    final List<String> seenVersions = new ArrayList<>();
+    final List<String> seenBranchPaths = new ArrayList<>();
+    for (final JsonNode entry : doc.get("items")) {
+      if (entry.get("shortName").asText().equals(edition)) {
+        final String version = entry.get("version").asText();
         if (version != null && !version.isEmpty() && !seenVersions.contains(version)) {
-              String branchPath = (entry.get("branchPath").asText());
-              if (branchPath != null && !branchPath.isEmpty() && !seenBranchPaths.contains(branchPath)) {
-                final Terminology terminology = new TerminologyJpa();
-                terminology.setTerminology(edition);
+          String branchPath = (entry.get("branchPath").asText());
+          if (branchPath != null && !branchPath.isEmpty()
+              && !seenBranchPaths.contains(branchPath)) {
+            final Terminology terminology = new TerminologyJpa();
+            terminology.setTerminology(edition);
             terminology.setVersion(branchPath);
             terminology.setName(version);
-                list.add(terminology);
-                seenBranchPaths.add(branchPath);
-                seenVersions.add(version);
-              }
-              //Also create entry for top-level terminology
-              branchPath = (entry.get("parentBranchPath").asText());
-              if (branchPath != null && !branchPath.isEmpty() && !seenBranchPaths.contains(branchPath)) {
-                final Terminology terminology = new TerminologyJpa();
-                terminology.setTerminology(edition);
+            list.add(terminology);
+            seenBranchPaths.add(branchPath);
+            seenVersions.add(version);
+          }
+          // Also create entry for top-level terminology
+          branchPath = (entry.get("parentBranchPath").asText());
+          if (branchPath != null && !branchPath.isEmpty()
+              && !seenBranchPaths.contains(branchPath)) {
+            final Terminology terminology = new TerminologyJpa();
+            terminology.setTerminology(edition);
             terminology.setVersion(branchPath);
             terminology.setName("");
-                list.add(terminology);
-                seenBranchPaths.add(branchPath);
-              }
-            }
-	      }
-	    }
+            list.add(terminology);
+            seenBranchPaths.add(branchPath);
+          }
+        }
+      }
+    }
 
     /*
      * // Look for additional branch paths by calling branches api call
@@ -368,34 +355,31 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
      * terminology.setVersion(path); list.add(terminology); } }
      */
 
-	    // Reverse sort
-	    Collections.sort(list, new Comparator<Terminology>() {
-	      @Override
-	      public int compare(Terminology o1, Terminology o2) {
-	        return o2.getVersion().compareTo(o1.getVersion());
-	      }
-	    });
-	    return list;
+    // Reverse sort
+    Collections.sort(list, new Comparator<Terminology>() {
+      @Override
+      public int compare(Terminology o1, Terminology o2) {
+        return o2.getVersion().compareTo(o1.getVersion());
+      }
+    });
+    return list;
   }
 
   /* see superclass */
   @Override
-  public ConceptList getReplacementConcepts(String conceptId,
-    String terminology, String version) throws Exception {
-    Logger.getLogger(getClass()).info(
-        "  get potential current concepts for retired concept - " + conceptId);
+  public ConceptList getReplacementConcepts(String conceptId, String terminology, String version)
+    throws Exception {
+    Logger.getLogger(getClass())
+        .info("  get potential current concepts for retired concept - " + conceptId);
     // Make a webservice call to SnowOwl to get concept
     final Client client = ClientBuilder.newClient();
 
-    WebTarget target =
-        client.target(url + "/browser/" + version + "/concepts/" + conceptId);
+    WebTarget target = client.target(url + "/browser/" + version + "/concepts/" + conceptId);
 
-    Response response =
-        target.request(accept).header("Authorization", authHeader)
-            .header("Accept-Language", getAcceptLanguage(terminology, version))
-            .header("Cookie", getGenericUserCookie() != null
-                ? getGenericUserCookie() : getCookieHeader())
-            .get();
+    Response response = target.request(accept).header("Authorization", authHeader)
+        .header("Accept-Language", getAcceptLanguage(terminology, version)).header("Cookie",
+            getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
+        .get();
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -413,61 +397,60 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
         return new ConceptListJpa();
       }
 
-      throw new LocalException(
-          "Unexpected terminology server failure. Message = " + resultString);
+      throw new LocalException("Unexpected terminology server failure. Message = " + resultString);
     }
 
-		/**
-		 * <pre>
-		 * {
-		"conceptId": "217673009",
-		"fsn": "Toxic reaction caused by wasp sting (disorder)",
-		"active": false,
-		"effectiveTime": "20190731",
-		"released": true,
-		"releasedEffectiveTime": 20190731,
-		"inactivationIndicator": "AMBIGUOUS",
-		"associationTargets": {
-		"POSSIBLY_EQUIVALENT_TO": [
-		  "7456000"
-		]
-		},
-		"moduleId": "900000000000207008",
-		"definitionStatus": "PRIMITIVE",
-		"descriptions": [
-		 * ...
-		 * 
-		 * </pre>
-		 */
+    /**
+     * <pre>
+     * {
+    "conceptId": "217673009",
+    "fsn": "Toxic reaction caused by wasp sting (disorder)",
+    "active": false,
+    "effectiveTime": "20190731",
+    "released": true,
+    "releasedEffectiveTime": 20190731,
+    "inactivationIndicator": "AMBIGUOUS",
+    "associationTargets": {
+    "POSSIBLY_EQUIVALENT_TO": [
+      "7456000"
+    ]
+    },
+    "moduleId": "900000000000207008",
+    "definitionStatus": "PRIMITIVE",
+    "descriptions": [
+     * ...
+     * 
+     * </pre>
+     */
 
     ObjectMapper mapper = new ObjectMapper();
     JsonNode doc = mapper.readTree(resultString);
 
     final Map<String, String> reasonMap = new HashMap<>();
-    	//JsonNode entry = null;
-        JsonNode associationTargets = doc.findValue("associationTargets");
-        	 
+    // JsonNode entry = null;
+    JsonNode associationTargets = doc.findValue("associationTargets");
+
     if (associationTargets == null || associationTargets.size() == 0
         || associationTargets.fields() == null) {
-        	return new ConceptListJpa();
-        }
-        Entry<String, JsonNode> entry = associationTargets.fields().next();
-        String key = entry.getKey();
-        String values = entry.getValue().toString();
-        if (values.contains("[")) {
-          values = values.substring(1, values.length() - 1);
-        }
-        values = values.replaceAll("\"", "");
-        for (String value : values.split(",")) {
-          // conceptId, reason
-          reasonMap.put(value, key);
-        }
+      return new ConceptListJpa();
+    }
+    Entry<String, JsonNode> entry = associationTargets.fields().next();
+    String key = entry.getKey();
+    String values = entry.getValue().toString();
+    if (values.contains("[")) {
+      values = values.substring(1, values.length() - 1);
+    }
+    values = values.replaceAll("\"", "");
+    for (String value : values.split(",")) {
+      // conceptId, reason
+      reasonMap.put(value, key);
+    }
 
     // Look up concepts - set "definition status id" to the reason for
     // inactivation
     // probably need a better placeholder for this, but for now - good enough
-    ConceptList list = this.getConcepts(new ArrayList<>(reasonMap.keySet()),
-        terminology, version, false);
+    ConceptList list =
+        this.getConcepts(new ArrayList<>(reasonMap.keySet()), terminology, version, false);
     for (final Concept concept : list.getObjects()) {
       concept.setDefinitionStatusId(reasonMap.get(concept.getTerminologyId()));
     }
@@ -476,10 +459,10 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
 
   /* see superclass */
   @Override
-  public ConceptList resolveExpression(String expr, String terminology,
-    String version, PfsParameter pfs, boolean description) throws Exception {
-    Logger.getLogger(getClass()).info("  resolve expression - " + terminology
-        + ", " + version + ", " + expr + ", " + pfs);
+  public ConceptList resolveExpression(String expr, String terminology, String version,
+    PfsParameter pfs, boolean description) throws Exception {
+    Logger.getLogger(getClass())
+        .info("  resolve expression - " + terminology + ", " + version + ", " + expr + ", " + pfs);
     // Make a webservice call to SnowOwl to get concept
     final Client client = ClientBuilder.newClient();
 
@@ -505,16 +488,14 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     String targetUri = url + "/" + version + "/concepts?ecl="
         + URLEncoder.encode(expr, "UTF-8").replaceAll(" ", "%20") + "&limit="
         + Math.min(initialMaxLimit, localPfs.getMaxResults()) + "&expand=pt()";
-    
+
     WebTarget target = client.target(targetUri);
     Logger.getLogger(getClass()).info(targetUri);
 
-    Response response =
-        target.request(accept).header("Authorization", authHeader)
-            .header("Accept-Language", getAcceptLanguage(terminology, version))
-            .header("Cookie", getGenericUserCookie() != null
-                ? getGenericUserCookie() : getCookieHeader())
-            .get();
+    Response response = target.request(accept).header("Authorization", authHeader)
+        .header("Accept-Language", getAcceptLanguage(terminology, version)).header("Cookie",
+            getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
+        .get();
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -532,8 +513,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
         return new ConceptListJpa();
       }
 
-      throw new LocalException(
-          "Unexpected terminology server failure. Message = " + resultString);
+      throw new LocalException("Unexpected terminology server failure. Message = " + resultString);
     }
 
     /**
@@ -586,7 +566,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     }
     String searchAfter = "";
     if (doc.findValue("searchAfter") != null) {
-    	searchAfter = doc.findValue("searchAfter").asText();
+      searchAfter = doc.findValue("searchAfter").asText();
     }
     for (final JsonNode conceptNode : doc.get("items")) {
       final Concept concept = new ConceptJpa();
@@ -594,33 +574,29 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
       concept.setActive(conceptNode.get("active").asText().equals("true"));
       concept.setTerminologyId(conceptNode.get("id").asText());
       if (conceptNode.has("effectiveTime")) {
-        concept.setLastModified(ConfigUtility.DATE_FORMAT
-            .parse(conceptNode.get("effectiveTime").asText()));
+        concept.setLastModified(
+            ConfigUtility.DATE_FORMAT.parse(conceptNode.get("effectiveTime").asText()));
       } else {
         concept.setLastModified(new Date());
       }
       concept.setLastModifiedBy(terminology);
       concept.setModuleId(conceptNode.get("moduleId").asText());
-      concept
-          .setDefinitionStatusId(conceptNode.get("definitionStatus").asText());
+      concept.setDefinitionStatusId(conceptNode.get("definitionStatus").asText());
 
       // pt.term is the name
-      if (conceptNode.get("pt") != null
-          && conceptNode.get("pt").get("term") != null) {
-      concept.setName(conceptNode.get("pt").get("term").asText());
+      if (conceptNode.get("pt") != null && conceptNode.get("pt").get("term") != null) {
+        concept.setName(conceptNode.get("pt").get("term").asText());
       } else {
         concept.setName(UNABLE_TO_DETERMINE_NAME);
 
-        Logger.getLogger(getClass()).error(
-            "[ALERT=ALL]: message=pt node is null or missing term subnode, concept="
-                + concept.getTerminologyId() + ", terminology=" + terminology
-                + ", version=" + version);
+        Logger.getLogger(getClass())
+            .error("[ALERT=ALL]: message=pt node is null or missing term subnode, concept="
+                + concept.getTerminologyId() + ", terminology=" + terminology + ", version="
+                + version);
 
         lookupErrors.append("  URI: ").append(targetUri).append("\r\n");
-        lookupErrors.append("  CONCEPT ID: ").append(concept.getTerminologyId())
-            .append("\r\n");
-        lookupErrors.append("  ERROR: ")
-            .append("\"pt\" node is null or missing \"term\" subnode")
+        lookupErrors.append("  CONCEPT ID: ").append(concept.getTerminologyId()).append("\r\n");
+        lookupErrors.append("  ERROR: ").append("\"pt\" node is null or missing \"term\" subnode")
             .append("\r\n\r\n");
       }
 
@@ -634,19 +610,19 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     while (total > initialMaxLimit && localPfs.getMaxResults() > initialMaxLimit
         && conceptList.getCount() < total) {
 
-      targetUri = url + "/" + version + "/concepts?ecl="
-          + URLEncoder.encode(expr, "UTF-8") + "&limit=200"
-          /* + (total - initialMaxLimit) */ + "&searchAfter=" + searchAfter
-          + "&expand=pt()";
+      targetUri =
+          url + "/" + version + "/concepts?ecl=" + URLEncoder.encode(expr, "UTF-8") + "&limit=200"
+          /* + (total - initialMaxLimit) */ + "&searchAfter=" + searchAfter + "&expand=pt()";
 
       target = client.target(targetUri);
       Logger.getLogger(getClass()).info(targetUri);
 
-      response = target.request(accept).header("Authorization", authHeader)
-          .header("Accept-Language", getAcceptLanguage(terminology, version))
-          .header("Cookie", getGenericUserCookie() != null
-              ? getGenericUserCookie() : getCookieHeader())
-          .get();
+      response =
+          target.request(accept).header("Authorization", authHeader)
+              .header("Accept-Language", getAcceptLanguage(terminology, version))
+              .header("Cookie",
+                  getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
+              .get();
 
       resultString = response.readEntity(String.class);
       if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -671,7 +647,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
         return conceptList;
       }
       if (doc.findValue("searchAfter") != null) {
-      	searchAfter = doc.findValue("searchAfter").asText();
+        searchAfter = doc.findValue("searchAfter").asText();
       }
       for (final JsonNode conceptNode : doc.get("items")) {
         final Concept concept = new ConceptJpa();
@@ -679,33 +655,29 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
         concept.setActive(conceptNode.get("active").asText().equals("true"));
         concept.setTerminologyId(conceptNode.get("id").asText());
         if (conceptNode.has("effectiveTime")) {
-          concept.setLastModified(ConfigUtility.DATE_FORMAT
-              .parse(conceptNode.get("effectiveTime").asText()));
+          concept.setLastModified(
+              ConfigUtility.DATE_FORMAT.parse(conceptNode.get("effectiveTime").asText()));
         } else {
           concept.setLastModified(new Date());
         }
         concept.setLastModifiedBy(terminology);
         concept.setModuleId(conceptNode.get("moduleId").asText());
-        concept.setDefinitionStatusId(
-            conceptNode.get("definitionStatus").asText());
+        concept.setDefinitionStatusId(conceptNode.get("definitionStatus").asText());
 
         // pt.term is the name
-        if (conceptNode.get("pt") != null
-            && conceptNode.get("pt").get("term") != null) {
+        if (conceptNode.get("pt") != null && conceptNode.get("pt").get("term") != null) {
           concept.setName(conceptNode.get("pt").get("term").asText());
         } else {
           concept.setName(UNABLE_TO_DETERMINE_NAME);
 
-          Logger.getLogger(getClass()).error(
-              "[ALERT=ALL]: message=pt node is null or missing term subnode, concept="
-                  + concept.getTerminologyId() + ", terminology=" + terminology
-                  + ", version=" + version);
+          Logger.getLogger(getClass())
+              .error("[ALERT=ALL]: message=pt node is null or missing term subnode, concept="
+                  + concept.getTerminologyId() + ", terminology=" + terminology + ", version="
+                  + version);
 
           lookupErrors.append("  URI: ").append(targetUri).append("\r\n");
-          lookupErrors.append("  CONCEPT ID: ")
-              .append(concept.getTerminologyId()).append("\r\n");
-          lookupErrors.append("  ERROR: ")
-              .append("\"pt\" node is null or missing \"term\" subnode")
+          lookupErrors.append("  CONCEPT ID: ").append(concept.getTerminologyId()).append("\r\n");
+          lookupErrors.append("  ERROR: ").append("\"pt\" node is null or missing \"term\" subnode")
               .append("\r\n\r\n");
         }
 
@@ -726,10 +698,9 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
 
   /* see superclass */
   @Override
-  public int countExpression(String expr, String terminology, String version)
-    throws Exception {
-    Logger.getLogger(getClass()).info(
-        "  expression count - " + terminology + ", " + version + ", " + expr);
+  public int countExpression(String expr, String terminology, String version) throws Exception {
+    Logger.getLogger(getClass())
+        .info("  expression count - " + terminology + ", " + version + ", " + expr);
 
     // Make a webservice call to SnowOwl to get concept
     final Client client = ClientBuilder.newClient();
@@ -737,12 +708,10 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     WebTarget target = client.target(url + "/" + version + "/concepts?ecl="
         + URLEncoder.encode(expr, "UTF-8").replaceAll(" ", "%20") + "&limit=1");
 
-    Response response =
-        target.request(accept).header("Authorization", authHeader)
-            .header("Accept-Language", getAcceptLanguage(terminology, version))
-            .header("Cookie", getGenericUserCookie() != null
-                ? getGenericUserCookie() : getCookieHeader())
-            .get();
+    Response response = target.request(accept).header("Authorization", authHeader)
+        .header("Accept-Language", getAcceptLanguage(terminology, version)).header("Cookie",
+            getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
+        .get();
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -760,8 +729,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
         return 0;
       }
 
-      throw new LocalException(
-          "Unexpected terminology server failure. Message = " + resultString);
+      throw new LocalException("Unexpected terminology server failure. Message = " + resultString);
     }
 
     ObjectMapper mapper = new ObjectMapper();
@@ -774,8 +742,8 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
 
   /* see superclass */
   @Override
-  public Concept getFullConcept(String terminologyId, String terminology,
-    String version) throws Exception {
+  public Concept getFullConcept(String terminologyId, String terminology, String version)
+    throws Exception {
 
     // TODO resolve this date conversion 20150131 -> 2015-01-31
     // version = "MAIN/2015-01-31";
@@ -784,17 +752,14 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
 
     final StringBuilder lookupErrors = new StringBuilder();
 
-    String targetUri =
-        url + "/browser/" + version + "/concepts/" + terminologyId;
+    String targetUri = url + "/browser/" + version + "/concepts/" + terminologyId;
     final WebTarget target = client.target(targetUri);
 
-    Logger.getLogger(getClass())
-        .info("  get full concept: " + terminologyId + "- " + targetUri);
+    Logger.getLogger(getClass()).info("  get full concept: " + terminologyId + "- " + targetUri);
 
-    final String resultString = retryWithDelay(target, 500, 3, accept,
-        authHeader, getAcceptLanguage(terminology, version),
-        getGenericUserCookie() != null ? getGenericUserCookie()
-            : getCookieHeader());
+    final String resultString =
+        retryWithDelay(target, 500, 3, accept, authHeader, getAcceptLanguage(terminology, version),
+            getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader());
 
     /**
      * <pre>
@@ -865,10 +830,9 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     } else {
       concept.setId(1L);
     }
-    
+
     if (doc.has("effectiveTime")) {
-      concept.setEffectiveTime(
-        ConfigUtility.DATE_FORMAT.parse(doc.get("effectiveTime").asText()));
+      concept.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse(doc.get("effectiveTime").asText()));
       concept.setLastModified(concept.getEffectiveTime());
     } else {
       concept.setLastModified(new Date());
@@ -883,16 +847,14 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     } else {
       concept.setName(UNABLE_TO_DETERMINE_NAME);
 
-      Logger.getLogger(getClass()).error(
-          "[ALERT=ALL]: message=fsn node is null or missing term subnode, concept="
-              + concept.getTerminologyId() + ", terminology=" + terminology
-              + ", version=" + version);
+      Logger.getLogger(getClass())
+          .error("[ALERT=ALL]: message=fsn node is null or missing term subnode, concept="
+              + concept.getTerminologyId() + ", terminology=" + terminology + ", version="
+              + version);
 
       lookupErrors.append("  URI: ").append(targetUri).append("\r\n");
-      lookupErrors.append("  CONCEPT ID: ").append(concept.getTerminologyId())
-          .append("\r\n");
-      lookupErrors.append("  ERROR: ")
-          .append("\"fsn\" node is null or missing \"term\" subnode")
+      lookupErrors.append("  CONCEPT ID: ").append(concept.getTerminologyId()).append("\r\n");
+      lookupErrors.append("  ERROR: ").append("\"fsn\" node is null or missing \"term\" subnode")
           .append("\r\n\r\n");
     }
 
@@ -905,13 +867,12 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
 
         description.setActive(desc.get("active").asText().equals("true"));
 
-        description
-            .setCaseSignificanceId(desc.get("caseSignificance").asText());
+        description.setCaseSignificanceId(desc.get("caseSignificance").asText());
 
         description.setConcept(concept);
         if (desc.has("effectiveTime")) {
-          description.setEffectiveTime(ConfigUtility.DATE_FORMAT
-            .parse(desc.get("effectiveTime").asText()));
+          description.setEffectiveTime(
+              ConfigUtility.DATE_FORMAT.parse(desc.get("effectiveTime").asText()));
           description.setLastModified(description.getEffectiveTime());
         } else {
           description.setLastModified(new Date());
@@ -934,8 +895,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
         if (description.isActive()) {
           final JsonNode languages = desc.findValues("acceptabilityMap").get(0);
 
-          if (!(languages.toString().isEmpty()
-              || languages.toString().equals("{}"))) {
+          if (!(languages.toString().isEmpty() || languages.toString().equals("{}"))) {
 
             ObjectNode language = (ObjectNode) languages;
             Iterator<Map.Entry<String, JsonNode>> iter = language.fields();
@@ -945,35 +905,32 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
               final String languageRefsetId = entry.getKey();
               final String acceptibilityString = entry.getValue().asText();
 
-            final LanguageRefsetMember member = new LanguageRefsetMemberJpa();
-            member.setActive(true);
+              final LanguageRefsetMember member = new LanguageRefsetMemberJpa();
+              member.setActive(true);
               member.setDescriptionId(concept.getTerminologyId());
 
               member.setRefsetId(languageRefsetId);
               if (acceptibilityString.equals("PREFERRED")) {
-              member.setAcceptabilityId("900000000000548007");
+                member.setAcceptabilityId("900000000000548007");
               } else if (acceptibilityString.equals("ACCEPTABLE")) {
-              member.setAcceptabilityId("900000000000549004");
+                member.setAcceptabilityId("900000000000549004");
+              }
+              description.getLanguageRefsetMembers().add(member);
             }
-            description.getLanguageRefsetMembers().add(member);
-          }
           } else {
 
-            Logger.getLogger(getClass()).error(
-                "[ALERT=ALL]: message=acceptabilityMap node is null or empty, concept="
-                    + concept.getTerminologyId() + ", description="
-                    + description.getTerminologyId() + ", terminology="
-                    + terminology + ", version=" + version);
+            Logger.getLogger(getClass())
+                .error("[ALERT=ALL]: message=acceptabilityMap node is null or empty, concept="
+                    + concept.getTerminologyId() + ", description=" + description.getTerminologyId()
+                    + ", terminology=" + terminology + ", version=" + version);
 
             lookupErrors.append("  URI: ").append(targetUri).append("\r\n");
-            lookupErrors.append("  CONCEPT ID: ")
-                .append(concept.getTerminologyId()).append("\r\n");
-            lookupErrors.append("  DESCRIPTION ID: ")
-                .append(description.getTerminologyId()).append("\r\n");
-            lookupErrors.append("  ERROR: ")
-                .append("\"acceptabilityMap\" node is null or empty")
+            lookupErrors.append("  CONCEPT ID: ").append(concept.getTerminologyId()).append("\r\n");
+            lookupErrors.append("  DESCRIPTION ID: ").append(description.getTerminologyId())
+                .append("\r\n");
+            lookupErrors.append("  ERROR: ").append("\"acceptabilityMap\" node is null or empty")
                 .append("\r\n\r\n");
-        }
+          }
         }
 
         concept.getDescriptions().add(description);
@@ -996,11 +953,10 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
           continue;
         }
         rel.setModifierId(relNode.get("modifier").asText());
-        rel.setRelationshipGroup(
-            Integer.valueOf(relNode.get("groupId").asText()));
+        rel.setRelationshipGroup(Integer.valueOf(relNode.get("groupId").asText()));
         if (relNode.has("effectiveTime")) {
-          rel.setEffectiveTime(ConfigUtility.DATE_FORMAT
-            .parse(relNode.get("effectiveTime").asText()));
+          rel.setEffectiveTime(
+              ConfigUtility.DATE_FORMAT.parse(relNode.get("effectiveTime").asText()));
           rel.setLastModified(rel.getEffectiveTime());
         } else {
           rel.setLastModified(new Date());
@@ -1020,18 +976,15 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
         rel.setTerminologyId(relNode.get("relationshipId").asText());
 
         final Concept destination = new ConceptJpa();
-        destination
-            .setTerminologyId(relNode.get("target").get("conceptId").asText());
+        destination.setTerminologyId(relNode.get("target").get("conceptId").asText());
         // Reuse as id if only digits, otherwise dummy id
         if (destination.getTerminologyId().matches("^\\d+$")) {
           destination.setId(Long.parseLong(destination.getTerminologyId()));
         } else {
           destination.setId(1L);
         }
-        destination
-            .setName(relNode.get("target").get("fsn").get("term").asText());
-        destination.setDefinitionStatusId(
-            relNode.get("target").get("definitionStatus").asText());
+        destination.setName(relNode.get("target").get("fsn").get("term").asText());
+        destination.setDefinitionStatusId(relNode.get("target").get("definitionStatus").asText());
         rel.setDestinationConcept(destination);
 
         concept.getRelationships().add(rel);
@@ -1047,8 +1000,8 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
 
   /* see superclass */
   @Override
-  public Concept getConcept(String terminologyId, String terminology,
-    String version) throws Exception {
+  public Concept getConcept(String terminologyId, String terminology, String version)
+    throws Exception {
     // if terminologyId is too short ,term server fails
     if (terminologyId == null) {
       return null;
@@ -1056,18 +1009,17 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     if (terminologyId.length() < 5) {
       return null;
     }
-    ConceptList conceptList =
-        resolveExpression(terminologyId, terminology, version, null, false);
+    ConceptList conceptList = resolveExpression(terminologyId, terminology, version, null, false);
     if (conceptList == null || conceptList.getObjects() == null
         || conceptList.getObjects().size() == 0) {
-    	return null;
+      return null;
     }
     return conceptList.getObjects().get(0);
   }
 
   @Override
-  public ConceptList getInactiveConcepts(List<String> terminologyIds,
-    String terminology, String version) throws Exception {
+  public ConceptList getInactiveConcepts(List<String> terminologyIds, String terminology,
+    String version) throws Exception {
     // If no terminologyIds are specified, return an empty ConceptList
     ConceptList conceptList = new ConceptListJpa();
     if (terminologyIds.size() == 0) {
@@ -1105,19 +1057,16 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     String expr = query.toString();
 
     String targetUri = url + "/" + version + "/concepts?conceptIds="
-        + URLEncoder.encode(expr, "UTF-8").replaceAll(" ", "%20")
-        + "&activeFilter=false&limit="
+        + URLEncoder.encode(expr, "UTF-8").replaceAll(" ", "%20") + "&activeFilter=false&limit="
         + Math.min(initialMaxLimit, localPfs.getMaxResults());
 
     WebTarget target = client.target(targetUri);
     Logger.getLogger(getClass()).info(targetUri);
 
-    Response response =
-        target.request(accept).header("Authorization", authHeader)
-            .header("Accept-Language", getAcceptLanguage(terminology, version))
-            .header("Cookie", getGenericUserCookie() != null
-                ? getGenericUserCookie() : getCookieHeader())
-            .get();
+    Response response = target.request(accept).header("Authorization", authHeader)
+        .header("Accept-Language", getAcceptLanguage(terminology, version)).header("Cookie",
+            getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
+        .get();
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -1137,8 +1086,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
         return new ConceptListJpa();
       }
 
-      throw new LocalException(
-          "Unexpected terminology server failure. Message = " + resultString);
+      throw new LocalException("Unexpected terminology server failure. Message = " + resultString);
     }
     conceptList = new ConceptListJpa();
     ObjectMapper mapper = new ObjectMapper();
@@ -1156,33 +1104,29 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
       concept.setActive(conceptNode.get("active").asText().equals("true"));
       concept.setTerminologyId(conceptNode.get("conceptId").asText());
       if (conceptNode.has("effectiveTime")) {
-        concept.setLastModified(ConfigUtility.DATE_FORMAT
-            .parse(conceptNode.get("effectiveTime").asText()));
+        concept.setLastModified(
+            ConfigUtility.DATE_FORMAT.parse(conceptNode.get("effectiveTime").asText()));
       } else {
         concept.setLastModified(new Date());
       }
       concept.setLastModifiedBy(terminology);
       concept.setModuleId(conceptNode.get("moduleId").asText());
-      concept
-          .setDefinitionStatusId(conceptNode.get("definitionStatus").asText());
+      concept.setDefinitionStatusId(conceptNode.get("definitionStatus").asText());
 
       // pt.term is the name
-      if (conceptNode.get("pt") != null
-          && conceptNode.get("pt").get("term") != null) {
+      if (conceptNode.get("pt") != null && conceptNode.get("pt").get("term") != null) {
         concept.setName(conceptNode.get("pt").get("term").asText());
       } else {
         concept.setName(UNABLE_TO_DETERMINE_NAME);
 
-        Logger.getLogger(getClass()).error(
-            "[ALERT=ALL]: message=pt node is null or missing term subnode, concept="
-                + concept.getTerminologyId() + ", terminology=" + terminology
-                + ", version=" + version);
+        Logger.getLogger(getClass())
+            .error("[ALERT=ALL]: message=pt node is null or missing term subnode, concept="
+                + concept.getTerminologyId() + ", terminology=" + terminology + ", version="
+                + version);
 
         lookupErrors.append("  URI: ").append(targetUri).append("\r\n");
-        lookupErrors.append("  CONCEPT ID: ").append(concept.getTerminologyId())
-            .append("\r\n");
-        lookupErrors.append("  ERROR: ")
-            .append("\"pt\" node is null or missing \"term\" subnode")
+        lookupErrors.append("  CONCEPT ID: ").append(concept.getTerminologyId()).append("\r\n");
+        lookupErrors.append("  ERROR: ").append("\"pt\" node is null or missing \"term\" subnode")
             .append("\r\n\r\n");
       }
 
@@ -1200,8 +1144,8 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
 
   /* see superclass */
   @Override
-  public ConceptList getConcepts(List<String> terminologyIds,
-    String terminology, String version, boolean descriptions) throws Exception {
+  public ConceptList getConcepts(List<String> terminologyIds, String terminology, String version,
+    boolean descriptions) throws Exception {
 
     // If no terminologyIds are specified, return an empty ConceptList
     ConceptList conceptList = new ConceptListJpa();
@@ -1249,12 +1193,12 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
       WebTarget target = client.target(targetUri);
       Logger.getLogger(getClass()).info(targetUri);
 
-      Response response = target.request(accept)
-          .header("Authorization", authHeader)
-          .header("Accept-Language", getAcceptLanguage(terminology, version))
-          .header("Cookie", getGenericUserCookie() != null
-              ? getGenericUserCookie() : getCookieHeader())
-          .get();
+      Response response =
+          target.request(accept).header("Authorization", authHeader)
+              .header("Accept-Language", getAcceptLanguage(terminology, version))
+              .header("Cookie",
+                  getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
+              .get();
 
       String resultString = response.readEntity(String.class);
       if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -1396,52 +1340,48 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
        */
 
       conceptList = new ConceptListJpa();
-    ObjectMapper mapper = new ObjectMapper();
-    JsonNode doc = mapper.readTree(resultString);
+      ObjectMapper mapper = new ObjectMapper();
+      JsonNode doc = mapper.readTree(resultString);
 
-    // get total amount
-    final int total = doc.get("total").asInt();
+      // get total amount
+      final int total = doc.get("total").asInt();
       // Get concepts returned in this call (up to 100)
-    if (doc.get("items") == null) {
-      return conceptList;
-    }
-    String searchAfter = "";
-    if (doc.findValue("searchAfter") != null) {
-    	searchAfter = doc.findValue("searchAfter").asText();
-    }
-    for (final JsonNode conceptNode : doc.get("items")) {
-      final Concept concept = new ConceptJpa();
+      if (doc.get("items") == null) {
+        return conceptList;
+      }
+      String searchAfter = "";
+      if (doc.findValue("searchAfter") != null) {
+        searchAfter = doc.findValue("searchAfter").asText();
+      }
+      for (final JsonNode conceptNode : doc.get("items")) {
+        final Concept concept = new ConceptJpa();
 
-      concept.setActive(conceptNode.get("active").asText().equals("true"));
+        concept.setActive(conceptNode.get("active").asText().equals("true"));
         concept.setTerminologyId(conceptNode.get("conceptId").asText());
         if (conceptNode.has("effectiveTime")) {
-          concept.setLastModified(ConfigUtility.DATE_FORMAT
-              .parse(conceptNode.get("effectiveTime").asText()));
+          concept.setLastModified(
+              ConfigUtility.DATE_FORMAT.parse(conceptNode.get("effectiveTime").asText()));
         } else {
           concept.setLastModified(new Date());
         }
         concept.setLastModifiedBy(terminology);
         concept.setModuleId(conceptNode.get("moduleId").asText());
-        concept.setDefinitionStatusId(
-            conceptNode.get("definitionStatus").asText());
+        concept.setDefinitionStatusId(conceptNode.get("definitionStatus").asText());
 
         // pt.term is the name
-        if (conceptNode.get("pt") != null
-            && conceptNode.get("pt").get("term") != null) {
+        if (conceptNode.get("pt") != null && conceptNode.get("pt").get("term") != null) {
           concept.setName(conceptNode.get("pt").get("term").asText());
         } else {
           concept.setName(UNABLE_TO_DETERMINE_NAME);
 
-          Logger.getLogger(getClass()).error(
-              "[ALERT=ALL]: message=pt node is null or missing term subnode, concept="
-                  + concept.getTerminologyId() + ", terminology=" + terminology
-                  + ", version=" + version);
+          Logger.getLogger(getClass())
+              .error("[ALERT=ALL]: message=pt node is null or missing term subnode, concept="
+                  + concept.getTerminologyId() + ", terminology=" + terminology + ", version="
+                  + version);
 
           lookupErrors.append("  URI: ").append(targetUri).append("\r\n");
-          lookupErrors.append("  CONCEPT ID: ")
-              .append(concept.getTerminologyId()).append("\r\n");
-          lookupErrors.append("  ERROR: ")
-              .append("\"pt\" node is null or missing \"term\" subnode")
+          lookupErrors.append("  CONCEPT ID: ").append(concept.getTerminologyId()).append("\r\n");
+          lookupErrors.append("  ERROR: ").append("\"pt\" node is null or missing \"term\" subnode")
               .append("\r\n\r\n");
         }
 
@@ -1456,13 +1396,12 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
 
             description.setActive(desc.get("active").asText().equals("true"));
 
-            description
-                .setCaseSignificanceId(desc.get("caseSignificance").asText());
+            description.setCaseSignificanceId(desc.get("caseSignificance").asText());
 
             description.setConcept(concept);
             if (desc.has("effectiveTime")) {
-              description.setEffectiveTime(ConfigUtility.DATE_FORMAT
-                  .parse(desc.get("effectiveTime").asText()));
+              description.setEffectiveTime(
+                  ConfigUtility.DATE_FORMAT.parse(desc.get("effectiveTime").asText()));
               description.setLastModified(description.getEffectiveTime());
             } else {
               description.setLastModified(new Date());
@@ -1478,11 +1417,9 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
             description.setTypeId(desc.get("typeId").asText());
 
             if (description.isActive()) {
-              final JsonNode languages =
-                  desc.findValues("acceptabilityMap").get(0);
+              final JsonNode languages = desc.findValues("acceptabilityMap").get(0);
 
-              if (!(languages.toString().isEmpty()
-                  || languages.toString().equals("{}"))) {
+              if (!(languages.toString().isEmpty() || languages.toString().equals("{}"))) {
 
                 ObjectNode language = (ObjectNode) languages;
                 Iterator<Map.Entry<String, JsonNode>> iter = language.fields();
@@ -1492,8 +1429,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
                   final String languageRefsetId = entry.getKey();
                   final String acceptibilityString = entry.getValue().asText();
 
-                  final LanguageRefsetMember member =
-                      new LanguageRefsetMemberJpa();
+                  final LanguageRefsetMember member = new LanguageRefsetMemberJpa();
                   member.setActive(true);
                   member.setDescriptionId(concept.getTerminologyId());
 
@@ -1507,20 +1443,19 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
                 }
               } else {
 
-                Logger.getLogger(getClass()).error(
-                    "[ALERT=ALL]: message=acceptabilityMap node is null or empty, concept="
+                Logger.getLogger(getClass())
+                    .error("[ALERT=ALL]: message=acceptabilityMap node is null or empty, concept="
                         + concept.getTerminologyId() + ", description="
-                        + description.getTerminologyId() + ", terminology="
-                        + terminology + ", version=" + version);
+                        + description.getTerminologyId() + ", terminology=" + terminology
+                        + ", version=" + version);
 
                 lookupErrors.append("  URI: ").append(targetUri).append("\r\n");
-                lookupErrors.append("  CONCEPT ID: ")
-                    .append(concept.getTerminologyId()).append("\r\n");
-                lookupErrors.append("  DESCRIPTION ID: ")
-                    .append(description.getTerminologyId()).append("\r\n");
+                lookupErrors.append("  CONCEPT ID: ").append(concept.getTerminologyId())
+                    .append("\r\n");
+                lookupErrors.append("  DESCRIPTION ID: ").append(description.getTerminologyId())
+                    .append("\r\n");
                 lookupErrors.append("  ERROR: ")
-                    .append("\"acceptabilityMap\" node is null or empty")
-                    .append("\r\n\r\n");
+                    .append("\"acceptabilityMap\" node is null or empty").append("\r\n\r\n");
               }
             }
 
@@ -1539,19 +1474,16 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
               continue;
             }
 
-            rel.setCharacteristicTypeId(
-                relNode.get("characteristicType").asText());
+            rel.setCharacteristicTypeId(relNode.get("characteristicType").asText());
             // Only keep INFERRED_RELATIONSHIP rels
-            if (!rel.getCharacteristicTypeId()
-                .equals("INFERRED_RELATIONSHIP")) {
+            if (!rel.getCharacteristicTypeId().equals("INFERRED_RELATIONSHIP")) {
               continue;
             }
             rel.setModifierId(relNode.get("modifier").asText());
-            rel.setRelationshipGroup(
-                Integer.valueOf(relNode.get("groupId").asText()));
+            rel.setRelationshipGroup(Integer.valueOf(relNode.get("groupId").asText()));
             if (relNode.has("effectiveTime")) {
-              rel.setEffectiveTime(ConfigUtility.DATE_FORMAT
-                  .parse(relNode.get("effectiveTime").asText()));
+              rel.setEffectiveTime(
+                  ConfigUtility.DATE_FORMAT.parse(relNode.get("effectiveTime").asText()));
               rel.setLastModified(rel.getEffectiveTime());
             } else {
               rel.setLastModified(new Date());
@@ -1571,18 +1503,16 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
             rel.setTerminologyId(relNode.get("relationshipId").asText());
 
             final Concept destination = new ConceptJpa();
-            destination.setTerminologyId(
-                relNode.get("target").get("conceptId").asText());
+            destination.setTerminologyId(relNode.get("target").get("conceptId").asText());
             // Reuse as id if only digits, otherwise dummy id
             if (destination.getTerminologyId().matches("^\\d+$")) {
               destination.setId(Long.parseLong(destination.getTerminologyId()));
             } else {
               destination.setId(1L);
             }
+            destination.setName(relNode.get("target").get("fsn").get("term").asText());
             destination
-                .setName(relNode.get("target").get("fsn").get("term").asText());
-            destination.setDefinitionStatusId(
-                relNode.get("target").get("definitionStatus").asText());
+                .setDefinitionStatusId(relNode.get("target").get("definitionStatus").asText());
             rel.setDestinationConcept(destination);
 
             concept.getRelationships().add(rel);
@@ -1592,21 +1522,20 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
       }
 
       // If the total is over the initial max limit and pfs max results is too.
-      if (total > initialMaxLimit
-          && localPfs.getMaxResults() > initialMaxLimit) {
+      if (total > initialMaxLimit && localPfs.getMaxResults() > initialMaxLimit) {
 
         targetUri = url + "/browser/" + version + "/concepts?conceptIds="
-            + URLEncoder.encode(expr, "UTF-8").replaceAll(" ", "%20")
-            + "&limit=" + (total - initialMaxLimit) + "&searchAfter="
-            + searchAfter;
+            + URLEncoder.encode(expr, "UTF-8").replaceAll(" ", "%20") + "&limit="
+            + (total - initialMaxLimit) + "&searchAfter=" + searchAfter;
         target = client.target(targetUri);
         Logger.getLogger(getClass()).info(targetUri);
 
-        response = target.request(accept).header("Authorization", authHeader)
-            .header("Accept-Language", getAcceptLanguage(terminology, version))
-            .header("Cookie", getGenericUserCookie() != null
-                ? getGenericUserCookie() : getCookieHeader())
-            .get();
+        response =
+            target.request(accept).header("Authorization", authHeader)
+                .header("Accept-Language", getAcceptLanguage(terminology, version))
+                .header("Cookie",
+                    getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
+                .get();
         resultString = response.readEntity(String.class);
         if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
           // n/a
@@ -1615,15 +1544,13 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
         // In
         // this case, clear out the generic use cookie so the next call can
         // re-login
-        else if (response.getStatusInfo().getReasonPhrase()
-            .equals("Forbidden")) {
+        else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
           genericUserCookie = null;
           throw new LocalException(
               "Connection with the terminology server has expired. Please reload the page to reconnect.");
         } else {
           throw new LocalException(
-              "Unexpected terminology server failure. Message = "
-                  + resultString);
+              "Unexpected terminology server failure. Message = " + resultString);
         }
 
         mapper = new ObjectMapper();
@@ -1640,34 +1567,30 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
           concept.setActive(conceptNode.get("active").asText().equals("true"));
           concept.setTerminologyId(conceptNode.get("conceptId").asText());
           if (conceptNode.has("effectiveTime")) {
-            concept.setLastModified(ConfigUtility.DATE_FORMAT
-                .parse(conceptNode.get("effectiveTime").asText()));
+            concept.setLastModified(
+                ConfigUtility.DATE_FORMAT.parse(conceptNode.get("effectiveTime").asText()));
           } else {
             concept.setLastModified(new Date());
           }
           concept.setLastModifiedBy(terminology);
           concept.setModuleId(conceptNode.get("moduleId").asText());
-          concept.setDefinitionStatusId(
-              conceptNode.get("definitionStatus").asText());
+          concept.setDefinitionStatusId(conceptNode.get("definitionStatus").asText());
 
           // pt.term is the name
-          if (conceptNode.get("pt") != null
-              && conceptNode.get("pt").get("term") != null) {
+          if (conceptNode.get("pt") != null && conceptNode.get("pt").get("term") != null) {
             concept.setName(conceptNode.get("pt").get("term").asText());
           } else {
             concept.setName(UNABLE_TO_DETERMINE_NAME);
 
-            Logger.getLogger(getClass()).error(
-                "[ALERT=ALL]: message=pt node is null or missing term subnode, concept="
-                    + concept.getTerminologyId() + ", terminology="
-                    + terminology + ", version=" + version);
+            Logger.getLogger(getClass())
+                .error("[ALERT=ALL]: message=pt node is null or missing term subnode, concept="
+                    + concept.getTerminologyId() + ", terminology=" + terminology + ", version="
+                    + version);
 
             lookupErrors.append("  URI: ").append(targetUri).append("\r\n");
-            lookupErrors.append("  CONCEPT ID: ")
-                .append(concept.getTerminologyId()).append("\r\n");
+            lookupErrors.append("  CONCEPT ID: ").append(concept.getTerminologyId()).append("\r\n");
             lookupErrors.append("  ERROR: ")
-                .append("\"pt\" node is null or missing \"term\" subnode")
-                .append("\r\n\r\n");
+                .append("\"pt\" node is null or missing \"term\" subnode").append("\r\n\r\n");
 
           }
 
@@ -1682,13 +1605,12 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
 
               description.setActive(desc.get("active").asText().equals("true"));
 
-              description
-                  .setCaseSignificanceId(desc.get("caseSignificance").asText());
+              description.setCaseSignificanceId(desc.get("caseSignificance").asText());
 
               description.setConcept(concept);
               if (desc.has("effectiveTime")) {
-                description.setEffectiveTime(ConfigUtility.DATE_FORMAT
-                    .parse(desc.get("effectiveTime").asText()));
+                description.setEffectiveTime(
+                    ConfigUtility.DATE_FORMAT.parse(desc.get("effectiveTime").asText()));
                 description.setLastModified(description.getEffectiveTime());
               } else {
                 description.setLastModified(new Date());
@@ -1704,24 +1626,19 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
               description.setTypeId(desc.get("typeId").asText());
 
               if (description.isActive()) {
-                final JsonNode languages =
-                    desc.findValues("acceptabilityMap").get(0);
+                final JsonNode languages = desc.findValues("acceptabilityMap").get(0);
 
-                if (!(languages.toString().isEmpty()
-                    || languages.toString().equals("{}"))) {
+                if (!(languages.toString().isEmpty() || languages.toString().equals("{}"))) {
 
                   ObjectNode language = (ObjectNode) languages;
-                  Iterator<Map.Entry<String, JsonNode>> iter =
-                      language.fields();
+                  Iterator<Map.Entry<String, JsonNode>> iter = language.fields();
 
                   while (iter.hasNext()) {
                     Map.Entry<String, JsonNode> entry = iter.next();
                     final String languageRefsetId = entry.getKey();
-                    final String acceptibilityString =
-                        entry.getValue().asText();
+                    final String acceptibilityString = entry.getValue().asText();
 
-                    final LanguageRefsetMember member =
-                        new LanguageRefsetMemberJpa();
+                    final LanguageRefsetMember member = new LanguageRefsetMemberJpa();
                     member.setActive(true);
                     member.setDescriptionId(concept.getTerminologyId());
 
@@ -1735,21 +1652,19 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
                   }
                 } else {
 
-                  Logger.getLogger(getClass()).error(
-                      "[ALERT=ALL]: message=acceptabilityMap node is null or empty, concept="
+                  Logger.getLogger(getClass())
+                      .error("[ALERT=ALL]: message=acceptabilityMap node is null or empty, concept="
                           + concept.getTerminologyId() + ", description="
-                          + description.getTerminologyId() + ", terminology="
-                          + terminology + ", version=" + version);
+                          + description.getTerminologyId() + ", terminology=" + terminology
+                          + ", version=" + version);
 
-                  lookupErrors.append("  URI: ").append(targetUri)
+                  lookupErrors.append("  URI: ").append(targetUri).append("\r\n");
+                  lookupErrors.append("  CONCEPT ID: ").append(concept.getTerminologyId())
                       .append("\r\n");
-                  lookupErrors.append("  CONCEPT ID: ")
-                      .append(concept.getTerminologyId()).append("\r\n");
-                  lookupErrors.append("  DESCRIPTION ID: ")
-                      .append(description.getTerminologyId()).append("\r\n");
+                  lookupErrors.append("  DESCRIPTION ID: ").append(description.getTerminologyId())
+                      .append("\r\n");
                   lookupErrors.append("  ERROR: ")
-                      .append("\"acceptabilityMap\" node is null or empty")
-                      .append("\r\n\r\n");
+                      .append("\"acceptabilityMap\" node is null or empty").append("\r\n\r\n");
                 }
               }
 
@@ -1767,19 +1682,16 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
                 continue;
               }
 
-              rel.setCharacteristicTypeId(
-                  relNode.get("characteristicType").asText());
+              rel.setCharacteristicTypeId(relNode.get("characteristicType").asText());
               // Only keep INFERRED_RELATIONSHIP rels
-              if (!rel.getCharacteristicTypeId()
-                  .equals("INFERRED_RELATIONSHIP")) {
+              if (!rel.getCharacteristicTypeId().equals("INFERRED_RELATIONSHIP")) {
                 continue;
               }
               rel.setModifierId(relNode.get("modifier").asText());
-              rel.setRelationshipGroup(
-                  Integer.valueOf(relNode.get("groupId").asText()));
+              rel.setRelationshipGroup(Integer.valueOf(relNode.get("groupId").asText()));
               if (relNode.has("effectiveTime")) {
-                rel.setEffectiveTime(ConfigUtility.DATE_FORMAT
-                    .parse(relNode.get("effectiveTime").asText()));
+                rel.setEffectiveTime(
+                    ConfigUtility.DATE_FORMAT.parse(relNode.get("effectiveTime").asText()));
                 rel.setLastModified(rel.getEffectiveTime());
               } else {
                 rel.setLastModified(new Date());
@@ -1799,19 +1711,16 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
               rel.setTerminologyId(relNode.get("relationshipId").asText());
 
               final Concept destination = new ConceptJpa();
-              destination.setTerminologyId(
-                  relNode.get("target").get("conceptId").asText());
+              destination.setTerminologyId(relNode.get("target").get("conceptId").asText());
               // Reuse as id if only digits, otherwise dummy id
               if (destination.getTerminologyId().matches("^\\d+$")) {
-                destination
-                    .setId(Long.parseLong(destination.getTerminologyId()));
+                destination.setId(Long.parseLong(destination.getTerminologyId()));
               } else {
                 destination.setId(1L);
               }
-              destination.setName(
-                  relNode.get("target").get("fsn").get("term").asText());
-              destination.setDefinitionStatusId(
-                  relNode.get("target").get("definitionStatus").asText());
+              destination.setName(relNode.get("target").get("fsn").get("term").asText());
+              destination
+                  .setDefinitionStatusId(relNode.get("target").get("definitionStatus").asText());
               rel.setDestinationConcept(destination);
 
               concept.getRelationships().add(rel);
@@ -1846,8 +1755,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
           // Create list of conceptIds for all members, up to the lookup size
           // limit
           final StringBuilder query = new StringBuilder();
-          for (int j = 0; (j < maxBatchLookupSize
-              && i < numberOfMembersToLookup); j++, i++) {
+          for (int j = 0; (j < maxBatchLookupSize && i < numberOfMembersToLookup); j++, i++) {
             // Only lookup stuff with actual digits
             if (terminologyIds.get(i).matches("[0-9]*")) {
               if (query.length() == 0) {
@@ -1861,17 +1769,16 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
 
           final Client client = ClientBuilder.newClient();
 
-          String targetUri = url + "/" + version + "/concepts?" + query + "&limit="
-              + maxBatchLookupSize;
+          String targetUri =
+              url + "/" + version + "/concepts?" + query + "&limit=" + maxBatchLookupSize;
 
           WebTarget target = client.target(targetUri);
           Logger.getLogger(getClass()).info(targetUri);
 
-          Response response = target.request(accept)
-              .header("Authorization", authHeader)
+          Response response = target.request(accept).header("Authorization", authHeader)
               .header("Accept-Language", getAcceptLanguage(terminology, version))
-              .header("Cookie", getGenericUserCookie() != null
-                  ? getGenericUserCookie() : getCookieHeader())
+              .header("Cookie",
+                  getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
               .get();
 
           String resultString = response.readEntity(String.class);
@@ -1882,8 +1789,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
           // error. In
           // this case, clear out the generic use cookie so the next call can
           // re-login
-          else if (response.getStatusInfo().getReasonPhrase()
-              .equals("Forbidden")) {
+          else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
             genericUserCookie = null;
             throw new LocalException(
                 "Connection with the terminology server has expired. Please reload the page to reconnect.");
@@ -1896,8 +1802,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
             }
 
             throw new LocalException(
-                "Unexpected terminology server failure. Message = "
-                    + resultString);
+                "Unexpected terminology server failure. Message = " + resultString);
           }
 
           /**
@@ -1960,46 +1865,42 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
           for (final JsonNode conceptNode : doc.get("items")) {
             final Concept concept = new ConceptJpa();
 
-            concept
-                .setActive(conceptNode.get("active").asText().equals("true"));
-      concept.setTerminologyId(conceptNode.get("id").asText());
+            concept.setActive(conceptNode.get("active").asText().equals("true"));
+            concept.setTerminologyId(conceptNode.get("id").asText());
             if (conceptNode.has("effectiveTime")) {
-              concept.setLastModified(ConfigUtility.DATE_FORMAT
-                  .parse(conceptNode.get("effectiveTime").asText()));
+              concept.setLastModified(
+                  ConfigUtility.DATE_FORMAT.parse(conceptNode.get("effectiveTime").asText()));
             } else {
               concept.setLastModified(new Date());
             }
-      concept.setLastModifiedBy(terminology);
-      concept.setModuleId(conceptNode.get("moduleId").asText());
-            concept.setDefinitionStatusId(
-                conceptNode.get("definitionStatus").asText());
+            concept.setLastModifiedBy(terminology);
+            concept.setModuleId(conceptNode.get("moduleId").asText());
+            concept.setDefinitionStatusId(conceptNode.get("definitionStatus").asText());
 
-      // pt.term is the name
-            if (conceptNode.get("pt") != null
-                && conceptNode.get("pt").get("term") != null) {
-      concept.setName(conceptNode.get("pt").get("term").asText());
+            // pt.term is the name
+            if (conceptNode.get("pt") != null && conceptNode.get("pt").get("term") != null) {
+              concept.setName(conceptNode.get("pt").get("term").asText());
             } else {
               concept.setName(UNABLE_TO_DETERMINE_NAME);
 
-              Logger.getLogger(getClass()).error(
-                  "[ALERT=ALL]: message=pt node is null or missing term subnode, concept="
-                      + concept.getTerminologyId() + ", terminology="
-                      + terminology + ", version=" + version);
+              Logger.getLogger(getClass())
+                  .error("[ALERT=ALL]: message=pt node is null or missing term subnode, concept="
+                      + concept.getTerminologyId() + ", terminology=" + terminology + ", version="
+                      + version);
 
               lookupErrors.append("  URI: ").append(targetUri).append("\r\n");
-              lookupErrors.append("  CONCEPT ID: ")
-                  .append(concept.getTerminologyId()).append("\r\n");
+              lookupErrors.append("  CONCEPT ID: ").append(concept.getTerminologyId())
+                  .append("\r\n");
               lookupErrors.append("  ERROR: ")
-                  .append("\"pt\" node is null or missing \"term\" subnode")
-                  .append("\r\n\r\n");
+                  .append("\"pt\" node is null or missing \"term\" subnode").append("\r\n\r\n");
 
             }
 
-      concept.setPublishable(true);
-      concept.setPublished(true);
+            concept.setPublishable(true);
+            concept.setPublished(true);
 
-      conceptList.addObject(concept);
-    }
+            conceptList.addObject(concept);
+          }
 
         }
 
@@ -2009,9 +1910,9 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
         sendLookupErrorEmail(lookupErrors.toString());
       }
 
-    conceptList.setTotalCount(total);
-    return conceptList;
-  }
+      conceptList.setTotalCount(total);
+      return conceptList;
+    }
   }
 
   /* see superclass */
@@ -2022,8 +1923,8 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
 
   /* see superclass */
   @Override
-  public ConceptList findConceptsForQuery(String query, String terminology,
-    String version, PfsParameter pfs) throws Exception {
+  public ConceptList findConceptsForQuery(String query, String terminology, String version,
+    PfsParameter pfs) throws Exception {
 
     final ConceptList conceptList = new ConceptListJpa();
     // Make a webservice call to browser api
@@ -2057,21 +1958,18 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
 
     String targetUri = useTerm
         ? url + "/" + version + "/concepts?term="
-            + URLEncoder.encode(localQuery, "UTF-8").replaceAll(" ", "%20")
-            + "&limit=100" + "&expand=pt(),fsn()"
+            + URLEncoder.encode(localQuery, "UTF-8").replaceAll(" ", "%20") + "&limit=100"
+            + "&expand=pt(),fsn()"
         : url + "/" + version + "/concepts/"
-            + URLEncoder.encode(localQuery, "UTF-8").replaceAll(" ", "%20")
-            + "?expand=pt()";
+            + URLEncoder.encode(localQuery, "UTF-8").replaceAll(" ", "%20") + "?expand=pt()";
 
     final WebTarget target = client.target(targetUri);
 
-    final Response response =
-        target.request(accept).header("Authorization", authHeader)
-            .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
-            .header("Cookie", getGenericUserCookie() != null
-                ? getGenericUserCookie() : getCookieHeader())
-            .get();
-            
+    final Response response = target.request(accept).header("Authorization", authHeader)
+        .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6").header("Cookie",
+            getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
+        .get();
+
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -2083,8 +1981,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
       throw new LocalException(
           "Connection with the terminology server has expired. Please reload the page to reconnect.");
     } else {
-      throw new LocalException(
-          "Unexpected terminology server failure. Message = " + resultString);
+      throw new LocalException("Unexpected terminology server failure. Message = " + resultString);
     }
 
     // Support grouping by concept
@@ -2104,24 +2001,20 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
 
         final Description desc = new DescriptionJpa();
         desc.setActive(entry.get("active").asText().equals("true"));
-        String term = pt == null ? ""
-            : pt.get("term") == null ? "" : pt.get("term").asText();
+        String term = pt == null ? "" : pt.get("term") == null ? "" : pt.get("term").asText();
 
         if (pt != null && pt.get("term") != null) {
-        desc.setTerm(pt.get("term").asText());
+          desc.setTerm(pt.get("term").asText());
         } else {
           desc.setTerm(UNABLE_TO_DETERMINE_NAME);
 
-          Logger.getLogger(getClass()).error(
-              "[ALERT=ALL]: message=pt node is null or missing term subnode, concept="
-                  + conceptId + ", terminology=" + terminology + ", version="
-                  + version);
+          Logger.getLogger(getClass())
+              .error("[ALERT=ALL]: message=pt node is null or missing term subnode, concept="
+                  + conceptId + ", terminology=" + terminology + ", version=" + version);
 
           lookupErrors.append("  URI: ").append(targetUri).append("\r\n");
-          lookupErrors.append("  CONCEPT ID: ").append(conceptId)
-              .append("\r\n");
-          lookupErrors.append("  ERROR: ")
-              .append("\"pt\" node is null or missing \"term\" subnode")
+          lookupErrors.append("  CONCEPT ID: ").append(conceptId).append("\r\n");
+          lookupErrors.append("  ERROR: ").append("\"pt\" node is null or missing \"term\" subnode")
               .append("\r\n\r\n");
         }
 
@@ -2134,46 +2027,43 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
 
         else {
           // Filter out inactive concepts, if Active Only is set.
-          if (entry.get("active").asText().equals("true")
-              || !localPfs.getActiveOnly()) {
+          if (entry.get("active").asText().equals("true") || !localPfs.getActiveOnly()) {
             // Skip any new concepts past the limit
             if (index++ > 99) {
               break;
             }
             final Concept concept = new ConceptJpa();
             concept.setActive(entry.get("active").asText().equals("true"));
-            concept
-                .setDefinitionStatusId(entry.get("definitionStatus").asText());
-          	concept.setTerminologyId(conceptId);
-          	concept.setModuleId(entry.get("moduleId").asText());
+            concept.setDefinitionStatusId(entry.get("definitionStatus").asText());
+            concept.setTerminologyId(conceptId);
+            concept.setModuleId(entry.get("moduleId").asText());
 
             if (fsn != null && fsn.get("term") != null) {
-          	concept.setName(fsn.get("term").asText());
+              concept.setName(fsn.get("term").asText());
             } else {
               concept.setName(UNABLE_TO_DETERMINE_NAME);
 
-              Logger.getLogger(getClass()).error(
-                  "[ALERT=ALL]: message=fsn node is null or missing term subnode, concept="
-                      + concept.getTerminologyId() + ", terminology="
-                      + terminology + ", version=" + version);
+              Logger.getLogger(getClass())
+                  .error("[ALERT=ALL]: message=fsn node is null or missing term subnode, concept="
+                      + concept.getTerminologyId() + ", terminology=" + terminology + ", version="
+                      + version);
 
               lookupErrors.append("  URI: ").append(targetUri).append("\r\n");
-              lookupErrors.append("  CONCEPT ID: ")
-                  .append(concept.getTerminologyId()).append("\r\n");
+              lookupErrors.append("  CONCEPT ID: ").append(concept.getTerminologyId())
+                  .append("\r\n");
               lookupErrors.append("  ERROR: ")
-                  .append("\"fsn\" node is null or missing \"term\" subnode")
-                  .append("\r\n\r\n");
+                  .append("\"fsn\" node is null or missing \"term\" subnode").append("\r\n\r\n");
             }
 
-          	concept.setPublishable(true);
-          	concept.setPublished(true);
+            concept.setPublishable(true);
+            concept.setPublished(true);
 
-          		  // Add the description
-          	concept.getDescriptions().add(desc);
+            // Add the description
+            concept.getDescriptions().add(desc);
 
-          	conceptList.addObject(concept);
-          	conceptMap.put(conceptId, concept);
-          	Logger.getLogger(getClass()).debug("  concept = " + concept);
+            conceptList.addObject(concept);
+            conceptMap.put(conceptId, concept);
+            Logger.getLogger(getClass()).debug("  concept = " + concept);
           }
         }
       }
@@ -2181,23 +2071,23 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
       conceptList.setTotalCount(index);
 
     } else { // lookup was conceptId, not term
-        if (doc.findValue("conceptId") == null) {
-          return conceptList;
-        }
+      if (doc.findValue("conceptId") == null) {
+        return conceptList;
+      }
 
-        final Concept concept = new ConceptJpa();
-        concept.setActive(doc.get("active").asText().equals("true"));
+      final Concept concept = new ConceptJpa();
+      concept.setActive(doc.get("active").asText().equals("true"));
 
-        concept.setTerminologyId(doc.findValue("conceptId").asText());
-        if (doc.has("effectiveTime")) {
-        concept.setEffectiveTime(
-            ConfigUtility.DATE_FORMAT.parse(doc.get("effectiveTime").asText()));
-          concept.setLastModified(concept.getEffectiveTime());
-        } else {
-          concept.setLastModified(new Date());
-        }
-        concept.setLastModifiedBy(terminology);
-        concept.setModuleId(doc.get("moduleId").asText());
+      concept.setTerminologyId(doc.findValue("conceptId").asText());
+      if (doc.has("effectiveTime")) {
+        concept
+            .setEffectiveTime(ConfigUtility.DATE_FORMAT.parse(doc.get("effectiveTime").asText()));
+        concept.setLastModified(concept.getEffectiveTime());
+      } else {
+        concept.setLastModified(new Date());
+      }
+      concept.setLastModifiedBy(terminology);
+      concept.setModuleId(doc.get("moduleId").asText());
       concept.setDefinitionStatusId(doc.get("definitionStatus").asText());
 
       if (doc.get("fsn") != null && doc.get("pt").get("term") != null) {
@@ -2205,26 +2095,24 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
       } else {
         concept.setName(UNABLE_TO_DETERMINE_NAME);
 
-        Logger.getLogger(getClass()).error(
-            "[ALERT=ALL]: message=pt node is null or missing term subnode, concept="
-                + concept.getTerminologyId() + ", terminology=" + terminology
-                + ", version=" + version);
+        Logger.getLogger(getClass())
+            .error("[ALERT=ALL]: message=pt node is null or missing term subnode, concept="
+                + concept.getTerminologyId() + ", terminology=" + terminology + ", version="
+                + version);
 
         lookupErrors.append("  URI: ").append(targetUri).append("\r\n");
-        lookupErrors.append("  CONCEPT ID: ").append(concept.getTerminologyId())
-            .append("\r\n");
-        lookupErrors.append("  ERROR: ")
-            .append("\"pt\" node is null or missing \"term\" subnode")
+        lookupErrors.append("  CONCEPT ID: ").append(concept.getTerminologyId()).append("\r\n");
+        lookupErrors.append("  ERROR: ").append("\"pt\" node is null or missing \"term\" subnode")
             .append("\r\n\r\n");
       }
 
-        concept.setPublishable(true);
-        concept.setPublished(true);
-        Logger.getLogger(getClass()).debug("  concept = " + concept);
-        conceptList.addObject(concept);
+      concept.setPublishable(true);
+      concept.setPublished(true);
+      Logger.getLogger(getClass()).debug("  concept = " + concept);
+      conceptList.addObject(concept);
 
-        // Set total count
-        conceptList.setTotalCount(conceptList.getCount());
+      // Set total count
+      conceptList.setTotalCount(conceptList.getCount());
     }
 
     if (lookupErrors.length() != 0) {
@@ -2236,56 +2124,50 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
 
   /* see superclass */
   @Override
-  public ConceptList findRefsetsForQuery(String query, String terminology,
-    String version, PfsParameter pfs) throws Exception {
+  public ConceptList findRefsetsForQuery(String query, String terminology, String version,
+    PfsParameter pfs) throws Exception {
     if (query != null && !query.isEmpty()) {
-      List<Concept> list = resolveExpression(
-          "<< 900000000000496009 | Simple map type reference set  |",
-          terminology, version, pfs, false).getObjects();
+      List<Concept> list =
+          resolveExpression("<< 900000000000496009 | Simple map type reference set  |", terminology,
+              version, pfs, false).getObjects();
 
       final RootServiceJpa service = new RootServiceJpa() {
         // n/a
       };
       ConceptList result = new ConceptListJpa();
       int[] totalCt = new int[1];
-      result.setObjects(
-          service.applyPfsToList(list, Concept.class, totalCt, pfs));
+      result.setObjects(service.applyPfsToList(list, Concept.class, totalCt, pfs));
       result.setTotalCount(totalCt[0]);
       service.close();
       return result;
 
     } else {
-      return resolveExpression(
-          "<< 900000000000496009 | Simple map type reference set  |",
+      return resolveExpression("<< 900000000000496009 | Simple map type reference set  |",
           terminology, version, pfs, false);
     }
   }
 
   /* see superclass */
   @Override
-  public List<Concept> getModules(String terminology, String version)
-    throws Exception {
-    return resolveExpression(
-        "< 900000000000443000 | Module (core metadata concept) |", terminology,
+  public List<Concept> getModules(String terminology, String version) throws Exception {
+    return resolveExpression("< 900000000000443000 | Module (core metadata concept) |", terminology,
         version, null, false).getObjects();
   }
 
   /* see superclass */
   @Override
-  public ConceptList getConceptParents(String terminologyId, String terminology,
-    String version) throws Exception {
+  public ConceptList getConceptParents(String terminologyId, String terminology, String version)
+    throws Exception {
     final ConceptList conceptList = new ConceptListJpa();
 
     // Make a webservice call to SnowOwl
     final Client client = ClientBuilder.newClient();
-    final WebTarget target = client.target(url + "/browser/" + version
-        + "/concepts/" + terminologyId + "/parents");
-    final Response response =
-        target.request(accept).header("Authorization", authHeader)
-            .header("Accept-Language", getAcceptLanguage(terminology, version))
-            .header("Cookie", getGenericUserCookie() != null
-                ? getGenericUserCookie() : getCookieHeader())
-            .get();
+    final WebTarget target =
+        client.target(url + "/browser/" + version + "/concepts/" + terminologyId + "/parents");
+    final Response response = target.request(accept).header("Authorization", authHeader)
+        .header("Accept-Language", getAcceptLanguage(terminology, version)).header("Cookie",
+            getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
+        .get();
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -2299,8 +2181,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     } else if (response.getStatusInfo() == Status.BAD_REQUEST) {
       throw new LocalException(getErrorMessage(resultString));
     } else {
-      throw new LocalException(
-          "Unexpected terminology server failure. Message = " + resultString);
+      throw new LocalException("Unexpected terminology server failure. Message = " + resultString);
     }
 
     /**
@@ -2333,8 +2214,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
       concept.setModuleId(null);
       concept.setDefinitionStatusId(entry.get("definitionStatus").asText());
       JsonNode fsn = entry.get("fsn");
-      String term = fsn == null ? ""
-          : fsn.get("term") == null ? "" : fsn.get("term").asText();
+      String term = fsn == null ? "" : fsn.get("term") == null ? "" : fsn.get("term").asText();
       concept.setName(term);
 
       concept.setPublishable(true);
@@ -2348,20 +2228,18 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
 
   /* see superclass */
   @Override
-  public ConceptList getConceptChildren(String terminologyId,
-    String terminology, String version) throws Exception {
+  public ConceptList getConceptChildren(String terminologyId, String terminology, String version)
+    throws Exception {
 
     final ConceptList conceptList = new ConceptListJpa();
     // Make a webservice call to SnowOwl
     final Client client = ClientBuilder.newClient();
-    final WebTarget target = client.target(url + "/browser/" + version
-        + "/concepts/" + terminologyId + "/children?form=inferred");
-    final Response response =
-        target.request(accept).header("Authorization", authHeader)
-            .header("Accept-Language", getAcceptLanguage(terminology, version))
-            .header("Cookie", getGenericUserCookie() != null
-                ? getGenericUserCookie() : getCookieHeader())
-            .get();
+    final WebTarget target = client.target(
+        url + "/browser/" + version + "/concepts/" + terminologyId + "/children?form=inferred");
+    final Response response = target.request(accept).header("Authorization", authHeader)
+        .header("Accept-Language", getAcceptLanguage(terminology, version)).header("Cookie",
+            getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
+        .get();
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -2375,8 +2253,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     } else if (response.getStatusInfo() == Status.BAD_REQUEST) {
       throw new LocalException(getErrorMessage(resultString));
     } else {
-      throw new LocalException(
-          "Unexpected terminology server failure. Message = " + resultString);
+      throw new LocalException("Unexpected terminology server failure. Message = " + resultString);
     }
 
     /**
@@ -2416,8 +2293,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
       concept.setModuleId(entry.get("moduleId").asText());
       concept.setDefinitionStatusId(entry.get("definitionStatus").asText());
       JsonNode fsn = entry.get("fsn");
-      String term = fsn == null ? ""
-          : fsn.get("term") == null ? "" : fsn.get("term").asText();
+      String term = fsn == null ? "" : fsn.get("term") == null ? "" : fsn.get("term").asText();
       concept.setName(term);
       concept.setLeaf(entry.get("isLeafInferred").asText().equals("true"));
 
@@ -2434,8 +2310,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
   @Override
   public void setUrl(String url) throws Exception {
     this.url = url;
-    this.domain = InternetDomainName.from(new URL(url).getHost())
-        .topPrivateDomain().toString();
+    this.domain = InternetDomainName.from(new URL(url).getHost()).topPrivateDomain().toString();
   }
 
   /* see superclass */
@@ -2460,16 +2335,14 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     if (referer.contains(domain)) {
       return headers.get("Cookie");
     } else {
-      Logger.getLogger(getClass())
-          .warn("UNEXPECTED referer not matching url domain = " + referer);
+      Logger.getLogger(getClass()).warn("UNEXPECTED referer not matching url domain = " + referer);
     }
     return "";
   }
 
   /* see superclass */
   @Override
-  public List<String> getLanguages(String terminology, String version)
-    throws Exception {
+  public List<String> getLanguages(String terminology, String version) throws Exception {
     Logger.getLogger(getClass())
         .info("  get languages - " + url + ", " + terminology + ", " + version);
     // Make a webservice call to SnowOwl to get concept
@@ -2479,22 +2352,18 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     localPfs.setStartIndex(0);
     localPfs.setMaxResults(200);
 
-    WebTarget target = client.target(url
-        + "/" + version + "/concepts?ecl=" + URLEncoder
-            .encode("<900000000000506000", "UTF-8").replaceAll(" ", "%20")
-        + "&limit=" + localPfs.getMaxResults() + "&offset=0");
+    WebTarget target = client.target(url + "/" + version + "/concepts?ecl="
+        + URLEncoder.encode("<900000000000506000", "UTF-8").replaceAll(" ", "%20") + "&limit="
+        + localPfs.getMaxResults() + "&offset=0");
     Logger.getLogger(getClass())
-        .info(url
-            + "/" + version + "/concepts?ecl=" + URLEncoder
-                .encode("<900000000000506000", "UTF-8").replaceAll(" ", "%20")
-            + "&limit=" + localPfs.getMaxResults() + "&offset=0");
+        .info(url + "/" + version + "/concepts?ecl="
+            + URLEncoder.encode("<900000000000506000", "UTF-8").replaceAll(" ", "%20") + "&limit="
+            + localPfs.getMaxResults() + "&offset=0");
 
-    Response response =
-    		target.request(accept).header("Authorization", authHeader)
-    		.header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
-            .header("Cookie", getGenericUserCookie() != null
-                ? getGenericUserCookie() : getCookieHeader())
-            .get();
+    Response response = target.request(accept).header("Authorization", authHeader)
+        .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6").header("Cookie",
+            getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
+        .get();
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -2508,8 +2377,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     } else if (response.getStatusInfo() == Status.BAD_REQUEST) {
       throw new LocalException(getErrorMessage(resultString));
     } else {
-      throw new LocalException(
-          "Unexpected terminology server failure. Message = " + resultString);
+      throw new LocalException("Unexpected terminology server failure. Message = " + resultString);
     }
 
     ObjectMapper mapper = new ObjectMapper();
@@ -2520,12 +2388,10 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
 
       String id = conceptNode.get("id").asText();
       JsonNode fsn = conceptNode.get("fsn");
-      String term = fsn == null ? ""
-          : fsn.get("term") == null ? "" : fsn.get("term").asText();
+      String term = fsn == null ? "" : fsn.get("term") == null ? "" : fsn.get("term").asText();
 
       if (!idsToIgnore.contains(id) && term.contains("code")) {
-        String code =
-            term.substring(term.indexOf("code") + 5, term.indexOf("]"));
+        String code = term.substring(term.indexOf("code") + 5, term.indexOf("]"));
         languages.add(code + "-x-" + id);
       }
     }
@@ -2534,12 +2400,11 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
 
     return languages;
   }
-  
+
   /* see superclass */
   @Override
-  public List<String> getBranches(String terminology, String version)
-    throws Exception {
-	    Logger.getLogger(getClass())
+  public List<String> getBranches(String terminology, String version) throws Exception {
+    Logger.getLogger(getClass())
         .info("  get branches - " + url + ", " + terminology + ", " + version);
     // Make a webservice call to get branches
     final Client client = ClientBuilder.newClient();
@@ -2548,15 +2413,12 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     localPfs.setStartIndex(0);
     localPfs.setMaxResults(1000);
 
-    WebTarget target =
-        client.target(url + "/branches?" + "limit=" + localPfs.getMaxResults());
+    WebTarget target = client.target(url + "/branches?" + "limit=" + localPfs.getMaxResults());
 
-    Response response =
-        target.request(accept).header("Authorization", authHeader)
-            .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
-            .header("Cookie", getGenericUserCookie() != null
-                ? getGenericUserCookie() : getCookieHeader())
-            .get();
+    Response response = target.request(accept).header("Authorization", authHeader)
+        .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6").header("Cookie",
+            getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
+        .get();
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -2569,8 +2431,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
           "Connection with the terminology server has expired. Please reload the page to reconnect.");
     } else {
 
-      throw new LocalException(
-          "Unexpected terminology server failure. Message = " + resultString);
+      throw new LocalException("Unexpected terminology server failure. Message = " + resultString);
     }
 
     ObjectMapper mapper = new ObjectMapper();
@@ -2585,8 +2446,8 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
       String path = entry.get("path").asText();
       if (terminology.isEmpty() || path.contains(terminology)) {
         if (version.isEmpty() || path.contains(version)) {
-      branches.add(path);     
-    }
+          branches.add(path);
+        }
       }
     }
 
@@ -2602,26 +2463,22 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     // Make a webservice call to SnowStorm to get branches and languages
     final Client client = ClientBuilder.newClient();
 
-    final List<TranslationExtensionLanguage> translationExtensionLanguageList =
-        new ArrayList<>();
+    final List<TranslationExtensionLanguage> translationExtensionLanguageList = new ArrayList<>();
 
     final PfsParameter localPfs = new PfsParameterJpa();
     localPfs.setStartIndex(0);
     localPfs.setMaxResults(1000);
 
-    final WebTarget target = client
-        .target(url + "/codesystems?" + "limit=" + localPfs.getMaxResults());
+    final WebTarget target =
+        client.target(url + "/codesystems?" + "limit=" + localPfs.getMaxResults());
 
-    final Response response =
-        target.request(accept).header("Authorization", authHeader)
-            .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
-            .header("Cookie", getGenericUserCookie() != null
-                ? getGenericUserCookie() : getCookieHeader())
-            .get();
+    final Response response = target.request(accept).header("Authorization", authHeader)
+        .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6").header("Cookie",
+            getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
+        .get();
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() != Family.SUCCESSFUL) {
-      throw new LocalException(
-          "Unexpected terminology server failure. Message = " + resultString);
+      throw new LocalException("Unexpected terminology server failure. Message = " + resultString);
     }
 
     final ObjectMapper mapper = new ObjectMapper();
@@ -2631,12 +2488,11 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
       String branchPath = branchNode.get("branchPath").asText();
 
       if (branchPath != null && branchPath.contains("SNOMED")) {
-        for (Iterator<String> language =
-            branchNode.get("languages").fieldNames(); language.hasNext();) {
+        for (Iterator<String> language = branchNode.get("languages").fieldNames(); language
+            .hasNext();) {
           final String lang = language.next();
           if (!"en".equalsIgnoreCase(lang)) {
-            final TranslationExtensionLanguage tel =
-                new TranslationExtensionLanguageJpa();
+            final TranslationExtensionLanguage tel = new TranslationExtensionLanguageJpa();
             tel.setBranch(branchPath);
             tel.setLanguageCode(lang);
             translationExtensionLanguageList.add(tel);
@@ -2655,8 +2511,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
    * @return the accept language
    * @throws Exception the exception
    */
-  private String getAcceptLanguage(String terminology, String version)
-    throws Exception {
+  private String getAcceptLanguage(String terminology, String version) throws Exception {
     if (tvLanguageMap.containsKey(terminology + version)) {
       return tvLanguageMap.get(terminology + version);
     } else {
@@ -2677,25 +2532,23 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
 
   /* see superclass */
   @Override
-  public KeyValuePairList getRequiredLanguageRefsets(String terminology,
-    String version) throws Exception {
-    Logger.getLogger(getClass()).info(
-        "  get required language refsets  - " + terminology + ", " + version);
+  public KeyValuePairList getRequiredLanguageRefsets(String terminology, String version)
+    throws Exception {
+    Logger.getLogger(getClass())
+        .info("  get required language refsets  - " + terminology + ", " + version);
     // Make a webservice call to SnowStorm to get branch and its required
     // languages
 
     final Client client = ClientBuilder.newClient();
     final WebTarget target = client.target(url + "/codesystems/" + terminology);
-    final Response response =
-        target.request(accept).header("Authorization", authHeader)
-            .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6")
-            .header("Cookie", getGenericUserCookie() != null
-                ? getGenericUserCookie() : getCookieHeader())
-            .get();
+    final Response response = target.request(accept).header("Authorization", authHeader)
+        .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6").header("Cookie",
+            getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
+        .get();
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
-}
+    }
     // If the generic user is logged out, it returns a 403 Forbidden error. In
     // this case, clear out the generic use cookie so the next call can re-login
     else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
@@ -2703,8 +2556,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
       throw new LocalException(
           "Connection with the terminology server has expired. Please reload the page to reconnect.");
     } else {
-      throw new LocalException(
-          "Unexpected terminology server failure. Message = " + resultString);
+      throw new LocalException("Unexpected terminology server failure. Message = " + resultString);
     }
 
     KeyValuePairList requiredLanguageRefsetIdMap = new KeyValuePairList();
@@ -2737,17 +2589,16 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
       pair = new KeyValuePair();
       pair.setKey(refsetId);
       // look up refset concept to get the official refset description
-      Concept languageRefsetConcept =
-          getFullConcept(refsetId, terminology, version);
+      Concept languageRefsetConcept = getFullConcept(refsetId, terminology, version);
       for (Description desc : languageRefsetConcept.getDescriptions()) {
         // get language refset description but strip out the repetitive part
         if (desc.getTerm().endsWith("language reference set")) {
-          pair.setValue(desc.getTerm().substring(0,
-              desc.getTerm().indexOf(" language reference set")));
+          pair.setValue(
+              desc.getTerm().substring(0, desc.getTerm().indexOf(" language reference set")));
         }
         if (desc.getTerm().endsWith("(metadato fundacional)")) {
-          pair.setValue(desc.getTerm().substring(0,
-              desc.getTerm().indexOf(" (metadato fundacional)")));
+          pair.setValue(
+              desc.getTerm().substring(0, desc.getTerm().indexOf(" (metadato fundacional)")));
         }
       }
       requiredLanguageRefsetIdMap.addKeyValuePair(pair);
@@ -2763,51 +2614,49 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
       requiredLanguageRefsetIdMap.addKeyValuePair(pair);
     }
 
-    
-
     // Remove languages based on overrides specified in the config.properties
-    final String removeValues = ConfigUtility.getConfigProperties()
-        .getProperty("language.refset.dialect.override.remove");
-    
+    final String removeValues =
+        ConfigUtility.getConfigProperties().getProperty("language.refset.dialect.override.remove");
+
     for (final String info : removeValues.split(";")) {
       String[] values = FieldedStringTokenizer.split(info, "|");
       final String extensionName = values[0];
       final String languageReferenceSetId = values[1];
-      if(terminology.equals(extensionName)){
-        List<KeyValuePair> languageRefsetPairs = new ArrayList<>(requiredLanguageRefsetIdMap.getKeyValuePairs());
-        for(KeyValuePair languageRefsetPair : requiredLanguageRefsetIdMap.getKeyValuePairs()) {
-          if(languageRefsetPair.getKey().equals(languageReferenceSetId)) {
+      if (terminology.equals(extensionName)) {
+        List<KeyValuePair> languageRefsetPairs =
+            new ArrayList<>(requiredLanguageRefsetIdMap.getKeyValuePairs());
+        for (KeyValuePair languageRefsetPair : requiredLanguageRefsetIdMap.getKeyValuePairs()) {
+          if (languageRefsetPair.getKey().equals(languageReferenceSetId)) {
             languageRefsetPairs.remove(languageRefsetPair);
           }
         }
         requiredLanguageRefsetIdMap.setKeyValuePairs(languageRefsetPairs);
       }
     }
-    
+
     // Add languages based on overrides specified in the config.properties
-    final String addValues = ConfigUtility.getConfigProperties()
-        .getProperty("language.refset.dialect.override.add");
-    
+    final String addValues =
+        ConfigUtility.getConfigProperties().getProperty("language.refset.dialect.override.add");
+
     for (final String info : addValues.split(";")) {
       String[] values = FieldedStringTokenizer.split(info, "|");
       final String extensionName = values[0];
       final String languageReferenceSetId = values[1];
       final String languageName = values[2];
-      if(terminology.equals(extensionName)){
+      if (terminology.equals(extensionName)) {
         pair = new KeyValuePair();
         pair.setKey(languageReferenceSetId);
         pair.setValue(languageName);
         requiredLanguageRefsetIdMap.addKeyValuePair(pair);
       }
     }
-    
+
     // Finally, add the US English FSN at the end
     pair = new KeyValuePair();
     pair.setKey("900000000000509007");
     pair.setValue("United States of America English (FSN)");
     requiredLanguageRefsetIdMap.addKeyValuePair(pair);
 
-    
     return requiredLanguageRefsetIdMap;
   }
 
@@ -2835,22 +2684,21 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     }
 
     // Login the generic user, then save and return the cookie
-    final String userName = ConfigUtility.getConfigProperties()
-        .getProperty("generic.user.userName");
-    final String password = ConfigUtility.getConfigProperties()
-        .getProperty("generic.user.password");
-    final String imsUrl = ConfigUtility.getConfigProperties()
-        .getProperty("generic.user.authenticationUrl");
+    final String userName =
+        ConfigUtility.getConfigProperties().getProperty("generic.user.userName");
+    final String password =
+        ConfigUtility.getConfigProperties().getProperty("generic.user.password");
+    final String imsUrl =
+        ConfigUtility.getConfigProperties().getProperty("generic.user.authenticationUrl");
 
     Client client = ClientBuilder.newClient();
     WebTarget target = client.target(imsUrl + "/authenticate");
     Builder builder = target.request(MediaType.APPLICATION_JSON);
 
-    Response response = builder.post(Entity.json("{ \"login\": \"" + userName
-        + "\", \"password\": \"" + password + "\" }"));
+    Response response = builder.post(
+        Entity.json("{ \"login\": \"" + userName + "\", \"password\": \"" + password + "\" }"));
     if (response.getStatusInfo().getFamily() != Family.SUCCESSFUL) {
-      throw new LocalException(
-          "Authentication of generic user failed. " + response.toString());
+      throw new LocalException("Authentication of generic user failed. " + response.toString());
     }
     Map<String, NewCookie> genericUserCookies = response.getCookies();
     StringBuilder sb = new StringBuilder();
