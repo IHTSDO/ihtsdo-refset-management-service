@@ -297,7 +297,6 @@ public class ImportTranslationExcelHandler extends ImportExportAbstract
       }
 
       try (final RefsetService service = new RefsetServiceJpa();) {
-
         Logger.getLogger(getClass()).debug("Import translation Rf2 handler - reading Excel file.");
         boolean isFirstRow = true;
         for (final Row row : sheet) {
@@ -369,7 +368,15 @@ public class ImportTranslationExcelHandler extends ImportExportAbstract
           description.setTerm(getCellValue(row, TRANSLATED_TERM));
           description.setTerminologyId(null);
           description.setLanguageCode(translation.getLanguage());
+          if(!descriptionTypeCodeMap.containsKey(getCellValue(row, TYPE))) {
+            validationResult.addError(getCellValue(row, TYPE) + " is not one of the valid type choices: " + descriptionTypeCodeMap.keySet().toString());
+            return new ArrayList<>();
+          }
           description.setTypeId(descriptionTypeCodeMap.get(getCellValue(row, TYPE)));
+          if(!caseSignificanceCodeMap.containsKey(getCellValue(row, CASE_SIGNIFIANCE))) {
+            validationResult.addError(getCellValue(row, CASE_SIGNIFIANCE) + " is not one of the valid case significance choices: " + caseSignificanceCodeMap.keySet().toString());
+            return new ArrayList<>();
+          }
           description.setCaseSignificanceId(
               caseSignificanceCodeMap.get(getCellValue(row, CASE_SIGNIFIANCE)));
           description.setEffectiveTime(new Date());
@@ -417,6 +424,12 @@ public class ImportTranslationExcelHandler extends ImportExportAbstract
           member.setRefsetId(translation.getRefset().getTerminologyId());
 
           // Language unique attributes
+          Logger.getLogger(getClass()).info(acceptibilityCodeMap.keySet().toString());
+          Logger.getLogger(getClass()).info(acceptibilityCodeMap.containsKey(getCellValue(row, ACCEPTABILITY)));
+          if(!acceptibilityCodeMap.containsKey(getCellValue(row, ACCEPTABILITY))) {
+            validationResult.addError(getCellValue(row, ACCEPTABILITY) + " is not one of the valid acceptability choices: " + acceptibilityCodeMap.keySet().toString());
+            return new ArrayList<>();
+          }
           member.setAcceptabilityId(acceptibilityCodeMap.get(getCellValue(row, ACCEPTABILITY)));
 
           // Connect description and language refset member object
