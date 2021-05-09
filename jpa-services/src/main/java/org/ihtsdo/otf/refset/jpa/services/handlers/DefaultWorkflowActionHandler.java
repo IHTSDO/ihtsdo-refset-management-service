@@ -828,15 +828,16 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
 
     // Cleanse PFS parameter to turn "concept" fields into concept refset member
     // fields
-    final PfsParameter localPfs = pfs == null ? new PfsParameterJpa() : new PfsParameterJpa(pfs);
-    if (localPfs.getSortField() != null && localPfs.getSortField().equals("name")) {
-      localPfs.setSortField("conceptName");
+    final PfsParameter localPfs1 = pfs == null ? new PfsParameterJpa() : new PfsParameterJpa(pfs);
+    final PfsParameter localPfs2 = pfs == null ? new PfsParameterJpa() : new PfsParameterJpa(pfs);
+    if (localPfs1.getSortField() != null && localPfs1.getSortField().equals("name")) {
+      localPfs1.setSortField("conceptName");
     }
-    if (localPfs.getSortField() != null && localPfs.getSortField().equals("terminologyId")) {
-      localPfs.setSortField("conceptId");
+    if (localPfs1.getSortField() != null && localPfs1.getSortField().equals("terminologyId")) {
+      localPfs1.setSortField("conceptId");
     }
-    if (localPfs.getSortField() != null && localPfs.getSortField().equals("workflowStatus")) {
-      localPfs.setSortField(null);
+    if (localPfs1.getSortField() != null && localPfs1.getSortField().equals("workflowStatus")) {
+      localPfs1.setSortField(null);
     }
 
     // Members of the refset
@@ -855,7 +856,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     final ConceptListJpa list = new ConceptListJpa();
     int totalCount = 0;
     // No need to use applyPfsToList if there is not a filter
-    if (localPfs.getQueryRestriction() == null || localPfs.getQueryRestriction().isEmpty()) {
+    if (localPfs1.getQueryRestriction() == null || localPfs1.getQueryRestriction().isEmpty()) {
 
       Query ctQuery = ((RootServiceJpa) service).getEntityManager()
           .createQuery("select count(*) from ConceptRefsetMemberJpa a, RefsetJpa b "
@@ -872,11 +873,11 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
       ctQuery2.setParameter("unassigned", WorkflowStatus.UNASSIGNED);
       ctQuery2.setParameter("translationId", translation.getId());
 
-      final Query query = ((RootServiceJpa) service).applyPfsToJqlQuery(queryStr, localPfs);
+      final Query query = ((RootServiceJpa) service).applyPfsToJqlQuery(queryStr, localPfs1);
       query.setParameter("refsetId", translation.getRefset().getId());
       query.setParameter("translationId", translation.getId());
 
-      final Query query2 = ((RootServiceJpa) service).applyPfsToJqlQuery(queryStr2, localPfs);
+      final Query query2 = ((RootServiceJpa) service).applyPfsToJqlQuery(queryStr2, localPfs2);
       query2.setParameter("unassigned", WorkflowStatus.UNASSIGNED);
       query2.setParameter("translationId", translation.getId());
 
@@ -895,7 +896,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
       query.setParameter("translationId", translation.getId());
       int[] totalCt = new int[1];
       results = query.getResultList();
-      results = service.applyPfsToList(results, ConceptRefsetMember.class, totalCt, localPfs);
+      results = service.applyPfsToList(results, ConceptRefsetMember.class, totalCt, localPfs1);
 
       final Query query2 = ((RootServiceJpa) service).applyPfsToJqlQuery(queryStr2, null);
       query2.setParameter("unassigned", WorkflowStatus.UNASSIGNED);
@@ -903,7 +904,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
       int[] totalCt2 = new int[1];
       List<Concept> conceptResultList = query2.getResultList();
       conceptResultList =
-          service.applyPfsToList(conceptResultList, Concept.class, totalCt2, localPfs);
+          service.applyPfsToList(conceptResultList, Concept.class, totalCt2, localPfs2);
       list.getObjects().addAll(conceptResultList);
 
       totalCount = totalCt[0] + totalCt2[0];
