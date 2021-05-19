@@ -1258,6 +1258,9 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
           translationService.getTranslation(concept.getTranslationId());
       // so translation is available lower down
       concept.setTranslation(translation);
+      
+      // concept notes are persisted separately, so ensure they are in-sync
+      concept.setNotes(oldConcept.getNotes());
 
       // save original state
       final Map<Long, Description> oldTermMap = new HashMap<>();
