@@ -942,7 +942,7 @@ tsApp.service('translationService', [
 
       gpService.increment();
       $http['delete'](
-        translationUrl + '/concept/remove/note?conceptId=' + conceptId + '&noteId=' + noteId).then(
+        translationUrl + 'concept/remove/note?conceptId=' + conceptId + '&noteId=' + noteId).then(
       // success
       function(response) {
         gpService.decrement();
