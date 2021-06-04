@@ -633,7 +633,7 @@
             <i ng-show="!['LEAD','ADMIN'].includes(projects.role) && concept.notes.length > 0"
               ng-click="openNotesModal(concept, 'Concept'); $event.stopPropagation()"
               title="Edit concept notes" class="noul material-icons md-18">assignment</i>
-            <i ng-show="!['LEAD','ADMIN'].includes(projects.role) && concept.notes.length == 0"
+            <i ng-show="projects.role == 'REVIEWER' && concept.notes.length == 0"
               ng-click="openNotesModal(concept, 'Concept'); $event.stopPropagation()"
               title="Add concept notes" class="md-grey material-icons md-18">assignment</i>
 
