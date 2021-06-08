@@ -5341,7 +5341,7 @@ tsApp
                 $scope.exportDiffReport = function(action) {
                   $scope.errors = [];
                   var paths = $scope.versions.map(a => a.path);
-                  if(paths.indexOf($scope.newVersion) == -1){
+                  if($scope.newVersion != 'MAIN' && paths.indexOf($scope.newVersion) == -1){
                     $scope.errors.push("Invalid terminology path or version");
                     return;
                   }
