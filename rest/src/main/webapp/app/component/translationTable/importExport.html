@@ -24,6 +24,16 @@
           <span ng-show="ioHandlers.length == 1">{{ioHandlers[0].name}}</span>
         </td>
       </tr>
+      <tr>
+      	<td class="col-md-4 col-xs-4">
+          <b>Needs Review</b>
+        </td>
+        <td class="col-md-8 col-xs-8">
+          <span>
+            <input type="checkbox" ng-model="needsReview">
+          </span>
+        </td>
+      
       <tr ng-show="operation == 'Import' && selectedIoHandler.ioType == 'FILE' && type == 'Translation'">
         <td class="col-md-4 col-xs-4">
           <b>Choose File</b>

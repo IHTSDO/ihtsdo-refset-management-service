@@ -59,6 +59,7 @@ tsApp
               $scope.withNotesOnly = false;
               $scope.actionStatuses = [ 'All', 'Ready to Finish', 'Ready for Publication' ];
               $scope.actionStatus = 'All';
+              $scope.needsReview = false;
 
               // Used for project admin to know what users are assigned to
               // something.
@@ -2114,6 +2115,9 @@ tsApp
                   if (type == 'Translation') {
                     if ($scope.selectedIoHandler.id === 'EXCEL') {
                       action = 'FINISHED';
+                      if($scope.needsReview){
+                        action = 'REVIEW_NEW';
+                      }
                     }
                       
                     translationService.beginImportConcepts($scope.translation.id,
