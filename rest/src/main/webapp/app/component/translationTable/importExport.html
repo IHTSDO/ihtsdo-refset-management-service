@@ -24,7 +24,7 @@
           <span ng-show="ioHandlers.length == 1">{{ioHandlers[0].name}}</span>
         </td>
       </tr>
-      <tr>
+      <tr ng-show="selectedIoHandler.id == 'EXCEL'">
       	<td class="col-md-4 col-xs-4">
           <b>Needs Review</b>
         </td>
@@ -33,7 +33,7 @@
             <input type="checkbox" ng-model="needsReview">
           </span>
         </td>
-      
+      </tr>
       <tr ng-show="operation == 'Import' && selectedIoHandler.ioType == 'FILE' && type == 'Translation'">
         <td class="col-md-4 col-xs-4">
           <b>Choose File</b>

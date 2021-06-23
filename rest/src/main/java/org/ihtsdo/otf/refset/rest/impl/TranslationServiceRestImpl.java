@@ -3879,7 +3879,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
           "FINISH IMPORT translation", translation.getProject().getId(),
           translation.getId(), translation + "\n  count = " + objectCt);
 
-      if (IoType.API == handler.getIoType()) {
+      if (IoType.API == handler.getIoType() || "READY_FOR_PUBLICATION".equals(workflowStatus.name())) {
         if (conceptMap.size() == conceptAdded && conceptAdded > 0) {
           validationResult.addComment(
               conceptAdded + " concepts loaded into Finished Concepts.");
@@ -3895,7 +3895,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
           validationResult
               .addComment("No concepts loaded into Finished Concepts.");
         }
-      } else if (handler instanceof ImportTranslationExcelHandler) {
+      } else if (handler instanceof ImportTranslationExcelHandler || "REVIEW_NEW".equals(workflowStatus.name())) {
         if (concepts.size() == descriptonAdded && descriptonAdded > 0) {
           validationResult.addComment(descriptonAdded
               + " descriptions loaded into Available Concepts for Review.");
