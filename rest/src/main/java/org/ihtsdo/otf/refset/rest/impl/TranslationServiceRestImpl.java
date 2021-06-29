@@ -3591,8 +3591,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
           concept.setActive(true);
           concept.setTranslation(translation);
           // Excel imported concepts should go to Review Available work
-          if (handler instanceof ImportTranslationExcelHandler) {
-            concept.setWorkflowStatus(workflowStatus);
+          if (handler instanceof ImportTranslationExcelHandler && workflowStatus == WorkflowStatus.REVIEW_NEW) {
+            //Do nothing - assignment will be handled below
           } else {
             // Mark as ready for publication as they are imported and can be
             // further worked on from there
