@@ -2180,9 +2180,11 @@ tsApp
                 // Handle continue import
                 $scope.continueImport = function(file, wfStatus) {
                   if (type === 'Translation') {
-                    if ($scope.selectedIoHandler.id === 'EXCEL' 
-                      || $scope.selectedIoHandler.id === 'TERMSERVER') {
+                    if ($scope.selectedIoHandler.id === 'TERMSERVER') {
                       wfStatus = 'FINISHED';
+                    }
+                    else if($scope.needsReview == true){
+                      wfStatus = 'REVIEW_NEW';
                     }
                     
                     if ($scope.selectedIoHandler.ioType === 'FILE') {
