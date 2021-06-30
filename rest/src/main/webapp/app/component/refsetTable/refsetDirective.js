@@ -5341,10 +5341,10 @@ tsApp
                 $scope.exportDiffReport = function(action) {
                   $scope.errors = [];
                   var paths = $scope.versions.map(a => a.path);
-                  if($scope.newVersion != 'MAIN' && paths.indexOf($scope.newVersion) == -1){
-                    $scope.errors.push("Invalid terminology path or version");
-                    return;
-                  }
+				  if(!$scope.termPathTested){
+					$scope.errors.push("Invalid terminology path or version");
+					return;
+				  }
                   refsetService.exportDiffReport(action, $scope.reportToken, $scope.refset, $scope.newTerminology, $scope.newVersion);
                   // update migration files list
                   $scope.migrationFiles = [];
