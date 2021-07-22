@@ -291,7 +291,7 @@ public class ImportTranslationExcelHandler extends ImportExportAbstract
       else
         sheet = workbook.getSheet("Description Additions");
       Logger.getLogger(getClass()).info(sheet);
-      if(sheet.getRow(0) == null) {
+      if(sheet == null || sheet.getRow(0) == null) {
         validationResult.addError("Translation template requires a sheet named \"Description Additions\".");
         return new ArrayList<>();
       }
