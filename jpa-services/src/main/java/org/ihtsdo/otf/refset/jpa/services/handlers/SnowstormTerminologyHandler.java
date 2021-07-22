@@ -968,7 +968,12 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
         if (rel.getTypeId().equals("Is a")) {
           continue;
         }
-
+        
+        // Skip concrete domain attributes
+        if (relNode.get("concreteValue") != null ) {
+          continue;
+        }
+        
         rel.setSourceConcept(concept);
         rel.setLastModifiedBy(terminology);
         rel.setPublishable(true);
@@ -1495,6 +1500,11 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
             if (rel.getTypeId().equals("Is a")) {
               continue;
             }
+            
+            // Skip concrete domain attributes
+            if (relNode.get("concreteValue") != null ) {
+              continue;
+            }
 
             rel.setSourceConcept(concept);
             rel.setLastModifiedBy(terminology);
@@ -1703,7 +1713,12 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
               if (rel.getTypeId().equals("Is a")) {
                 continue;
               }
-
+              
+              // Skip concrete domain attributes
+              if (relNode.get("concreteValue") != null ) {
+                continue;
+              }
+              
               rel.setSourceConcept(concept);
               rel.setLastModifiedBy(terminology);
               rel.setPublishable(true);
