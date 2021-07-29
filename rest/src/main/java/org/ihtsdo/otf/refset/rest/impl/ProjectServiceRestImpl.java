@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 
@@ -702,7 +703,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
           e.printStackTrace();
         }
         return null;
-      }).forEach(terminology -> {
+      }).filter(Objects::nonNull).forEach(terminology -> {
         terminology.forEach(t -> terminologyList.add(t));
       });
 
