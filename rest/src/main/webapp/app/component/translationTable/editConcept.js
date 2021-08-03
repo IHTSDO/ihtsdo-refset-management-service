@@ -122,10 +122,7 @@ tsApp.controller('EditConceptModalCtrl', [
     $scope.role = role;
     $scope.authorNames = [];
     $scope.descriptionAuthor = {};
-    
-    console.debug("NUNO Project", $scope.project); 
-    console.debug("NUNO Setting", $scope.translation);
-        
+            
     if (translation.assigned) {
       $scope.editTranslation = translation.assigned.find(
         et => et.concept.terminologyId === concept.terminologyId);
