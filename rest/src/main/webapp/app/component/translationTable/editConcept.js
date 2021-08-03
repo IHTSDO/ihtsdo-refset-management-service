@@ -122,6 +122,9 @@ tsApp.controller('EditConceptModalCtrl', [
     $scope.role = role;
     $scope.authorNames = [];
     $scope.descriptionAuthor = {};
+    
+    console.debug("NUNO Project", $scope.project); 
+    console.debug("NUNO Setting", $scope.translation);
         
     if (translation.assigned) {
       $scope.editTranslation = translation.assigned.find(
@@ -458,7 +461,7 @@ tsApp.controller('EditConceptModalCtrl', [
     $scope.getMemoryEntries = function() {
       $scope.memoryEntries = [];
       $scope.memoryEntriesMap = {};
-      if (!$scope.user.userPreferences.memoryEnabled) {
+      if (!$scope.user.userPreferences.memoryEnabled || $scope.translation.phraseMemoryEmpty) {
         return;
       }
 
