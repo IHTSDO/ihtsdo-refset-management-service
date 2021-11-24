@@ -263,16 +263,17 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
         if (record != null && EnumSet
             .of(WorkflowStatus.NEW, WorkflowStatus.EDITING_IN_PROGRESS, WorkflowStatus.EDITING_DONE)
             .contains(refset.getWorkflowStatus())) {
-          if (record.isRevision()) {
+          //if (record.isRevision()) {
             // Read origin refset with a different service, then detach it
-            final Refset originRefset = getOriginRefset(refset.getId(), record.getOriginRevision());
-            service.syncRefset(refset.getId(), originRefset);
+            //final Refset originRefset = getOriginRefset(refset.getId(), record.getOriginRevision());
+           // service.syncRefset(refset.getId(), originRefset);
             // signal to leave refset alone
-            skipUpdate = true;
+            //skipUpdate = true;
 
-          } else {
+          //} //else {
             refset.setWorkflowStatus(WorkflowStatus.NEW);
-          }
+            refset.setRevision(false);
+          //}
           // Remove record
           service.removeTrackingRecord(record.getId());
 
