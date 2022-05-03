@@ -18,6 +18,7 @@ import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.FieldedStringTokenizer;
+import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.Description;
 import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
@@ -33,6 +34,10 @@ public class ExportTranslationRf2Handler implements ExportTranslationHandler {
   
   // map languageRefset file dialect to description file dialect
   Map<String, String> nameMapping = new HashMap<>();
+  
+  // map translation langauge to languageRefsetId
+  Map<String, String> languageRefsetIdMapping = new HashMap<>();
+  
   
   String currentDate = "";
 
@@ -56,8 +61,10 @@ public class ExportTranslationRf2Handler implements ExportTranslationHandler {
 
       for (final String info : infoString.split(";")) {
         String[] values = FieldedStringTokenizer.split(info, "|");
-        // return language-country mapped to full-name|languageRefsetId
-        nameMapping.put(values[2], values[3]);         
+        // return language-country mapped to desired display name
+        nameMapping.put(values[2], values[3]);   
+        // return language-country mapped tolanguageRefsetId
+        languageRefsetIdMapping.put(values[2], values[1]);
       }
     }
   }
@@ -87,6 +94,13 @@ public class ExportTranslationRf2Handler implements ExportTranslationHandler {
     Logger.getLogger(getClass()).info("Export translation concepts - "
         + translation.getTerminologyId() + ", " + translation.getName());
 
+    // Make sure translated language has a refsetId listed in config.properties: "language.refset.dialect.DISPLAY="
+    final String languageRefsetId = (languageRefsetIdMapping.containsKey(translation.getLanguage()) ? languageRefsetIdMapping.get(translation.getLanguage()) : "");
+   
+    if(languageRefsetId == null || languageRefsetId.equals("")) {
+      throw new LocalException("Language refset Id for language code \"" + translation.getLanguage() + "\" not specified in the configuration.  Please submit a JIRA ticket, or a support ticket using the feedback tab.");
+    }
+    
     // Use info from nameMapping map and "translation" object to get file names right.
     String namespace = translation.getProject().getNamespace();
     String languageRefsetMemberFileName = "der2_cRefset_LanguageSnapshot-"
@@ -166,8 +180,7 @@ public class ExportTranslationRf2Handler implements ExportTranslationHandler {
           }
           langSb.append(member.isActive() ? "1" : "0").append("\t");
           langSb.append(translation.getModuleId()).append("\t");
-          langSb.append(translation.getRefset().getTerminologyId())
-              .append("\t");
+          langSb.append(languageRefsetId).append("\t");
           langSb.append(description.getTerminologyId()).append("\t");
           langSb.append(member.getAcceptabilityId());
           langSb.append("\r\n");
@@ -208,6 +221,13 @@ public class ExportTranslationRf2Handler implements ExportTranslationHandler {
     Logger.getLogger(getClass()).info("Export translation contents - "
         + translation.getTerminologyId() + ", " + translation.getName());
 
+    // Make sure translated language has a refsetId listed in config.properties: "language.refset.dialect.DISPLAY="
+    final String languageRefsetId = (languageRefsetIdMapping.containsKey(translation.getLanguage()) ? languageRefsetIdMapping.get(translation.getLanguage()) : "");
+
+    if(languageRefsetId == null || languageRefsetId.equals("")) {
+      throw new LocalException("Language refset Id for language code \"" + translation.getLanguage() + "\" not specified in the configuration.  Please submit a JIRA ticket, or a support ticket using the feedback tab.");
+    }
+    
     // Use info from nameMapping map and "translation" object to get file names right.
     String languageRefsetMemberFileName = "der2_cRefset_LanguageDelta-"
         + translation.getLanguage().replace('-', '_') + translation.getProject().getNamespace() + "_" + currentDate + ".txt";
@@ -275,7 +295,7 @@ public class ExportTranslationRf2Handler implements ExportTranslationHandler {
       }
       langSb.append(member.isActive() ? "1" : "0").append("\t");
       langSb.append(translation.getModuleId()).append("\t");
-      langSb.append(translation.getRefset().getTerminologyId()).append("\t");
+      langSb.append(languageRefsetId).append("\t");
       langSb.append(member.getDescriptionId()).append("\t");
       langSb.append(member.getAcceptabilityId());
       langSb.append("\r\n");

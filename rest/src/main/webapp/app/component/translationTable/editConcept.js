@@ -122,7 +122,7 @@ tsApp.controller('EditConceptModalCtrl', [
     $scope.role = role;
     $scope.authorNames = [];
     $scope.descriptionAuthor = {};
-        
+            
     if (translation.assigned) {
       $scope.editTranslation = translation.assigned.find(
         et => et.concept.terminologyId === concept.terminologyId);
@@ -458,7 +458,7 @@ tsApp.controller('EditConceptModalCtrl', [
     $scope.getMemoryEntries = function() {
       $scope.memoryEntries = [];
       $scope.memoryEntriesMap = {};
-      if (!$scope.user.userPreferences.memoryEnabled) {
+      if (!$scope.user.userPreferences.memoryEnabled || $scope.translation.phraseMemoryEmpty) {
         return;
       }
 

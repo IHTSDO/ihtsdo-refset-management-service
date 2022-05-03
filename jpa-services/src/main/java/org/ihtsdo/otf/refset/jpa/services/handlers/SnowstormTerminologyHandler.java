@@ -920,7 +920,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
           } else {
 
             Logger.getLogger(getClass())
-                .error("[ALERT=ALL]: message=acceptabilityMap node is null or empty, concept="
+                .warn("[ALERT=ALL]: message=acceptabilityMap node is null or empty, concept="
                     + concept.getTerminologyId() + ", description=" + description.getTerminologyId()
                     + ", terminology=" + terminology + ", version=" + version);
 
@@ -928,7 +928,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
             lookupErrors.append("  CONCEPT ID: ").append(concept.getTerminologyId()).append("\r\n");
             lookupErrors.append("  DESCRIPTION ID: ").append(description.getTerminologyId())
                 .append("\r\n");
-            lookupErrors.append("  ERROR: ").append("\"acceptabilityMap\" node is null or empty")
+            lookupErrors.append("  WARNING: ").append("\"acceptabilityMap\" node is null or empty")
                 .append("\r\n\r\n");
           }
         }
@@ -1449,7 +1449,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
               } else {
 
                 Logger.getLogger(getClass())
-                    .error("[ALERT=ALL]: message=acceptabilityMap node is null or empty, concept="
+                    .warn("[ALERT=ALL]: message=acceptabilityMap node is null or empty, concept="
                         + concept.getTerminologyId() + ", description="
                         + description.getTerminologyId() + ", terminology=" + terminology
                         + ", version=" + version);
@@ -1459,7 +1459,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
                     .append("\r\n");
                 lookupErrors.append("  DESCRIPTION ID: ").append(description.getTerminologyId())
                     .append("\r\n");
-                lookupErrors.append("  ERROR: ")
+                lookupErrors.append("  WARNING: ")
                     .append("\"acceptabilityMap\" node is null or empty").append("\r\n\r\n");
               }
             }
@@ -1663,7 +1663,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
                 } else {
 
                   Logger.getLogger(getClass())
-                      .error("[ALERT=ALL]: message=acceptabilityMap node is null or empty, concept="
+                      .warn("[ALERT=ALL]: message=acceptabilityMap node is null or empty, concept="
                           + concept.getTerminologyId() + ", description="
                           + description.getTerminologyId() + ", terminology=" + terminology
                           + ", version=" + version);
@@ -1673,7 +1673,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
                       .append("\r\n");
                   lookupErrors.append("  DESCRIPTION ID: ").append(description.getTerminologyId())
                       .append("\r\n");
-                  lookupErrors.append("  ERROR: ")
+                  lookupErrors.append("  WARNING: ")
                       .append("\"acceptabilityMap\" node is null or empty").append("\r\n\r\n");
                 }
               }
