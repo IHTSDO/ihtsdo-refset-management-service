@@ -52,7 +52,7 @@ public class ExportTranslationTsvHandler implements ExportTranslationHandler {
     super();
     caseSignificanceMap.put("900000000000448009", "ci");
     caseSignificanceMap.put("900000000000017005", "CS");
-    caseSignificanceMap.put("900000000000020002", "cl");
+    caseSignificanceMap.put("900000000000020002", "cI");
     
     String infoString =
         ConfigUtility.getConfigProperties().getProperty("language.refset.dialect.MANAGED-SERVICE");

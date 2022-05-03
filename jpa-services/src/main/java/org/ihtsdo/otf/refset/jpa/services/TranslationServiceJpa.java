@@ -473,8 +473,12 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements Translati
     translation.getWorkflowStatus().name();
     translation.getNotes().size();
     if (keepEverything) {
-      translation.getPhraseMemory().getEntries().size();
-      translation.getSpellingDictionary().getEntries().size();
+      if (translation.getPhraseMemory() != null) {
+        translation.getPhraseMemory().getEntries().size();
+      }
+      if (translation.getSpellingDictionary() != null) {
+        translation.getSpellingDictionary().getEntries().size();
+      }
     }
     // don't initialize phrase memory and spelling dictionary
     else {
