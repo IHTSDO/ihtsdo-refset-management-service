@@ -26,7 +26,9 @@
       <div style="width: 100%; margin-top: 15px;">
         <div style="width: 1%; white-space: nowrap; display: table-cell;">
           <a class="header-footer-text header-footer-link"
-            href="{{appConfig['deploy.link']}}">{{appConfig['deploy.footer.copyright']}}</a>
+            href="{{appConfig['deploy.link']}}">
+            Copyright © <script>document.getElementById("year").innerHTML=new Date().getFullYear();</script> <span id="year"></span> {{appConfig['deploy.footer.copyright']}}
+		</a>
         </div>
         <div style="display: table-cell;">
           &nbsp;&nbsp;
