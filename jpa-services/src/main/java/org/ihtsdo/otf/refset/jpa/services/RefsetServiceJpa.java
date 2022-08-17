@@ -1476,11 +1476,11 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
     final Refset stagedRefset = change.getStagedRefset();
     final Refset originRefset = change.getOriginRefset();
     final Map<String, ConceptRefsetMember> originMembers = new HashMap<>();
-    for (ConceptRefsetMember member : originRefset.getMembers()) {
+    for (ConceptRefsetMember member : originRefset.getMembers(true)) {
       originMembers.put(member.getConceptId(), member);
     }
     final Map<String, ConceptRefsetMember> stagedMembers = new HashMap<>();
-    for (ConceptRefsetMember member : stagedRefset.getMembers()) {
+    for (ConceptRefsetMember member : stagedRefset.getMembers(true)) {
       stagedMembers.put(member.getConceptId(), member);
     }
 
@@ -1507,6 +1507,11 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
           originMember.setSynonyms(stagedMember.getSynonyms());
           originMember.setRefset(originRefset);
           originMember.setLastModifiedBy(userName);
+          updateMember(originMember);
+        }
+        //If this is re-adding a previously removed concept, reactivate member
+        if(stagedMember.isActive() && !originMember.isActive()) {
+          originMember.setActive(true);
           updateMember(originMember);
         }
 
