@@ -592,6 +592,12 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
     if (getMember(id).getRefset().getProject().isStableUUIDs()
         && !getMember(id).getRefset().isProvisional()) {
       inactivateMember(id);
+      
+      // Remove synonyms
+      for (final ConceptRefsetMemberSynonym synonym : getMember(id).getSynonyms()) {
+        removeConceptRefsetMemberSynonym(synonym.getId());
+      }
+      
       return;
     }
 
