@@ -5288,6 +5288,17 @@ tsApp
                       });
                   }
 
+				// Return the FSN of the member
+				$scope.getMemberFSN = function(member) {
+				  for (var i = 0; i < member.synonyms.length; i++) {
+					if(member.synonyms[i].termType === "FSN"){
+						return member.synonyms[i].synonym;
+					}
+                  }
+				  // If no FSN found, use default name
+				  return member.conceptName;
+				}
+
                 // Return the name for a terminology
                 $scope.getTerminologyName = function(terminology) {
                   if ($scope.metadata && $scope.metadata.terminologyNames) {
