@@ -249,7 +249,7 @@
             <tr ng-repeat="member in newRegularMembers"
               ng-class="getMemberStyle(member)">
               <td style="word-break: break-word;">{{member.conceptId}}</td>
-              <td>{{member.conceptName}}</td>
+              <td>{{getMemberFSN(member)}}</td>
               <td>
                 <button class="btn btn-xs inactive"
                   ng-show="!member.conceptActive" uib-tooltip="Inactive">I</button>
@@ -627,7 +627,7 @@
             <tr ng-repeat="member in oldRegularMembers"
               ng-class="getMemberStyle(member)">
               <td style="word-break: break-word;">{{member.conceptId}}</td>
-              <td>{{member.conceptName}}</td>
+              <td>{{getMemberFSN(member)}}</td>
               <td class="nobreak">
                 <button class="btn btn-xs inactive"
                   ng-show="!member.conceptActive" uib-tooltip="Inactive">I</button>
