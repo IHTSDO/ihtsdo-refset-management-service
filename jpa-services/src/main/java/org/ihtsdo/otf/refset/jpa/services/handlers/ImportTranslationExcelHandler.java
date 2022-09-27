@@ -162,6 +162,7 @@ public class ImportTranslationExcelHandler extends ImportExportAbstract
 
     descriptionTypeCodeMap.put("SYNONYM", "900000000000013009");
     descriptionTypeCodeMap.put("FSN", "900000000000003001");
+    descriptionTypeCodeMap.put("DEF", "900000000000550004");
 
     caseSignificanceCodeMap.put("ci", "900000000000448009");
     caseSignificanceCodeMap.put("CS", "900000000000017005");
