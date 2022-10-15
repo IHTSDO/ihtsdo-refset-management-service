@@ -52,7 +52,7 @@ public class ExportTranslationTsvHandler implements ExportTranslationHandler {
     super();
     caseSignificanceMap.put("900000000000448009", "ci");
     caseSignificanceMap.put("900000000000017005", "CS");
-    caseSignificanceMap.put("900000000000020002", "cl");
+    caseSignificanceMap.put("900000000000020002", "cI");
     
     String infoString =
         ConfigUtility.getConfigProperties().getProperty("language.refset.dialect.MANAGED-SERVICE");
@@ -169,7 +169,15 @@ public class ExportTranslationTsvHandler implements ExportTranslationHandler {
           thisMember.append(caseSignificanceMap.get(description.getCaseSignificanceId())).append("\t");
           
           // Type
-          thisMember.append(description.getTypeId().contentEquals("900000000000003001") ? "FSN" : "SYNONYM").append("\t");
+          if(description.getTypeId().contentEquals("900000000000003001")) {
+            thisMember.append("FSN").append("\t");
+          } 
+          else if (description.getTypeId().contentEquals("900000000000550004")) {
+            thisMember.append("DEF").append("\t");
+          }
+          else {
+            thisMember.append("SYNONYM").append("\t");
+          }
           
           // Language reference set (1)
           if (allowedLanguageRefsets.containsKey(description.getLanguageCode())) {

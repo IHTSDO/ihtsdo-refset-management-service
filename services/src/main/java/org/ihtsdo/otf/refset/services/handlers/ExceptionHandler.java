@@ -110,7 +110,7 @@ public class ExceptionHandler {
       e.printStackTrace(pw);
       body.append(out.getBuffer());
       Logger.getLogger(ExceptionHandler.class)
-          .info("Sending error email : " + props);
+          .info("Sending error email.");
       if (config.getProperty("mail.enabled") != null
           && config.getProperty("mail.enabled").equals("true")) {
         ConfigUtility.sendEmail(subject, from, recipients, body.toString(),
