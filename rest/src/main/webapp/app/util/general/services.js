@@ -211,7 +211,7 @@ tsApp
         // Convert date to a string in UTC
         var workDate = new Date();
         this.toDate = function(lastModified) {
-          var date = new Date(lastModified + ((60 + workDate.getTimezoneOffset()) * 60000));
+          var date = new Date(lastModified + ((workDate.getTimezoneOffset()) * 60000));
           var year = '' + date.getFullYear();
           var month = '' + (date.getMonth() + 1);
           if (month.length == 1) {
@@ -962,7 +962,7 @@ tsApp.service('securityService', [
     
     // Check if user is using Chrome or not (for showing browser warning page)
     this.isUsingChrome = function() {
-      var isChrome = !!window.chrome && (!!window.chrome.webstore || !!window.chrome.runtime);
+      var isChrome = window.chrome && (!!window.chrome.loadTimes || !!window.chrome.csi);
       return isChrome;
     }; 
     
