@@ -962,7 +962,7 @@ tsApp.service('securityService', [
     
     // Check if user is using Chrome or not (for showing browser warning page)
     this.isUsingChrome = function() {
-      var isChrome = window.chrome && (!!window.chrome.loadTimes || !!window.chrome.csi);
+      var isChrome = window.chrome && navigator.userAgent.indexOf("edg/") == -1 && (!!window.chrome.loadTimes || !!window.chrome.csi);
       return isChrome;
     }; 
     
