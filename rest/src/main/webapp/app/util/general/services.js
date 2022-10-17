@@ -1,1075 +1,1075 @@
 // Util service
 tsApp
-  .service(
-    'utilService',
-    [
-      '$location',
-      '$anchorScroll',
-      '$uibModal',
-      function($location, $anchorScroll, $uibModal) {
-        console.debug('configure utilService');
-        // declare the error
-        this.error = {
-          message : null,
-          longMessage : null,
-          expand : false
-        };
+    .service(
+        'utilService',
+        [
+            '$location',
+            '$anchorScroll',
+            '$uibModal',
+            function ($location, $anchorScroll, $uibModal) {
+                console.debug('configure utilService');
+                // declare the error
+                this.error = {
+                    message: null,
+                    longMessage: null,
+                    expand: false
+                };
 
-        this.terminologies = [];
+                this.terminologies = [];
 
-        // tinymce options
-        this.tinymceOptions = {
-          menubar : false,
-          statusbar : false,
-          plugins : 'autolink link image charmap searchreplace lists paste',
-          toolbar : 'undo redo | styleselect lists | bold italic underline strikethrough | charmap link image',
-          forced_root_block : ''
-        };
+                // tinymce options
+                this.tinymceOptions = {
+                    menubar: false,
+                    statusbar: false,
+                    plugins: 'autolink link image charmap searchreplace lists paste',
+                    toolbar: 'undo redo | styleselect lists | bold italic underline strikethrough | charmap link image',
+                    forced_root_block: ''
+                };
 
-        // Get page sizes
-        this.getPageSizes = function() {
-          return [ {
-            name : 10,
-            value : 10
-          }, {
-            name : 20,
-            value : 20
-          }, {
-            name : 40,
-            value : 40
-          }, {
-            name : 100,
-            value : 100
-          }, {
-            name : 500,
-            value : 500
-          }, {
-            name : 'All',
-            value : 100000
-          } ];
-        }
-        // Prep query
-        this.prepQuery = function(query, wildcardFlag) {
-          if (!query) {
-            return '';
-          }
+                // Get page sizes
+                this.getPageSizes = function () {
+                    return [{
+                        name: 10,
+                        value: 10
+                    }, {
+                        name: 20,
+                        value: 20
+                    }, {
+                        name: 40,
+                        value: 40
+                    }, {
+                        name: 100,
+                        value: 100
+                    }, {
+                        name: 500,
+                        value: 500
+                    }, {
+                        name: 'All',
+                        value: 100000
+                    }];
+                }
+                // Prep query
+                this.prepQuery = function (query, wildcardFlag) {
+                    if (!query) {
+                        return '';
+                    }
 
-          // Add a * to the filter if set and doesn't contain a ':' indicating
-          // filter search
-          if (!wildcardFlag && query.indexOf("(") == -1 && query.indexOf(":") == -1
-            && query.indexOf("=") == -1 && query.indexOf("\"") == -1) {
-            var query2 = query.concat('*');
-            return encodeURIComponent(query2);
-          }
-          return encodeURIComponent(query);
-        };
+                    // Add a * to the filter if set and doesn't contain a ':' indicating
+                    // filter search
+                    if (!wildcardFlag && query.indexOf("(") == -1 && query.indexOf(":") == -1
+                        && query.indexOf("=") == -1 && query.indexOf("\"") == -1) {
+                        var query2 = query.concat('*');
+                        return encodeURIComponent(query2);
+                    }
+                    return encodeURIComponent(query);
+                };
 
-        // Prep pfs filter
-        this.prepPfs = function(pfs) {
-          if (!pfs) {
-            return {};
-          }
+                // Prep pfs filter
+                this.prepPfs = function (pfs) {
+                    if (!pfs) {
+                        return {};
+                    }
 
-          // Add a * to the filter if set and doesn't contain a :
-          if (pfs.queryRestriction && pfs.queryRestriction.indexOf(":") == -1
-            && pfs.queryRestriction.indexOf("=") == -1 && pfs.queryRestriction.indexOf("\"") == -1) {
-            var pfs2 = angular.copy(pfs);
-            pfs2.queryRestriction += "*";
-            return pfs2;
-          }
-          return pfs;
-        };
+                    // Add a * to the filter if set and doesn't contain a :
+                    if (pfs.queryRestriction && pfs.queryRestriction.indexOf(":") == -1
+                        && pfs.queryRestriction.indexOf("=") == -1 && pfs.queryRestriction.indexOf("\"") == -1) {
+                        var pfs2 = angular.copy(pfs);
+                        pfs2.queryRestriction += "*";
+                        return pfs2;
+                    }
+                    return pfs;
+                };
 
-        this.toText = function(camelCase, capitalizeFirst) {
-          if (capitalizeFirst) {
-            var str = camelCase.replace(/([A-Z]+)/g, " $1").replace(/([A-Z][a-z])/g, " $1");
-            return str[0].toUpperCase() + str.slice(1)
-          } else {
-            return camelCase.replace(/([A-Z]+)/g, " $1").replace(/([A-Z][a-z])/g, " $1")
-          }
-        }
+                this.toText = function (camelCase, capitalizeFirst) {
+                    if (capitalizeFirst) {
+                        var str = camelCase.replace(/([A-Z]+)/g, " $1").replace(/([A-Z][a-z])/g, " $1");
+                        return str[0].toUpperCase() + str.slice(1)
+                    } else {
+                        return camelCase.replace(/([A-Z]+)/g, " $1").replace(/([A-Z][a-z])/g, " $1")
+                    }
+                }
 
-        this.toCamelCase = function(text) {
-          // Lower cases the string
-          return text.toLowerCase()
-          // Replaces any - or _ characters with a space
-          .replace(/[-_]+/g, ' ')
-          // Removes any non alphanumeric characters
-          .replace(/[^\w\s]/g, '')
-          // remove duplicate spaces
-          .replace(/\s{2,}/g, ' ')
-          // Uppercases the first character in each group immediately following
-          // a space
-          // (delimited by spaces)
-          .replace(/ (.)/g, function($1) {
-            return $1.toUpperCase();
-          })
-          // Removes spaces
-          .replace(/ /g, '');
-        }
+                this.toCamelCase = function (text) {
+                    // Lower cases the string
+                    return text.toLowerCase()
+                        // Replaces any - or _ characters with a space
+                        .replace(/[-_]+/g, ' ')
+                        // Removes any non alphanumeric characters
+                        .replace(/[^\w\s]/g, '')
+                        // remove duplicate spaces
+                        .replace(/\s{2,}/g, ' ')
+                        // Uppercases the first character in each group immediately following
+                        // a space
+                        // (delimited by spaces)
+                        .replace(/ (.)/g, function ($1) {
+                            return $1.toUpperCase();
+                        })
+                        // Removes spaces
+                        .replace(/ /g, '');
+                }
 
-        this.yyyymmdd = function(dateIn) {
-          var yyyy = dateIn.getFullYear();
-          // getMonth() is zero-based
-          var mm = dateIn.getMonth() + 1;
-          var dd = dateIn.getDate();
-          // Leading zeros for mm and dd
-          return String(10000 * yyyy + 100 * mm + dd);
-        }
+                this.yyyymmdd = function (dateIn) {
+                    var yyyy = dateIn.getFullYear();
+                    // getMonth() is zero-based
+                    var mm = dateIn.getMonth() + 1;
+                    var dd = dateIn.getDate();
+                    // Leading zeros for mm and dd
+                    return String(10000 * yyyy + 100 * mm + dd);
+                }
 
-        // Sets the error
-        this.setError = function(message) {
-          this.error.message = message;
-        };
+                // Sets the error
+                this.setError = function (message) {
+                    this.error.message = message;
+                };
 
-        // Clears the error
-        this.clearError = function() {
-          this.error.message = null;
-          this.error.longMessage = null;
-          this.error.expand = false;
-        };
+                // Clears the error
+                this.clearError = function () {
+                    this.error.message = null;
+                    this.error.longMessage = null;
+                    this.error.expand = false;
+                };
 
-        // Handle error message
-        this.handleError = function(response, location) {
-          console.debug('Handle error: ', response);
-          if (response.data && response.data.length > 120) {
-            this.error.message = "Unexpected error, click the icon to view attached full error";
-            this.error.longMessage = response.data;
-          } else {
-            this.error.message = response.data;
-          }
-          // handle no message
-          if (!this.error.message) {
-            this.error.message = "Unexpected server side error.";
-          }
-          // If authtoken expired, relogin
-          if (this.error.message && this.error.message.indexOf('AuthToken') != -1) {
-            // Reroute back to login page with 'auth token has
-            // expired' message
-            $location.path('/login');
-          } else if (location) {
-            // scroll to specified location of page
-            $location.hash(location);
-            $anchorScroll();
-          } else {
-            // scroll to top of page
-            $location.hash('top');
-            $anchorScroll();
-          }
-        };
+                // Handle error message
+                this.handleError = function (response, location) {
+                    console.debug('Handle error: ', response);
+                    if (response.data && response.data.length > 120) {
+                        this.error.message = "Unexpected error, click the icon to view attached full error";
+                        this.error.longMessage = response.data;
+                    } else {
+                        this.error.message = response.data;
+                    }
+                    // handle no message
+                    if (!this.error.message) {
+                        this.error.message = "Unexpected server side error.";
+                    }
+                    // If authtoken expired, relogin
+                    if (this.error.message && this.error.message.indexOf('AuthToken') != -1) {
+                        // Reroute back to login page with 'auth token has
+                        // expired' message
+                        $location.path('/login');
+                    } else if (location) {
+                        // scroll to specified location of page
+                        $location.hash(location);
+                        $anchorScroll();
+                    } else {
+                        // scroll to top of page
+                        $location.hash('top');
+                        $anchorScroll();
+                    }
+                };
 
-        // Dialog error handler
-        this.handleBulkDialogErrors = function(){
-          // Errors are handled by the bulk modals.
-          // Just clear out the top-level error,  so it doesn't get displayed on the main screen as well.
-            this.clearError();
-        }
-        
-        // Dialog error handler
-        this.handleDialogError = function(errors, error) {
-          console.debug('Handle dialog error: ', errors, error);
+                // Dialog error handler
+                this.handleBulkDialogErrors = function () {
+                    // Errors are handled by the bulk modals.
+                    // Just clear out the top-level error,  so it doesn't get displayed on the main screen as well.
+                    this.clearError();
+                }
 
-          // handle long error
-          if (error && error.length > 100) {
-            errors[0] = "Unexpected error, click the icon to view attached full error";
-            errors[1] = error;
-          } else {
-            errors[0] = error;
-          }
-          // handle no message
-          if (!error) {
-            errors[0] = "Unexpected server side error.";
-          }
-          // If authtoken expired, relogin
-          if (error && error.indexOf('AuthToken') != -1) {
-            // Reroute back to login page with 'auth token has
-            // expired' message
-            $location.path('/login');
-          }
-          // otherwise clear the top-level error
-          else {
-            this.clearError();
-          }
-        };
+                // Dialog error handler
+                this.handleDialogError = function (errors, error) {
+                    console.debug('Handle dialog error: ', errors, error);
 
-        // Compose a URL properly for opening new window
-        this.composeUrl = function(extension) {
-          var currentUrl = $location.absUrl();
-          var baseUrl = currentUrl.substring(0, currentUrl.indexOf('#') + 1);
-          var newUrl = baseUrl + extension;
-          return newUrl;
-        }
+                    // handle long error
+                    if (error && error.length > 100) {
+                        errors[0] = "Unexpected error, click the icon to view attached full error";
+                        errors[1] = error;
+                    } else {
+                        errors[0] = error;
+                    }
+                    // handle no message
+                    if (!error) {
+                        errors[0] = "Unexpected server side error.";
+                    }
+                    // If authtoken expired, relogin
+                    if (error && error.indexOf('AuthToken') != -1) {
+                        // Reroute back to login page with 'auth token has
+                        // expired' message
+                        $location.path('/login');
+                    }
+                    // otherwise clear the top-level error
+                    else {
+                        this.clearError();
+                    }
+                };
 
-        // Return the time for a YYYYMMDD string
-        function parseYYYYMMDD(str) {
-          if (!/^(\d){8}$/.test(str))
-            return 0;
-          var y = str.substr(0, 4), m = str.substr(4, 2) - 1, d = str.substr(6, 2);
-          return new Date(y, m, d).getTime();
-        }
+                // Compose a URL properly for opening new window
+                this.composeUrl = function (extension) {
+                    var currentUrl = $location.absUrl();
+                    var baseUrl = currentUrl.substring(0, currentUrl.indexOf('#') + 1);
+                    var newUrl = baseUrl + extension;
+                    return newUrl;
+                }
 
-        // Convert date to a string in UTC
-        var workDate = new Date();
-        this.toDate = function(lastModified) {
-          var date = new Date(lastModified + ((workDate.getTimezoneOffset()) * 60000));
-          var year = '' + date.getFullYear();
-          var month = '' + (date.getMonth() + 1);
-          if (month.length == 1) {
-            month = '0' + month;
-          }
-          var day = '' + date.getDate();
-          if (day.length == 1) {
-            day = '0' + day;
-          }
-          var hour = '' + date.getHours();
-          if (hour.length == 1) {
-            hour = '0' + hour;
-          }
-          var minute = '' + date.getMinutes();
-          if (minute.length == 1) {
-            minute = '0' + minute;
-          }
-          var second = '' + date.getSeconds();
-          if (second.length == 1) {
-            second = '0' + second;
-          }
-          return year + '-' + month + '-' + day + ' ' + hour + ':' + minute + ':' + second;
-        };
-        
-        // Convert date to a string in local timezone
-        this.toLocalDate = function(lastModified) {
-          var date = new Date(lastModified);
-          var year = '' + date.getFullYear();
-          var month = '' + (date.getMonth() + 1);
-          if (month.length == 1) {
-            month = '0' + month;
-          }
-          var day = '' + date.getDate();
-          if (day.length == 1) {
-            day = '0' + day;
-          }
-          var hour = '' + date.getHours();
-          if (hour.length == 1) {
-            hour = '0' + hour;
-          }
-          var minute = '' + date.getMinutes();
-          if (minute.length == 1) {
-            minute = '0' + minute;
-          }
-          var second = '' + date.getSeconds();
-          if (second.length == 1) {
-            second = '0' + second;
-          }
-          return year + '-' + month + '-' + day + ' ' + hour + ':' + minute + ':' + second;
-        };        
+                // Return the time for a YYYYMMDD string
+                function parseYYYYMMDD(str) {
+                    if (!/^(\d){8}$/.test(str))
+                        return 0;
+                    var y = str.substr(0, 4), m = str.substr(4, 2) - 1, d = str.substr(6, 2);
+                    return new Date(y, m, d).getTime();
+                }
 
-        // Convert date to a short string in UTC
-        this.toShortDate = function(lastModified) {
-          var date = new Date(lastModified + ((60 + workDate.getTimezoneOffset()) * 60000));
-          var year = '' + date.getFullYear();
-          var month = '' + (date.getMonth() + 1);
-          if (month.length == 1) {
-            month = '0' + month;
-          }
-          var day = '' + date.getDate();
-          if (day.length == 1) {
-            day = '0' + day;
-          }
-          return year + '-' + month + '-' + day;
-        };
+                // Convert date to a string in UTC
+                var workDate = new Date();
+                this.toDate = function (lastModified) {
+                    var date = new Date(lastModified + ((workDate.getTimezoneOffset()) * 60000));
+                    var year = '' + date.getFullYear();
+                    var month = '' + (date.getMonth() + 1);
+                    if (month.length == 1) {
+                        month = '0' + month;
+                    }
+                    var day = '' + date.getDate();
+                    if (day.length == 1) {
+                        day = '0' + day;
+                    }
+                    var hour = '' + date.getHours();
+                    if (hour.length == 1) {
+                        hour = '0' + hour;
+                    }
+                    var minute = '' + date.getMinutes();
+                    if (minute.length == 1) {
+                        minute = '0' + minute;
+                    }
+                    var second = '' + date.getSeconds();
+                    if (second.length == 1) {
+                        second = '0' + second;
+                    }
+                    return year + '-' + month + '-' + day + ' ' + hour + ':' + minute + ':' + second;
+                };
 
-        // Convert date to a simple string in UTC
-        this.toSimpleDate = function(lastModified) {
-          if (lastModified == null) {
-          	return '';
-          }
-          var date = new Date(lastModified + ((60 + workDate.getTimezoneOffset()) * 60000));
-          var year = '' + date.getFullYear();
-          var month = '' + (date.getMonth() + 1);
-          if (month.length == 1) {
-            month = '0' + month;
-          }
-          var day = '' + date.getDate();
-          if (day.length == 1) {
-            day = '0' + day;
-          }
-          return year + month + day;
-        };
+                // Convert date to a string in local timezone
+                this.toLocalDate = function (lastModified) {
+                    var date = new Date(lastModified);
+                    var year = '' + date.getFullYear();
+                    var month = '' + (date.getMonth() + 1);
+                    if (month.length == 1) {
+                        month = '0' + month;
+                    }
+                    var day = '' + date.getDate();
+                    if (day.length == 1) {
+                        day = '0' + day;
+                    }
+                    var hour = '' + date.getHours();
+                    if (hour.length == 1) {
+                        hour = '0' + hour;
+                    }
+                    var minute = '' + date.getMinutes();
+                    if (minute.length == 1) {
+                        minute = '0' + minute;
+                    }
+                    var second = '' + date.getSeconds();
+                    if (second.length == 1) {
+                        second = '0' + second;
+                    }
+                    return year + '-' + month + '-' + day + ' ' + hour + ':' + minute + ':' + second;
+                };
 
-        this.toWCISimpleDate = function(date) {
-          if (date == null) {
-            return '';
-          }
-          var year = '' + date.getFullYear();
-          var month = '' + (date.getMonth() + 1);
-          if (month.length == 1) {
-            month = '0' + month;
-          }
-          var day = '' + date.getDate();
-          if (day.length == 1) {
-            day = '0' + day;
-          }
-          return year + month + day;
-        };
+                // Convert date to a short string in UTC
+                this.toShortDate = function (lastModified) {
+                    var date = new Date(lastModified + ((60 + workDate.getTimezoneOffset()) * 60000));
+                    var year = '' + date.getFullYear();
+                    var month = '' + (date.getMonth() + 1);
+                    if (month.length == 1) {
+                        month = '0' + month;
+                    }
+                    var day = '' + date.getDate();
+                    if (day.length == 1) {
+                        day = '0' + day;
+                    }
+                    return year + '-' + month + '-' + day;
+                };
 
-        // Table sorting mechanism
-        this.setSortField = function(table, field, paging) {
-          console.debug("utilService set sort field", table, field, paging);
-          paging[table].sortField = field;
-          // reset page number too
-          paging[table].page = 1;
-          // handles null case also
-          if (!paging[table].ascending) {
-            paging[table].ascending = true;
-          } else {
-            paging[table].ascending = false;
-          }
-          // reset the paging for the correct table
-          for ( var key in paging) {
-            if (paging.hasOwnProperty(key)) {
-              if (key == table)
-                paging[key].page = 1;
-            }
-          }
-        };
+                // Convert date to a simple string in UTC
+                this.toSimpleDate = function (lastModified) {
+                    if (lastModified == null) {
+                        return '';
+                    }
+                    var date = new Date(lastModified + ((60 + workDate.getTimezoneOffset()) * 60000));
+                    var year = '' + date.getFullYear();
+                    var month = '' + (date.getMonth() + 1);
+                    if (month.length == 1) {
+                        month = '0' + month;
+                    }
+                    var day = '' + date.getDate();
+                    if (day.length == 1) {
+                        day = '0' + day;
+                    }
+                    return year + month + day;
+                };
 
-        this.uniq = function uniq(a) {
-          var seen = {};
-          return a.filter(function(item) {
-            return seen.hasOwnProperty(item) ? false : (seen[item] = true);
-          });
-        };
+                this.toWCISimpleDate = function (date) {
+                    if (date == null) {
+                        return '';
+                    }
+                    var year = '' + date.getFullYear();
+                    var month = '' + (date.getMonth() + 1);
+                    if (month.length == 1) {
+                        month = '0' + month;
+                    }
+                    var day = '' + date.getDate();
+                    if (day.length == 1) {
+                        day = '0' + day;
+                    }
+                    return year + month + day;
+                };
 
-        // Return up or down sort chars if sorted
-        this.getSortIndicator = function(table, field, paging) {
-          if (paging[table].ascending == null) {
-            return '';
-          }
-          if (paging[table].sortField == field && paging[table].ascending) {
-            return '▴';
-          }
-          if (paging[table].sortField == field && !paging[table].ascending) {
-            return '▾';
-          }
-        };
+                // Table sorting mechanism
+                this.setSortField = function (table, field, paging) {
+                    console.debug("utilService set sort field", table, field, paging);
+                    paging[table].sortField = field;
+                    // reset page number too
+                    paging[table].page = 1;
+                    // handles null case also
+                    if (!paging[table].ascending) {
+                        paging[table].ascending = true;
+                    } else {
+                        paging[table].ascending = false;
+                    }
+                    // reset the paging for the correct table
+                    for (var key in paging) {
+                        if (paging.hasOwnProperty(key)) {
+                            if (key == table)
+                                paging[key].page = 1;
+                        }
+                    }
+                };
 
-        // Helper to get a paged array with show/hide flags
-        // and filtered by query string
-        this.getPagedArray = function(array, paging, pageSize) {
-          var newArray = new Array();
+                this.uniq = function uniq(a) {
+                    var seen = {};
+                    return a.filter(function (item) {
+                        return seen.hasOwnProperty(item) ? false : (seen[item] = true);
+                    });
+                };
 
-          // if array blank or not an array, return blank list
-          if (array == null || array == undefined || !Array.isArray(array)) {
-            return newArray;
-          }
+                // Return up or down sort chars if sorted
+                this.getSortIndicator = function (table, field, paging) {
+                    if (paging[table].ascending == null) {
+                        return '';
+                    }
+                    if (paging[table].sortField == field && paging[table].ascending) {
+                        return '▴';
+                    }
+                    if (paging[table].sortField == field && !paging[table].ascending) {
+                        return '▾';
+                    }
+                };
 
-          newArray = array;
+                // Helper to get a paged array with show/hide flags
+                // and filtered by query string
+                this.getPagedArray = function (array, paging, pageSize) {
+                    var newArray = new Array();
 
-          // apply sort if specified
-          if (paging.sortField) {
-            // if ascending specified, use that value, otherwise use false
-            newArray.sort(this.sortBy(paging.sortField, paging.ascending));
-          }
+                    // if array blank or not an array, return blank list
+                    if (array == null || array == undefined || !Array.isArray(array)) {
+                        return newArray;
+                    }
 
-          // apply filter
-          if (paging.filter) {
-            newArray = this.getArrayByFilter(newArray, paging.filter);
-          }
+                    newArray = array;
 
-          // apply active status filter
-          if (paging.typeFilter) {
-            newArray = this.getArrayByActiveStatus(newArray, paging.typeFilter);
-          }
+                    // apply sort if specified
+                    if (paging.sortField) {
+                        // if ascending specified, use that value, otherwise use false
+                        newArray.sort(this.sortBy(paging.sortField, paging.ascending));
+                    }
 
-          // get the page indices
-          var fromIndex = (paging.page - 1) * pageSize;
-          var toIndex = Math.min(fromIndex + pageSize, array.length);
+                    // apply filter
+                    if (paging.filter) {
+                        newArray = this.getArrayByFilter(newArray, paging.filter);
+                    }
 
-          // slice the array
-          var results = newArray.slice(fromIndex, toIndex);
+                    // apply active status filter
+                    if (paging.typeFilter) {
+                        newArray = this.getArrayByActiveStatus(newArray, paging.typeFilter);
+                    }
 
-          // add the total count before slicing
-          results.totalCount = newArray.length;
+                    // get the page indices
+                    var fromIndex = (paging.page - 1) * pageSize;
+                    var toIndex = Math.min(fromIndex + pageSize, array.length);
 
-          return results;
-        };
+                    // slice the array
+                    var results = newArray.slice(fromIndex, toIndex);
 
-        // function for sorting an array by (string) field and direction
-        this.sortBy = function(field, reverse) {
+                    // add the total count before slicing
+                    results.totalCount = newArray.length;
 
-          // key: function to return field value from object
-          var key = function(x) {
-            return x[field];
-          };
+                    return results;
+                };
 
-          // convert reverse to integer (1 = ascending, -1 =
-          // descending)
-          reverse = !reverse ? 1 : -1;
+                // function for sorting an array by (string) field and direction
+                this.sortBy = function (field, reverse) {
 
-          return function(a, b) {
-            return a = key(a), b = key(b), reverse * ((a > b) - (b > a));
-          };
-        };
+                    // key: function to return field value from object
+                    var key = function (x) {
+                        return x[field];
+                    };
 
-        // Get array by filter text matching terminologyId or name
-        this.getArrayByFilter = function(array, filter) {
-          var newArray = [];
+                    // convert reverse to integer (1 = ascending, -1 =
+                    // descending)
+                    reverse = !reverse ? 1 : -1;
 
-          for ( var object in array) {
+                    return function (a, b) {
+                        return a = key(a), b = key(b), reverse * ((a > b) - (b > a));
+                    };
+                };
 
-            if (this.objectContainsFilterText(array[object], filter)) {
-              newArray.push(array[object]);
-            }
-          }
-          return newArray;
-        };
+                // Get array by filter text matching terminologyId or name
+                this.getArrayByFilter = function (array, filter) {
+                    var newArray = [];
 
-        // Get array by filter on conceptActive status
-        this.getArrayByActiveStatus = function(array, filter) {
-          var newArray = [];
+                    for (var object in array) {
 
-          for ( var object in array) {
+                        if (this.objectContainsFilterText(array[object], filter)) {
+                            newArray.push(array[object]);
+                        }
+                    }
+                    return newArray;
+                };
 
-            if (array[object].conceptActive && filter == 'Active') {
-              newArray.push(array[object]);
-            } else if (!array[object].conceptActive && filter == 'Inactive') {
-              newArray.push(array[object]);
-            } else if (array[object].conceptActive && filter == 'All') {
-              newArray.push(array[object]);
-            }
-          }
-          return newArray;
-        };
+                // Get array by filter on conceptActive status
+                this.getArrayByActiveStatus = function (array, filter) {
+                    var newArray = [];
 
-        // Returns true if any field on object contains filter text
-        this.objectContainsFilterText = function(object, filter) {
+                    for (var object in array) {
 
-          if (!filter || !object)
-            return false;
+                        if (array[object].conceptActive && filter == 'Active') {
+                            newArray.push(array[object]);
+                        } else if (!array[object].conceptActive && filter == 'Inactive') {
+                            newArray.push(array[object]);
+                        } else if (array[object].conceptActive && filter == 'All') {
+                            newArray.push(array[object]);
+                        }
+                    }
+                    return newArray;
+                };
 
-          for ( var prop in object) {
-            var value = object[prop];
-            // check property for string, note this will cover child elements
-            if (value && value.toString().toLowerCase().indexOf(filter.toLowerCase()) != -1) {
-              return true;
-            }
-          }
+                // Returns true if any field on object contains filter text
+                this.objectContainsFilterText = function (object, filter) {
 
-          return false;
-        };
+                    if (!filter || !object)
+                        return false;
 
-        // Finds the object in a list by the field
-        this.findBy = function(list, obj, field) {
+                    for (var prop in object) {
+                        var value = object[prop];
+                        // check property for string, note this will cover child elements
+                        if (value && value.toString().toLowerCase().indexOf(filter.toLowerCase()) != -1) {
+                            return true;
+                        }
+                    }
 
-          // key: function to return field value from object
-          var key = function(x) {
-            return x[field];
-          };
+                    return false;
+                };
 
-          for (var i = 0; i < list.length; i++) {
-            if (key(list[i]) == key(obj)) {
-              return list[i];
-            }
-          }
-          return null;
-        };
+                // Finds the object in a list by the field
+                this.findBy = function (list, obj, field) {
 
-        // Get words of a string
-        this.getWords = function(str) {
-          // Same as in tinymce options
-          return str.match(/[^\s,\.]+/g);
-        };
+                    // key: function to return field value from object
+                    var key = function (x) {
+                        return x[field];
+                    };
 
-        // Single and multiple-word ordered phrases
-        this.getPhrases = function(str) {
-          var words = str.match(/[^\s,\.]+/g);
-          var phrases = [];
+                    for (var i = 0; i < list.length; i++) {
+                        if (key(list[i]) == key(obj)) {
+                            return list[i];
+                        }
+                    }
+                    return null;
+                };
 
-          for (var i = 0; i < words.length; i++) {
-            for (var j = i + 1; j <= words.length; j++) {
-              var phrase = words.slice(i, j).join(' ');
-              // a phrase have at least 5 chars and no start/end words that are
-              // purely punctuation
-              if (phrase.length > 5 && words[i].match(/.*[A-Za-z0-9].*/)
-                && words[j - 1].match(/.*[A-Za-z0-9].*/)) {
-                phrases.push(phrase.toLowerCase());
-              }
-            }
-          }
-          return phrases;
-        };
-        
-        //validates dates in YYYY-MM-DD format
-        this.isValidDate = function(dateString) {
-          // First check for the pattern
-          var regex_date = /^\d{4}\-\d{1,2}\-\d{1,2}$/;
-          if (!regex_date.test(dateString)) {
-            return false;
-          }
-          // Parse the date parts to integers
-          var parts = dateString.split("-");
-          var day = parseInt(parts[2], 10);
-          var month = parseInt(parts[1], 10);
-          var year = parseInt(parts[0], 10);
-          // Check the ranges of month and year
-          if (year < 1000 || year > 3000 || month == 0 || month > 12) {
-            return false;
-          }
-          var monthLength = [ 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 ];
-          // Adjust for leap years
-          if (year % 400 == 0 || (year % 100 != 0 && year % 4 == 0)) {
-            monthLength[1] = 29;
-          }
-          // Check the range of the day
-          return day > 0 && day <= monthLength[month - 1];
-        };
+                // Get words of a string
+                this.getWords = function (str) {
+                    // Same as in tinymce options
+                    return str.match(/[^\s,\.]+/g);
+                };
 
-      } ]);
+                // Single and multiple-word ordered phrases
+                this.getPhrases = function (str) {
+                    var words = str.match(/[^\s,\.]+/g);
+                    var phrases = [];
+
+                    for (var i = 0; i < words.length; i++) {
+                        for (var j = i + 1; j <= words.length; j++) {
+                            var phrase = words.slice(i, j).join(' ');
+                            // a phrase have at least 5 chars and no start/end words that are
+                            // purely punctuation
+                            if (phrase.length > 5 && words[i].match(/.*[A-Za-z0-9].*/)
+                                && words[j - 1].match(/.*[A-Za-z0-9].*/)) {
+                                phrases.push(phrase.toLowerCase());
+                            }
+                        }
+                    }
+                    return phrases;
+                };
+
+                //validates dates in YYYY-MM-DD format
+                this.isValidDate = function (dateString) {
+                    // First check for the pattern
+                    var regex_date = /^\d{4}\-\d{1,2}\-\d{1,2}$/;
+                    if (!regex_date.test(dateString)) {
+                        return false;
+                    }
+                    // Parse the date parts to integers
+                    var parts = dateString.split("-");
+                    var day = parseInt(parts[2], 10);
+                    var month = parseInt(parts[1], 10);
+                    var year = parseInt(parts[0], 10);
+                    // Check the ranges of month and year
+                    if (year < 1000 || year > 3000 || month == 0 || month > 12) {
+                        return false;
+                    }
+                    var monthLength = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+                    // Adjust for leap years
+                    if (year % 400 == 0 || (year % 100 != 0 && year % 4 == 0)) {
+                        monthLength[1] = 29;
+                    }
+                    // Check the range of the day
+                    return day > 0 && day <= monthLength[month - 1];
+                };
+
+            }]);
 
 // Glass pane service
-tsApp.service('gpService', [ '$timeout', function($timeout) {
-  console.debug('configure gpService');
-  // declare the glass pane counter
-  var glassPane = {
-    counter : 0,
-    messages : [],
-    enabled : true,
-    timeout : false
-  };
+tsApp.service('gpService', ['$timeout', function ($timeout) {
+    console.debug('configure gpService');
+    // declare the glass pane counter
+    var glassPane = {
+        counter: 0,
+        messages: [],
+        enabled: true,
+        timeout: false
+    };
 
-  this.getGlassPane = function() {
-    return glassPane;
-  }
-
-  this.isGlassPaneSet = function() {
-    return glassPane.enabled;
-  };
-
-  this.isGlassPaneNegative = function() {
-    return glassPane.counter < 0;
-  };
-
-  // Increments glass pane counter
-  this.increment = function(message) {
-    if (message) {
-      glassPane.messages.push(message);
+    this.getGlassPane = function () {
+        return glassPane;
     }
-    glassPane.counter++;
-    if (!glassPane.timeout) {
-      $timeout(function() {
-        if (glassPane.counter > 0) {
-          glassPane.enabled = true;
+
+    this.isGlassPaneSet = function () {
+        return glassPane.enabled;
+    };
+
+    this.isGlassPaneNegative = function () {
+        return glassPane.counter < 0;
+    };
+
+    // Increments glass pane counter
+    this.increment = function (message) {
+        if (message) {
+            glassPane.messages.push(message);
         }
-        glassPane.timeout = false;
-      }, 100);
-    }
-  };
+        glassPane.counter++;
+        if (!glassPane.timeout) {
+            $timeout(function () {
+                if (glassPane.counter > 0) {
+                    glassPane.enabled = true;
+                }
+                glassPane.timeout = false;
+            }, 100);
+        }
+    };
 
-  // Decrements glass pane counter
-  this.decrement = function(message) {
-    if (message) {
-      var index = glassPane.messages.indexOf(message);
-      if (index !== -1) {
-        glassPane.messages.splice(index, 1);
-      }
-    }
-    glassPane.counter--;
-    if (glassPane.counter == 0) {
-      $timeout(function() {
+    // Decrements glass pane counter
+    this.decrement = function (message) {
+        if (message) {
+            var index = glassPane.messages.indexOf(message);
+            if (index !== -1) {
+                glassPane.messages.splice(index, 1);
+            }
+        }
+        glassPane.counter--;
         if (glassPane.counter == 0) {
-          glassPane.enabled = false;
+            $timeout(function () {
+                if (glassPane.counter == 0) {
+                    glassPane.enabled = false;
+                }
+            }, 100);
         }
-      }, 100);
-    }
-  };
+    };
 
-} ]);
+}]);
 
 // Security service
 tsApp.service('securityService', [
-  '$http',
-  '$location',
-  '$q',
-  '$cookies',
-  'utilService',
-  'gpService',
-  'appConfig',
-  function($http, $location, $q, $cookies, utilService, gpService, appConfig) {
-    console.debug('configure securityService');
+    '$http',
+    '$location',
+    '$q',
+    '$cookies',
+    'utilService',
+    'gpService',
+    'appConfig',
+    function ($http, $location, $q, $cookies, utilService, gpService, appConfig) {
+        console.debug('configure securityService');
 
-    // Declare the user
-    var user = {
-      userName : null,
-      password : null,
-      name : null,
-      authToken : null,
-      applicationRole : null,
-      userPreferences : null
-    };
+        // Declare the user
+        var user = {
+            userName: null,
+            password: null,
+            name: null,
+            authToken: null,
+            applicationRole: null,
+            userPreferences: null
+        };
 
-    // Search results
-    var searchParams = {
-      page : 1,
-      query : null
-    };
+        // Search results
+        var searchParams = {
+            page: 1,
+            query: null
+        };
 
-    // Gets the user
-    this.getUser = function() {
+        // Gets the user
+        this.getUser = function () {
 
-      // Determine if page has been reloaded
-      if (!$http.defaults.headers.common.Authorization) {
-        // Retrieve cookie
-        if ($cookies.get('user')) {
-          var cookieUser = JSON.parse($cookies.get('user'));
-          // If there is a user cookie, load it
-          if (cookieUser) {
-            this.setUser(cookieUser);
-            $http.defaults.headers.common.Authorization = user.authToken;
-          }
-        }
+            // Determine if page has been reloaded
+            if (!$http.defaults.headers.common.Authorization) {
+                // Retrieve cookie
+                if ($cookies.get('user')) {
+                    var cookieUser = JSON.parse($cookies.get('user'));
+                    // If there is a user cookie, load it
+                    if (cookieUser) {
+                        this.setUser(cookieUser);
+                        $http.defaults.headers.common.Authorization = user.authToken;
+                    }
+                }
 
-        // If no cookie, just come in as "guest" user
-        else {
-          this.setGuestUser();
-        }
-      }
-      return user;
-    };
-    
-    // Gets the user
-    this.getUserByUsername = function(username) {
-      console.debug('getUser (username) ' + username);
-      var deferred = $q.defer();
+                // If no cookie, just come in as "guest" user
+                else {
+                    this.setGuestUser();
+                }
+            }
+            return user;
+        };
 
-      // Get users
-      gpService.increment();
-      $http.get(securityUrl + 'user/name/' + username).then(
-      // success
-      function(response) {
-        console.debug('  user = ', response.data);
-        gpService.decrement();
-        deferred.resolve(response.data);
-      },
-      // error
-      function(response) {
-        utilService.handleError(response);
-        gpService.decrement();
-        deferred.reject(response.data);
-      });
-      return deferred.promise;
-    };
+        // Gets the user
+        this.getUserByUsername = function (username) {
+            console.debug('getUser (username) ' + username);
+            var deferred = $q.defer();
 
-    // Sets the user
-    this.setUser = function(data) {
-      user.userName = data.userName;
-      user.name = data.name;
-      user.authToken = data.authToken;
-      user.password = '';
-      user.applicationRole = data.applicationRole;
-      user.userPreferences = data.userPreferences;
+            // Get users
+            gpService.increment();
+            $http.get(securityUrl + 'user/name/' + username).then(
+                // success
+                function (response) {
+                    console.debug('  user = ', response.data);
+                    gpService.decrement();
+                    deferred.resolve(response.data);
+                },
+                // error
+                function (response) {
+                    utilService.handleError(response);
+                    gpService.decrement();
+                    deferred.reject(response.data);
+                });
+            return deferred.promise;
+        };
 
-      // Whenver set user is called, we should save a cookie
-      $cookies.put('user', JSON.stringify(user));
+        // Sets the user
+        this.setUser = function (data) {
+            user.userName = data.userName;
+            user.name = data.name;
+            user.authToken = data.authToken;
+            user.password = '';
+            user.applicationRole = data.applicationRole;
+            user.userPreferences = data.userPreferences;
 
-    };
+            // Whenver set user is called, we should save a cookie
+            $cookies.put('user', JSON.stringify(user));
 
-    this.setGuestUser = function() {
-      user.userName = 'guest';
-      user.name = 'Guest';
-      user.authToken = 'guest';
-      user.password = 'guest';
-      user.applicationRole = 'VIEWER';
-      user.userPreferences = {};
+        };
 
-      // Whenever set user is called, we should save a cookie
-      $cookies.put('user', JSON.stringify(user));
+        this.setGuestUser = function () {
+            user.userName = 'guest';
+            user.name = 'Guest';
+            user.authToken = 'guest';
+            user.password = 'guest';
+            user.applicationRole = 'VIEWER';
+            user.userPreferences = {};
 
-    };
+            // Whenever set user is called, we should save a cookie
+            $cookies.put('user', JSON.stringify(user));
 
-    // Clears the user
-    this.clearUser = function() {
-      user.userName = null;
-      user.name = null;
-      user.authToken = null;
-      user.password = null;
-      user.applicationRole = null;
-      user.userPreferences = null;
-      $cookies.remove('user');
-    };
+        };
 
-    var httpClearUser = this.clearUser;
+        // Clears the user
+        this.clearUser = function () {
+            user.userName = null;
+            user.name = null;
+            user.authToken = null;
+            user.password = null;
+            user.applicationRole = null;
+            user.userPreferences = null;
+            $cookies.remove('user');
+        };
 
-    // isLoggedIn function
-    this.isLoggedIn = function() {
-      return user.authToken && user.authToken != 'guest';
-    };
+        var httpClearUser = this.clearUser;
 
-    // isAdmin function
-    this.isAdmin = function() {
-      return user.applicationRole == 'ADMIN';
-    };
+        // isLoggedIn function
+        this.isLoggedIn = function () {
+            return user.authToken && user.authToken != 'guest';
+        };
 
-    // isUser function
-    this.isUser = function() {
-      return user.applicationRole == 'ADMIN' || user.applicationRole == 'USER';
-    };
+        // isAdmin function
+        this.isAdmin = function () {
+            return user.applicationRole == 'ADMIN';
+        };
 
-    // Logout
-    this.logout = function() {
-      if (user.authToken == null) {
-        alert('You are not currently logged in');
-        return;
-      }
-      gpService.increment();
+        // isUser function
+        this.isUser = function () {
+            return user.applicationRole == 'ADMIN' || user.applicationRole == 'USER';
+        };
 
-      // logout
-      $http.get(securityUrl + 'logout/' + user.authToken).then(
-      // success
-      function(response) {
+        // Logout
+        this.logout = function () {
+            if (user.authToken == null) {
+                alert('You are not currently logged in');
+                return;
+            }
+            gpService.increment();
 
-        // clear scope variables
-        httpClearUser();
+            // logout
+            $http.get(securityUrl + 'logout/' + user.authToken).then(
+                // success
+                function (response) {
 
-        // clear http authorization header
-        $http.defaults.headers.common.Authorization = null;
-        gpService.decrement();
-        window.location.href = appConfig['logout.url'];
-      },
-      // error
-      function(response) {
-        utilService.handleError(response);
-        gpService.decrement();
-      });
-    };
+                    // clear scope variables
+                    httpClearUser();
 
-    // Accessor for search params
-    this.getSearchParams = function() {
-      return searchParams;
-    };
+                    // clear http authorization header
+                    $http.defaults.headers.common.Authorization = null;
+                    gpService.decrement();
+                    window.location.href = appConfig['logout.url'];
+                },
+                // error
+                function (response) {
+                    utilService.handleError(response);
+                    gpService.decrement();
+                });
+        };
 
-    // get all users
-    this.getUsers = function() {
-      console.debug('getUsers');
-      var deferred = $q.defer();
+        // Accessor for search params
+        this.getSearchParams = function () {
+            return searchParams;
+        };
 
-      // Get users
-      gpService.increment();
-      $http.get(securityUrl + 'user/users').then(
-      // success
-      function(response) {
-        console.debug('  users = ', response.data);
-        gpService.decrement();
-        deferred.resolve(response.data);
-      },
-      // error
-      function(response) {
-        utilService.handleError(response);
-        gpService.decrement();
-        deferred.reject(response.data);
-      });
-      return deferred.promise;
-    };
+        // get all users
+        this.getUsers = function () {
+            console.debug('getUsers');
+            var deferred = $q.defer();
 
-    // get user for auth token
-    this.getUserForAuthToken = function() {
-      console.debug('getUserforAuthToken');
-      var deferred = $q.defer();
+            // Get users
+            gpService.increment();
+            $http.get(securityUrl + 'user/users').then(
+                // success
+                function (response) {
+                    console.debug('  users = ', response.data);
+                    gpService.decrement();
+                    deferred.resolve(response.data);
+                },
+                // error
+                function (response) {
+                    utilService.handleError(response);
+                    gpService.decrement();
+                    deferred.reject(response.data);
+                });
+            return deferred.promise;
+        };
 
-      // Get users
-      gpService.increment();
-      $http.get(securityUrl + 'user').then(
-      // success
-      function(response) {
-        gpService.decrement();
-        deferred.resolve(response.data);
-      },
-      // error
-      function(response) {
-        utilService.handleError(response);
-        gpService.decrement();
-        deferred.reject(response.data);
-      });
-      return deferred.promise;
-    };
-    // add user
-    this.addUser = function(user) {
-      console.debug('addUser');
-      var deferred = $q.defer();
+        // get user for auth token
+        this.getUserForAuthToken = function () {
+            console.debug('getUserforAuthToken');
+            var deferred = $q.defer();
 
-      // Add user
-      gpService.increment();
-      $http.put(securityUrl + 'user/add', user).then(
-      // success
-      function(response) {
-        console.debug('  user = ', response.data);
-        gpService.decrement();
-        deferred.resolve(response.data);
-      },
-      // error
-      function(response) {
-        utilService.handleError(response);
-        gpService.decrement();
-        deferred.reject(response.data);
-      });
-      return deferred.promise;
-    };
+            // Get users
+            gpService.increment();
+            $http.get(securityUrl + 'user').then(
+                // success
+                function (response) {
+                    gpService.decrement();
+                    deferred.resolve(response.data);
+                },
+                // error
+                function (response) {
+                    utilService.handleError(response);
+                    gpService.decrement();
+                    deferred.reject(response.data);
+                });
+            return deferred.promise;
+        };
+        // add user
+        this.addUser = function (user) {
+            console.debug('addUser');
+            var deferred = $q.defer();
 
-    // update user
-    this.updateUser = function(user) {
-      console.debug('updateUser');
-      var deferred = $q.defer();
+            // Add user
+            gpService.increment();
+            $http.put(securityUrl + 'user/add', user).then(
+                // success
+                function (response) {
+                    console.debug('  user = ', response.data);
+                    gpService.decrement();
+                    deferred.resolve(response.data);
+                },
+                // error
+                function (response) {
+                    utilService.handleError(response);
+                    gpService.decrement();
+                    deferred.reject(response.data);
+                });
+            return deferred.promise;
+        };
 
-      // Add user
-      gpService.increment();
-      $http.post(securityUrl + 'user/update', user).then(
-      // success
-      function(response) {
-        console.debug('  user = ', response.data);
-        gpService.decrement();
-        deferred.resolve(response.data);
-      },
-      // error
-      function(response) {
-        utilService.handleError(response);
-        gpService.decrement();
-        deferred.reject(response.data);
-      });
-      return deferred.promise;
-    };
+        // update user
+        this.updateUser = function (user) {
+            console.debug('updateUser');
+            var deferred = $q.defer();
 
-    // remove user
-    this.removeUser = function(user) {
-      console.debug('removeUser');
-      var deferred = $q.defer();
+            // Add user
+            gpService.increment();
+            $http.post(securityUrl + 'user/update', user).then(
+                // success
+                function (response) {
+                    console.debug('  user = ', response.data);
+                    gpService.decrement();
+                    deferred.resolve(response.data);
+                },
+                // error
+                function (response) {
+                    utilService.handleError(response);
+                    gpService.decrement();
+                    deferred.reject(response.data);
+                });
+            return deferred.promise;
+        };
 
-      // Remove user
-      gpService.increment();
-      $http['delete'](securityUrl + 'user/remove/' + user.id).then(
-      // success
-      function(response) {
-        console.debug('  user = ', response.data);
-        gpService.decrement();
-        deferred.resolve(response.data);
-      },
-      // error
-      function(response) {
-        utilService.handleError(response);
-        gpService.decrement();
-        deferred.reject(response.data);
-      });
-      return deferred.promise;
-    };
+        // remove user
+        this.removeUser = function (user) {
+            console.debug('removeUser');
+            var deferred = $q.defer();
 
-    // get application roles
-    this.getApplicationRoles = function() {
-      console.debug('getApplicationRoles');
-      var deferred = $q.defer();
+            // Remove user
+            gpService.increment();
+            $http['delete'](securityUrl + 'user/remove/' + user.id).then(
+                // success
+                function (response) {
+                    console.debug('  user = ', response.data);
+                    gpService.decrement();
+                    deferred.resolve(response.data);
+                },
+                // error
+                function (response) {
+                    utilService.handleError(response);
+                    gpService.decrement();
+                    deferred.reject(response.data);
+                });
+            return deferred.promise;
+        };
 
-      // Get application roles
-      gpService.increment();
-      $http.get(securityUrl + 'roles').then(
-      // success
-      function(response) {
-        console.debug('  roles = ', response.data);
-        gpService.decrement();
-        deferred.resolve(response.data);
-      },
-      // error
-      function(response) {
-        utilService.handleError(response);
-        gpService.decrement();
-        deferred.reject(response.data);
-      });
-      return deferred.promise;
-    };
+        // get application roles
+        this.getApplicationRoles = function () {
+            console.debug('getApplicationRoles');
+            var deferred = $q.defer();
 
-    // Finds users as a list
-    this.findUsersAsList = function(query, pfs) {
-      console.debug('findUsersAsList', query, pfs);
-      // Setup deferred
-      var deferred = $q.defer();
+            // Get application roles
+            gpService.increment();
+            $http.get(securityUrl + 'roles').then(
+                // success
+                function (response) {
+                    console.debug('  roles = ', response.data);
+                    gpService.decrement();
+                    deferred.resolve(response.data);
+                },
+                // error
+                function (response) {
+                    utilService.handleError(response);
+                    gpService.decrement();
+                    deferred.reject(response.data);
+                });
+            return deferred.promise;
+        };
 
-      // Make POST call
-      gpService.increment();
-      $http.post(securityUrl + 'user/find?query=' + utilService.prepQuery(query),
-        utilService.prepPfs(pfs)).then(
-      // success
-      function(response) {
-        console.debug('  users = ', response.data);
-        gpService.decrement();
-        deferred.resolve(response.data);
-      },
-      // error
-      function(response) {
-        utilService.handleError(response);
-        gpService.decrement();
-        deferred.reject(response.data);
-      });
+        // Finds users as a list
+        this.findUsersAsList = function (query, pfs) {
+            console.debug('findUsersAsList', query, pfs);
+            // Setup deferred
+            var deferred = $q.defer();
 
-      return deferred.promise;
-    };
+            // Make POST call
+            gpService.increment();
+            $http.post(securityUrl + 'user/find?query=' + utilService.prepQuery(query),
+                utilService.prepPfs(pfs)).then(
+                    // success
+                    function (response) {
+                        console.debug('  users = ', response.data);
+                        gpService.decrement();
+                        deferred.resolve(response.data);
+                    },
+                    // error
+                    function (response) {
+                        utilService.handleError(response);
+                        gpService.decrement();
+                        deferred.reject(response.data);
+                    });
 
-    // update user preferences
-    this.updateUserPreferences = function(userPreferences) {
-      console.debug('updateUserPreferences');
-      // skip if user preferences is not set
-      if (!userPreferences) {
-        return;
-      }
+            return deferred.promise;
+        };
 
-      // Whenever we update user preferences, we need to update the cookie
-      $cookies.put('user', JSON.stringify(user));
+        // update user preferences
+        this.updateUserPreferences = function (userPreferences) {
+            console.debug('updateUserPreferences');
+            // skip if user preferences is not set
+            if (!userPreferences) {
+                return;
+            }
 
-      var deferred = $q.defer();
+            // Whenever we update user preferences, we need to update the cookie
+            $cookies.put('user', JSON.stringify(user));
 
-      gpService.increment();
-      $http.post(securityUrl + 'user/preferences/update', userPreferences).then(
-      // success
-      function(response) {
-        console.debug('  userPreferences = ', response.data);
-        gpService.decrement();
-        deferred.resolve(response.data);
-      },
-      // error
-      function(response) {
-        utilService.handleError(response);
-        gpService.decrement();
-        deferred.reject(response.data);
-      });
-      return deferred.promise;
-    };
+            var deferred = $q.defer();
 
-    // Get config properties
-    this.getConfigProperties = function() {
-      console.debug("get config properties");
-      var deferred = $q.defer();
+            gpService.increment();
+            $http.post(securityUrl + 'user/preferences/update', userPreferences).then(
+                // success
+                function (response) {
+                    console.debug('  userPreferences = ', response.data);
+                    gpService.decrement();
+                    deferred.resolve(response.data);
+                },
+                // error
+                function (response) {
+                    utilService.handleError(response);
+                    gpService.decrement();
+                    deferred.reject(response.data);
+                });
+            return deferred.promise;
+        };
 
-      gpService.increment();
-      $http.get(securityUrl + '/properties').then(
-      // success
-      function(response) {
-        gpService.decrement();
-        deferred.resolve(response.data);
-      },
-      // Error
-      function(response) {
-        gpService.decrement();
-        utilService.handleError(response);
-        deferred.reject();
-      });
-      return deferred.promise;
-    };
-    
-    // Check if user is using Chrome or not (for showing browser warning page)
-    this.isUsingChrome = function() {
-      var isChrome = window.chrome && navigator.userAgent.indexOf("edg/") == -1 && (!!window.chrome.loadTimes || !!window.chrome.csi);
-      return isChrome;
-    }; 
-    
-  } ]);
+        // Get config properties
+        this.getConfigProperties = function () {
+            console.debug("get config properties");
+            var deferred = $q.defer();
+
+            gpService.increment();
+            $http.get(securityUrl + '/properties').then(
+                // success
+                function (response) {
+                    gpService.decrement();
+                    deferred.resolve(response.data);
+                },
+                // Error
+                function (response) {
+                    gpService.decrement();
+                    utilService.handleError(response);
+                    deferred.reject();
+                });
+            return deferred.promise;
+        };
+
+        // Check if user is using Chrome or not (for showing browser warning page)
+        this.isUsingChrome = function () {
+            var isChrome = window.chrome && navigator.userAgent.indexOf("Edg/") == -1 && (!!window.chrome.loadTimes || !!window.chrome.csi);
+            return isChrome;
+        };
+
+    }]);
 
 // Tab service
-tsApp.service('tabService', [ '$location', 'utilService', 'gpService', 'securityService',
-  function($location, utilService, gpService, securityService) {
-    console.debug('configure tabService');
+tsApp.service('tabService', ['$location', 'utilService', 'gpService', 'securityService',
+    function ($location, utilService, gpService, securityService) {
+        console.debug('configure tabService');
 
-    // Available tabs
-    this.tabs = [ {
-      link : '#/directory',
-      label : 'Directory'
-    }, {
-      link : '#/refset',
-      label : 'Refset'
-    }, {
-      link : '#/translation',
-      label : 'Translation'
-    }, {
-      link : '#/admin',
-      label : 'Admin'
-    } ];
+        // Available tabs
+        this.tabs = [{
+            link: '#/directory',
+            label: 'Directory'
+        }, {
+            link: '#/refset',
+            label: 'Refset'
+        }, {
+            link: '#/translation',
+            label: 'Translation'
+        }, {
+            link: '#/admin',
+            label: 'Admin'
+        }];
 
-    this.selectedTab = this.tabs[0];
+        this.selectedTab = this.tabs[0];
 
-    // Show admin tab for admins only
-    this.showTab = function(tab) {
-      console.debug('tab label', tab.label);
-      return tab.label != 'Admin' || securityService.getUser().applicationRole == 'ADMIN';
-    };
+        // Show admin tab for admins only
+        this.showTab = function (tab) {
+            console.debug('tab label', tab.label);
+            return tab.label != 'Admin' || securityService.getUser().applicationRole == 'ADMIN';
+        };
 
-    // Sets the selected tab
-    this.setSelectedTab = function(tab) {
-      this.selectedTab = tab;
-    };
+        // Sets the selected tab
+        this.setSelectedTab = function (tab) {
+            this.selectedTab = tab;
+        };
 
-    // Check if user is using Chrome or not (for showing browser warning page)
-    this.isUsingChrome = function() {
-      return securityService.isUsingChrome();
-    }; 
-    
-    // sets the selected tab by label
-    // to be called by controllers when their
-    // respective tab is selected
-    this.setSelectedTabByLabel = function(label) {
-      for (var i = 0; i < this.tabs.length; i++) {
-        if (this.tabs[i].label === label) {
-          this.selectedTab = this.tabs[i];
-          break;
-        }
-      }
-    };
+        // Check if user is using Chrome or not (for showing browser warning page)
+        this.isUsingChrome = function () {
+            return securityService.isUsingChrome();
+        };
 
-  } ]);
+        // sets the selected tab by label
+        // to be called by controllers when their
+        // respective tab is selected
+        this.setSelectedTabByLabel = function (label) {
+            for (var i = 0; i < this.tabs.length; i++) {
+                if (this.tabs[i].label === label) {
+                    this.selectedTab = this.tabs[i];
+                    break;
+                }
+            }
+        };
+
+    }]);
 
 // Websocket service
 
-tsApp.service('websocketService', [ '$location', 'utilService', 'gpService',
-  function($location, utilService, gpService) {
-    console.debug('configure websocketService');
-    this.data = {
-      message : null
-    };
+tsApp.service('websocketService', ['$location', 'utilService', 'gpService',
+    function ($location, utilService, gpService) {
+        console.debug('configure websocketService');
+        this.data = {
+            message: null
+        };
 
-    // Determine URL without requiring injection
-    // should support wss for https
-    // and assumes REST services and websocket are deployed together
-    this.getUrl = function() {
-      var url = window.location.href;
-      url = url.replace('http', 'ws');
-      url = url.replace('index.html', '');
-      url = url.substring(0, url.indexOf('#'));
-      url = url + '/websocket';
-      console.debug('url = ' + url);
-      return url;
+        // Determine URL without requiring injection
+        // should support wss for https
+        // and assumes REST services and websocket are deployed together
+        this.getUrl = function () {
+            var url = window.location.href;
+            url = url.replace('http', 'ws');
+            url = url.replace('index.html', '');
+            url = url.substring(0, url.indexOf('#'));
+            url = url + '/websocket';
+            console.debug('url = ' + url);
+            return url;
 
-    };
+        };
 
-    this.connection = new WebSocket(this.getUrl());
+        this.connection = new WebSocket(this.getUrl());
 
-    this.connection.onopen = function() {
-      // Log so we know it is happening
-      console.log('Connection open');
-    };
+        this.connection.onopen = function () {
+            // Log so we know it is happening
+            console.log('Connection open');
+        };
 
-    this.connection.onclose = function() {
-      // Log so we know it is happening
-      console.log('Connection closed');
-    };
+        this.connection.onclose = function () {
+            // Log so we know it is happening
+            console.log('Connection closed');
+        };
 
-    // error handler
-    this.connection.onerror = function(error) {
-      utilService.handleError(error, null, null, null);
-    };
+        // error handler
+        this.connection.onerror = function (error) {
+            utilService.handleError(error, null, null, null);
+        };
 
-    // handle receipt of a message
-    this.connection.onmessage = function(e) {
-      var message = e.data;
-      console.log('MESSAGE: ' + message);
-      // what else to do?
-    };
+        // handle receipt of a message
+        this.connection.onmessage = function (e) {
+            var message = e.data;
+            console.log('MESSAGE: ' + message);
+            // what else to do?
+        };
 
-    // Send a message to the websocket server endpoint
-    this.send = function(message) {
-      this.connection.send(JSON.stringify(message));
-    };
+        // Send a message to the websocket server endpoint
+        this.send = function (message) {
+            this.connection.send(JSON.stringify(message));
+        };
 
-  } ]);
+    }]);
