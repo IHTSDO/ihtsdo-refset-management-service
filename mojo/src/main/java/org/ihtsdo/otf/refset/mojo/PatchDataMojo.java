@@ -47,9 +47,11 @@ import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
+import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.ProjectList;
+import org.ihtsdo.otf.refset.helpers.RefsetList;
 import org.ihtsdo.otf.refset.jpa.ConceptRefsetMemberSynonymJpa;
 import org.ihtsdo.otf.refset.jpa.ProjectJpa;
 import org.ihtsdo.otf.refset.jpa.UserJpa;
@@ -438,6 +440,14 @@ public class PatchDataMojo extends AbstractRttMojo {
         patch20200805(workflowService, translationService);
       }
 
+      // Patch 20221025
+      // Update UUIDs for given project/refset
+      if ("20221025".compareTo(start) >= 0 && "20221025".compareTo(end) <= 0) {
+        getLog().info(
+            "Processing patch 20221025 - Update UUIDs for given project/refset"); // Patch
+        patch20221025(translationService, workflowService, refsetService, false);
+      }
+      
       // Reindex
       if (fullReindex) {
         getLog().info("  Reindex");
@@ -2045,4 +2055,76 @@ public class PatchDataMojo extends AbstractRttMojo {
     }
     translationService.commit();
   }
+  
+  /**
+   * Patch 20221025.
+   *
+   * @param translationService the translation service
+   * @throws Exception the exception
+   */
+  private void patch20221025(TranslationService translationService, WorkflowService workflowService, 
+    RefsetService refsetService, boolean fullReindex)
+    throws Exception {
+    int ct = 0;
+    translationService.setTransactionPerOperation(false);
+    translationService.beginTransaction();
+    StringBuilder projectIdStringBuilder = new StringBuilder();
+    
+    
+    // Read in from UUID Mismatches file to get Snowstorm UUID replacements
+    final Map<String, String> oldUUIDtoNewUUID = new HashMap<>();
+    System.out.println("input dir: " + input);
+    String project_id = "";
+    try (final BufferedReader in =
+        new BufferedReader(new FileReader(new File(input)))) {
+      String line = null;
+      while ((line = in.readLine()) != null) {
+        if (line.contains("Mismatches")) {
+          project_id = line.substring(line.indexOf("project ") + 8, line.indexOf(","));
+          System.out.println("project_id: *" + project_id + "*");
+        }
+        if (line.contains("Mismatches") || line.equals("") || line.contains("ConceptID")) {
+          continue;
+        }
+        String tokens[] = line.split("\t");
+        if (tokens != null) {
+          oldUUIDtoNewUUID.put(tokens[0] + ":" + tokens[1], tokens[2]);
+          //System.out.println("map: " + tokens[1] + " " + tokens[2] );  
+        }
+      }
+    }
+    List<String> refsetIdsList = new ArrayList<>();
+    if (refsetIds != null) {
+      refsetIdsList.add(refsetIds);
+    }
+    RefsetList refsetList = refsetService.findRefsetsForQuery("terminologyId:" + refsetIdsList.get(0)
+    + " AND projectId:" + project_id, null);
+    
+    for (Refset refset : refsetList.getObjects()) {
+      if (refset.getWorkflowStatus() != WorkflowStatus.PUBLISHED) {
+        System.out.println("refset: " + refset.toString());
+        for (String termIdOldUUID : oldUUIDtoNewUUID.keySet()) {
+          String conceptId = termIdOldUUID.substring(0, termIdOldUUID.indexOf(":"));
+          String oldUUID = termIdOldUUID.substring(termIdOldUUID.indexOf(":") + 1);
+          String newUUID = oldUUIDtoNewUUID.get(termIdOldUUID);
+          String query = "conceptId:" + conceptId;
+          ConceptRefsetMemberList list =
+              refsetService.findMembersForRefset(refset.getId(), query, null, true);
+          ConceptRefsetMember member = list.getObjects().get(0);
+          if (!oldUUID.equals(member.getTerminologyId())) {
+            System.out
+                .println("oldUUID: *" + oldUUID + "* termId: *" + member.getTerminologyId() + "*");
+          } else {
+            member.setTerminologyId(newUUID);
+            refsetService.updateMember(member);
+            ct++;
+          }
+        }
+      }
+    }
+
+    getLog().info("translations updated final ct = " + ct); 
+
+    
+  } 
 }
