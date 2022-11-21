@@ -3547,6 +3547,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
       int objectCt = 0;
       int conceptAdded = 0;
       int descriptonAdded = 0;
+      int duplicateDescriptionSkipped = 0;
 
       // Process concepts from import
       for (final Concept concept : concepts) {
@@ -3644,6 +3645,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
           // (e.g. de-duplicate)
           if (!handler.isDeltaHandler() && origDesc != null) {
             Logger.getLogger(getClass()).debug("    SKIP DESC");
+            duplicateDescriptionSkipped++;
             continue;
           }
           
@@ -3651,6 +3653,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
           if(handler instanceof ImportTranslationExcelHandler) {
             if(origDescTermMap.get(description.getTerm()) != null) {
               Logger.getLogger(getClass()).debug("    SKIP DESC");
+              duplicateDescriptionSkipped++;
               continue;
             }
           }
@@ -3920,6 +3923,10 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
         } else {
           validationResult.addComment(
               "No descriptions loaded into Available Concepts for Review.");
+        }
+        if(duplicateDescriptionSkipped>0) {
+          validationResult.addComment(
+              duplicateDescriptionSkipped + " descriptions not because they duplicated existing descriptions.");         
         }
       }
 
