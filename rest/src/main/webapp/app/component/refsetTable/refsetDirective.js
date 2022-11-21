@@ -4873,10 +4873,22 @@ tsApp
 
                 // initialize
                 if ($scope.refset.version.lastIndexOf('SNOMEDCT-') >= 0) {
+				  //Extract the terminology value from the version path
+				  //E.g. "MAIN/SNOMEDCT-US/2022-09-01" should return "SNOMEDCT-US"
+				  var fullRefsetVersion = $scope.refset.version;
                   var index = $scope.refset.version.lastIndexOf('SNOMEDCT-');
-                  var prevTerminology = $scope.refset.version.substring(index, index + 11);
-                  $scope.terminologySelected(prevTerminology);
-                  $scope.refset.terminology = prevTerminology;
+				  var terminologyWithoutMain = $scope.refset.version.substring(index);
+				  var prevTerminology = '';
+				  if(terminologyWithoutMain.indexOf('/') != -1){
+					prevTerminology = terminologyWithoutMain.substring(0, terminologyWithoutMain.indexOf('/'));
+				  }
+				  else{
+					var prevTerminology = terminologyWithoutMain;
+				  }
+		            $scope.terminologySelected(prevTerminology);
+					//The above call can incorrectly set the terminology and version.  Reset based on existing values.
+                  	$scope.refset.terminology = prevTerminology;
+					$scope.refset.version = fullRefsetVersion;
                 } else {
                   $scope.terminologySelected($scope.project.terminology);
                 }
