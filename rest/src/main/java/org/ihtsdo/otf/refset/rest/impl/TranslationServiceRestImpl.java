@@ -3565,7 +3565,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
         ++objectCt;
 
         // Get orig descriptions - for a "new" concept there won't be any
-        final Map<String, Description> origDescMap = new HashMap<>();
+        final Map<String, Description> origDescTerminologyIdMap = new HashMap<>();
+        final Map<String, Description> origDescTermMap = new HashMap<>();
 
         // If orig concept exists, read its descriptions
         if (origConcept != null) {
@@ -3575,10 +3576,11 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
               .getConcept(origConcept.getId()).getDescriptions()) {
             final Description copy = new DescriptionJpa(desc, false);
             origConcept.getDescriptions().add(copy);
-            origDescMap.put(desc.getTerminologyId(), copy);
+            origDescTerminologyIdMap.put(desc.getTerminologyId(), copy);
+            origDescTermMap.put(desc.getTerm(), copy);
           }
           Logger.getLogger(getClass())
-              .debug("  orig desc map = " + origDescMap);
+              .debug("  orig desc map = " + origDescTerminologyIdMap);
         }
 
         // Otherwise add concept
@@ -3636,13 +3638,21 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
 
           // Get original description
           Description origDesc =
-              origDescMap.get(description.getTerminologyId());
+              origDescTerminologyIdMap.get(description.getTerminologyId());
 
           // Skip descriptions already present for a non-delta handler
           // (e.g. de-duplicate)
           if (!handler.isDeltaHandler() && origDesc != null) {
             Logger.getLogger(getClass()).debug("    SKIP DESC");
             continue;
+          }
+          
+          //Skip descriptions already present for Excel handler
+          if(handler instanceof ImportTranslationExcelHandler) {
+            if(origDescTermMap.get(description.getTerm()) != null) {
+              Logger.getLogger(getClass()).debug("    SKIP DESC");
+              continue;
+            }
           }
 
           // Get all members for current description
