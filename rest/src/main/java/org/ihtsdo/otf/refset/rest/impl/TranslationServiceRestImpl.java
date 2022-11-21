@@ -3557,7 +3557,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
         Concept origConcept = conceptMap.get(concept.getTerminologyId());
 
         // De-duplicate (because added concepts are put into the map)
-        if (!handler.isDeltaHandler() && origConcept != null) {
+        if (!handler.isDeltaHandler() && !(handler instanceof ImportTranslationExcelHandler) && origConcept != null) {
           Logger.getLogger(getClass()).debug("    SKIP CONCEPT");
           continue;
         }
