@@ -3924,10 +3924,10 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
           validationResult.addComment(
               "No descriptions loaded into Available Concepts for Review.");
         }
-        if(duplicateDescriptionSkipped>0) {
-          validationResult.addComment(
-              duplicateDescriptionSkipped + " descriptions not because they duplicated existing descriptions.");         
-        }
+      }
+      if(duplicateDescriptionSkipped>0) {
+        validationResult.addComment(
+            duplicateDescriptionSkipped + " descriptions not because they duplicated existing descriptions.");         
       }
 
       return validationResult;
