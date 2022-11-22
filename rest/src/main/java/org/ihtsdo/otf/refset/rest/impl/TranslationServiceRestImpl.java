@@ -3927,7 +3927,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
       }
       if(duplicateDescriptionSkipped>0) {
         validationResult.addComment(
-            duplicateDescriptionSkipped + " descriptions not because they duplicated existing descriptions.");         
+            duplicateDescriptionSkipped + " descriptions not added because they duplicated existing descriptions.");         
       }
 
       return validationResult;
