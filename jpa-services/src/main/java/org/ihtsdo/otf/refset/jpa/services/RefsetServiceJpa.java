@@ -2175,7 +2175,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
 
         // Get the members
         if (members == null) {
-          members = refset.getMembers();
+          members = refset.getMembers(true);
         }
         Logger.getLogger(RefsetServiceJpa.this.getClass())
             .info("LOOKUP  refset id = " + refset.getId());
