@@ -1952,14 +1952,14 @@ public class PatchDataMojo extends AbstractRttMojo {
   /**
    * Patch 20221025.
    *
-   * @param translationService the translation service
+   * @param refsetService the refset service
    * @throws Exception the exception
    */
   private void patch20221025(TranslationService translationService, WorkflowService workflowService,
     RefsetService refsetService, boolean fullReindex) throws Exception {
     int ct = 0;
-    translationService.setTransactionPerOperation(false);
-    translationService.beginTransaction();
+    refsetService.setTransactionPerOperation(false);
+    refsetService.beginTransaction();
     StringBuilder projectIdStringBuilder = new StringBuilder();
 
     // Read in from UUID Mismatches file to get Snowstorm UUID replacements
@@ -2013,8 +2013,9 @@ public class PatchDataMojo extends AbstractRttMojo {
       }
     }
 
-    getLog().info("translations updated final ct = " + ct);
 
+    getLog().info("concept refset members updated final ct = " + ct); 
+    refsetService.commitClearBegin();
   }
 
   private void patch20221225(boolean fullReindex) throws Exception {

@@ -608,7 +608,8 @@ tsApp
             organization : user.userPreferences.organization,
             exclusionClause : user.userPreferences.exclusionClause,
             feedbackEmail : user.userPreferences.feedbackEmail,
-            workflowPath : metadata.workflowPaths[0]
+            workflowPath : metadata.workflowPaths[0],
+			stableUUIDs: true
           };
           $scope.clause = {
             value : null

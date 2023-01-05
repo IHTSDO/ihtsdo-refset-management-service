@@ -188,7 +188,7 @@ public class ProjectJpa implements Project {
 
   /** The "stable UUIDs" flag. */
   @Column(nullable = false)
-  private boolean stableUUIDs = false;
+  private boolean stableUUIDs = true;
 
   /** The role map. */
   @ElementCollection
