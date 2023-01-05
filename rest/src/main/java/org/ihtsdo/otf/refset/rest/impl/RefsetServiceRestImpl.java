@@ -3811,7 +3811,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
         else {
 
           ++objectCt;
-          member.setActive(true);
+		  // RTT-447 - inactive members are also imported
+          //member.setActive(true);
           member.setId(null);
           member.setPublishable(true);
           member.setPublished(false);
