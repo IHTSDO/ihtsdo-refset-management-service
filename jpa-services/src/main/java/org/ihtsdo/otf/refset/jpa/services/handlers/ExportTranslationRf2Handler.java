@@ -95,10 +95,11 @@ public class ExportTranslationRf2Handler implements ExportTranslationHandler {
         + translation.getTerminologyId() + ", " + translation.getName());
 
     // Make sure translated language has a refsetId listed in config.properties: "language.refset.dialect.DISPLAY="
-    final String languageRefsetId = (languageRefsetIdMapping.containsKey(translation.getLanguage()) ? languageRefsetIdMapping.get(translation.getLanguage()) : "");
+    String languageRefsetId = (languageRefsetIdMapping.containsKey(translation.getLanguage()) ? languageRefsetIdMapping.get(translation.getLanguage()) : "");
    
-    if(languageRefsetId == null || languageRefsetId.equals("")) {
-      throw new LocalException("Language refset Id for language code \"" + translation.getLanguage() + "\" not specified in the configuration.  Please submit a JIRA ticket, or a support ticket using the feedback tab.");
+    // Certain languages have no refsetId (e.g. Czech), so in those cases set to empty string. 
+    if(languageRefsetId == null) { 
+      languageRefsetId = "";
     }
     
     // Use info from nameMapping map and "translation" object to get file names right.
@@ -222,10 +223,11 @@ public class ExportTranslationRf2Handler implements ExportTranslationHandler {
         + translation.getTerminologyId() + ", " + translation.getName());
 
     // Make sure translated language has a refsetId listed in config.properties: "language.refset.dialect.DISPLAY="
-    final String languageRefsetId = (languageRefsetIdMapping.containsKey(translation.getLanguage()) ? languageRefsetIdMapping.get(translation.getLanguage()) : "");
+    String languageRefsetId = (languageRefsetIdMapping.containsKey(translation.getLanguage()) ? languageRefsetIdMapping.get(translation.getLanguage()) : "");
 
-    if(languageRefsetId == null || languageRefsetId.equals("")) {
-      throw new LocalException("Language refset Id for language code \"" + translation.getLanguage() + "\" not specified in the configuration.  Please submit a JIRA ticket, or a support ticket using the feedback tab.");
+    // Certain languages have no refsetId (e.g. Czech), so in those cases set to empty string. 
+    if(languageRefsetId == null) { 
+      languageRefsetId = "";
     }
     
     // Use info from nameMapping map and "translation" object to get file names right.
