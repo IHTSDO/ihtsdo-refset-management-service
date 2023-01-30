@@ -65,6 +65,7 @@ tsApp
               $scope.conceptIds = [];
               $scope.showImportFromExistingProject = false;
               $scope.disableMigrationButton = true;
+			  $scope.ignoreInactiveMembers = false;
               
               // Page metadata
               var memberTypes = [ 'Member', 'Exclusion', 'Inclusion', 'Active', 'Inactive',
@@ -2289,6 +2290,7 @@ tsApp
                 $scope.language = language;
                 $scope.pfs = pfs;
                 $scope.ioHandlers = [];
+				$scope.ignoreInactiveMembers = false;
                 // Skip "with name" handlers if user is not logged in
                 // IHTSDO-specific, may be able make this more data driven
                 for (var i = 0; i < ioHandlers.length; i++) {
@@ -2392,7 +2394,7 @@ tsApp
                           } else {
                             // If there are no errors, finish import
                             refsetService.finishImportMembers($scope.refset.id,
-                              $scope.selectedIoHandler.id, file).then(
+                              $scope.selectedIoHandler.id, file, $scope.ignoreInactiveMembers).then(
                             // Success - close dialog
                             function(data) {
                               $scope.importFinished = true;
@@ -2422,7 +2424,7 @@ tsApp
 
                   if (type == 'Refset Members') {
                     refsetService.finishImportMembers($scope.refset.id,
-                      $scope.selectedIoHandler.id, file).then(
+                      $scope.selectedIoHandler.id, file, $scope.ignoreInactiveMembers).then(
                     // Success - close dialog
                     function(data) {
                       $scope.importFinished = true;

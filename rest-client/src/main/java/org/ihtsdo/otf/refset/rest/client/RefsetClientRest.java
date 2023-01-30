@@ -959,7 +959,7 @@ public class RefsetClientRest extends RootClientRest
   @Override
   public ValidationResult finishImportMembers(
     FormDataContentDisposition contentDispositionHeader, InputStream in,
-    Long refsetId, String ioHandlerInfoId, String authToken) throws Exception {
+    Long refsetId, String ioHandlerInfoId, Boolean ignoreInactiveMembers, String authToken) throws Exception {
 
     Logger.getLogger(getClass()).debug("Refset Client - finish import members");
     validateNotEmpty(refsetId, "refsetId");

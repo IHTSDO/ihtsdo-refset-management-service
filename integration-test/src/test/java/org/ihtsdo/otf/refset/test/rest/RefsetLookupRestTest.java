@@ -219,7 +219,7 @@ public class RefsetLookupRestTest extends RestSupport {
 
     InputStream in = new FileInputStream(f);
 
-    refsetService.finishImportMembers(null, in, refsetId, "DEFAULT",
+    refsetService.finishImportMembers(null, in, refsetId, "DEFAULT", true,
         adminAuthToken);
 
     in.close();

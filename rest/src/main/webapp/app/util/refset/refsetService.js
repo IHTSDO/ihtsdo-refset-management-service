@@ -1095,12 +1095,13 @@ tsApp.service('refsetService', [
     };
 
     // Finish import members - if validation is result, OK to proceed.
-    this.finishImportMembers = function(refsetId, handlerId, file) {
+    this.finishImportMembers = function(refsetId, handlerId, file, ignoreInactiveMembers) {
       console.debug('finish import members');
       var deferred = $q.defer();
       gpService.increment();
       Upload.upload({
-        url : refsetUrl + 'import/finish?refsetId=' + refsetId + '&handlerId=' + handlerId,
+        url : refsetUrl + 'import/finish?refsetId=' + refsetId + '&handlerId=' + handlerId  + '&ignoreInactiveMembers=' 
+			+ ignoreInactiveMembers,
         data : {
           file : file
         }

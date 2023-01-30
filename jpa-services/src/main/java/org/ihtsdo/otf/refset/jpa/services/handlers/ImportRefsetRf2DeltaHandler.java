@@ -120,7 +120,7 @@ public class ImportRefsetRf2DeltaHandler extends ImportExportAbstract
   /* see superclass */
   @Override
   public List<ConceptRefsetMember> importMembers(Refset refset,
-    InputStream content) throws Exception {
+    InputStream content, boolean ignoreInactiveMembers) throws Exception {
     Logger.getLogger(getClass()).info("Import refset members ");
 
     // initialize
