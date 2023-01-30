@@ -39,11 +39,12 @@ public interface ImportRefsetHandler extends IoHandlerInfo, Configurable {
    *
    * @param refset the refset
    * @param content the content
+   * @param ignoreInactiveMembers the ignore inactive members
    * @return the list
    * @throws Exception the exception
    */
   public List<ConceptRefsetMember> importMembers(Refset refset,
-    InputStream content) throws Exception;
+    InputStream content, boolean ignoreInactiveMembers) throws Exception;
 
   /**
    * Import definition.
@@ -62,5 +63,6 @@ public interface ImportRefsetHandler extends IoHandlerInfo, Configurable {
    * @return the validation results
    */
   public ValidationResult getValidationResults();
+
 
 }
