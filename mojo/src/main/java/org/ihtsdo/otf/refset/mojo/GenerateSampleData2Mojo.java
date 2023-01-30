@@ -887,7 +887,7 @@ public class GenerateSampleData2Mojo extends AbstractRttMojo {
       InputStream in = new FileInputStream(
           new File("../config/src/main/resources/data/refset" + num + ""
               + "/der2_Refset_SimpleSnapshot_" + edition + "_20170131.txt"));
-      refsetService.finishImportMembers(null, in, refset.getId(), "DEFAULT",
+      refsetService.finishImportMembers(null, in, refset.getId(), "DEFAULT", true,
           auth.getAuthToken());
       in.close();
     }
@@ -979,7 +979,7 @@ public class GenerateSampleData2Mojo extends AbstractRttMojo {
     InputStream in = new FileInputStream(
         new File("../config/src/main/resources/data/translation" + num + ""
             + "/der2_Refset_SimpleSnapshot_" + edition + "_20170131.txt"));
-    refsetService.finishImportMembers(null, in, refset.getId(), "DEFAULT",
+    refsetService.finishImportMembers(null, in, refset.getId(), "DEFAULT", true,
         auth.getAuthToken());
     in.close();
 

@@ -370,7 +370,7 @@ public class GenerateProdDataMojo extends AbstractRttMojo {
       refsetService = new RefsetServiceRestImpl();
       InputStream in = new FileInputStream(
           new File("../config/src/main/resources/data/" + dir + "/" + file));
-      refsetService.finishImportMembers(null, in, refset.getId(), "DEFAULT",
+      refsetService.finishImportMembers(null, in, refset.getId(), "DEFAULT", true,
           auth.getAuthToken());
       in.close();
     }
