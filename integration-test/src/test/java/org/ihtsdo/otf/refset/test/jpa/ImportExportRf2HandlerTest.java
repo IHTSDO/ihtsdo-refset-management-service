@@ -193,7 +193,7 @@ public class ImportExportRf2HandlerTest extends JpaSupport {
 
     ImportRefsetRf2Handler importHandler = new ImportRefsetRf2Handler();
     List<ConceptRefsetMember> members =
-        importHandler.importMembers(refset, membersInputStream);
+        importHandler.importMembers(refset, membersInputStream, true);
 
     // Verify the member count
     Assert.assertEquals(members.size(), 21);

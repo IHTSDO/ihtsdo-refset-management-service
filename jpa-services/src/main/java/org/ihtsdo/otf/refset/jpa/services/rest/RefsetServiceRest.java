@@ -339,7 +339,7 @@ public interface RefsetServiceRest {
    */
   public ValidationResult finishImportMembers(
     FormDataContentDisposition contentDispositionHeader, InputStream in,
-    Long refsetId, String ioHandlerInfoId, String authToken) throws Exception;
+    Long refsetId, String ioHandlerInfoId, Boolean ignoreInactiveMembers, String authToken) throws Exception;
 
   /**
    * Cancel import.
@@ -836,5 +836,6 @@ public interface RefsetServiceRest {
    */
   public String getBulkLookupProgressMessage(Long projectId, String authToken)
     throws Exception;
+
 
 }

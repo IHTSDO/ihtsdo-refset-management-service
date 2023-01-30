@@ -25,6 +25,13 @@
           <span ng-show="ioHandlers.length == 1">{{ioHandlers[0].name}}</span>
         </td>
       </tr>
+      <tr ng-show="selectedIoHandler.name == 'Import RF2'">
+       <td><b>Ignore Inactive Members</b></td>
+       <td>
+       <input type="checkbox" ng-model="ignoreInactiveMembers" title="Ignore Inactive Members"
+              ng-click="getSearchResults(search, true)">
+       </td>
+      </tr>
       <tr ng-show="operation == 'Import'">
         <td>
           <b>Choose File</b>

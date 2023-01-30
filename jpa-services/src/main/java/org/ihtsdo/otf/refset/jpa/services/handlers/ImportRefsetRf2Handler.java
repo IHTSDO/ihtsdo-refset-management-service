@@ -127,7 +127,7 @@ public class ImportRefsetRf2Handler extends ImportExportAbstract
   /* see superclass */
   @Override
   public List<ConceptRefsetMember> importMembers(Refset refset,
-    InputStream content) throws Exception {
+    InputStream content, boolean ignoreInactiveMembers) throws Exception {
     Logger.getLogger(getClass()).info("Import refset members ");
 
     // initialize
@@ -163,7 +163,9 @@ public class ImportRefsetRf2Handler extends ImportExportAbstract
         if (fields[2].equals("0")) {
           inactiveCt++;
 		  // RTT-447 - inactive members are also imported
-          //continue;
+          if (ignoreInactiveMembers) {
+            continue;
+          }
         }
 
         // Instantiate and populate members
@@ -175,7 +177,11 @@ public class ImportRefsetRf2Handler extends ImportExportAbstract
         }
         member.setConceptActive(true);
         // RTT-447 overwrite active=true from setCommonFields() since we are now importing inactive members
-        member.setActive(fields[2].equals("1"));
+        if (ignoreInactiveMembers) {
+          member.setActive(true);
+        } else {
+          member.setActive(fields[2].equals("1"));
+        }
         member.setRefset(refset);
         String conceptId = fields[5].trim();
         if (!conceptId.equals(fields[5])) {
@@ -208,12 +214,12 @@ public class ImportRefsetRf2Handler extends ImportExportAbstract
       validationResult.addComment(ct + " members successfully loaded.");
     }
 	// inactives are no longer skipped RTT-447
-    /**if (inactiveCt == 1) {
+    if (ignoreInactiveMembers && inactiveCt == 1) {
       validationResult.addWarning("1 inactive member was skipped.");
-    } else if (inactiveCt != 0) {
+    } else if (ignoreInactiveMembers && inactiveCt != 0) {
       validationResult
           .addWarning(inactiveCt + " inactive members were skipped.");
-    } */
+    } 
     pbr.close();
     return list;
   }

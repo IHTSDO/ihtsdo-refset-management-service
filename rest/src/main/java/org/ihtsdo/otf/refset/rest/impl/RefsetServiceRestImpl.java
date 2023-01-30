@@ -3716,12 +3716,13 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
     @ApiParam(value = "Content of members file", required = true) @FormDataParam("file") InputStream in,
     @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
     @ApiParam(value = "Import handler id, e.g. \"DEFAULT\"", required = true) @QueryParam("handlerId") String ioHandlerInfoId,
+    @ApiParam(value = "Flag indicating if inactives should be skipped, e.g. true", required = true) @QueryParam("ignoreInactiveMembers") Boolean ignoreInactiveMembers,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
     Logger.getLogger(getClass())
         .info("RESTful call POST (Refset): /import/finish " + refsetId + ", "
-            + ioHandlerInfoId);
+            + ioHandlerInfoId + ", " + ignoreInactiveMembers);
 
     final RefsetService refsetService =
         new RefsetServiceJpa(getHeaders(headers));
@@ -3778,7 +3779,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
 
       // Load members into memory and add to refset
       final List<ConceptRefsetMember> members =
-          handler.importMembers(refset, in);
+          handler.importMembers(refset, in, ignoreInactiveMembers);
       ValidationResult validationResult = handler.getValidationResults();
       int objectCt = 0;
       for (final ConceptRefsetMember member : members) {

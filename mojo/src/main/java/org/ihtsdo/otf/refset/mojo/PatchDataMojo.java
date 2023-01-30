@@ -2075,7 +2075,7 @@ public class PatchDataMojo extends AbstractRttMojo {
           refsetService.beginImportMembers(new Long(refsetIds), "DEFAULT", authToken);
 
       refsetService = new RefsetServiceRestImpl();
-      refsetService.finishImportMembers(null, in, new Long(refsetIds), "DEFAULT", authToken);
+      refsetService.finishImportMembers(null, in, new Long(refsetIds), "DEFAULT", false, authToken);
       in.close();
     }
   }

@@ -254,7 +254,7 @@ public class TranslationReleaseTest extends RestSupport {
         }
         InputStream in = new FileInputStream(new File(
             "../config/src/main/resources/data/refset/der2_Refset_SimpleSnapshot_INT_20140731.txt"));
-        refsetService.finishImportMembers(null, in, refset.getId(), "DEFAULT",
+        refsetService.finishImportMembers(null, in, refset.getId(), "DEFAULT", true,
             auth.getAuthToken());
         in.close();
       } else if (type == Refset.Type.INTENSIONAL) {
