@@ -522,7 +522,13 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
           getMember(inactiveMemberConceptIdsMap.get(member.getConceptId()));
       member.setId(inactiveMember.getId());
       member.setTerminologyId(inactiveMember.getTerminologyId());
-      return reactivateMember(member);
+      //If existing and imported members are both inactive, don't reactivate
+      if(member.isActive() == false) {
+        return member;
+      }
+      else {
+        return reactivateMember(member);
+      }
     }
 
     // Otherwise, add the member
