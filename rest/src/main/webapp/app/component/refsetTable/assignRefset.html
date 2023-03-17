@@ -12,21 +12,23 @@
   <div refset-info refset="refset" form="short" metadata="metadata"></div>
 
   <table class="table">
-    
+
     <tr>
       <td>
         <b>User</b>
       </td>
-      <td ng-show="assignedUsers.length > 1" >
-        <select ng-model="user" ng-options="item.name for item in assignedUsers"></select></td>
+      <td ng-show="assignedUsers.length > 1">
+        <select ng-model="user" ng-options="item.name for item in assignedUsers"></select>
+      </td>
       <td ng-show="assignedUsers.length == 1">{{assignedUsers[0].userName}}</td>
     </tr>
     <tr ng-show="action == 'FEEDBACK'">
       <td>
         <b>Role</b>
       </td>
-      <td ng-show="feedbackRoleOptions.length > 1" >
-        <select ng-model="role" ng-options="item for item in feedbackRoleOptions"></select></td>
+      <td ng-show="feedbackRoleOptions.length > 1">
+        <select ng-model="role" ng-options="item for item in feedbackRoleOptions"></select>
+      </td>
       <td ng-show="feedbackRoleOptions.length == 1">{{role}}</td>
     </tr>
     <tr>
@@ -45,10 +47,8 @@
         <div class="alert alert-danger alert-error">
           {{errors[0]}}
           <div style="display: inline; float: right;">
-            <i ng-show="errors[1]"
-              title="{{error.expand ? 'Show' : 'Hide'}} long error"
-              class="noul material-icons md-18"
-              ng-click="error.expand = !error.expand;">attach_file</i>
+            <i ng-show="errors[1]" title="{{error.expand ? 'Show' : 'Hide'}} long error"
+              class="noul material-icons md-18" ng-click="error.expand = !error.expand;">attach_file</i>
           </div>
           <p ng-show="errors[1] && error.expand">
             <br />{{errors[1]}}
@@ -60,9 +60,8 @@
 </div>
 
 <div class="modal-footer">
-  <button ng-show="action == 'ASSIGN'" class="btn btn-xs btn-primary"
-    ng-click="assignRefset();">Assign</button>
-  <button ng-show="action == 'FEEDBACK'" class="btn btn-xs btn-primary"
-    ng-click="assignRefset();">Feedback</button>
+  <button ng-show="action == 'ASSIGN' && project.terminologyHandlerKey !== 'MANAGED-SERVICE'"
+    class="btn btn-xs btn-primary" ng-click="assignRefset();">Assign</button>
+  <button ng-show="action == 'FEEDBACK'" class="btn btn-xs btn-primary" ng-click="assignRefset();">Feedback</button>
   <button class="btn btn-xs btn-warning" ng-click="cancel()">Cancel</button>
 </div>
