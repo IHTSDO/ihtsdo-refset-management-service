@@ -31,7 +31,7 @@
           <input ng-model="refset.terminologyId" placeholder="Optional" />
           <button confirm="Are you sure you want to assign an id to the refset?"
             class="btn btn-xs btn-primary"
-            ng-show="refset.namespace && refset.terminology && !refset.localSet"
+            ng-show="refset.namespace && refset.terminology && !refset.localSet && project.terminologyHandlerKey !== 'MANAGED-SERVICE'"
             ng-click="assignRefsetTerminologyId(refset)">Assign</button>
         </td>
       </tr>
