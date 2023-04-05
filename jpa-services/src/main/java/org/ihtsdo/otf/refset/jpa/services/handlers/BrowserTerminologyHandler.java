@@ -148,7 +148,7 @@ public class BrowserTerminologyHandler extends AbstractTerminologyHandler {
     Logger.getLogger(getClass())
         .debug("  Get terminology editions - " + url + "/server/releases");
     final WebTarget target = client.target(url + "/server/releases");
-    final Response response = target.request(accept).get();
+    final Response response = target.request(accept).header("User-Agent","WCI").get();
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -191,7 +191,7 @@ public class BrowserTerminologyHandler extends AbstractTerminologyHandler {
     Logger.getLogger(getClass())
         .debug("  Get terminology versions - " + url + "/server/releases");
     final WebTarget target = client.target(url + "/server/releases");
-    final Response response = target.request(accept).get();
+    final Response response = target.request(accept).header("User-Agent","WCI").get();
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -243,7 +243,7 @@ public class BrowserTerminologyHandler extends AbstractTerminologyHandler {
     Logger.getLogger(getClass())
         .debug("  Get replacement concepts - " + targetUrl);
     final WebTarget target = client.target(targetUrl);
-    final Response response = target.request("accept").get();
+    final Response response = target.request("accept").header("User-Agent","WCI").get();
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -325,7 +325,7 @@ public class BrowserTerminologyHandler extends AbstractTerminologyHandler {
     Logger.getLogger(getClass()).info("  Resolve expression - " + targetUrl);
     WebTarget target = client.target(targetUrl);
 
-    Response response = target.request(accept).get();
+    Response response = target.request(accept).header("User-Agent","WCI").get();
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -376,7 +376,7 @@ public class BrowserTerminologyHandler extends AbstractTerminologyHandler {
           + (total - initialMaxLimit) + "&offset="
           + (initialMaxLimit + localPfs.getStartIndex()));
 
-      response = target.request(accept).get();
+      response = target.request(accept).header("User-Agent","WCI").get();
       resultString = response.readEntity(String.class);
       if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
         // n/a
@@ -450,7 +450,7 @@ public class BrowserTerminologyHandler extends AbstractTerminologyHandler {
     Logger.getLogger(getClass()).debug("  Resolve expression - " + targetUrl);
     WebTarget target = client.target(targetUrl);
 
-    Response response = target.request(accept)
+    Response response = target.request(accept).header("User-Agent","WCI")
         .post(Entity.json("{ \"expression\": \"" + expr + "\", \"limit\": \""
             + Math.min(initialMaxLimit, localPfs.getMaxResults())
             + "\", \"skip\": \"" + localPfs.getStartIndex()
@@ -505,7 +505,7 @@ public class BrowserTerminologyHandler extends AbstractTerminologyHandler {
       target = client.target(url + "/expressions/" + terminology + "/v"
           + version + "/execute/brief");
 
-      response = target.request(accept)
+      response = target.request(accept).header("User-Agent","WCI")
           .post(Entity.json("{ \"expression\": \"" + expr + "\", \"limit\": \""
               + (total - initialMaxLimit) + "\", \"skip\": \""
               + (initialMaxLimit + localPfs.getStartIndex())
@@ -570,7 +570,7 @@ public class BrowserTerminologyHandler extends AbstractTerminologyHandler {
     Logger.getLogger(getClass()).debug("  Count expression - " + targetUrl);
     WebTarget target = client.target(targetUrl);
 
-    Response response = target.request(accept).get();
+    Response response = target.request(accept).header("User-Agent","WCI").get();
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -615,7 +615,7 @@ public class BrowserTerminologyHandler extends AbstractTerminologyHandler {
     Logger.getLogger(getClass()).debug("  Count expression - " + targetUrl);
     WebTarget target = client.target(targetUrl);
 
-    Response response = target.request(accept)
+    Response response = target.request(accept).header("User-Agent","WCI")
         .post(Entity.json("{ \"expression\": \"" + expr + "\", \"limit\": \""
             + 1 + "\", \"skip\": \"" + 0 + "\", \"form\": \"inferred\" }"));
     String resultString = response.readEntity(String.class);
@@ -650,7 +650,7 @@ public class BrowserTerminologyHandler extends AbstractTerminologyHandler {
         + "/concepts/" + terminologyId;
     Logger.getLogger(getClass()).debug("  Get full concept - " + targetUrl);
     final WebTarget target = client.target(targetUrl);
-    final Response response = target.request("accept").get();
+    final Response response = target.request("accept").header("User-Agent","WCI").get();
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -802,7 +802,7 @@ public class BrowserTerminologyHandler extends AbstractTerminologyHandler {
         + "/concepts/" + terminologyId;
     Logger.getLogger(getClass()).debug("  Get concept - " + targetUrl);
     final WebTarget target = client.target(targetUrl);
-    final Response response = target.request(accept).get();
+    final Response response = target.request(accept).header("User-Agent","WCI").get();
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // Here's the messy part about trying to parse the return error message
@@ -910,7 +910,7 @@ public class BrowserTerminologyHandler extends AbstractTerminologyHandler {
       return conceptList;
     }
 
-    final Response response = target.request(accept).get();
+    final Response response = target.request(accept).header("User-Agent","WCI").get();
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -1020,7 +1020,7 @@ public class BrowserTerminologyHandler extends AbstractTerminologyHandler {
         + "/concepts/" + terminologyId + "/parents?form=inferred";
     Logger.getLogger(getClass()).debug("  Get concept parents - " + targetUrl);
     final WebTarget target = client.target(targetUrl);
-    final Response response = target.request(accept).get();
+    final Response response = target.request(accept).header("User-Agent","WCI").get();
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -1071,7 +1071,7 @@ public class BrowserTerminologyHandler extends AbstractTerminologyHandler {
         + "/concepts/" + terminologyId + "/children?form=inferred";
     Logger.getLogger(getClass()).debug("  Get concept children - " + targetUrl);
     final WebTarget target = client.target(targetUrl);
-    final Response response = target.request("accept").get();
+    final Response response = target.request("accept").header("User-Agent","WCI").get();
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -1159,7 +1159,7 @@ public class BrowserTerminologyHandler extends AbstractTerminologyHandler {
       Logger.getLogger(getClass()).debug("  Find concepts - " + targetUrl);
       final WebTarget target = client.target(targetUrl);
 
-      final Response response = target.request(accept).get();
+      final Response response = target.request(accept).header("User-Agent","WCI").get();
       final String resultString = response.readEntity(String.class);
       if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
         // n/a
