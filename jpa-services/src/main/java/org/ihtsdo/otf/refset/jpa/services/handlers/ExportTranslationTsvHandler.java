@@ -107,6 +107,10 @@ public class ExportTranslationTsvHandler implements ExportTranslationHandler {
     descSb.append("Acceptability").append("\t");
     descSb.append("Language reference set").append("\t");
     descSb.append("Acceptability").append("\t");
+    descSb.append("Language reference set").append("\t");
+    descSb.append("Acceptability").append("\t");
+    descSb.append("Language reference set").append("\t");
+    descSb.append("Acceptability").append("\t");
     descSb.append("Notes").append("\t");
     descSb.append("\r\n");
     
@@ -199,6 +203,18 @@ public class ExportTranslationTsvHandler implements ExportTranslationHandler {
           thisMember.append("\t");
           
           // Acceptability  (3)
+          thisMember.append("\t");
+
+          // Language reference set (4)
+          thisMember.append("\t");
+          
+          // Acceptability  (4)
+          thisMember.append("\t");
+
+          // Language reference set (5)
+          thisMember.append("\t");
+          
+          // Acceptability  (5)
           thisMember.append("\t");
           
           // Notes

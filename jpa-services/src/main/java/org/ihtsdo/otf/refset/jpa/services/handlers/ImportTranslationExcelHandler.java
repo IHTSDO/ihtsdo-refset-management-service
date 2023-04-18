@@ -63,8 +63,8 @@ public class ImportTranslationExcelHandler extends ImportExportAbstract
   /** The Constant LANGUAGE_CODE. */
   private static final int LANGUAGE_CODE = 4;
 
-  /** The Constant CASE_SIGNIFIANCE. */
-  private static final int CASE_SIGNIFIANCE = 5;
+  /** The Constant CASE_SIGNIFICSANCE. */
+  private static final int CASE_SIGNIFICANCE = 5;
 
   /** The Constant TYPE. */
   private static final int TYPE = 6;
@@ -87,8 +87,20 @@ public class ImportTranslationExcelHandler extends ImportExportAbstract
   /** The Constant ACCEPTABILITY_3. */
   private static final int ACCEPTABILITY_3 = 12;
 
+  /** The Constant LANGUAGE_REFERENCE_SET_4. */
+  private static final int LANGUAGE_REFERENCE_SET_4 = 13;
+
+  /** The Constant ACCEPTABILITY_4. */
+  private static final int ACCEPTABILITY_4 = 14;
+
+  /** The Constant LANGUAGE_REFERENCE_SET_5. */
+  private static final int LANGUAGE_REFERENCE_SET_5 = 15;
+
+  /** The Constant ACCEPTABILITY_5. */
+  private static final int ACCEPTABILITY_5 = 16;
+  
   /** The Constant NOTES. */
-  private static final int NOTES = 13;
+  private static final int NOTES = 17;
 
   // file format
   // 1. Concept Id - CONCEPT_ID
@@ -104,11 +116,15 @@ public class ImportTranslationExcelHandler extends ImportExportAbstract
   // 11. Acceptability - ACCEPTABILITY - NOT used
   // 12. Language reference set - LANGUAGE_REFERENCE_SET - NOT used
   // 13. Acceptability - ACCEPTABILITY - NOT used
-  // 14. Notes - optional
+  // 14. Language reference set - LANGUAGE_REFERENCE_SET - NOT used
+  // 15. Acceptability - ACCEPTABILITY - NOT used
+  // 16. Language reference set - LANGUAGE_REFERENCE_SET - NOT used
+  // 17. Acceptability - ACCEPTABILITY - NOT used
+  // 18. Notes - optional
 
   /** The list of fields. */
   private Set<Integer> requiredFields = new HashSet<>(Arrays.asList(CONCEPT_ID, TRANSLATED_TERM,
-      LANGUAGE_CODE, CASE_SIGNIFIANCE, TYPE, ACCEPTABILITY));
+      LANGUAGE_CODE, CASE_SIGNIFICANCE, TYPE, ACCEPTABILITY));
 
   private Map<Integer, String> columnIndexNameMap = new HashMap<>() {
     {
@@ -125,7 +141,11 @@ public class ImportTranslationExcelHandler extends ImportExportAbstract
       put(10, "Acceptability");
       put(11, "Language reference set");
       put(12, "Acceptability");
-      put(13, "Notes");
+      put(13, "Language reference set");
+      put(14, "Acceptability");
+      put(15, "Language reference set");
+      put(16, "Acceptability");
+      put(17, "Notes");
     }
   };
 
@@ -327,7 +347,11 @@ public class ImportTranslationExcelHandler extends ImportExportAbstract
           // 11. Acceptability - ACCEPTABILITY - NOT used
           // 12. Language reference set - LANGUAGE_REFERENCE_SET - NOT used
           // 13. Acceptability - ACCEPTABILITY - NOT used
-          // 14. Notes - optional
+          // 14. Language reference set - LANGUAGE_REFERENCE_SET - NOT used
+          // 15. Acceptability - ACCEPTABILITY - NOT used
+          // 16. Language reference set - LANGUAGE_REFERENCE_SET - NOT used
+          // 17. Acceptability - ACCEPTABILITY - NOT used
+          // 18. Notes - optional
 
           boolean skipRow = false;
           // Check for missing required data
@@ -374,12 +398,12 @@ public class ImportTranslationExcelHandler extends ImportExportAbstract
             return new ArrayList<>();
           }
           description.setTypeId(descriptionTypeCodeMap.get(getCellValue(row, TYPE)));
-          if(!caseSignificanceCodeMap.containsKey(getCellValue(row, CASE_SIGNIFIANCE))) {
-            validationResult.addError(getCellValue(row, CASE_SIGNIFIANCE) + " is not one of the valid case significance choices: " + caseSignificanceCodeMap.keySet().toString());
+          if(!caseSignificanceCodeMap.containsKey(getCellValue(row, CASE_SIGNIFICANCE))) {
+            validationResult.addError(getCellValue(row, CASE_SIGNIFICANCE) + " is not one of the valid case significance choices: " + caseSignificanceCodeMap.keySet().toString());
             return new ArrayList<>();
           }
           description.setCaseSignificanceId(
-              caseSignificanceCodeMap.get(getCellValue(row, CASE_SIGNIFIANCE)));
+              caseSignificanceCodeMap.get(getCellValue(row, CASE_SIGNIFICANCE)));
           description.setEffectiveTime(new Date());
 
           // Handle the concept the description is connected to
