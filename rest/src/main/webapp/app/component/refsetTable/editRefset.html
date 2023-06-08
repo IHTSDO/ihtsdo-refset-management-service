@@ -17,9 +17,10 @@
           <b><span ng-show="action == 'Clone'">Clone to </span>Project:</b>
         </td>
         <td>
-          <select ng-model="project" ng-change="projectSelected(project)"
+          <select ng-show="action != 'Add'" ng-model="project" ng-change="projectSelected(project)"
             ng-options="item.name.concat(' (',item.id,')') for item in projects.data">
           </select>
+          <span ng-show="action == 'Add'">{{project.name}}</span>
         </td>
       </tr>
       <tr>
