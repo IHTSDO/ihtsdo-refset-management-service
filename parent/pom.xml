@@ -21,7 +21,7 @@
 
     <!-- Set third-party dependency versions -->
     <cglib.version>3.3.0</cglib.version>
-    <com.google.guava.version>29.0-jre</com.google.guava.version>
+    <com.google.guava.version>32.0.0-jre</com.google.guava.version>
     <com.sun.mail.version>1.6.2</com.sun.mail.version>
     <fasterxml.jackson.version>2.11.3</fasterxml.jackson.version>
 
