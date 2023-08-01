@@ -1,11 +1,9 @@
 <div class="modal-header">
   <h4 style="display: inline" ng-show="!localSet">{{action}} Refset</h4>
-  <h4 style="display: inline" ng-show="localSet">{{action}} Local Setz</h4>
+  <h4 style="display: inline" ng-show="localSet">{{action}} Local Set</h4>
   <span style="float: right">
-    <i ng-show="comments.length == 0" class="noul glyphicon glyphicon-remove"
-      ng-click="cancel()"></i>
-    <i ng-show="comments.length > 0" class="noul glyphicon glyphicon-remove"
-      ng-click="close()"></i>
+    <i ng-show="comments.length == 0" class="noul glyphicon glyphicon-remove" ng-click="cancel()"></i>
+    <i ng-show="comments.length > 0" class="noul glyphicon glyphicon-remove" ng-click="close()"></i>
   </span>
 </div>
 
@@ -30,8 +28,7 @@
         </td>
         <td>
           <input ng-model="refset.terminologyId" placeholder="Optional" />
-          <button confirm="Are you sure you want to assign an id to the refset?"
-            class="btn btn-xs btn-primary"
+          <button confirm="Are you sure you want to assign an id to the refset?" class="btn btn-xs btn-primary"
             ng-show="refset.namespace && refset.terminology && !refset.localSet && project.terminologyHandlerKey !== 'MANAGED-SERVICE'"
             ng-click="assignRefsetTerminologyId(refset)">Assign</button>
         </td>
@@ -41,8 +38,7 @@
           <b>Name</b>
         </td>
         <td>
-          <input ng-model="refset.name" size="40"
-            placeholder="e.g. General Practice / Family Practice reference set" />
+          <input ng-model="refset.name" size="40" placeholder="e.g. General Practice / Family Practice reference set" />
         </td>
       </tr>
       <tr>
@@ -65,24 +61,23 @@
           <b>Terminology</b>
         </td>
         <td>
-          <select ng-model="refset.terminology"
-            ng-change="terminologySelected(refset.terminology)"
+          <select ng-model="refset.terminology" ng-change="terminologySelected(refset.terminology)"
             ng-options="item.terminology as item.name for item in terminologies"></select>
-          <i ng-show="action == 'Clone' && !project"
-            uib-tooltip="Choose project to enable terminology selections"
+          <i ng-show="action == 'Clone' && !project" uib-tooltip="Choose project to enable terminology selections"
             class="glyphicon-question-sign"></i>
         </td>
       </tr>
-     <tr ng-show="project.terminologyHandlerKey === 'PUBLIC-BROWSER' || project.terminologyHandlerKey === 'AUTHORING-INTL'">
+      <tr
+        ng-show="project.terminologyHandlerKey === 'PUBLIC-BROWSER' || project.terminologyHandlerKey === 'AUTHORING-INTL'">
         <td>
           <b>Version</b>
         </td>
         <td>
-          <select ng-model="refset.version" 
-            ng-options="item.path as item.key for item in versions | orderBy:'-key'"
+          <select ng-model="refset.version" ng-options="item.path as item.key for item in versions | orderBy:'-key'"
             ng-change="resetValidVersion(false);"></select>
-          
-          <button class="btn btn-xs btn-warning" ng-show="refset.version && project.terminologyHandlerKey === 'PUBLIC-BROWSER'"
+
+          <button class="btn btn-xs btn-warning"
+            ng-show="refset.version && project.terminologyHandlerKey === 'PUBLIC-BROWSER'"
             ng-click="resetValidVersion(true);">Clear</button>
           <button class="btn btn-xs btn-primary"
             ng-show="refset.version && versionNotInPicklist() && project.terminologyHandlerKey === 'PUBLIC-BROWSER'"
@@ -91,20 +86,19 @@
           <span flag-icon obj="refset"></span>
         </td>
       </tr>
-      
+
       <tr ng-show="project.terminologyHandlerKey !== 'PUBLIC-BROWSER'">
         <td>
           <b>Terminology Path</b>
         </td>
         <td>
-          <input style="width: 352px" ng-model="refset.version" list="versions"
-            placeholder="e.g. MAIN" ng-change="resetValidVersion(false);" />
-          <br/>
-          <br/>
+          <input style="width: 352px" ng-model="refset.version" list="versions" placeholder="e.g. MAIN"
+            ng-change="resetValidVersion(false);" />
+          <br />
+          <br />
           <button class="btn btn-xs btn-warning" ng-show="refset.version"
             ng-click="resetValidVersion(true);">Clear</button>
-          <button class="btn btn-xs btn-primary"
-            ng-show="refset.version && versionNotInPicklist()"
+          <button class="btn btn-xs btn-primary" ng-show="refset.version && versionNotInPicklist()"
             ng-click="testTerminologyVersion();">Test</button>
           &nbsp;&nbsp;
           <span flag-icon obj="refset"></span>
@@ -115,8 +109,7 @@
           <b>Namespace</b>
         </td>
         <td>
-          <input ng-model="refset.namespace" size="25"
-            placeholder="e.g. 1000124" />
+          <input ng-model="refset.namespace" size="25" placeholder="e.g. 1000124" />
         </td>
       </tr>
       <tr ng-show="!refset.localSet">
@@ -124,14 +117,13 @@
           <b>Module Id</b>
         </td>
         <td>
-          <input style="width: 252px" ng-model="refset.moduleId"
-            list="moduleList" placeholder="e.g. 900000000000207008" />
+          <input style="width: 252px" ng-model="refset.moduleId" list="moduleList"
+            placeholder="e.g. 900000000000207008" />
           <datalist id="moduleList">
-            <option ng-repeat="module in modules | orderBy:'terminologyId'"
-              value="{{module.terminologyId}}">{{module.name}}</option>
+            <option ng-repeat="module in modules | orderBy:'terminologyId'" value="{{module.terminologyId}}">
+              {{module.name}}</option>
           </datalist>
-          <button class="btn btn-xs btn-warning" ng-show="refset.moduleId"
-            ng-click="refset.moduleId=''">Clear</button>
+          <button class="btn btn-xs btn-warning" ng-show="refset.moduleId" ng-click="refset.moduleId=''">Clear</button>
           &nbsp;&nbsp;
           <span flag-icon obj="refset"></span>
         </td>
@@ -155,12 +147,10 @@
           <b>Domain</b>
         </td>
         <td>
-          <input type="text" ng-model="refset.domain" size="40"
-            list="filterList" />
+          <input type="text" ng-model="refset.domain" size="40" list="filterList" />
           <datalist id="filterList">
-            <option ng-if="filter.key=='domain'"
-              ng-repeat="filter in filters | orderBy:'key'"
-              value="{{filter.value}}">{{filter.value}}</option>
+            <option ng-if="filter.key=='domain'" ng-repeat="filter in filters | orderBy:'key'" value="{{filter.value}}">
+              {{filter.value}}</option>
           </datalist>
         </td>
       </tr>
@@ -172,8 +162,7 @@
           <select ng-show="action == 'Add'" ng-model="refset.type"
             ng-options="item for item in metadata.refsetTypes"></select> &nbsp;
           <span ng-show="action != 'Add'" refset-type-icon refset="refset"></span>
-          <span ng-show="action == 'Add'" style="margin-left: 35px;"
-            refset-type-icon refset="refset"></span>
+          <span ng-show="action == 'Add'" style="margin-left: 35px;" refset-type-icon refset="refset"></span>
         </td>
       </tr>
       <tr ng-show="refset.type == 'EXTERNAL'">
@@ -191,21 +180,17 @@
         </td>
         <td>
           <!-- Editing field for ADD -->
-          <div ng-show="action == 'Add'" definition-clause clause="clause"
-            mode="edit" allowNegation="false"></div>
+          <div ng-show="action == 'Add'" definition-clause clause="clause" mode="edit" allowNegation="false"></div>
 
           <!--  Read-only field for ADD -->
-          <div ng-show="action == 'Clone' || action == 'Edit'"
-            style="max-height: 400px; overflow-y: scroll;">
+          <div ng-show="action == 'Clone' || action == 'Edit'" style="max-height: 400px; overflow-y: scroll;">
             <table class="table">
               <tbody>
                 <tr ng-repeat="clause in refset.definitionClauses">
                   <td>{{clause.value}}</td>
                   <td>
-                    <button class="btn btn-xs btn-primary"
-                      ng-show="!clause.negated" uib-tooltip="Union">+</button>
-                    <button class="btn btn-xs btn-danger"
-                      ng-show="clause.negated" uib-tooltip="Minus">-</button>
+                    <button class="btn btn-xs btn-primary" ng-show="!clause.negated" uib-tooltip="Union">+</button>
+                    <button class="btn btn-xs btn-danger" ng-show="clause.negated" uib-tooltip="Minus">-</button>
                   </td>
                 </tr>
               </tbody>
@@ -222,16 +207,13 @@
       </tr>
 
       <!-- Errors and warnings-->
-      <tr
-        ng-show="errors.length == 1 || (errors.length == 2 && errors[1].length>100)">
+      <tr ng-show="errors.length == 1 || (errors.length == 2 && errors[1].length>100)">
         <td colspan="2">
           <div class="alert alert-danger alert-error">
             {{errors[0]}}
             <div style="display: inline; float: right;">
-              <i ng-show="errors[1]"
-                title="{{error.expand ? 'Show' : 'Hide'}} long error"
-                class="noul material-icons md-18"
-                ng-click="error.expand = !error.expand;">attach_file</i>
+              <i ng-show="errors[1]" title="{{error.expand ? 'Show' : 'Hide'}} long error"
+                class="noul material-icons md-18" ng-click="error.expand = !error.expand;">attach_file</i>
             </div>
             <p ng-show="errors[1] && error.expand">
               <br />{{errors[1]}}
@@ -239,11 +221,9 @@
           </div>
         </td>
       </tr>
-      <tr
-        ng-show="errors.length>2 || (errors.length == 2 && errors[1].length<101)">
+      <tr ng-show="errors.length>2 || (errors.length == 2 && errors[1].length<101)">
         <td colspan="2">
-          <div class="alert alert-danger alert-error"
-            ng-repeat="error in errors">{{error}}</div>
+          <div class="alert alert-danger alert-error" ng-repeat="error in errors">{{error}}</div>
         </td>
       </tr>
       <tr ng-repeat="warning in warnings">
@@ -269,14 +249,12 @@
 
   <div class="modal-footer">
     <button ng-show="action == 'Add'" class="btn btn-xs btn-primary""
-      ng-click="submitRefset(refset);" ng-disabled="versionChecked == false">Add</button>
-    <button ng-show="action == 'Edit'" class="btn btn-xs btn-primary"
-      ng-click="submitRefset(refset);" ng-disabled="versionChecked == false">Save</button>
-    <button ng-show="action == 'Clone' && comments.length == 0"
-      ng-disabled="validVersion != 'true'" class="btn btn-xs btn-primary"
-      ng-click="submitRefset(refset); ">Clone</button>
+      ng-click=" submitRefset(refset);" ng-disabled="versionChecked == false">Add</button>
+    <button ng-show="action == 'Edit'" class="btn btn-xs btn-primary" ng-click="submitRefset(refset);"
+      ng-disabled="versionChecked == false">Save</button>
+    <button ng-show="action == 'Clone' && comments.length == 0" ng-disabled="validVersion != 'true'"
+      class="btn btn-xs btn-primary" ng-click="submitRefset(refset); ">Clone</button>
     <button class="btn btn-xs btn-warning" ng-click="cancel()">Cancel</button>
-    <button ng-show="comments.length > 0" class="btn btn-xs btn-warning"
-      ng-click="close()">Close</button>
+    <button ng-show="comments.length > 0" class="btn btn-xs btn-warning" ng-click="close()">Close</button>
   </div>
 </div>
