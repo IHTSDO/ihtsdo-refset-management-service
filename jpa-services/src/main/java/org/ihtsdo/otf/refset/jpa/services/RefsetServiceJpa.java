@@ -1772,12 +1772,12 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
     // in refset2 or do exist in refset2 with a different type
     for (final ConceptRefsetMember member1 : refset1.getMembers()) {
       if (!refset2Map.containsKey(member1.getConceptId())) {
-        oldNotNew.add(member1);
+        newNotOld.add(member1);
         // Always keep exclusions
       } else if (refset2Map.containsKey(member1.getConceptId())
           && refset2Map.get(member1.getConceptId()).getMemberType() != member1
               .getMemberType()) {
-        oldNotNew.add(member1);
+        newNotOld.add(member1);
       }
     }
     // New not old are things from refset2 that do not exist
@@ -1785,11 +1785,11 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
     for (final ConceptRefsetMember member2 : refset2.getMembers()) {
       handleLazyInit(member2);
       if (!refset1Map.containsKey(member2.getConceptId())) {
-        newNotOld.add(member2);
+        oldNotNew.add(member2);
       } else if (refset1Map.containsKey(member2.getConceptId())
           && refset1Map.get(member2.getConceptId()).getMemberType() != member2
               .getMemberType()) {
-        newNotOld.add(member2);
+        oldNotNew.add(member2);
       }
     }
     diffReport.setOldNotNew(oldNotNew);
