@@ -8,7 +8,7 @@
 	<parent>
 		<groupId>org.ihtsdo.otf.refset</groupId>
 		<artifactId>refset-parent</artifactId>
-    <version>1.4.29</version>
+    <version>1.4.30</version>
 		<relativePath>../parent</relativePath>
 	</parent>
 
@@ -203,9 +203,9 @@
 						<configuration>
 							<artifactItems>
 								<artifactItem>
-									<groupId>com.github.jsimone</groupId>
+									<groupId>com.heroku</groupId>
 									<artifactId>webapp-runner</artifactId>
-									<version>8.5.11.3</version>
+									<version>9.0.89.0</version>
 									<destFileName>webapp-runner.jar</destFileName>
 								</artifactItem>
 							</artifactItems>
