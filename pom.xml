@@ -1,59 +1,83 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-  <!-- Module Metadata -->
-  <groupId>org.ihtsdo.otf.refset</groupId>
-  <artifactId>refset-aggregator</artifactId>
-  <version>1.4.32-SNAPSHOT</version>
-  <packaging>pom</packaging>
-  <name>IHTSDO refset management service</name>
-  <description>Aggregator project.</description>
+    <!-- Module Metadata -->
+    <groupId>org.ihtsdo.otf.refset</groupId>
+    <artifactId>refset-aggregator</artifactId>
+    <version>1.4.32-SNAPSHOT</version>
+    <packaging>pom</packaging>
+    <name>IHTSDO refset management service</name>
+    <description>Aggregator project.</description>
 
-  <!-- Sub-modules -->
-  <modules>
-    <module>parent</module>
-    <module>config</module>
-    <module>model</module>
-    <module>services</module>
-    <module>jpa-model</module>
-    <module>jpa-services</module>
-    <module>admin</module>
-    <module>custom</module>
-    <module>rest</module>
-    <module>rest-client</module>
-    <module>integration-test</module>
-    <module>examples</module>
-    <module>mojo</module>
-  </modules>
+    <!-- Sub-modules -->
+    <modules>
+        <module>parent</module>
+        <module>config</module>
+        <module>model</module>
+        <module>services</module>
+        <module>jpa-model</module>
+        <module>jpa-services</module>
+        <module>admin</module>
+        <module>custom</module>
+        <module>rest</module>
+        <module>rest-client</module>
+        <module>integration-test</module>
+        <module>examples</module>
+        <module>mojo</module>
+    </modules>
 
-  <!-- Distribution management -->
-  <repositories>
-    <repository>
-      <id>ihtsdo-public-nexus</id>
-      <name>IHTSDO Public Nexus Releases</name>
-      <url>https://maven3.ihtsdotools.org/repository/maven-releases/</url>
-    </repository>
-    <repository>
-      <id>ihtsdo-public-nexus-snapshot</id>
-      <name>IHTSDO Public Nexus Snapshots</name>
-      <url>https://maven3.ihtsdotools.org/repository/maven-snapshots/</url>
-    </repository>
-  </repositories>
+    <!-- Distribution management -->
+    <repositories>
+        <repository>
+            <id>ihtsdo-public-nexus</id>
+            <name>IHTSDO Public Nexus Releases</name>
+            <url>https://maven3.ihtsdotools.org/repository/maven-releases/</url>
+        </repository>
+        <repository>
+            <id>ihtsdo-public-nexus-snapshot</id>
+            <name>IHTSDO Public Nexus Snapshots</name>
+            <url>https://maven3.ihtsdotools.org/repository/maven-snapshots/</url>
+        </repository>
+    </repositories>
 
-  <distributionManagement>
-    <repository>
-      <id>ihtsdo-public-nexus</id>
-      <name>IHTSDO Public Nexus Releases</name>
-      <url>https://maven3.ihtsdotools.org/repository/maven-releases/</url>
-    </repository>
-    <snapshotRepository>
-      <id>ihtsdo-public-nexus</id>
-      <name>IHTSDO Public Nexus Snapshots</name>
-      <url>https://maven3.ihtsdotools.org/repository/maven-snapshots/</url>
-    </snapshotRepository>
-  </distributionManagement>
+    <distributionManagement>
+        <repository>
+            <id>ihtsdo-public-nexus</id>
+            <name>IHTSDO Public Nexus Releases</name>
+            <url>https://maven3.ihtsdotools.org/repository/maven-releases/</url>
+        </repository>
+        <snapshotRepository>
+            <id>ihtsdo-public-nexus</id>
+            <name>IHTSDO Public Nexus Snapshots</name>
+            <url>https://maven3.ihtsdotools.org/repository/maven-snapshots/</url>
+        </snapshotRepository>
+    </distributionManagement>
 
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.8</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>
+
