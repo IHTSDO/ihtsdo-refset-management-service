@@ -21,9 +21,9 @@
 
     <!-- Set third-party dependency versions -->
     <cglib.version>3.3.0</cglib.version>
-    <com.google.guava.version>29.0-jre</com.google.guava.version>
+    <com.google.guava.version>32.1.1-jre</com.google.guava.version>
     <com.sun.mail.version>1.6.2</com.sun.mail.version>
-    <fasterxml.jackson.version>2.11.3</fasterxml.jackson.version>
+    <fasterxml.jackson.version>2.15.2</fasterxml.jackson.version>
 
     <hibernate.c3p0.version>5.4.24.Final</hibernate.c3p0.version>
     <hibernate.core.version>5.4.24.Final</hibernate.core.version>
@@ -66,15 +66,19 @@
     <maven.truezip.plugin.version>1.2</maven.truezip.plugin.version>
     <maven.versions.plugin.version>2.3</maven.versions.plugin.version>
     <maven.war.plugin.version>3.4.0</maven.war.plugin.version>
-    <mysql.connector.version>8.0.33</mysql.connector.version>
+	<jacoco-maven-plugin.version>0.8.8</jacoco-maven-plugin.version>
+    <dependency-check-maven.version>8.3.1</dependency-check-maven.version>
+    <mysql.connector.version>8.4.0</mysql.connector.version>
     <net.sf.trove4j.version>3.0.3</net.sf.trove4j.version>
     <org.apache.commons.lang3.version>3.9</org.apache.commons.lang3.version>
-    <org.apache.commons.text.version>1.8</org.apache.commons.text.version>
+    <org.apache.commons.text.version>1.12.0</org.apache.commons.text.version>
     <org.apache.poi.ooxml.version>4.1.0</org.apache.poi.ooxml.version>
-    <org.json.version>20190722</org.json.version>
+    <org.json.version>20240303</org.json.version>
     <org.reflections.version>0.9.10</org.reflections.version>
-    <slf4j.log4j12.version>1.7.28</slf4j.log4j12.version>
+    <slf4j.log4j12.version>1.7.36</slf4j.log4j12.version>
     <swagger.jersey2.version>1.3.13</swagger.jersey2.version>
+    
+    <snomed-parent-owasp.version>1.0.3</snomed-parent-owasp.version>
   </properties>
 
   <dependencyManagement>
@@ -371,6 +375,12 @@
         <version>${org.reflections.version}</version>
       </dependency>
 
+	  <dependency>
+		<groupId>org.apache.commons</groupId>
+		<artifactId>commons-compress</artifactId>
+		<version>1.26.2</version>
+	  </dependency>
+
     </dependencies>
   </dependencyManagement>
 
@@ -513,8 +523,46 @@
           </executions>
         </plugin>
 
+        <plugin>
+            <groupId>org.jacoco</groupId>
+            <artifactId>jacoco-maven-plugin</artifactId>
+            <version>${jacoco-maven-plugin.version}</version>
+        </plugin>
+
       </plugins>
     </pluginManagement>
+    <plugins>
+     	<plugin>
+                <groupId>org.owasp</groupId>
+                <artifactId>dependency-check-maven</artifactId>
+                <version>${dependency-check-maven.version}</version>
+                <configuration>
+                    <suppressionFiles>
+                    <suppressionFile>owasp-suppressions.xml</suppressionFile>
+                </suppressionFiles>
+                <failBuildOnCVSS>7</failBuildOnCVSS>
+                <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
+                <failOnError>true</failOnError>
+                <!-- If we need to disable OSS, due to server outage, toggle the boolean on the following line.-->
+                <ossindexAnalyzerEnabled>true</ossindexAnalyzerEnabled>
+                <formats>XML,HTML</formats>
+            </configuration>
+            <dependencies>
+                <dependency>
+                    <groupId>org.snomed</groupId>
+                    <artifactId>snomed-parent-owasp</artifactId>
+                    <version>${snomed-parent-owasp.version}</version>
+                </dependency>
+            </dependencies>
+            <executions>
+                <execution>
+                    <goals>
+                        <goal>check</goal>
+                    </goals>
+                </execution>
+            </executions>
+        </plugin>
+    </plugins>
   </build>
 
   <!-- Distribution management -->
@@ -550,5 +598,24 @@
       <url>https://maven3.ihtsdotools.org/repository/maven-snapshots/</url>
     </snapshotRepository>
   </distributionManagement>
+
+<pluginRepositories>
+    <pluginRepository>
+        <id>ihtsdo-releases</id>
+        <name>ihtsdo-releases</name>
+        <snapshots>
+            <enabled>false</enabled>
+        </snapshots>
+        <url>https://nexus3.ihtsdotools.org/repository/maven-releases/</url>
+    </pluginRepository>
+    <pluginRepository>
+        <id>ihtsdo-snapshots</id>
+        <name>ihtsdo-snapshots</name>
+        <releases>
+            <enabled>false</enabled>
+        </releases>
+        <url>https://nexus3.ihtsdotools.org/repository/maven-snapshots/</url>
+    </pluginRepository>
+</pluginRepositories>
 
 </project>
