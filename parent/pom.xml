@@ -529,7 +529,10 @@
           </executions>
         </plugin>
 
-        <plugin>
+      </plugins>
+    </pluginManagement>
+    <plugins>
+       <plugin>
             <groupId>org.jacoco</groupId>
             <artifactId>jacoco-maven-plugin</artifactId>
             <version>${jacoco-maven-plugin.version}</version>
@@ -548,10 +551,6 @@
                 </execution>
             </executions>
         </plugin>
-
-      </plugins>
-    </pluginManagement>
-    <plugins>
      	<plugin>
                 <groupId>org.owasp</groupId>
                 <artifactId>dependency-check-maven</artifactId>
