@@ -31,6 +31,19 @@ import org.json.JSONObject;
  */
 public abstract class AbstractTerminologyHandler implements TerminologyHandler {
 
+  /** The Constant ACCEPT_LANGUAGE. */
+  protected static final String ACCEPT_LANGUAGE = "Accept-Language";
+
+  /** The Constant DEFAULT_ACCEPT_LANGUAGE. */
+  protected static final String DEFAULT_ACCEPT_LANGUAGE =
+      "en-US;q=0.8,en-GB;q=0.6";
+
+  /** The Constant USER_AGENT. */
+  protected static final String USER_AGENT = "User-Agent";
+
+  /** The Constant USER_AGENT_VALUE. */
+  protected static final String USER_AGENT_VALUE = "WCI";
+
   /** The api key. */
   private String apiKey;
 
@@ -276,7 +289,8 @@ public abstract class AbstractTerminologyHandler implements TerminologyHandler {
         try {
 
           response = target.request(accept).header("Authorization", authHeader)
-              .header("Accept-Language", acceptLanguage)
+              .header(ACCEPT_LANGUAGE, acceptLanguage)
+              .header(USER_AGENT, USER_AGENT_VALUE)
               .header("Cookie", cookieHeader).get();
 
           break;
