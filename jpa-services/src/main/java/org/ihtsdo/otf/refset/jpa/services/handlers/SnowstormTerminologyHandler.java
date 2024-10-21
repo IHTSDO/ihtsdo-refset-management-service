@@ -89,6 +89,8 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
 
   /** The ids to ignore. */
   private static List<String> idsToIgnore = new ArrayList<>();
+  
+
 
   static {
     idsToIgnore.add("448879004");
@@ -140,6 +142,12 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
   /** The max batch lookup size. */
   private int maxBatchLookupSize = 100;
 
+  /**
+   * Copy.
+   *
+   * @return the terminology handler
+   * @throws Exception the exception
+   */
   /* see superclass */
   @Override
   public TerminologyHandler copy() throws Exception {
@@ -150,6 +158,14 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     return handler;
   }
 
+  /**
+   * Test.
+   *
+   * @param terminology the terminology
+   * @param version the version
+   * @return true, if successful
+   * @throws Exception the exception
+   */
   /* see superclass */
   @Override
   public boolean test(String terminology, String version) throws Exception {
@@ -159,7 +175,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     final Response response =
         target.request(accept).header("Authorization", authHeader).header("Cookie",
             getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
-        .header("User-Agent","WCI").get();
+        .header(USER_AGENT, USER_AGENT_VALUE).get();
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -176,6 +192,12 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     return true;
   }
 
+  /**
+   * Sets the properties.
+   *
+   * @param p the properties
+   * @throws Exception the exception
+   */
   /* see superclass */
   @Override
   public void setProperties(Properties p) throws Exception {
@@ -197,12 +219,23 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
 
   }
 
+  /**
+   * Returns the name.
+   *
+   * @return the name
+   */
   /* see superclass */
   @Override
   public String getName() {
     return "Snowowl Terminology handler";
   }
 
+  /**
+   * Returns the terminology editions.
+   *
+   * @return the terminology editions
+   * @throws Exception the exception
+   */
   /* see superclass */
   @Override
   public List<Terminology> getTerminologyEditions() throws Exception {
@@ -229,9 +262,9 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     Logger.getLogger(getClass()).debug("  Get terminology editions - " + url + "/codesystems");
     final WebTarget target = client.target(url + "/codesystems");
     final Response response = target.request(accept).header("Authorization", authHeader)
-        .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6").header("Cookie",
+        .header(ACCEPT_LANGUAGE, DEFAULT_ACCEPT_LANGUAGE).header("Cookie",
             getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
-        .header("User-Agent","WCI")
+        .header(USER_AGENT, USER_AGENT_VALUE)
         .get();
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -263,6 +296,14 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     return result;
   }
 
+  /**
+   * Returns the terminology versions.
+   *
+   * @param edition the edition
+   * @param showFutureVersions the show future versions
+   * @return the terminology versions
+   * @throws Exception the exception
+   */
   /* see superclass */
   @Override
   public List<Terminology> getTerminologyVersions(String edition, Boolean showFutureVersions)
@@ -275,9 +316,9 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     WebTarget target = client.target(url + "/codesystems/" + edition + "/versions"
         + (showFutureVersions ? "?showFutureVersions=true" : ""));
     Response response = target.request(accept).header("Authorization", authHeader)
-        .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6").header("Cookie",
+        .header(ACCEPT_LANGUAGE, DEFAULT_ACCEPT_LANGUAGE).header("Cookie",
             getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
-        .header("User-Agent","WCI")
+        .header(USER_AGENT, USER_AGENT_VALUE)
         .get();
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -337,7 +378,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
      * client.target(url + "/branches?" + "limit=" + localPfs.getMaxResults());
      * 
      * response = target.request(accept).header("Authorization", authHeader)
-     * .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6") .header("Cookie",
+     * .header(ACCEPT_LANGUAGE, DEFAULT_ACCEPT_LANGUAGE) .header("Cookie",
      * getGenericUserCookie() != null ? getGenericUserCookie() :
      * getCookieHeader()).get(); resultString =
      * response.readEntity(String.class); if
@@ -368,6 +409,15 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     return list;
   }
 
+  /**
+   * Returns the replacement concepts.
+   *
+   * @param conceptId the concept id
+   * @param terminology the terminology
+   * @param version the version
+   * @return the replacement concepts
+   * @throws Exception the exception
+   */
   /* see superclass */
   @Override
   public ConceptList getReplacementConcepts(String conceptId, String terminology, String version)
@@ -380,9 +430,9 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     WebTarget target = client.target(url + "/browser/" + version + "/concepts/" + conceptId);
 
     Response response = target.request(accept).header("Authorization", authHeader)
-        .header("Accept-Language", getAcceptLanguage(terminology, version)).header("Cookie",
+        .header(ACCEPT_LANGUAGE, getAcceptLanguage(terminology, version)).header("Cookie",
             getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
-        .header("User-Agent","WCI")
+        .header(USER_AGENT, USER_AGENT_VALUE)
         .get();
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -461,6 +511,17 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     return list;
   }
 
+  /**
+   * Resolve expression.
+   *
+   * @param expr the expr
+   * @param terminology the terminology
+   * @param version the version
+   * @param pfs the pfs
+   * @param description the description
+   * @return the concept list
+   * @throws Exception the exception
+   */
   /* see superclass */
   @Override
   public ConceptList resolveExpression(String expr, String terminology, String version,
@@ -497,9 +558,9 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     Logger.getLogger(getClass()).info(targetUri);
 
     Response response = target.request(accept).header("Authorization", authHeader)
-        .header("Accept-Language", getAcceptLanguage(terminology, version)).header("Cookie",
+        .header(ACCEPT_LANGUAGE, getAcceptLanguage(terminology, version)).header("Cookie",
             getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
-        .header("User-Agent","WCI")
+        .header(USER_AGENT, USER_AGENT_VALUE)
         .get();
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -624,10 +685,10 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
 
       response =
           target.request(accept).header("Authorization", authHeader)
-              .header("Accept-Language", getAcceptLanguage(terminology, version))
+              .header(ACCEPT_LANGUAGE, getAcceptLanguage(terminology, version))
               .header("Cookie",
                   getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
-              .header("User-Agent","WCI")
+              .header(USER_AGENT, USER_AGENT_VALUE)
               .get();
 
       resultString = response.readEntity(String.class);
@@ -702,6 +763,15 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     return conceptList;
   }
 
+  /**
+   * Count expression.
+   *
+   * @param expr the expr
+   * @param terminology the terminology
+   * @param version the version
+   * @return the int
+   * @throws Exception the exception
+   */
   /* see superclass */
   @Override
   public int countExpression(String expr, String terminology, String version) throws Exception {
@@ -715,9 +785,9 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
         + URLEncoder.encode(expr, "UTF-8").replaceAll(" ", "%20") + "&limit=1");
 
     Response response = target.request(accept).header("Authorization", authHeader)
-        .header("Accept-Language", getAcceptLanguage(terminology, version)).header("Cookie",
+        .header(ACCEPT_LANGUAGE, getAcceptLanguage(terminology, version)).header("Cookie",
             getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
-        .header("User-Agent","WCI")
+        .header(USER_AGENT, USER_AGENT_VALUE)
         .get();
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -747,6 +817,15 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
 
   }
 
+  /**
+   * Returns the full concept.
+   *
+   * @param terminologyId the terminology id
+   * @param terminology the terminology
+   * @param version the version
+   * @return the full concept
+   * @throws Exception the exception
+   */
   /* see superclass */
   @Override
   public Concept getFullConcept(String terminologyId, String terminology, String version)
@@ -1010,6 +1089,15 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     return concept;
   }
 
+  /**
+   * Returns the concept.
+   *
+   * @param terminologyId the terminology id
+   * @param terminology the terminology
+   * @param version the version
+   * @return the concept
+   * @throws Exception the exception
+   */
   /* see superclass */
   @Override
   public Concept getConcept(String terminologyId, String terminology, String version)
@@ -1029,6 +1117,15 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     return conceptList.getObjects().get(0);
   }
 
+  /**
+   * Returns the inactive concepts.
+   *
+   * @param terminologyIds the terminology ids
+   * @param terminology the terminology
+   * @param version the version
+   * @return the inactive concepts
+   * @throws Exception the exception
+   */
   @Override
   public ConceptList getInactiveConcepts(List<String> terminologyIds, String terminology,
     String version) throws Exception {
@@ -1076,9 +1173,9 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     Logger.getLogger(getClass()).info(targetUri);
 
     Response response = target.request(accept).header("Authorization", authHeader)
-        .header("Accept-Language", getAcceptLanguage(terminology, version)).header("Cookie",
+        .header(ACCEPT_LANGUAGE, getAcceptLanguage(terminology, version)).header("Cookie",
             getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
-        .header("User-Agent","WCI")
+        .header(USER_AGENT, USER_AGENT_VALUE)
         .get();
 
     String resultString = response.readEntity(String.class);
@@ -1155,6 +1252,16 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     return conceptList;
   }
 
+  /**
+   * Returns the concepts.
+   *
+   * @param terminologyIds the terminology ids
+   * @param terminology the terminology
+   * @param version the version
+   * @param descriptions the descriptions
+   * @return the concepts
+   * @throws Exception the exception
+   */
   /* see superclass */
   @Override
   public ConceptList getConcepts(List<String> terminologyIds, String terminology, String version,
@@ -1208,10 +1315,10 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
 
       Response response =
           target.request(accept).header("Authorization", authHeader)
-              .header("Accept-Language", getAcceptLanguage(terminology, version))
+              .header(ACCEPT_LANGUAGE, getAcceptLanguage(terminology, version))
               .header("Cookie",
                   getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
-              .header("User-Agent","WCI")
+              .header(USER_AGENT, USER_AGENT_VALUE)
               .get();
 
       String resultString = response.readEntity(String.class);
@@ -1551,10 +1658,10 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
 
         response =
             target.request(accept).header("Authorization", authHeader)
-                .header("Accept-Language", getAcceptLanguage(terminology, version))
+                .header(ACCEPT_LANGUAGE, getAcceptLanguage(terminology, version))
                 .header("Cookie",
                     getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
-                .header("User-Agent","WCI")
+                .header(USER_AGENT, USER_AGENT_VALUE)
                 .get();
         resultString = response.readEntity(String.class);
         if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -1801,10 +1908,10 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
           Logger.getLogger(getClass()).info(targetUri);
 
           Response response = target.request(accept).header("Authorization", authHeader)
-              .header("Accept-Language", getAcceptLanguage(terminology, version))
+              .header(ACCEPT_LANGUAGE, getAcceptLanguage(terminology, version))
               .header("Cookie",
                   getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
-              .header("User-Agent","WCI")
+              .header(USER_AGENT, USER_AGENT_VALUE)
               .get();
 
           String resultString = response.readEntity(String.class);
@@ -1941,12 +2048,28 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     }
   }
 
+  /**
+   * Indicates whether or not concept id is the case.
+   *
+   * @param query the query
+   * @return <code>true</code> if so, <code>false</code> otherwise
+   */
   /* see superclass */
   @Override
   public boolean isConceptId(String query) {
     return query.matches("\\d+[01]0\\d");
   }
 
+  /**
+   * Find concepts for query.
+   *
+   * @param query the query
+   * @param terminology the terminology
+   * @param version the version
+   * @param pfs the pfs
+   * @return the concept list
+   * @throws Exception the exception
+   */
   /* see superclass */
   @Override
   public ConceptList findConceptsForQuery(String query, String terminology, String version,
@@ -1992,9 +2115,9 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     final WebTarget target = client.target(targetUri);
 
     final Response response = target.request(accept).header("Authorization", authHeader)
-        .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6").header("Cookie",
+        .header(ACCEPT_LANGUAGE, DEFAULT_ACCEPT_LANGUAGE).header("Cookie",
             getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
-        .header("User-Agent","WCI")
+        .header(USER_AGENT, USER_AGENT_VALUE)
         .get();
 
     final String resultString = response.readEntity(String.class);
@@ -2149,6 +2272,16 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     return conceptList;
   }
 
+  /**
+   * Find refsets for query.
+   *
+   * @param query the query
+   * @param terminology the terminology
+   * @param version the version
+   * @param pfs the pfs
+   * @return the concept list
+   * @throws Exception the exception
+   */
   /* see superclass */
   @Override
   public ConceptList findRefsetsForQuery(String query, String terminology, String version,
@@ -2174,6 +2307,14 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     }
   }
 
+  /**
+   * Returns the modules.
+   *
+   * @param terminology the terminology
+   * @param version the version
+   * @return the modules
+   * @throws Exception the exception
+   */
   /* see superclass */
   @Override
   public List<Concept> getModules(String terminology, String version) throws Exception {
@@ -2181,6 +2322,15 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
         version, null, false).getObjects();
   }
 
+  /**
+   * Returns the concept parents.
+   *
+   * @param terminologyId the terminology id
+   * @param terminology the terminology
+   * @param version the version
+   * @return the concept parents
+   * @throws Exception the exception
+   */
   /* see superclass */
   @Override
   public ConceptList getConceptParents(String terminologyId, String terminology, String version)
@@ -2192,9 +2342,9 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     final WebTarget target =
         client.target(url + "/browser/" + version + "/concepts/" + terminologyId + "/parents");
     final Response response = target.request(accept).header("Authorization", authHeader)
-        .header("Accept-Language", getAcceptLanguage(terminology, version)).header("Cookie",
+        .header(ACCEPT_LANGUAGE, getAcceptLanguage(terminology, version)).header("Cookie",
             getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
-        .header("User-Agent","WCI")
+        .header(USER_AGENT, USER_AGENT_VALUE)
         .get();
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -2254,6 +2404,15 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     return conceptList;
   }
 
+  /**
+   * Returns the concept children.
+   *
+   * @param terminologyId the terminology id
+   * @param terminology the terminology
+   * @param version the version
+   * @return the concept children
+   * @throws Exception the exception
+   */
   /* see superclass */
   @Override
   public ConceptList getConceptChildren(String terminologyId, String terminology, String version)
@@ -2265,9 +2424,9 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     final WebTarget target = client.target(
         url + "/browser/" + version + "/concepts/" + terminologyId + "/children?form=inferred");
     final Response response = target.request(accept).header("Authorization", authHeader)
-        .header("Accept-Language", getAcceptLanguage(terminology, version)).header("Cookie",
+        .header(ACCEPT_LANGUAGE, getAcceptLanguage(terminology, version)).header("Cookie",
             getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
-        .header("User-Agent","WCI")
+        .header(USER_AGENT, USER_AGENT_VALUE)
         .get();
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -2335,6 +2494,12 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     return conceptList;
   }
 
+  /**
+   * Sets the url.
+   *
+   * @param url the url
+   * @throws Exception the exception
+   */
   /* see superclass */
   @Override
   public void setUrl(String url) throws Exception {
@@ -2342,12 +2507,23 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     this.domain = InternetDomainName.from(new URL(url).getHost()).topPrivateDomain().toString();
   }
 
+  /**
+   * Returns the default url.
+   *
+   * @return the default url
+   */
   /* see superclass */
   @Override
   public String getDefaultUrl() {
     return defaultUrl;
   }
 
+  /**
+   * Sets the headers.
+   *
+   * @param headers the headers
+   * @throws Exception the exception
+   */
   /* see superclass */
   @Override
   public void setHeaders(Map<String, String> headers) throws Exception {
@@ -2369,6 +2545,14 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     return "";
   }
 
+  /**
+   * Returns the languages.
+   *
+   * @param terminology the terminology
+   * @param version the version
+   * @return the languages
+   * @throws Exception the exception
+   */
   /* see superclass */
   @Override
   public List<String> getLanguages(String terminology, String version) throws Exception {
@@ -2390,9 +2574,9 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
             + localPfs.getMaxResults() + "&offset=0");
 
     Response response = target.request(accept).header("Authorization", authHeader)
-        .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6").header("Cookie",
+        .header(ACCEPT_LANGUAGE, DEFAULT_ACCEPT_LANGUAGE).header("Cookie",
             getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
-        .header("User-Agent","WCI")
+        .header(USER_AGENT, USER_AGENT_VALUE)
         .get();
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -2431,6 +2615,14 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     return languages;
   }
 
+  /**
+   * Returns the branches.
+   *
+   * @param terminology the terminology
+   * @param version the version
+   * @return the branches
+   * @throws Exception the exception
+   */
   /* see superclass */
   @Override
   public List<String> getBranches(String terminology, String version) throws Exception {
@@ -2446,9 +2638,9 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     WebTarget target = client.target(url + "/branches?" + "limit=" + localPfs.getMaxResults());
 
     Response response = target.request(accept).header("Authorization", authHeader)
-        .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6").header("Cookie",
+        .header(ACCEPT_LANGUAGE, DEFAULT_ACCEPT_LANGUAGE).header("Cookie",
             getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
-        .header("User-Agent","WCI")
+        .header(USER_AGENT, USER_AGENT_VALUE)
         .get();
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -2485,6 +2677,12 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     return branches;
   }
 
+  /**
+   * Returns the available translation extension languages.
+   *
+   * @return the available translation extension languages
+   * @throws Exception the exception
+   */
   /* see superclass */
   @Override
   public List<TranslationExtensionLanguage> getAvailableTranslationExtensionLanguages()
@@ -2504,9 +2702,9 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
         client.target(url + "/codesystems?" + "limit=" + localPfs.getMaxResults());
 
     final Response response = target.request(accept).header("Authorization", authHeader)
-        .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6").header("Cookie",
+        .header(ACCEPT_LANGUAGE, DEFAULT_ACCEPT_LANGUAGE).header("Cookie",
             getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
-        .header("User-Agent","WCI")
+        .header(USER_AGENT, USER_AGENT_VALUE)
         .get();
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() != Family.SUCCESSFUL) {
@@ -2562,6 +2760,14 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     }
   }
 
+  /**
+   * Returns the required language refsets.
+   *
+   * @param terminology the terminology
+   * @param version the version
+   * @return the required language refsets
+   * @throws Exception the exception
+   */
   /* see superclass */
   @Override
   public KeyValuePairList getRequiredLanguageRefsets(String terminology, String version)
@@ -2574,9 +2780,9 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     final Client client = ClientBuilder.newClient();
     final WebTarget target = client.target(url + "/codesystems/" + terminology);
     final Response response = target.request(accept).header("Authorization", authHeader)
-        .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6").header("Cookie",
+        .header(ACCEPT_LANGUAGE, DEFAULT_ACCEPT_LANGUAGE).header("Cookie",
             getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
-        .header("User-Agent","WCI")
+        .header(USER_AGENT, USER_AGENT_VALUE)
         .get();
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -2763,6 +2969,12 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     return jsonNode.get("message").asText();
   }
 
+  /**
+   * Returns the max batch lookup size.
+   *
+   * @return the max batch lookup size
+   * @throws Exception the exception
+   */
   /* see superclass */
   @Override
   public int getMaxBatchLookupSize() throws Exception {
