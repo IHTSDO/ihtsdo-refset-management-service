@@ -30,7 +30,7 @@
     <hibernate.entitymanager.version>5.4.24.Final</hibernate.entitymanager.version>
     <hibernate.envers.version>5.4.24.Final</hibernate.envers.version>
     <hibernate.search.version>5.11.2.Final</hibernate.search.version>
-    <hibernate.validator.version>6.0.20.Final</hibernate.validator.version>
+    <hibernate.validator.version>6.2.0.Final</hibernate.validator.version>
 
     <javax.activation.version>1.1.1</javax.activation.version>
     <javax.servlet.version>4.0.1</javax.servlet.version>
