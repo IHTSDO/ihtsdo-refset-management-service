@@ -11,6 +11,7 @@
     <packaging>pom</packaging>
     <name>IHTSDO refset management service</name>
     <description>Aggregator project.</description>
+<!-- MINOR CHANGE TO TEST DEPLOY-->
 
     <!-- Sub-modules -->
     <modules>
