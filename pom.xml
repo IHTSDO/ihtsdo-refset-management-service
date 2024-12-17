@@ -78,6 +78,34 @@
                     </execution>
                 </executions>
             </plugin>
+
+            <plugin>
+                <groupId>org.owasp</groupId>
+                <artifactId>dependency-check-maven</artifactId>
+                <version>8.3.1</version>
+                <configuration>
+                    <suppressionFiles>
+                        <suppressionFile>${maven.multiModuleProjectDirectory}/suppressed.xml</suppressionFile>
+                    </suppressionFiles>
+                    <failBuildOnCVSS>7</failBuildOnCVSS>
+                    <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
+                    <retireJsAnalyzerEnabled>false</retireJsAnalyzerEnabled>
+                    <failOnError>false</failOnError>
+                    <!-- If we need to disable OSS, due to server outage, toggle the boolean on the following line.-->
+                    <ossindexAnalyzerEnabled>true</ossindexAnalyzerEnabled>
+                    <nodeAnalyzerEnabled>false</nodeAnalyzerEnabled>
+                    <nodeAuditAnalyzerEnabled>false</nodeAuditAnalyzerEnabled>
+                    <formats>XML,HTML</formats>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
         </plugins>
     </build>
 </project>
