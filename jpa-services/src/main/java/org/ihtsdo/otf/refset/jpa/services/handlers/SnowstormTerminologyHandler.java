@@ -90,7 +90,14 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
   /** The ids to ignore. */
   private static List<String> idsToIgnore = new ArrayList<>();
   
-
+  /** Strings to avoid duplications */
+  private static final String ID900000000000509007 = "900000000000509007";
+  private final String AUTHORIZATION = "Authorization";
+  private final String COOKIE = "Cookie";
+  private final String FORBIDDEN = "Forbidden";
+  private final String CONNECTION_EXPIRED_MESSAGE = "Connection with the terminology server has expired. Please reload the page to reconnect.";
+  private final String UNEXPECTED_TERMINOLOGY_SERVER_FAILURE_MESSAGE = "Unexpected terminology server failure. Message = ";
+  
 
   static {
     idsToIgnore.add("448879004");
@@ -99,7 +106,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     idsToIgnore.add("722129009");
     idsToIgnore.add("722131000");
     idsToIgnore.add("900000000000507009");
-    idsToIgnore.add("900000000000509007");
+    idsToIgnore.add(ID900000000000509007);
     idsToIgnore.add("900000000000508004");
     idsToIgnore.add("608771002");
     idsToIgnore.add("46011000052107");
@@ -173,7 +180,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     final WebTarget target = client.target(url + "/branches/" + (version == null ? "" : version));
 
     final Response response =
-        target.request(accept).header("Authorization", authHeader).header("Cookie",
+        target.request(accept).header(AUTHORIZATION, authHeader).header(COOKIE,
             getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
         .header(USER_AGENT, USER_AGENT_VALUE).get();
     final String resultString = response.readEntity(String.class);
@@ -182,12 +189,12 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     }
     // If the generic user is logged out, it returns a 403 Forbidden error. In
     // this case, clear out the generic use cookie so the next call can re-login
-    else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
+    else if (response.getStatusInfo().getReasonPhrase().equals(FORBIDDEN)) {
       genericUserCookie = null;
       throw new LocalException(
-          "Connection with the terminology server has expired. Please reload the page to reconnect.");
+          CONNECTION_EXPIRED_MESSAGE);
     } else {
-      throw new LocalException("Unexpected terminology server failure. Message = " + resultString);
+      throw new LocalException(UNEXPECTED_TERMINOLOGY_SERVER_FAILURE_MESSAGE + resultString);
     }
     return true;
   }
@@ -261,8 +268,8 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     final Client client = ClientBuilder.newClient();
     Logger.getLogger(getClass()).debug("  Get terminology editions - " + url + "/codesystems");
     final WebTarget target = client.target(url + "/codesystems");
-    final Response response = target.request(accept).header("Authorization", authHeader)
-        .header(ACCEPT_LANGUAGE, DEFAULT_ACCEPT_LANGUAGE).header("Cookie",
+    final Response response = target.request(accept).header(AUTHORIZATION, authHeader)
+        .header(ACCEPT_LANGUAGE, DEFAULT_ACCEPT_LANGUAGE).header(COOKIE,
             getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
         .header(USER_AGENT, USER_AGENT_VALUE)
         .get();
@@ -272,12 +279,12 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     }
     // If the generic user is logged out, it returns a 403 Forbidden error. In
     // this case, clear out the generic use cookie so the next call can re-login
-    else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
+    else if (response.getStatusInfo().getReasonPhrase().equals(FORBIDDEN)) {
       genericUserCookie = null;
       throw new LocalException(
-          "Connection with the terminology server has expired. Please reload the page to reconnect.");
+          CONNECTION_EXPIRED_MESSAGE);
     } else {
-      throw new LocalException("Unexpected terminology server failure. Message = " + resultString);
+      throw new LocalException(UNEXPECTED_TERMINOLOGY_SERVER_FAILURE_MESSAGE + resultString);
     }
 
     final ObjectMapper mapper = new ObjectMapper();
@@ -315,8 +322,8 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
         + edition + "/versions" + (showFutureVersions ? "?showFutureVersions=true" : ""));
     WebTarget target = client.target(url + "/codesystems/" + edition + "/versions"
         + (showFutureVersions ? "?showFutureVersions=true" : ""));
-    Response response = target.request(accept).header("Authorization", authHeader)
-        .header(ACCEPT_LANGUAGE, DEFAULT_ACCEPT_LANGUAGE).header("Cookie",
+    Response response = target.request(accept).header(AUTHORIZATION, authHeader)
+        .header(ACCEPT_LANGUAGE, DEFAULT_ACCEPT_LANGUAGE).header(COOKIE,
             getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
         .header(USER_AGENT, USER_AGENT_VALUE)
         .get();
@@ -326,12 +333,12 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     }
     // If the generic user is logged out, it returns a 403 Forbidden error. In
     // this case, clear out the generic use cookie so the next call can re-login
-    else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
+    else if (response.getStatusInfo().getReasonPhrase().equals(FORBIDDEN)) {
       genericUserCookie = null;
       throw new LocalException(
-          "Connection with the terminology server has expired. Please reload the page to reconnect.");
+          CONNECTION_EXPIRED_MESSAGE);
     } else {
-      throw new LocalException("Unexpected terminology server failure. Message = " + resultString);
+      throw new LocalException(UNEXPECTED_TERMINOLOGY_SERVER_FAILURE_MESSAGE + resultString);
     }
 
     ObjectMapper mapper = new ObjectMapper();
@@ -377,8 +384,8 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
      * + "/branches?" + "limit=" + localPfs.getMaxResults()); target =
      * client.target(url + "/branches?" + "limit=" + localPfs.getMaxResults());
      * 
-     * response = target.request(accept).header("Authorization", authHeader)
-     * .header(ACCEPT_LANGUAGE, DEFAULT_ACCEPT_LANGUAGE) .header("Cookie",
+     * response = target.request(accept).header(AUTHORIZATION, authHeader)
+     * .header(ACCEPT_LANGUAGE, DEFAULT_ACCEPT_LANGUAGE) .header(COOKIE,
      * getGenericUserCookie() != null ? getGenericUserCookie() :
      * getCookieHeader()).get(); resultString =
      * response.readEntity(String.class); if
@@ -386,7 +393,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
      * else {
      * 
      * throw new LocalException(
-     * "Unexpected terminology server failure. Message = " + resultString); }
+     * UNEXPECTED_TERMINOLOGY_SERVER_FAILURE_MESSAGE + resultString); }
      * 
      * mapper = new ObjectMapper(); doc = mapper.readTree(resultString);
      * 
@@ -429,8 +436,8 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
 
     WebTarget target = client.target(url + "/browser/" + version + "/concepts/" + conceptId);
 
-    Response response = target.request(accept).header("Authorization", authHeader)
-        .header(ACCEPT_LANGUAGE, getAcceptLanguage(terminology, version)).header("Cookie",
+    Response response = target.request(accept).header(AUTHORIZATION, authHeader)
+        .header(ACCEPT_LANGUAGE, getAcceptLanguage(terminology, version)).header(COOKIE,
             getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
         .header(USER_AGENT, USER_AGENT_VALUE)
         .get();
@@ -440,10 +447,10 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     }
     // If the generic user is logged out, it returns a 403 Forbidden error. In
     // this case, clear out the generic use cookie so the next call can re-login
-    else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
+    else if (response.getStatusInfo().getReasonPhrase().equals(FORBIDDEN)) {
       genericUserCookie = null;
       throw new LocalException(
-          "Connection with the terminology server has expired. Please reload the page to reconnect.");
+          CONNECTION_EXPIRED_MESSAGE);
     } else {
 
       // Here's the messy part about trying to parse the return error message
@@ -451,7 +458,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
         return new ConceptListJpa();
       }
 
-      throw new LocalException("Unexpected terminology server failure. Message = " + resultString);
+      throw new LocalException(UNEXPECTED_TERMINOLOGY_SERVER_FAILURE_MESSAGE + resultString);
     }
 
     /**
@@ -557,8 +564,8 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     WebTarget target = client.target(targetUri);
     Logger.getLogger(getClass()).info(targetUri);
 
-    Response response = target.request(accept).header("Authorization", authHeader)
-        .header(ACCEPT_LANGUAGE, getAcceptLanguage(terminology, version)).header("Cookie",
+    Response response = target.request(accept).header(AUTHORIZATION, authHeader)
+        .header(ACCEPT_LANGUAGE, getAcceptLanguage(terminology, version)).header(COOKIE,
             getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
         .header(USER_AGENT, USER_AGENT_VALUE)
         .get();
@@ -568,10 +575,10 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     }
     // If the generic user is logged out, it returns a 403 Forbidden error. In
     // this case, clear out the generic use cookie so the next call can re-login
-    else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
+    else if (response.getStatusInfo().getReasonPhrase().equals(FORBIDDEN)) {
       genericUserCookie = null;
       throw new LocalException(
-          "Connection with the terminology server has expired. Please reload the page to reconnect.");
+          CONNECTION_EXPIRED_MESSAGE);
     } else {
 
       // Here's the messy part about trying to parse the return error message
@@ -579,7 +586,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
         return new ConceptListJpa();
       }
 
-      throw new LocalException("Unexpected terminology server failure. Message = " + resultString);
+      throw new LocalException(UNEXPECTED_TERMINOLOGY_SERVER_FAILURE_MESSAGE + resultString);
     }
 
     /**
@@ -684,9 +691,9 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
       Logger.getLogger(getClass()).info(targetUri);
 
       response =
-          target.request(accept).header("Authorization", authHeader)
+          target.request(accept).header(AUTHORIZATION, authHeader)
               .header(ACCEPT_LANGUAGE, getAcceptLanguage(terminology, version))
-              .header("Cookie",
+              .header(COOKIE,
                   getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
               .header(USER_AGENT, USER_AGENT_VALUE)
               .get();
@@ -698,13 +705,13 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
       // If the generic user is logged out, it returns a 403 Forbidden error. In
       // this case, clear out the generic use cookie so the next call can
       // re-login
-      else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
+      else if (response.getStatusInfo().getReasonPhrase().equals(FORBIDDEN)) {
         genericUserCookie = null;
         throw new LocalException(
-            "Connection with the terminology server has expired. Please reload the page to reconnect.");
+            CONNECTION_EXPIRED_MESSAGE);
       } else {
         throw new LocalException(
-            "Unexpected terminology server failure. Message = " + resultString);
+            UNEXPECTED_TERMINOLOGY_SERVER_FAILURE_MESSAGE + resultString);
       }
       mapper = new ObjectMapper();
       doc = mapper.readTree(resultString);
@@ -784,8 +791,8 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     WebTarget target = client.target(url + "/" + version + "/concepts?ecl="
         + URLEncoder.encode(expr, "UTF-8").replaceAll(" ", "%20") + "&limit=1");
 
-    Response response = target.request(accept).header("Authorization", authHeader)
-        .header(ACCEPT_LANGUAGE, getAcceptLanguage(terminology, version)).header("Cookie",
+    Response response = target.request(accept).header(AUTHORIZATION, authHeader)
+        .header(ACCEPT_LANGUAGE, getAcceptLanguage(terminology, version)).header(COOKIE,
             getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
         .header(USER_AGENT, USER_AGENT_VALUE)
         .get();
@@ -795,10 +802,10 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     }
     // If the generic user is logged out, it returns a 403 Forbidden error. In
     // this case, clear out the generic use cookie so the next call can re-login
-    else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
+    else if (response.getStatusInfo().getReasonPhrase().equals(FORBIDDEN)) {
       genericUserCookie = null;
       throw new LocalException(
-          "Connection with the terminology server has expired. Please reload the page to reconnect.");
+          CONNECTION_EXPIRED_MESSAGE);
     } else {
 
       // Here's the messy part about trying to parse the return error message
@@ -806,7 +813,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
         return 0;
       }
 
-      throw new LocalException("Unexpected terminology server failure. Message = " + resultString);
+      throw new LocalException(UNEXPECTED_TERMINOLOGY_SERVER_FAILURE_MESSAGE + resultString);
     }
 
     ObjectMapper mapper = new ObjectMapper();
@@ -1172,8 +1179,8 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     WebTarget target = client.target(targetUri);
     Logger.getLogger(getClass()).info(targetUri);
 
-    Response response = target.request(accept).header("Authorization", authHeader)
-        .header(ACCEPT_LANGUAGE, getAcceptLanguage(terminology, version)).header("Cookie",
+    Response response = target.request(accept).header(AUTHORIZATION, authHeader)
+        .header(ACCEPT_LANGUAGE, getAcceptLanguage(terminology, version)).header(COOKIE,
             getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
         .header(USER_AGENT, USER_AGENT_VALUE)
         .get();
@@ -1185,10 +1192,10 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     // If the generic user is logged out, it returns a 403 Forbidden error. In
     // this case, clear out the generic use cookie so the next call can
     // re-login
-    else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
+    else if (response.getStatusInfo().getReasonPhrase().equals(FORBIDDEN)) {
       genericUserCookie = null;
       throw new LocalException(
-          "Connection with the terminology server has expired. Please reload the page to reconnect.");
+          CONNECTION_EXPIRED_MESSAGE);
     } else {
 
       // Here's the messy part about trying to parse the return error message
@@ -1196,7 +1203,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
         return new ConceptListJpa();
       }
 
-      throw new LocalException("Unexpected terminology server failure. Message = " + resultString);
+      throw new LocalException(UNEXPECTED_TERMINOLOGY_SERVER_FAILURE_MESSAGE + resultString);
     }
     conceptList = new ConceptListJpa();
     ObjectMapper mapper = new ObjectMapper();
@@ -1314,9 +1321,9 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
       Logger.getLogger(getClass()).info(targetUri);
 
       Response response =
-          target.request(accept).header("Authorization", authHeader)
+          target.request(accept).header(AUTHORIZATION, authHeader)
               .header(ACCEPT_LANGUAGE, getAcceptLanguage(terminology, version))
-              .header("Cookie",
+              .header(COOKIE,
                   getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
               .header(USER_AGENT, USER_AGENT_VALUE)
               .get();
@@ -1328,10 +1335,10 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
       // If the generic user is logged out, it returns a 403 Forbidden error. In
       // this case, clear out the generic use cookie so the next call can
       // re-login
-      else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
+      else if (response.getStatusInfo().getReasonPhrase().equals(FORBIDDEN)) {
         genericUserCookie = null;
         throw new LocalException(
-            "Connection with the terminology server has expired. Please reload the page to reconnect.");
+            CONNECTION_EXPIRED_MESSAGE);
       } else {
 
         // Here's the messy part about trying to parse the return error message
@@ -1340,7 +1347,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
         }
 
         throw new LocalException(
-            "Unexpected terminology server failure. Message = " + resultString);
+            UNEXPECTED_TERMINOLOGY_SERVER_FAILURE_MESSAGE + resultString);
       }
 
       /**
@@ -1657,9 +1664,9 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
         Logger.getLogger(getClass()).info(targetUri);
 
         response =
-            target.request(accept).header("Authorization", authHeader)
+            target.request(accept).header(AUTHORIZATION, authHeader)
                 .header(ACCEPT_LANGUAGE, getAcceptLanguage(terminology, version))
-                .header("Cookie",
+                .header(COOKIE,
                     getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
                 .header(USER_AGENT, USER_AGENT_VALUE)
                 .get();
@@ -1671,13 +1678,13 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
         // In
         // this case, clear out the generic use cookie so the next call can
         // re-login
-        else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
+        else if (response.getStatusInfo().getReasonPhrase().equals(FORBIDDEN)) {
           genericUserCookie = null;
           throw new LocalException(
-              "Connection with the terminology server has expired. Please reload the page to reconnect.");
+              CONNECTION_EXPIRED_MESSAGE);
         } else {
           throw new LocalException(
-              "Unexpected terminology server failure. Message = " + resultString);
+              UNEXPECTED_TERMINOLOGY_SERVER_FAILURE_MESSAGE + resultString);
         }
 
         mapper = new ObjectMapper();
@@ -1907,9 +1914,9 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
           WebTarget target = client.target(targetUri);
           Logger.getLogger(getClass()).info(targetUri);
 
-          Response response = target.request(accept).header("Authorization", authHeader)
+          Response response = target.request(accept).header(AUTHORIZATION, authHeader)
               .header(ACCEPT_LANGUAGE, getAcceptLanguage(terminology, version))
-              .header("Cookie",
+              .header(COOKIE,
                   getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
               .header(USER_AGENT, USER_AGENT_VALUE)
               .get();
@@ -1922,10 +1929,10 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
           // error. In
           // this case, clear out the generic use cookie so the next call can
           // re-login
-          else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
+          else if (response.getStatusInfo().getReasonPhrase().equals(FORBIDDEN)) {
             genericUserCookie = null;
             throw new LocalException(
-                "Connection with the terminology server has expired. Please reload the page to reconnect.");
+                CONNECTION_EXPIRED_MESSAGE);
           } else {
 
             // Here's the messy part about trying to parse the return error
@@ -1935,7 +1942,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
             }
 
             throw new LocalException(
-                "Unexpected terminology server failure. Message = " + resultString);
+                UNEXPECTED_TERMINOLOGY_SERVER_FAILURE_MESSAGE + resultString);
           }
 
           /**
@@ -2114,8 +2121,8 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
 
     final WebTarget target = client.target(targetUri);
 
-    final Response response = target.request(accept).header("Authorization", authHeader)
-        .header(ACCEPT_LANGUAGE, DEFAULT_ACCEPT_LANGUAGE).header("Cookie",
+    final Response response = target.request(accept).header(AUTHORIZATION, authHeader)
+        .header(ACCEPT_LANGUAGE, DEFAULT_ACCEPT_LANGUAGE).header(COOKIE,
             getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
         .header(USER_AGENT, USER_AGENT_VALUE)
         .get();
@@ -2126,12 +2133,12 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     }
     // If the generic user is logged out, it returns a 403 Forbidden error. In
     // this case, clear out the generic use cookie so the next call can re-login
-    else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
+    else if (response.getStatusInfo().getReasonPhrase().equals(FORBIDDEN)) {
       genericUserCookie = null;
       throw new LocalException(
-          "Connection with the terminology server has expired. Please reload the page to reconnect.");
+          CONNECTION_EXPIRED_MESSAGE);
     } else {
-      throw new LocalException("Unexpected terminology server failure. Message = " + resultString);
+      throw new LocalException(UNEXPECTED_TERMINOLOGY_SERVER_FAILURE_MESSAGE + resultString);
     }
 
     // Support grouping by concept
@@ -2341,8 +2348,8 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     final Client client = ClientBuilder.newClient();
     final WebTarget target =
         client.target(url + "/browser/" + version + "/concepts/" + terminologyId + "/parents");
-    final Response response = target.request(accept).header("Authorization", authHeader)
-        .header(ACCEPT_LANGUAGE, getAcceptLanguage(terminology, version)).header("Cookie",
+    final Response response = target.request(accept).header(AUTHORIZATION, authHeader)
+        .header(ACCEPT_LANGUAGE, getAcceptLanguage(terminology, version)).header(COOKIE,
             getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
         .header(USER_AGENT, USER_AGENT_VALUE)
         .get();
@@ -2352,14 +2359,14 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     }
     // If the generic user is logged out, it returns a 403 Forbidden error. In
     // this case, clear out the generic use cookie so the next call can re-login
-    else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
+    else if (response.getStatusInfo().getReasonPhrase().equals(FORBIDDEN)) {
       genericUserCookie = null;
       throw new LocalException(
-          "Connection with the terminology server has expired. Please reload the page to reconnect.");
+          CONNECTION_EXPIRED_MESSAGE);
     } else if (response.getStatusInfo() == Status.BAD_REQUEST) {
       throw new LocalException(getErrorMessage(resultString));
     } else {
-      throw new LocalException("Unexpected terminology server failure. Message = " + resultString);
+      throw new LocalException(UNEXPECTED_TERMINOLOGY_SERVER_FAILURE_MESSAGE + resultString);
     }
 
     /**
@@ -2423,8 +2430,8 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     final Client client = ClientBuilder.newClient();
     final WebTarget target = client.target(
         url + "/browser/" + version + "/concepts/" + terminologyId + "/children?form=inferred");
-    final Response response = target.request(accept).header("Authorization", authHeader)
-        .header(ACCEPT_LANGUAGE, getAcceptLanguage(terminology, version)).header("Cookie",
+    final Response response = target.request(accept).header(AUTHORIZATION, authHeader)
+        .header(ACCEPT_LANGUAGE, getAcceptLanguage(terminology, version)).header(COOKIE,
             getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
         .header(USER_AGENT, USER_AGENT_VALUE)
         .get();
@@ -2434,14 +2441,14 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     }
     // If the generic user is logged out, it returns a 403 Forbidden error. In
     // this case, clear out the generic use cookie so the next call can re-login
-    else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
+    else if (response.getStatusInfo().getReasonPhrase().equals(FORBIDDEN)) {
       genericUserCookie = null;
       throw new LocalException(
-          "Connection with the terminology server has expired. Please reload the page to reconnect.");
+          CONNECTION_EXPIRED_MESSAGE);
     } else if (response.getStatusInfo() == Status.BAD_REQUEST) {
       throw new LocalException(getErrorMessage(resultString));
     } else {
-      throw new LocalException("Unexpected terminology server failure. Message = " + resultString);
+      throw new LocalException(UNEXPECTED_TERMINOLOGY_SERVER_FAILURE_MESSAGE + resultString);
     }
 
     /**
@@ -2538,7 +2545,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
   public String getCookieHeader() {
     final String referer = headers.get("Referer");
     if (referer.contains(domain)) {
-      return headers.get("Cookie");
+      return headers.get(COOKIE);
     } else {
       Logger.getLogger(getClass()).warn("UNEXPECTED referer not matching url domain = " + referer);
     }
@@ -2573,8 +2580,8 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
             + URLEncoder.encode("<900000000000506000", "UTF-8").replaceAll(" ", "%20") + "&limit="
             + localPfs.getMaxResults() + "&offset=0");
 
-    Response response = target.request(accept).header("Authorization", authHeader)
-        .header(ACCEPT_LANGUAGE, DEFAULT_ACCEPT_LANGUAGE).header("Cookie",
+    Response response = target.request(accept).header(AUTHORIZATION, authHeader)
+        .header(ACCEPT_LANGUAGE, DEFAULT_ACCEPT_LANGUAGE).header(COOKIE,
             getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
         .header(USER_AGENT, USER_AGENT_VALUE)
         .get();
@@ -2584,14 +2591,14 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     }
     // If the generic user is logged out, it returns a 403 Forbidden error. In
     // this case, clear out the generic use cookie so the next call can re-login
-    else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
+    else if (response.getStatusInfo().getReasonPhrase().equals(FORBIDDEN)) {
       genericUserCookie = null;
       throw new LocalException(
-          "Connection with the terminology server has expired. Please reload the page to reconnect.");
+          CONNECTION_EXPIRED_MESSAGE);
     } else if (response.getStatusInfo() == Status.BAD_REQUEST) {
       throw new LocalException(getErrorMessage(resultString));
     } else {
-      throw new LocalException("Unexpected terminology server failure. Message = " + resultString);
+      throw new LocalException(UNEXPECTED_TERMINOLOGY_SERVER_FAILURE_MESSAGE + resultString);
     }
 
     ObjectMapper mapper = new ObjectMapper();
@@ -2637,8 +2644,8 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
 
     WebTarget target = client.target(url + "/branches?" + "limit=" + localPfs.getMaxResults());
 
-    Response response = target.request(accept).header("Authorization", authHeader)
-        .header(ACCEPT_LANGUAGE, DEFAULT_ACCEPT_LANGUAGE).header("Cookie",
+    Response response = target.request(accept).header(AUTHORIZATION, authHeader)
+        .header(ACCEPT_LANGUAGE, DEFAULT_ACCEPT_LANGUAGE).header(COOKIE,
             getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
         .header(USER_AGENT, USER_AGENT_VALUE)
         .get();
@@ -2648,13 +2655,13 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     }
     // If the generic user is logged out, it returns a 403 Forbidden error. In
     // this case, clear out the generic use cookie so the next call can re-login
-    else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
+    else if (response.getStatusInfo().getReasonPhrase().equals(FORBIDDEN)) {
       genericUserCookie = null;
       throw new LocalException(
-          "Connection with the terminology server has expired. Please reload the page to reconnect.");
+          CONNECTION_EXPIRED_MESSAGE);
     } else {
 
-      throw new LocalException("Unexpected terminology server failure. Message = " + resultString);
+      throw new LocalException(UNEXPECTED_TERMINOLOGY_SERVER_FAILURE_MESSAGE + resultString);
     }
 
     ObjectMapper mapper = new ObjectMapper();
@@ -2701,14 +2708,14 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     final WebTarget target =
         client.target(url + "/codesystems?" + "limit=" + localPfs.getMaxResults());
 
-    final Response response = target.request(accept).header("Authorization", authHeader)
-        .header(ACCEPT_LANGUAGE, DEFAULT_ACCEPT_LANGUAGE).header("Cookie",
+    final Response response = target.request(accept).header(AUTHORIZATION, authHeader)
+        .header(ACCEPT_LANGUAGE, DEFAULT_ACCEPT_LANGUAGE).header(COOKIE,
             getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
         .header(USER_AGENT, USER_AGENT_VALUE)
         .get();
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() != Family.SUCCESSFUL) {
-      throw new LocalException("Unexpected terminology server failure. Message = " + resultString);
+      throw new LocalException(UNEXPECTED_TERMINOLOGY_SERVER_FAILURE_MESSAGE + resultString);
     }
 
     final ObjectMapper mapper = new ObjectMapper();
@@ -2779,8 +2786,8 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
 
     final Client client = ClientBuilder.newClient();
     final WebTarget target = client.target(url + "/codesystems/" + terminology);
-    final Response response = target.request(accept).header("Authorization", authHeader)
-        .header(ACCEPT_LANGUAGE, DEFAULT_ACCEPT_LANGUAGE).header("Cookie",
+    final Response response = target.request(accept).header(AUTHORIZATION, authHeader)
+        .header(ACCEPT_LANGUAGE, DEFAULT_ACCEPT_LANGUAGE).header(COOKIE,
             getGenericUserCookie() != null ? getGenericUserCookie() : getCookieHeader())
         .header(USER_AGENT, USER_AGENT_VALUE)
         .get();
@@ -2790,12 +2797,12 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     }
     // If the generic user is logged out, it returns a 403 Forbidden error. In
     // this case, clear out the generic use cookie so the next call can re-login
-    else if (response.getStatusInfo().getReasonPhrase().equals("Forbidden")) {
+    else if (response.getStatusInfo().getReasonPhrase().equals(FORBIDDEN)) {
       genericUserCookie = null;
       throw new LocalException(
-          "Connection with the terminology server has expired. Please reload the page to reconnect.");
+          CONNECTION_EXPIRED_MESSAGE);
     } else {
-      throw new LocalException("Unexpected terminology server failure. Message = " + resultString);
+      throw new LocalException(UNEXPECTED_TERMINOLOGY_SERVER_FAILURE_MESSAGE + resultString);
     }
 
     KeyValuePairList requiredLanguageRefsetIdMap = new KeyValuePairList();
@@ -2816,13 +2823,13 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     }
 
     KeyValuePair pair = new KeyValuePair();
-    pair.setKey("900000000000509007");
+    pair.setKey(ID900000000000509007);
     pair.setValue("United States of America English");
     requiredLanguageRefsetIdMap.addKeyValuePair(pair);
 
     // add each of the non US-PT languageRefsetIds to the return list
     for (String refsetId : refsetIds) {
-      if (refsetId.contentEquals("900000000000509007")) {
+      if (refsetId.contentEquals(ID900000000000509007)) {
         continue;
       }
       pair = new KeyValuePair();
