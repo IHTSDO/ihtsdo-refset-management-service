@@ -4,8 +4,6 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <!-- Module Metadata TEST FOR PUSHING PURPOSES -->
-
   <groupId>org.ihtsdo.otf.refset</groupId>
   <artifactId>refset-parent</artifactId>
   <version>1.4.32-SNAPSHOT</version>
@@ -563,6 +561,7 @@
                 <configuration>
                     <suppressionFiles>
                     <suppressionFile>owasp-suppressions.xml</suppressionFile>
+            		<suppressionFile>${maven.multiModuleProjectDirectory}/suppressed.xml</suppressionFile>
                 </suppressionFiles>
                 <failBuildOnCVSS>7</failBuildOnCVSS>
                 <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
