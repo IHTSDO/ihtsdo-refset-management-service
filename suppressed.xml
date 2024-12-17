@@ -49,8 +49,8 @@
 
   <!-- Google Related Vulnerabilities -->
   <suppress>
-    <notes><![CDATA[file name: protobuf-java-4.26.1.jar]]></notes>
-    <packageUrl regex="true">^pkg:maven/com.google.protobuf/protobuf-java@4.26.1</packageUrl>
+    <notes><![CDATA[file name: protobuf-java-3.25.1.jar]]></notes>
+    <packageUrl regex="true">^pkg:maven/com.google.protobuf/protobuf-java@3.25.1</packageUrl>
     <cve>CVE-2024-7254</cve>
   </suppress>
 
