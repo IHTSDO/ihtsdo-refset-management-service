@@ -92,11 +92,13 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
   
   /** Strings to avoid duplications */
   private static final String ID900000000000509007 = "900000000000509007";
-  private final String AUTHORIZATION = "Authorization";
-  private final String COOKIE = "Cookie";
-  private final String FORBIDDEN = "Forbidden";
-  private final String CONNECTION_EXPIRED_MESSAGE = "Connection with the terminology server has expired. Please reload the page to reconnect.";
-  private final String UNEXPECTED_TERMINOLOGY_SERVER_FAILURE_MESSAGE = "Unexpected terminology server failure. Message = ";
+  private static final String AUTHORIZATION = "Authorization";
+  private static final String COOKIE = "Cookie";
+  private static final String FORBIDDEN = "Forbidden";
+  private static final String UTF8 = "UTF-8";
+  private static final String LIMIT_EQUALS_MESSAGE = "&limit=";
+  private static final String CONNECTION_EXPIRED_MESSAGE = "Connection with the terminology server has expired. Please reload the page to reconnect.";
+  private static final String UNEXPECTED_TERMINOLOGY_SERVER_FAILURE_MESSAGE = "Unexpected terminology server failure. Message = ";
   
 
   static {
@@ -558,7 +560,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     final int initialMaxLimit = 200;
 
     String targetUri = url + "/" + version + "/concepts?ecl="
-        + URLEncoder.encode(expr, "UTF-8").replaceAll(" ", "%20") + "&limit="
+        + URLEncoder.encode(expr, UTF8).replaceAll(" ", "%20") + LIMIT_EQUALS_MESSAGE
         + Math.min(initialMaxLimit, localPfs.getMaxResults()) + "&expand=pt()";
 
     WebTarget target = client.target(targetUri);
@@ -684,7 +686,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
         && conceptList.getCount() < total) {
 
       targetUri =
-          url + "/" + version + "/concepts?ecl=" + URLEncoder.encode(expr, "UTF-8") + "&limit=200"
+          url + "/" + version + "/concepts?ecl=" + URLEncoder.encode(expr, UTF8) + "&limit=200"
           /* + (total - initialMaxLimit) */ + "&searchAfter=" + searchAfter + "&expand=pt()";
 
       target = client.target(targetUri);
@@ -789,7 +791,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     final Client client = ClientBuilder.newClient();
 
     WebTarget target = client.target(url + "/" + version + "/concepts?ecl="
-        + URLEncoder.encode(expr, "UTF-8").replaceAll(" ", "%20") + "&limit=1");
+        + URLEncoder.encode(expr, UTF8).replaceAll(" ", "%20") + "&limit=1");
 
     Response response = target.request(accept).header(AUTHORIZATION, authHeader)
         .header(ACCEPT_LANGUAGE, getAcceptLanguage(terminology, version)).header(COOKIE,
@@ -1173,7 +1175,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     String expr = query.toString();
 
     String targetUri = url + "/" + version + "/concepts?conceptIds="
-        + URLEncoder.encode(expr, "UTF-8").replaceAll(" ", "%20") + "&activeFilter=false&limit="
+        + URLEncoder.encode(expr, UTF8).replaceAll(" ", "%20") + "&activeFilter=false&limit="
         + Math.min(initialMaxLimit, localPfs.getMaxResults());
 
     WebTarget target = client.target(targetUri);
@@ -1314,7 +1316,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
       String expr = query.toString();
 
       String targetUri = url + "/browser/" + version + "/concepts?conceptIds="
-          + URLEncoder.encode(expr, "UTF-8").replaceAll(" ", "%20") + "&limit="
+          + URLEncoder.encode(expr, UTF8).replaceAll(" ", "%20") + LIMIT_EQUALS_MESSAGE
           + Math.min(initialMaxLimit, localPfs.getMaxResults());
 
       WebTarget target = client.target(targetUri);
@@ -1658,7 +1660,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
       if (total > initialMaxLimit && localPfs.getMaxResults() > initialMaxLimit) {
 
         targetUri = url + "/browser/" + version + "/concepts?conceptIds="
-            + URLEncoder.encode(expr, "UTF-8").replaceAll(" ", "%20") + "&limit="
+            + URLEncoder.encode(expr, UTF8).replaceAll(" ", "%20") + LIMIT_EQUALS_MESSAGE
             + (total - initialMaxLimit) + "&searchAfter=" + searchAfter;
         target = client.target(targetUri);
         Logger.getLogger(getClass()).info(targetUri);
@@ -1909,7 +1911,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
           final Client client = ClientBuilder.newClient();
 
           String targetUri =
-              url + "/" + version + "/concepts?" + query + "&limit=" + maxBatchLookupSize;
+              url + "/" + version + "/concepts?" + query + LIMIT_EQUALS_MESSAGE + maxBatchLookupSize;
 
           WebTarget target = client.target(targetUri);
           Logger.getLogger(getClass()).info(targetUri);
@@ -2114,10 +2116,10 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
 
     String targetUri = useTerm
         ? url + "/" + version + "/concepts?term="
-            + URLEncoder.encode(localQuery, "UTF-8").replaceAll(" ", "%20") + "&limit=100"
+            + URLEncoder.encode(localQuery, UTF8).replaceAll(" ", "%20") + "&limit=100"
             + "&expand=pt(),fsn()"
         : url + "/" + version + "/concepts/"
-            + URLEncoder.encode(localQuery, "UTF-8").replaceAll(" ", "%20") + "?expand=pt()";
+            + URLEncoder.encode(localQuery, UTF8).replaceAll(" ", "%20") + "?expand=pt()";
 
     final WebTarget target = client.target(targetUri);
 
@@ -2573,11 +2575,11 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
     localPfs.setMaxResults(200);
 
     WebTarget target = client.target(url + "/" + version + "/concepts?ecl="
-        + URLEncoder.encode("<900000000000506000", "UTF-8").replaceAll(" ", "%20") + "&limit="
+        + URLEncoder.encode("<900000000000506000", UTF8).replaceAll(" ", "%20") + LIMIT_EQUALS_MESSAGE
         + localPfs.getMaxResults() + "&offset=0");
     Logger.getLogger(getClass())
         .info(url + "/" + version + "/concepts?ecl="
-            + URLEncoder.encode("<900000000000506000", "UTF-8").replaceAll(" ", "%20") + "&limit="
+            + URLEncoder.encode("<900000000000506000", UTF8).replaceAll(" ", "%20") + LIMIT_EQUALS_MESSAGE
             + localPfs.getMaxResults() + "&offset=0");
 
     Response response = target.request(accept).header(AUTHORIZATION, authHeader)
