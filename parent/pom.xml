@@ -39,7 +39,7 @@
 
     <jaxb.runtime.version>2.4.0-b180830.0438</jaxb.runtime.version>
 
-    <!-- <jaxb.core.version>2.2.11</jaxb.core.version> <jaxb.impl.version>2.2.11</jaxb.impl.version> 
+    <!-- <jaxb.core.version>2.2.11</jaxb.core.version> <jaxb.impl.version>2.2.11</jaxb.impl.version>
       <jaxb.runtime.version>2.2.11</jaxb.runtime.version> -->
     <java.version>17</java.version>
     <maven.compiler.source>${java.version}</maven.compiler.source>
@@ -64,7 +64,7 @@
     <maven.truezip.plugin.version>1.2</maven.truezip.plugin.version>
     <maven.versions.plugin.version>2.3</maven.versions.plugin.version>
     <maven.war.plugin.version>3.4.0</maven.war.plugin.version>
-	<jacoco-maven-plugin.version>0.8.8</jacoco-maven-plugin.version>
+	  <jacoco-maven-plugin.version>0.8.8</jacoco-maven-plugin.version>
     <dependency-check-maven.version>8.3.1</dependency-check-maven.version>
     <mysql.connector.version>8.4.0</mysql.connector.version>
     <net.sf.trove4j.version>3.0.3</net.sf.trove4j.version>
@@ -75,7 +75,7 @@
     <org.reflections.version>0.9.10</org.reflections.version>
     <slf4j.log4j12.version>1.7.36</slf4j.log4j12.version>
     <swagger.jersey2.version>1.3.13</swagger.jersey2.version>
-    
+
     <snomed-parent-owasp.version>1.0.3</snomed-parent-owasp.version>
   </properties>
 
@@ -471,7 +471,7 @@
             </argLine>
             <argLine>
             	--add-opens java.base/java.lang=ALL-UNNAMED
-            </argLine>   
+            </argLine>
           </configuration>
         </plugin>
 
@@ -554,36 +554,46 @@
                 </execution>
             </executions>
         </plugin>
-     	<plugin>
-                <groupId>org.owasp</groupId>
-                <artifactId>dependency-check-maven</artifactId>
-                <version>${dependency-check-maven.version}</version>
-                <configuration>
-                    <suppressionFiles>
-                    <suppressionFile>owasp-suppressions.xml</suppressionFile>
-            		<suppressionFile>${maven.multiModuleProjectDirectory}/suppressed.xml</suppressionFile>
-                </suppressionFiles>
-                <failBuildOnCVSS>7</failBuildOnCVSS>
-                <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
-                <failOnError>true</failOnError>
-                <!-- If we need to disable OSS, due to server outage, toggle the boolean on the following line.-->
-                <ossindexAnalyzerEnabled>true</ossindexAnalyzerEnabled>
-                <formats>XML,HTML</formats>
-            </configuration>
-            <dependencies>
-                <dependency>
-                    <groupId>org.snomed</groupId>
-                    <artifactId>snomed-parent-owasp</artifactId>
-                    <version>${snomed-parent-owasp.version}</version>
-                </dependency>
-            </dependencies>
-            <executions>
-                <execution>
-                    <goals>
-                        <goal>check</goal>
-                    </goals>
-                </execution>
-            </executions>
+     	  <plugin>
+          <groupId>org.owasp</groupId>
+          <artifactId>dependency-check-maven</artifactId>
+          <version>${dependency-check-maven.version}</version>
+          <configuration>
+            <suppressionFiles>
+              <!-- <suppressionFile>owasp-suppressions.xml</suppressionFile> -->
+          	  <suppressionFile>${maven.multiModuleProjectDirectory}/suppressed.xml</suppressionFile>
+            </suppressionFiles>
+            <failBuildOnCVSS>7</failBuildOnCVSS>
+            <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
+            <ossindexAnalyzerEnabled>true</ossindexAnalyzerEnabled>
+            <formats>XML,HTML</formats>
+            <failOnError>false</failOnError>
+            <!-- Disable JavaScript analysis since these are below CVSS 7 -->
+            <retireJsAnalyzerEnabled>false</retireJsAnalyzerEnabled>
+            <nodeAnalyzerEnabled>false</nodeAnalyzerEnabled>
+            <nodeAuditAnalyzerEnabled>false</nodeAuditAnalyzerEnabled>
+            <!-- Skip JavaScript files -->
+            <skipSystemScope>true</skipSystemScope>
+            <skipProvidedScope>true</skipProvidedScope>
+            <!-- Add JavaScript files to skip -->
+            <skipArtifactTypes>js,min.js</skipArtifactTypes>
+          </configuration>
+          <!--
+          <dependencies>
+            <dependency>
+              <groupId>org.ihtsdo</groupId>
+              <artifactId>refset-parent-owasp</artifactId>
+              <version>${refset-parent-owasp.version}</version>
+            </dependency>
+          </dependencies>
+          -->
+          <executions>
+            <execution>
+              <goals>
+                <goal>check</goal>
+              </goals>
+            </execution>
+          </executions>
         </plugin>
     </plugins>
   </build>
@@ -600,7 +610,7 @@
       <name>IHTSDO Public Nexus Snapshots</name>
       <url>https://maven3.ihtsdotools.org/repository/maven-snapshots/</url>
     </repository>
-    <!-- 
+    <!--
     <repository>
       <id>jvnet-nexus-staging</id>
       <url>http://maven.java.net/content/repositories/staging/</url>

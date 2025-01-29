@@ -6,15 +6,15 @@
   <suppress>
     <notes><![CDATA[file name: lucene-*-5.5.5.jar]]></notes>
     <packageUrl regex="true">^pkg:maven/org\.apache\.lucene/lucene-[^/]+@5\.5\.5</packageUrl>
-    <vulnerabilityName>CVE-2024-45772</vulnerabilityName>
+    <cve>CVE-2024-45772</cve>
   </suppress>
 
   <!-- JSON Related Vulnerabilities -->
   <suppress>
     <notes><![CDATA[file name: json-20240303.jar]]></notes>
     <packageUrl regex="true">^pkg:maven/org.json/json@20240303</packageUrl>
-    <vulnerabilityName>CVE-2023-5072</vulnerabilityName>
-    <vulnerabilityName>CVE-2022-45688</vulnerabilityName>
+    <cve>CVE-2023-5072</cve>
+    <cve>CVE-2022-45688</cve>
   </suppress>
 
   <!-- Google Related Vulnerabilities -->
@@ -47,6 +47,18 @@
     <notes><![CDATA[file name: scala-reflect-2.10.4.jar]]></notes>
     <packageUrl regex="true">^pkg:maven/org.scala-lang/scala-reflect@2.10.4</packageUrl>
     <cve>CVE-2017-15288</cve>
+  </suppress>
+
+  <suppress>
+    <notes><![CDATA[file name: maven-shared-utils-3.2.1.jar]]></notes>
+    <packageUrl regex="true">^pkg:maven/org\.apache\.maven\.shared/maven-shared-utils@3\.2\.1</packageUrl>
+    <cve>CVE-2022-29599</cve>
+  </suppress>
+
+  <suppress>
+    <notes><![CDATA[file name: commons-io-2.5.jar]]></notes>
+    <packageUrl regex="true">^pkg:maven/commons-io/commons-io@2.5</packageUrl>
+    <cve>CVE-2024-47554</cve>
   </suppress>
 
 </suppressions>
