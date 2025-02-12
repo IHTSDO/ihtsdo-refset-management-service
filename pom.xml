@@ -89,12 +89,8 @@
                     </suppressionFiles>
                     <failBuildOnCVSS>7</failBuildOnCVSS>
                     <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
-                    <retireJsAnalyzerEnabled>false</retireJsAnalyzerEnabled>
                     <failOnError>false</failOnError>
-                    <!-- If we need to disable OSS, due to server outage, toggle the boolean on the following line.-->
-                    <ossindexAnalyzerEnabled>true</ossindexAnalyzerEnabled>
-                    <nodeAnalyzerEnabled>false</nodeAnalyzerEnabled>
-                    <nodeAuditAnalyzerEnabled>false</nodeAuditAnalyzerEnabled>
+
                     <formats>XML,HTML</formats>
                 </configuration>
                 <executions>

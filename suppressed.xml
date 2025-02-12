@@ -31,9 +31,10 @@
     <cve>CVE-2023-45960</cve>
   </suppress>
 
+  <!-- Scala Related Vulnerabilities -->
   <suppress>
     <notes><![CDATA[file name: scala-compiler-2.10.0.jar]]></notes>
-    <packageUrl regex="true">^pkg:maven/org.scala-lang/scala-compiler@2.10.0</packageUrl>
+    <packageUrl regex="true">^pkg:maven/org\.scala-lang/scala-compiler@2\.10\.0</packageUrl>
     <cve>CVE-2017-15288</cve>
   </suppress>
 
@@ -60,5 +61,30 @@
     <packageUrl regex="true">^pkg:maven/commons-io/commons-io@2.5</packageUrl>
     <cve>CVE-2024-47554</cve>
   </suppress>
+
+  <suppress>
+   <notes><![CDATA[file name: underscore-min.js]]></notes>
+   <packageUrl regex="true">^pkg:javascript/underscore\.js@.*$</packageUrl>
+   <cve>CVE-2021-23358</cve>
+  </suppress>
+
+ <suppress>
+   <notes><![CDATA[file name: angular.js]]></notes>
+   <packageUrl regex="true">^pkg:javascript/angularjs@.*$</packageUrl>
+   <cve>CVE-2019-10768</cve>
+</suppress>
+
+<!-- Handlebars Vulnerabilities -->
+<suppress>
+  <notes><![CDATA[file name: handlebars-1.0.0.js]]></notes>
+  <packageUrl regex="true">^pkg:javascript/handlebars@1\.0\.0$</packageUrl>
+  <vulnerabilityName regex="true">.*$</vulnerabilityName>
+</suppress>
+
+<suppress>
+  <notes><![CDATA[file name: handlebars-2.0.0.js]]></notes>
+  <packageUrl regex="true">^pkg:javascript/handlebars@2\.0\.0$</packageUrl>
+  <vulnerabilityName regex="true">.*$</vulnerabilityName>
+</suppress>
 
 </suppressions>

@@ -560,7 +560,6 @@
           <version>${dependency-check-maven.version}</version>
           <configuration>
             <suppressionFiles>
-              <!-- <suppressionFile>owasp-suppressions.xml</suppressionFile> -->
           	  <suppressionFile>${maven.multiModuleProjectDirectory}/suppressed.xml</suppressionFile>
             </suppressionFiles>
             <failBuildOnCVSS>7</failBuildOnCVSS>
@@ -568,25 +567,10 @@
             <ossindexAnalyzerEnabled>true</ossindexAnalyzerEnabled>
             <formats>XML,HTML</formats>
             <failOnError>false</failOnError>
-            <!-- Disable JavaScript analysis since these are below CVSS 7 -->
-            <retireJsAnalyzerEnabled>false</retireJsAnalyzerEnabled>
+            <retireJsAnalyzerEnabled>true</retireJsAnalyzerEnabled>
             <nodeAnalyzerEnabled>false</nodeAnalyzerEnabled>
             <nodeAuditAnalyzerEnabled>false</nodeAuditAnalyzerEnabled>
-            <!-- Skip JavaScript files -->
-            <skipSystemScope>true</skipSystemScope>
-            <skipProvidedScope>true</skipProvidedScope>
-            <!-- Add JavaScript files to skip -->
-            <skipArtifactTypes>js,min.js</skipArtifactTypes>
           </configuration>
-          <!--
-          <dependencies>
-            <dependency>
-              <groupId>org.ihtsdo</groupId>
-              <artifactId>refset-parent-owasp</artifactId>
-              <version>${refset-parent-owasp.version}</version>
-            </dependency>
-          </dependencies>
-          -->
           <executions>
             <execution>
               <goals>
