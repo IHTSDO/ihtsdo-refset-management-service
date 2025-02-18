@@ -178,7 +178,7 @@ public class ProjectServiceJpa extends RootServiceJpa
    * @param headers the headers
    * @throws Exception the exception
    */
-  public ProjectServiceJpa(Map<String, String> headers) throws Exception {
+  public ProjectServiceJpa(Map<String, String> headers) {
     this();
     this.headers = headers;
   }

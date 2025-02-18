@@ -66,7 +66,7 @@ public class LuceneReindexAlgorithm extends RootServiceJpa
    * Instantiates an empty {@link LuceneReindexAlgorithm}.
    * @throws Exception if anything goes wrong
    */
-  public LuceneReindexAlgorithm() throws Exception {
+  public LuceneReindexAlgorithm() {
     super();
   }
 

@@ -125,7 +125,7 @@ public class ConfigUtility {
    * @return <code>true</code> if so, <code>false</code> otherwise
    * @throws Exception the exception
    */
-  public static boolean isServerActive() throws Exception {
+  public static boolean isServerActive() {
     if (config == null)
       config = ConfigUtility.getConfigProperties();
 
@@ -209,7 +209,7 @@ public class ConfigUtility {
    * @return the ui config properties
    * @throws Exception the exception
    */
-  public static Properties getUiConfigProperties() throws Exception {
+  public static Properties getUiConfigProperties() {
     final Properties config = getConfigProperties();
     // use "deploy.*" and "site.*" and "base.url" properties
     final Properties p = new Properties();
@@ -832,7 +832,7 @@ public class ConfigUtility {
    * @return <code>true</code> if so, <code>false</code> otherwise
    * @throws Exception the exception
    */
-  public static boolean isBackgroundLookup() throws Exception {
+  public static boolean isBackgroundLookup() {
     String property = getConfigProperties().getProperty("lookup.background");
     boolean background = true;
     if (property != null && property.equals("false")) {
@@ -847,7 +847,7 @@ public class ConfigUtility {
    * @return <code>true</code> if so, <code>false</code> otherwise
    * @throws Exception the exception
    */
-  public static boolean isAssignNames() throws Exception {
+  public static boolean isAssignNames() {
     String property = getConfigProperties()
         .getProperty("terminology.handler.DEFAULT.assignNames");
     boolean background = true;

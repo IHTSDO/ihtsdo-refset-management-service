@@ -133,7 +133,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements Translati
    * @param headers the headers
    * @throws Exception
    */
-  public TranslationServiceJpa(Map<String, String> headers) throws Exception {
+  public TranslationServiceJpa(Map<String, String> headers) {
     this();
     this.headers = headers;
   }

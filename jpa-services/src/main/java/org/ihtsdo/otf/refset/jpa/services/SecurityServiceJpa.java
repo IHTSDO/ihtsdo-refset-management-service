@@ -66,7 +66,7 @@ public class SecurityServiceJpa extends RootServiceJpa
    *
    * @throws Exception the exception
    */
-  public SecurityServiceJpa() throws Exception {
+  public SecurityServiceJpa() {
     super();
   }
 
