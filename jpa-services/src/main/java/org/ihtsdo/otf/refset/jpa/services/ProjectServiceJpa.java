@@ -152,21 +152,21 @@ public class ProjectServiceJpa extends RootServiceJpa
    *
    * @throws Exception the exception
    */
-  public ProjectServiceJpa() throws Exception {
+  public ProjectServiceJpa() {
     super();
 
     if (workflowListeners == null) {
-      throw new Exception(
+      throw new IllegalStateException(
           "Listeners did not properly initialize, serious error.");
     }
 
     if (idHandlerMap == null) {
-      throw new Exception(
+      throw new IllegalStateException(
           "Identifier assignment handler did not properly initialize, serious error.");
     }
 
     if (terminologyHandlers == null) {
-      throw new Exception(
+      throw new IllegalStateException(
           "Terminology handler did not properly initialize, serious error.");
     }
 

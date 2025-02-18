@@ -73,7 +73,7 @@ public class PerformTranslationBetaAlgorithm extends TranslationServiceJpa
    * Instantiates an empty {@link PerformTranslationBetaAlgorithm}.
    * @throws Exception if anything goes wrong
    */
-  public PerformTranslationBetaAlgorithm() throws Exception {
+  public PerformTranslationBetaAlgorithm() {
     super();
   }
 

@@ -44,7 +44,7 @@ public class CancelTranslationReleaseAlgorithm extends TranslationServiceJpa
    * Instantiates an empty {@link CancelTranslationReleaseAlgorithm}.
    * @throws Exception if anything goes wrong
    */
-  public CancelTranslationReleaseAlgorithm() throws Exception {
+  public CancelTranslationReleaseAlgorithm() {
     super();
   }
 

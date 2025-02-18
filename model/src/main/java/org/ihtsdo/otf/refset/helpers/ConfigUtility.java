@@ -152,8 +152,9 @@ public class ConfigUtility {
    *
    * @throws Exception the exception
    */
-  public static Properties getConfigProperties() throws Exception {
+  public static Properties getConfigProperties() {
     if (isNull(config)) {
+    	try {
       // Need to determine the label (default "")
       String label = "";
       Properties labelProp = new Properties();
@@ -194,6 +195,10 @@ public class ConfigUtility {
       config.load(in);
       in.close();
       Logger.getLogger(ConfigUtility.class).debug("  properties = " + config);
+    	} catch (IOException e) {
+            Logger.getLogger(ConfigUtility.class.getName()).error("Error loading configuration properties: " + e.getMessage());
+            config = new Properties();
+    	}
     }
     return config;
   }

@@ -67,7 +67,7 @@ public class ValidationServiceJpa extends RootServiceJpa implements
    *
    * @throws Exception the exception
    */
-  public ValidationServiceJpa() throws Exception {
+  public ValidationServiceJpa() {
     super();
 
     if (validationHandlersMap == null) {

@@ -60,7 +60,7 @@ public class BeginTranslationReleaseAlgorthm extends TranslationServiceJpa
    * Instantiates an empty {@link BeginTranslationReleaseAlgorthm}.
    * @throws Exception if anything goes wrong
    */
-  public BeginTranslationReleaseAlgorthm() throws Exception {
+  public BeginTranslationReleaseAlgorthm() {
     super();
   }
 

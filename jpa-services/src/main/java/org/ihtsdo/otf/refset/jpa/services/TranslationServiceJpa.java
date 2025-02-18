@@ -115,7 +115,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements Translati
    *
    * @throws Exception the exception
    */
-  public TranslationServiceJpa() throws Exception {
+  public TranslationServiceJpa() {
     super();
     if (importTranslationHandlers == null) {
       throw new IllegalStateException(

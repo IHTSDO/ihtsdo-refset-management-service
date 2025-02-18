@@ -36,7 +36,7 @@ public class ReleaseServiceJpa extends ProjectServiceJpa
    *
    * @throws Exception the exception
    */
-  public ReleaseServiceJpa() throws Exception {
+  public ReleaseServiceJpa() {
     super();
   }
 

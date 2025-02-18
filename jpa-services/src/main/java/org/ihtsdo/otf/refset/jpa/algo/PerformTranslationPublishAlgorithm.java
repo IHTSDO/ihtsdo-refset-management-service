@@ -59,7 +59,7 @@ public class PerformTranslationPublishAlgorithm extends TranslationServiceJpa
    * Instantiates an empty {@link PerformTranslationPublishAlgorithm}.
    * @throws Exception if anything goes wrong
    */
-  public PerformTranslationPublishAlgorithm() throws Exception {
+  public PerformTranslationPublishAlgorithm() {
     super();
   }
 

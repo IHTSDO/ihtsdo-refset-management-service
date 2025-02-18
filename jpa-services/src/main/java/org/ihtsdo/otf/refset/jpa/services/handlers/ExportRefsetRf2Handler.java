@@ -30,7 +30,7 @@ public class ExportRefsetRf2Handler implements ExportRefsetHandler {
    * Instantiates an empty {@link ExportRefsetRf2Handler}.
    * @throws Exception if anything goes wrong
    */
-  public ExportRefsetRf2Handler() throws Exception {
+  public ExportRefsetRf2Handler() {
     super();
   }
 

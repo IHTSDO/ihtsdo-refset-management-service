@@ -60,7 +60,7 @@ public class PerformRefsetPublishAlgorithm extends RefsetServiceJpa
    * Instantiates an empty {@link PerformRefsetPublishAlgorithm}.
    * @throws Exception if anything goes wrong
    */
-  public PerformRefsetPublishAlgorithm() throws Exception {
+  public PerformRefsetPublishAlgorithm() {
     super();
   }
 
@@ -70,7 +70,7 @@ public class PerformRefsetPublishAlgorithm extends RefsetServiceJpa
    * @param override the override
    * @throws Exception the exception
    */
-  public PerformRefsetPublishAlgorithm(boolean override) throws Exception {
+  public PerformRefsetPublishAlgorithm(boolean override) {
     super();
     this.override = override;
   }

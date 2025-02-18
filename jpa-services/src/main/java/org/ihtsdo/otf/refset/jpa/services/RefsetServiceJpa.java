@@ -164,7 +164,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
    *
    * @throws Exception the exception
    */
-  public RefsetServiceJpa() throws Exception {
+  public RefsetServiceJpa() {
     super();
     if (importRefsetHandlers == null) {
       throw new IllegalStateException(
@@ -182,7 +182,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
    * @param headers the headers
    * @throws Exception the exception
    */
-  public RefsetServiceJpa(Map<String, String> headers) throws Exception {
+  public RefsetServiceJpa(Map<String, String> headers) {
     this();
     this.headers = headers;
   }

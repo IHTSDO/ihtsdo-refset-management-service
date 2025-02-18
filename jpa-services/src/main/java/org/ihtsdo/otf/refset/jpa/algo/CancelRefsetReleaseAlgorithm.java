@@ -43,7 +43,7 @@ public class CancelRefsetReleaseAlgorithm extends RefsetServiceJpa implements
    * Instantiates an empty {@link CancelRefsetReleaseAlgorithm}.
    * @throws Exception if anything goes wrong
    */
-  public CancelRefsetReleaseAlgorithm() throws Exception {
+  public CancelRefsetReleaseAlgorithm() {
     super();
   }
 

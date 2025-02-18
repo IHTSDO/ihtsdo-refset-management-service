@@ -76,7 +76,7 @@ public class WorkflowServiceJpa extends TranslationServiceJpa
    *
    * @throws Exception the exception
    */
-  public WorkflowServiceJpa() throws Exception {
+  public WorkflowServiceJpa() {
     super();
 
     if (workflowHandlerMap == null) {

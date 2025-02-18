@@ -72,10 +72,10 @@ public abstract class RootServiceJpa implements RootService {
    *
    * @throws Exception the exception
    */
-  public RootServiceJpa() throws Exception {
+  public RootServiceJpa(){
     // created once or if the factory has closed
     if (factory == null) {
-      throw new Exception("Factory is null, serious problem.");
+      throw new IllegalStateException("Factory is null, serious problem.");
     }
     if (!factory.isOpen()) {
       Logger.getLogger(getClass())

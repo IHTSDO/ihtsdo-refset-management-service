@@ -25,7 +25,7 @@ public class ExportRefsetRf2WithNameHandler extends ExportRefsetRf2Handler {
    * Instantiates an empty {@link ExportRefsetRf2WithNameHandler}.
    * @throws Exception if anything goes wrong
    */
-  public ExportRefsetRf2WithNameHandler() throws Exception {
+  public ExportRefsetRf2WithNameHandler() {
     super();
   }
 

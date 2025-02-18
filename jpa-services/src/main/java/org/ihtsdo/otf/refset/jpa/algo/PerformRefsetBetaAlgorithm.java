@@ -69,7 +69,7 @@ public class PerformRefsetBetaAlgorithm extends RefsetServiceJpa implements
    * Instantiates an empty {@link PerformRefsetBetaAlgorithm}.
    * @throws Exception if anything goes wrong
    */
-  public PerformRefsetBetaAlgorithm() throws Exception {
+  public PerformRefsetBetaAlgorithm() {
     super();
   }
 

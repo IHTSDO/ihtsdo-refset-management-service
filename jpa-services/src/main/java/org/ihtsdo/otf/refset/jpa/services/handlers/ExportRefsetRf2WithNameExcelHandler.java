@@ -13,7 +13,7 @@ public class ExportRefsetRf2WithNameExcelHandler
    * Instantiates an empty {@link ExportRefsetRf2WithNameExcelHandler}.
    * @throws Exception if anything goes wrong
    */
-  public ExportRefsetRf2WithNameExcelHandler() throws Exception {
+  public ExportRefsetRf2WithNameExcelHandler() {
     super();
   }
 

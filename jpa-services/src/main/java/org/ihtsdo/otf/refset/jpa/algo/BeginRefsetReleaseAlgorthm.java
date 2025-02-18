@@ -66,7 +66,7 @@ public class BeginRefsetReleaseAlgorthm extends RefsetServiceJpa
    * Instantiates an empty {@link BeginRefsetReleaseAlgorthm}.
    * @throws Exception if anything goes wrong
    */
-  public BeginRefsetReleaseAlgorthm() throws Exception {
+  public BeginRefsetReleaseAlgorthm() {
     super();
   }
 
