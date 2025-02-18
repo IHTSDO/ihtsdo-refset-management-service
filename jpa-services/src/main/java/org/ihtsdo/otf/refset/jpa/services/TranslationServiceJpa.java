@@ -118,11 +118,11 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements Translati
   public TranslationServiceJpa() throws Exception {
     super();
     if (importTranslationHandlers == null) {
-      throw new Exception(
+      throw new IllegalStateException(
           "Import translation handlers did not properly initialize, serious error.");
     }
     if (exportTranslationHandlers == null) {
-      throw new Exception(
+      throw new IllegalStateException(
           "Export translation handlers did not properly initialize, serious error.");
     }
   }

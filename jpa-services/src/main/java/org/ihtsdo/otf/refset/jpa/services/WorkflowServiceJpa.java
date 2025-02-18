@@ -80,7 +80,7 @@ public class WorkflowServiceJpa extends TranslationServiceJpa
     super();
 
     if (workflowHandlerMap == null) {
-      throw new Exception(
+      throw new IllegalStateException(
           "Workflow action handlers did not properly initialize, serious error.");
     }
   }

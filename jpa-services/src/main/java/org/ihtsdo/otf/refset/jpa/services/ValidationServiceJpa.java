@@ -71,7 +71,7 @@ public class ValidationServiceJpa extends RootServiceJpa implements
     super();
 
     if (validationHandlersMap == null) {
-      throw new Exception(
+      throw new IllegalStateException(
           "Validation handlers did not properly initialize, serious error.");
     }
 

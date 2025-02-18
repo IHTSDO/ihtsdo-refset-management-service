@@ -167,11 +167,11 @@ public class RefsetServiceJpa extends ReleaseServiceJpa
   public RefsetServiceJpa() throws Exception {
     super();
     if (importRefsetHandlers == null) {
-      throw new Exception(
+      throw new IllegalStateException(
           "Import refset handlers did not properly initialize, serious error.");
     }
     if (exportRefsetHandlers == null) {
-      throw new Exception(
+      throw new IllegalStateException(
           "Export refset handlers did not properly initialize, serious error.");
     }
   }
