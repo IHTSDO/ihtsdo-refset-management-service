@@ -4,8 +4,8 @@
 
   <!-- Apache Lucene Vulnerabilities -->
   <suppress>
-    <notes><![CDATA[file name: lucene-*-5.5.5.jar]]></notes>
-    <packageUrl regex="true">^pkg:maven/org\.apache\.lucene/lucene-[^/]+@5\.5\.5</packageUrl>
+    <notes><![CDATA[file name: lucene-core-5.5.5.jar]]></notes>
+    <packageUrl regex="true">^pkg:maven/org\.apache\.lucene/lucene-core@5\.5\.5$</packageUrl>
     <cve>CVE-2024-45772</cve>
   </suppress>
 
@@ -27,7 +27,7 @@
   <!-- CVE-2023-45960 was marked as a false positive but is still scanned -->
   <suppress>
     <notes><![CDATA[file name: org.dom4j-2.1.4.jar]]></notes>
-    <packageUrl regex="true">^pkg:maven/org.dom4j/dom4j@2.1.4</packageUrl>
+    <packageUrl regex="true">^pkg:maven/org\.dom4j/dom4j@2\.1\.4$</packageUrl>
     <cve>CVE-2023-45960</cve>
   </suppress>
 
