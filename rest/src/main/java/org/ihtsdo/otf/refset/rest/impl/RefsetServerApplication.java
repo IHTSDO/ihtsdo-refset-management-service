@@ -36,7 +36,7 @@ public class RefsetServerApplication extends Application {
    *
    * @throws Exception the exception
    */
-  public RefsetServerApplication() throws Exception {
+  public RefsetServerApplication() {
     Logger.getLogger(getClass()).info(
         "IHTSDO refset management service APPLICATION START");
     BeanConfig beanConfig = new BeanConfig();

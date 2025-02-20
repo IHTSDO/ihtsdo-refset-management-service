@@ -52,7 +52,7 @@ public abstract class AbstractTerminologyHandler implements TerminologyHandler {
    *
    * @throws Exception the exception
    */
-  public AbstractTerminologyHandler() throws Exception {
+  public AbstractTerminologyHandler() {
     super();
   }
 

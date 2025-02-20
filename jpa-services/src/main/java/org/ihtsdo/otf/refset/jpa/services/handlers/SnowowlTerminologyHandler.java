@@ -105,7 +105,7 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
    *
    * @throws Exception the exception
    */
-  public SnowowlTerminologyHandler() throws Exception {
+  public SnowowlTerminologyHandler() {
     super();
   }
 

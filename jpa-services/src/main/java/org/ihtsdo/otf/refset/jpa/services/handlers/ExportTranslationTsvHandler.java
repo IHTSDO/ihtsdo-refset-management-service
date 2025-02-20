@@ -48,7 +48,7 @@ public class ExportTranslationTsvHandler implements ExportTranslationHandler {
    * Instantiates an empty {@link ExportTranslationTsvHandler}.
    * @throws Exception if anything goes wrong
    */
-  public ExportTranslationTsvHandler() throws Exception {
+  public ExportTranslationTsvHandler() {
     super();
     caseSignificanceMap.put("900000000000448009", "ci");
     caseSignificanceMap.put("900000000000017005", "CS");

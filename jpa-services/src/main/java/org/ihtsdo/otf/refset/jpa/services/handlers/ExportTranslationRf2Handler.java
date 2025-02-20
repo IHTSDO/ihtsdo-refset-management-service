@@ -45,7 +45,7 @@ public class ExportTranslationRf2Handler implements ExportTranslationHandler {
    * Instantiates an empty {@link ExportTranslationRf2Handler}.
    * @throws Exception if anything goes wrong
    */
-  public ExportTranslationRf2Handler() throws Exception {
+  public ExportTranslationRf2Handler() {
     super();
      
     currentDate = ConfigUtility.DATE_FORMAT.format(new Date());
