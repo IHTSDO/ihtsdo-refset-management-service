@@ -1795,7 +1795,7 @@ public class SnowowlTerminologyHandler extends AbstractTerminologyHandler {
    * @return the generic user cookie
    * @throws Exception the exception
    */
-  private String getGenericUserCookie() throws Exception {
+  private String getGenericUserCookie() throws LocalException {
 
     // Check if the generic user cookie is expired and needs to be cleared
     // and re-read

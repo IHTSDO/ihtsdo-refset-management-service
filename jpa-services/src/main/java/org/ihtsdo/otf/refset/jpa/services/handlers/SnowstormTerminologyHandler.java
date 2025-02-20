@@ -121,7 +121,7 @@ public class SnowstormTerminologyHandler extends AbstractTerminologyHandler {
    *
    * @throws Exception the exception
    */
-  public SnowstormTerminologyHandler() throws Exception {
+  public SnowstormTerminologyHandler() throws LocalException {
     super();
     getGenericUserCookie();
   }

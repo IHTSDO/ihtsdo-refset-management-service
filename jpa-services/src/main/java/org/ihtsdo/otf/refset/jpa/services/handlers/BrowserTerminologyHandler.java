@@ -85,7 +85,7 @@ public class BrowserTerminologyHandler extends AbstractTerminologyHandler {
    *
    * @throws Exception the exception
    */
-  public BrowserTerminologyHandler() throws Exception {
+  public BrowserTerminologyHandler() {
     super();
   }
 
