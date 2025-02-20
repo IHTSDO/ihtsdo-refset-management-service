@@ -9,6 +9,12 @@
     <cve>CVE-2024-45772</cve>
   </suppress>
 
+  <suppress>
+    <notes>lucene-misc-5.5.5.jar</notes> 
+    <packageUrl regex="true">^pkg:maven/org\.apache\.lucene/lucene-misc@5\.5\.5$</packageUrl>
+    <cve>CVE-2024-45772</cve>
+  </suppress>
+
   <!-- JSON Related Vulnerabilities -->
   <suppress>
     <notes>json-20240303.jar</notes> 
