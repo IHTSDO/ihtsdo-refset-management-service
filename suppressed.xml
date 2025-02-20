@@ -4,102 +4,85 @@
 
   <!-- Apache Lucene Vulnerabilities -->
   <suppress>
-    <notes>lucene-core-5.5.5.jar</notes>
-    <packageUrl>pkg:maven/org.apache.lucene/lucene-core@5.5.5</packageUrl>
+    <notes>lucene-core-5.5.5.jar</notes> 
+    <packageUrl regex="true">^pkg:maven/org\.apache\.lucene/lucene-core@5\.5\.5$</packageUrl>
     <cve>CVE-2024-45772</cve>
   </suppress>
 
   <!-- JSON Related Vulnerabilities -->
   <suppress>
-    <notes><![CDATA[file name: json-20240303.jar]]></notes>
-    <packageUrl regex="true">^pkg:maven/org.json/json@20240303</packageUrl>
+    <notes>json-20240303.jar</notes> 
+    <packageUrl regex="true">^pkg:maven/org\.json/json@20240303$</packageUrl>
     <cve>CVE-2023-5072</cve>
     <cve>CVE-2022-45688</cve>
   </suppress>
 
   <!-- Google Related Vulnerabilities -->
   <suppress>
-    <notes><![CDATA[file name: protobuf-java-3.25.1.jar]]></notes>
-    <packageUrl regex="true">^pkg:maven/com.google.protobuf/protobuf-java@3.25.1</packageUrl>
+    <notes>protobuf-java-3.25.1.jar</notes> 
+    <packageUrl regex="true">^pkg:maven/com\.google\.protobuf/protobuf-java@3\.25\.1$</packageUrl>
     <cve>CVE-2024-7254</cve>
   </suppress>
 
   <!-- CVE-2023-45960 was marked as a false positive but is still scanned -->
   <suppress>
-    <notes>org.dom4j-2.1.4.jar</notes>
-    <packageUrl>pkg:maven/org.dom4j/dom4j@2.1.4</packageUrl>
+    <notes>org.dom4j-2.1.4.jar</notes> 
+    <packageUrl regex="true">^pkg:maven/org\.dom4j/dom4j@2\.1\.4$</packageUrl>
     <cve>CVE-2023-45960</cve>
   </suppress>
 
   <!-- Scala Related Vulnerabilities -->
   <suppress>
-    <notes><![CDATA[file name: scala-compiler-2.10.0.jar]]></notes>
-    <packageUrl regex="true">^pkg:maven/org\.scala-lang/scala-compiler@2\.10\.0</packageUrl>
+    <notes>scala-compiler-2.10.0.jar</notes> 
+    <packageUrl regex="true">^pkg:maven/org\.scala-lang/scala-compiler@2\.10\.0$</packageUrl>
     <cve>CVE-2017-15288</cve>
   </suppress>
 
   <suppress>
-    <notes><![CDATA[file name: scala-library-2.10.4.jar]]></notes>
-    <packageUrl regex="true">^pkg:maven/org.scala-lang/scala-library@2.10.4</packageUrl>
+    <notes>scala-library-2.10.4.jar</notes> 
+    <packageUrl regex="true">^pkg:maven/org\.scala-lang/scala-library@2\.10\.4$</packageUrl>
     <cve>CVE-2017-15288</cve>
   </suppress>
 
   <suppress>
-    <notes><![CDATA[file name: scala-reflect-2.10.4.jar]]></notes>
-    <packageUrl regex="true">^pkg:maven/org.scala-lang/scala-reflect@2.10.4</packageUrl>
+    <notes>scala-reflect-2.10.4.jar</notes> 
+    <packageUrl regex="true">^pkg:maven/org\.scala-lang/scala-reflect@2\.10\.4$</packageUrl>
     <cve>CVE-2017-15288</cve>
   </suppress>
 
   <suppress>
-    <notes><![CDATA[file name: maven-shared-utils-3.2.1.jar]]></notes>
-    <packageUrl regex="true">^pkg:maven/org\.apache\.maven\.shared/maven-shared-utils@3\.2\.1</packageUrl>
+    <notes>maven-shared-utils-3.2.1.jar</notes> 
+    <packageUrl regex="true">^pkg:maven/org\.apache\.maven\.shared/maven-shared-utils@3\.2\.1$</packageUrl>
     <cve>CVE-2022-29599</cve>
   </suppress>
 
   <suppress>
-    <notes><![CDATA[file name: commons-io-2.5.jar]]></notes>
-    <packageUrl regex="true">^pkg:maven/commons-io/commons-io@2.5</packageUrl>
+    <notes>commons-io-2.5.jar</notes> 
+    <packageUrl regex="true">^pkg:maven/commons-io/commons-io@2\.5$</packageUrl>
     <cve>CVE-2024-47554</cve>
   </suppress>
 
   <suppress>
-   <notes><![CDATA[file name: underscore-min.js]]></notes>
-   <packageUrl regex="true">^pkg:javascript/underscore\.js@.*$</packageUrl>
+   <notes>underscore-min.js</notes> 
+   <packageUrl regex="true">^pkg:javascript/underscore\.js@.*$</packageUrl> 
    <cve>CVE-2021-23358</cve>
   </suppress>
 
- <suppress>
-   <notes><![CDATA[file name: angular.js]]></notes>
-   <packageUrl regex="true">^pkg:javascript/angularjs@.*$</packageUrl>
+  <suppress>
+   <notes>angular.js</notes> 
+   <packageUrl regex="true">^pkg:javascript/angularjs@.*$</packageUrl> 
    <cve>CVE-2019-10768</cve>
-</suppress>
+  </suppress>
 
 <!-- Handlebars Vulnerabilities -->
-<suppress>
-  <notes><![CDATA[file name: handlebars-1.0.0.js]]></notes>
-  <sha1>db2448c8bf24ef8ab033e6712da2784f9094c27f</sha1>
-</suppress>
+  <suppress>
+    <notes>handlebars-1.0.0.js</notes> 
+    <packageUrl regex="true">^pkg:javascript/handlebars@1\.0\.0$</packageUrl> 
+  </suppress>
 
-<suppress>
-  <notes><![CDATA[file name: handlebars-2.0.0.js]]></notes>
-  <sha1>f25d39dc72774e392d55d98dd1d1285b1e213809</sha1>
-</suppress>
-
-<!-- TinyMCE Vulnerabilities -->
-<suppress>
-   <notes><![CDATA[
-   file name: tinymce.jquery.min.js
-   ]]></notes>
-   <sha1>4d2adb82dce10871fb5fcd3cc2a8d84bbcdd1404</sha1>
-   <vulnerabilityName>TinyMCE before 4.9.7 and 5.x before 5.1.4 allows XSS in the core parser, the paste plugin, and the visualchars plugin by using the clipboard or APIs to insert content into the editor.</vulnerabilityName>
-</suppress>
-
-<suppress>
-   <notes><![CDATA[
-   file name: tinymce.min.js
-   ]]></notes>
-   <sha1>2464a66587268e8bdc8818e1249e2cc97fca66f3</sha1>
-   <vulnerabilityName>TinyMCE before 4.9.7 and 5.x before 5.1.4 allows XSS in the core parser, the paste plugin, and the visualchars plugin by using the clipboard or APIs to insert content into the editor.</vulnerabilityName>
-</suppress>
+  <suppress>
+    <notes>handlebars-2.0.0.js</notes> 
+    <packageUrl regex="true">^pkg:javascript/handlebars@2\.0\.0$</packageUrl>
+  </suppress>
 
 </suppressions>
