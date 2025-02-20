@@ -75,14 +75,58 @@
   </suppress>
 
 <!-- Handlebars Vulnerabilities -->
-  <suppress>
-    <notes>handlebars-1.0.0.js</notes> 
-    <packageUrl regex="true">^pkg:javascript/handlebars@1\.0\.0$</packageUrl> 
-  </suppress>
+<suppress>
+   <notes><![CDATA[
+   file name: handlebars-1.0.0.js
+   ]]></notes>
+   <packageUrl regex="true">^pkg:javascript/handlebars@.*$</packageUrl>
+   <vulnerabilityName>Versions of `handlebars` prior to 3.0.8 or 4.5.2 are vulnerable to Arbitrary Code Execution. The package's lookup helper fails to properly validate templates, allowing attackers to submit templates that execute arbitrary JavaScript in the system. It can be used to run arbitrary code in a server processing Handlebars templates or on a victim's browser (effectively serving as Cross-Site Scripting).
 
-  <suppress>
-    <notes>handlebars-2.0.0.js</notes> 
-    <packageUrl regex="true">^pkg:javascript/handlebars@2\.0\.0$</packageUrl>
-  </suppress>
+The following template can be used to demonstrate the vulnerability:  
+```{{#with "constructor"}}
+	{{#with split as |a|}}
+		{{pop (push "alert('Vulnerable Handlebars JS');")}}
+		{{#with (concat (lookup join (slice 0 1)))}}
+			{{#each (slice 2 3)}}
+				{{#with (apply 0 a)}}
+					{{.}}
+				{{/with}}
+			{{/each}}
+		{{/with}}
+	{{/with}}
+{{/with}}```
+
+
+## Recommendation
+
+Upgrade to version 3.0.8, 4.5.2 or later.</vulnerabilityName>
+</suppress>
+
+<suppress>
+   <notes><![CDATA[
+   file name: handlebars-2.0.0.js
+   ]]></notes>
+   <packageUrl regex="true">^pkg:javascript/handlebars@.*$</packageUrl>
+   <vulnerabilityName>Versions of `handlebars` prior to 3.0.8 or 4.5.2 are vulnerable to Arbitrary Code Execution. The package's lookup helper fails to properly validate templates, allowing attackers to submit templates that execute arbitrary JavaScript in the system. It can be used to run arbitrary code in a server processing Handlebars templates or on a victim's browser (effectively serving as Cross-Site Scripting).
+
+The following template can be used to demonstrate the vulnerability:  
+```{{#with "constructor"}}
+	{{#with split as |a|}}
+		{{pop (push "alert('Vulnerable Handlebars JS');")}}
+		{{#with (concat (lookup join (slice 0 1)))}}
+			{{#each (slice 2 3)}}
+				{{#with (apply 0 a)}}
+					{{.}}
+				{{/with}}
+			{{/each}}
+		{{/with}}
+	{{/with}}
+{{/with}}```
+
+
+## Recommendation
+
+Upgrade to version 3.0.8, 4.5.2 or later.</vulnerabilityName>
+</suppress>
 
 </suppressions>
