@@ -77,14 +77,29 @@
 <!-- Handlebars Vulnerabilities -->
 <suppress>
   <notes><![CDATA[file name: handlebars-1.0.0.js]]></notes>
-  <packageUrl regex="true">^pkg:javascript/handlebars@1\.0\.0$</packageUrl>
-  <vulnerabilityName regex="true">.*$</vulnerabilityName>
+  <sha1>db2448c8bf24ef8ab033e6712da2784f9094c27f</sha1>
 </suppress>
 
 <suppress>
   <notes><![CDATA[file name: handlebars-2.0.0.js]]></notes>
-  <packageUrl regex="true">^pkg:javascript/handlebars@2\.0\.0$</packageUrl>
-  <vulnerabilityName regex="true">.*$</vulnerabilityName>
+  <sha1>f25d39dc72774e392d55d98dd1d1285b1e213809</sha1>
+</suppress>
+
+<!-- TinyMCE Vulnerabilities -->
+<suppress>
+   <notes><![CDATA[
+   file name: tinymce.jquery.min.js
+   ]]></notes>
+   <sha1>4d2adb82dce10871fb5fcd3cc2a8d84bbcdd1404</sha1>
+   <vulnerabilityName>TinyMCE before 4.9.7 and 5.x before 5.1.4 allows XSS in the core parser, the paste plugin, and the visualchars plugin by using the clipboard or APIs to insert content into the editor.</vulnerabilityName>
+</suppress>
+
+<suppress>
+   <notes><![CDATA[
+   file name: tinymce.min.js
+   ]]></notes>
+   <sha1>2464a66587268e8bdc8818e1249e2cc97fca66f3</sha1>
+   <vulnerabilityName>TinyMCE before 4.9.7 and 5.x before 5.1.4 allows XSS in the core parser, the paste plugin, and the visualchars plugin by using the clipboard or APIs to insert content into the editor.</vulnerabilityName>
 </suppress>
 
 </suppressions>
