@@ -130,33 +130,47 @@ tsApp
                 };
 
                 // Handle error message
-                this.handleError = function (response, location) {
-                    console.debug('Handle error: ', response);
-                    if (response.data && response.data.length > 120) {
-                        this.error.message = "Unexpected error, click the icon to view attached full error";
-                        this.error.longMessage = response.data;
-                    } else {
-                        this.error.message = response.data;
-                    }
-                    // handle no message
-                    if (!this.error.message) {
-                        this.error.message = "Unexpected server side error.";
-                    }
-                    // If authtoken expired, relogin
-                    if (this.error.message && this.error.message.indexOf('AuthToken') != -1) {
-                        // Reroute back to login page with 'auth token has
-                        // expired' message
-                        $location.path('/login');
-                    } else if (location) {
-                        // scroll to specified location of page
-                        $location.hash(location);
-                        $anchorScroll();
-                    } else {
-                        // scroll to top of page
-                        $location.hash('top');
-                        $anchorScroll();
-                    }
-                };
+				this.handleError = function (response, location) {
+				    console.debug('Handle error: ', response);
+				    let errorMessage = "Unexpected server side error.";
+				    let longMessage = null;
+
+				    if (response.data) {
+				        if (typeof response.data === 'object' && response.data !== null) {
+				            // It's already a parsed object
+				            if (response.data.message) {
+				                errorMessage = response.data.message;
+				            } else {
+				                // Handle cases where the message is in a different key
+				                // e.g., { 'error': 'message' }
+				                errorMessage = JSON.stringify(response.data); // Stringify for display
+				            }
+				        } else if (typeof response.data === 'string') {
+				            // It's a plain string
+				            errorMessage = response.data;
+				        }
+
+				        // Set the long message if the original response data is long
+				        if (typeof response.data === 'string' && response.data.length > 120) {
+				            longMessage = response.data;
+				            errorMessage = "Unexpected error, click the icon to view attached full error";
+				        }
+				    }
+
+				    this.error.message = errorMessage;
+				    this.error.longMessage = longMessage;
+
+				    // The rest of your code remains the same
+				    if (this.error.message && this.error.message.indexOf('AuthToken') != -1) {
+				        $location.path('/login');
+				    } else if (location) {
+				        $location.hash(location);
+				        $anchorScroll();
+				    } else {
+				        $location.hash('top');
+				        $anchorScroll();
+				    }
+				};
 
                 // Dialog error handler
                 this.handleBulkDialogErrors = function () {
