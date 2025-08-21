@@ -132,36 +132,40 @@ tsApp
                 // Handle error message
 				this.handleError = function (response, location) {
 				    console.debug('Handle error: ', response);
-				    let errorMessage = "Unexpected server side error.";
-				    let longMessage = null;
 
-				    if (response.data) {
-				        if (typeof response.data === 'object' && response.data !== null) {
-				            // It's already a parsed object
-				            if (response.data.message) {
-				                errorMessage = response.data.message;
-				            } else {
-				                // Handle cases where the message is in a different key
-				                // e.g., { 'error': 'message' }
-				                errorMessage = JSON.stringify(response.data); // Stringify for display
-				            }
-				        } else if (typeof response.data === 'string') {
-				            // It's a plain string
-				            errorMessage = response.data;
-				        }
-
-				        // Set the long message if the original response data is long
-				        if (typeof response.data === 'string' && response.data.length > 120) {
-				            longMessage = response.data;
-				            errorMessage = "Unexpected error, click the icon to view attached full error";
-				        }
-				    }
-
-				    this.error.message = errorMessage;
+				    const { message, longMessage } = this.extractErrorMessage(response);
+				    this.error.message = message;
 				    this.error.longMessage = longMessage;
 
-				    // The rest of your code remains the same
-				    if (this.error.message && this.error.message.indexOf('AuthToken') != -1) {
+				    this.handleRouting(this.error.message, location);
+				};
+
+				this.extractErrorMessage = function (response) {
+				    let message = "Unexpected server side error.";
+				    let longMessage = null;
+
+				    if (!response.data) {
+				        return { message, longMessage };
+				    }
+
+				    // Handle parsed JSON object
+				    if (typeof response.data === 'object') {
+				        message = response.data.message || JSON.stringify(response.data);
+				    } else if (typeof response.data === 'string') {
+				        // Handle plain string
+				        message = response.data;
+				    }
+
+				    if (typeof response.data === 'string' && response.data.length > 120) {
+				        longMessage = response.data;
+				        message = "Unexpected error, click the icon to view attached full error";
+				    }
+
+				    return { message, longMessage };
+				};
+
+				this.handleRouting = function (errorMessage, location) {
+				    if (errorMessage && errorMessage.indexOf('AuthToken') !== -1) {
 				        $location.path('/login');
 				    } else if (location) {
 				        $location.hash(location);

@@ -73,7 +73,7 @@ public class ValidationServiceRestImpl extends RootServiceRestImpl
    *
    * @throws Exception the exception
    */
-  public ValidationServiceRestImpl() throws Exception {
+  public ValidationServiceRestImpl() {
     securityService = new SecurityServiceJpa();
   }
 

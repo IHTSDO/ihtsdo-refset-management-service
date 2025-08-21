@@ -105,7 +105,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
    *
    * @throws Exception the exception
    */
-  public ProjectServiceRestImpl() throws Exception {
+  public ProjectServiceRestImpl() {
     securityService = new SecurityServiceJpa();
   }
 

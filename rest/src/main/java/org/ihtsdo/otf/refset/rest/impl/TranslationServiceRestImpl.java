@@ -157,7 +157,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl
    *
    * @throws Exception the exception
    */
-  public TranslationServiceRestImpl() throws Exception {
+  public TranslationServiceRestImpl() {
     securityService = new SecurityServiceJpa();
   }
 

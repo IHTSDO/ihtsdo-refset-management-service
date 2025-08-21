@@ -90,7 +90,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl
    *
    * @throws Exception the exception
    */
-  public ReleaseServiceRestImpl() throws Exception {
+  public ReleaseServiceRestImpl() {
     securityService = new SecurityServiceJpa();
   }
 

@@ -21,7 +21,7 @@ public class SessionFactoryShutdownListener implements ServletContextListener {
    *
    * @throws Exception the exception
    */
-  public SessionFactoryShutdownListener() throws Exception {
+  public SessionFactoryShutdownListener() {
     super();
     // n/a
   }

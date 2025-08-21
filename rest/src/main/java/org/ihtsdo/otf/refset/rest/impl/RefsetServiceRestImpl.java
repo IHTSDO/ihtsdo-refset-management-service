@@ -129,7 +129,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl
    *
    * @throws Exception the exception
    */
-  public RefsetServiceRestImpl() throws Exception {
+  public RefsetServiceRestImpl() {
     securityService = new SecurityServiceJpa();
   }
 

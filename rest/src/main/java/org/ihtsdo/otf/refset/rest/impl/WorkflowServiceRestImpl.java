@@ -73,7 +73,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl
    *
    * @throws Exception the exception
    */
-  public WorkflowServiceRestImpl() throws Exception {
+  public WorkflowServiceRestImpl() {
     securityService = new SecurityServiceJpa();
   }
 
