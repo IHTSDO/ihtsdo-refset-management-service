@@ -53,7 +53,7 @@ public class SessionFactoryShutdownListener implements ServletContextListener {
      *
      * @throws Exception the exception
      */
-    public LocalService() throws Exception {
+    public LocalService() {
       super();
       // n/a
     }
