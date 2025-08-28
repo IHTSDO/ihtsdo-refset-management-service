@@ -59,7 +59,7 @@ tsApp.controller('LoginCtrl',
               $scope.message = 'Authentication error, log in at '
                 + $scope.appConfig['security.handler.IMS.url'];
               window.location.href = $scope.appConfig['security.handler.IMS.url']
-                + '/#/login?serviceReferer=' + appConfig['base.url'] + '%2F%23%2Flogin';
+                + '/#/login?serviceReferer=' + appConfig['base.url'];
             });
 
         },
@@ -69,7 +69,7 @@ tsApp.controller('LoginCtrl',
           $scope.message = 'Authentication error, log in at '
             + $scope.appConfig['security.handler.IMS.url'];
           window.location.href = $scope.appConfig['security.handler.IMS.url']
-            + '/#/login?serviceReferer=' + appConfig['base.url'] + '%2F%23%2Flogin';
+            + '/#/login?serviceReferer=' + appConfig['base.url'];
         });
       
       // end
